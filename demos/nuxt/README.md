@@ -6,15 +6,14 @@ delayed hydration to prove CHARTER §4.5: because the wiring is native
 hydrates** — and with JavaScript fully disabled.
 
 This demo is **isolated** from the library's `packages/*` workspace: it has its
-own `package.json` and lockfile so Nuxt's heavy dependency tree never enters the
-published library's install. It uses **npm** (not the repo's pnpm) because Nuxt
-runs a dependency-status check on boot that must run the native build scripts
-(`esbuild`, `@parcel/watcher`) non-interactively.
+own `package.json`, `pnpm-workspace.yaml`, and lockfile so Nuxt's heavy dependency
+tree never enters the published library's install. Its workspace explicitly
+allows the required native build scripts (`esbuild`, `@parcel/watcher`).
 
 ```sh
 cd demos/nuxt
-npm install
-npm run dev      # http://localhost:3000
+vp install --frozen-lockfile
+vp run dev      # http://localhost:3000
 ```
 
 What to look for:

@@ -2,6 +2,7 @@
   "name": "nagi-ui-nuxt-demo",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.1.3",
   "description": "CHARTER §10 Phase 0 Demo A: the DropdownMenu blueprint under Nuxt lazy hydration — the native popover opens before (or without) hydration.",
   "scripts": {
     "dev": "nuxt dev",
