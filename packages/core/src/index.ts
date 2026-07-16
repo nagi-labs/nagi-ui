@@ -19,3 +19,27 @@ export {
   type UseToastOptions,
   type UseToastReturn,
 } from "./toast.ts"
+export {
+  useDialog,
+  vDialogClose,
+  supportsInvokerCommands,
+  supportsDialogClosedBy,
+  type DialogClosedBy,
+  type DialogProps,
+  type DialogTriggerProps,
+  type UseDialogOptions,
+  type UseDialogReturn,
+} from "./dialog.ts"
+export {
+  useTooltip,
+  type TooltipProps,
+  type TooltipTriggerProps,
+  type UseTooltipOptions,
+  type UseTooltipReturn,
+} from "./tooltip.ts"
+export {
+  useDisclosure,
+  type DisclosureProps,
+  type UseDisclosureOptions,
+  type UseDisclosureReturn,
+} from "./disclosure.ts"
