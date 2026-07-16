@@ -1,0 +1,19 @@
+{
+  "name": "nagi-ui-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "packageManager": "pnpm@11.1.3",
+  "devDependencies": {
+    "@nagi-labs/nagi-ui": "workspace:*",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "vite": "^8.1.4",
+    "vue": "^3.5.0"
+  }
+}
