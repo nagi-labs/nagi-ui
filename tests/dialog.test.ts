@@ -54,25 +54,41 @@ test("emits Invoker Command attributes and standard handlers", () => {
   assert.equal(typeof dialogProps.onToggle, "function")
 })
 
-test("non-modal dialog uses command=show and show()", async () => {
+test("non-modal dialog omits invalid command wiring and uses show()", (t) => {
+  class FakeButton {}
+  Object.defineProperty(FakeButton.prototype, "command", { value: "" })
+  const original = Object.getOwnPropertyDescriptor(globalThis, "HTMLButtonElement")
+  Object.defineProperty(globalThis, "HTMLButtonElement", {
+    configurable: true,
+    value: FakeButton,
+  })
+  t.after(() => {
+    if (original) Object.defineProperty(globalThis, "HTMLButtonElement", original)
+    else Reflect.deleteProperty(globalThis, "HTMLButtonElement")
+  })
+
   const element = fakeDialog()
   const { open, triggerProps, dialogProps } = useDialog({ id: "dlg-2", modal: false })
 
-  assert.equal(triggerProps.command, "show")
+  assert.equal("command" in triggerProps, false)
+  assert.equal("commandfor" in triggerProps, false)
 
   dialogProps.onToggle(toggleEvent(element, "closed"))
-  open.value = true
-  await nextTick()
+  let prevented = false
+  triggerProps.onClick({ preventDefault: () => { prevented = true } } as unknown as MouseEvent)
+  assert.equal(prevented, true)
+  assert.equal(open.value, true)
   assert.deepEqual(element.calls, ["show"])
 })
 
-test("uncontrolled: UA close/cancel mirror into open", async () => {
+test("uncontrolled: actual close mirrors into open without intercepting cancel", () => {
   const element = fakeDialog()
   const { open, dialogProps } = useDialog({ id: "dlg-3" })
 
   element.open = true
   dialogProps.onToggle(toggleEvent(element, "open"))
   assert.equal(open.value, true)
+  assert.equal("onCancel" in dialogProps, false)
 
   dialogProps.onClose(plainEvent(element))
   assert.equal(open.value, false)
@@ -129,4 +145,49 @@ test("closedby is emitted only when requested", () => {
 test("close-button directive renders command wiring on the server", () => {
   const props = vDialogClose.getSSRProps?.({ value: "dlg-9" } as never, null as never)
   assert.deepEqual(props, { commandfor: "dlg-9", command: "close" })
+})
+
+test("close-button directive falls back when Invoker Commands are unsupported", (t) => {
+  const attributes = new Map<string, string>()
+  let clickListener: ((event: MouseEvent) => void) | null = null
+  const element = {
+    setAttribute(name: string, value: string) {
+      attributes.set(name, value)
+    },
+    getAttribute(name: string) {
+      return attributes.get(name) ?? null
+    },
+    addEventListener(_name: string, listener: (event: MouseEvent) => void) {
+      clickListener = listener
+    },
+    removeEventListener() {
+      clickListener = null
+    },
+  }
+  const dialog = fakeDialog()
+  dialog.open = true
+  const original = Object.getOwnPropertyDescriptor(globalThis, "document")
+  Object.defineProperty(globalThis, "document", {
+    configurable: true,
+    value: { getElementById: () => dialog },
+  })
+  t.after(() => {
+    if (original) Object.defineProperty(globalThis, "document", original)
+    else Reflect.deleteProperty(globalThis, "document")
+  })
+
+  const binding = { value: "dlg-10" }
+  const mounted = vDialogClose.mounted as Function
+  mounted(element, binding)
+  let prevented = false
+  clickListener?.({
+    currentTarget: element,
+    preventDefault: () => { prevented = true },
+  } as unknown as MouseEvent)
+
+  assert.equal(prevented, true)
+  assert.deepEqual(dialog.calls, ["close"])
+  const beforeUnmount = vDialogClose.beforeUnmount as Function
+  beforeUnmount(element)
+  assert.equal(clickListener, null)
 })

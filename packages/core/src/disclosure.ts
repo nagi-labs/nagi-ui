@@ -72,7 +72,7 @@ export function useDisclosure(options: UseDisclosureOptions = {}): UseDisclosure
 
   if (instance) {
     onMounted(() => {
-      if (open.value) apply(true)
+      apply(open.value)
     })
   }
 

@@ -33,9 +33,9 @@ export interface UseDialogOptions {
 }
 
 export interface DialogTriggerProps {
-  /** Invoker Commands wiring — declarative, works before hydration where supported. */
-  commandfor: string
-  command: "show-modal" | "show"
+  /** Invoker Commands wiring for modal dialogs. */
+  commandfor?: string
+  command?: "show-modal"
   /** Fallback opener for browsers without Invoker Commands (CHARTER §5). */
   onClick: (event: MouseEvent) => void
 }
@@ -44,7 +44,6 @@ export interface DialogProps {
   id: string
   closedby?: DialogClosedBy
   onClose: (event: Event) => void
-  onCancel: (event: Event) => void
   onToggle: (event: ToggleEvent) => void
 }
 
@@ -124,8 +123,16 @@ export function useDialog(options: UseDialogOptions = {}): UseDialogReturn {
 
   if (instance) {
     onMounted(() => {
-      if (open.value) apply(true)
+      apply(open.value)
     })
+  }
+
+  const onTriggerClick = (event: MouseEvent) => {
+    // Invoker Commands only have a native show-modal command for dialogs.
+    // Non-modal dialogs always use the imperative show() fallback.
+    if (modal && supportsInvokerCommands()) return
+    event.preventDefault()
+    open.value = true
   }
 
   return {
@@ -134,22 +141,13 @@ export function useDialog(options: UseDialogOptions = {}): UseDialogReturn {
     show: () => (open.value = true),
     close: () => (open.value = false),
     toggle: () => (open.value = !open.value),
-    triggerProps: {
-      commandfor: id,
-      command: modal ? "show-modal" : "show",
-      onClick: (event: MouseEvent) => {
-        // Where Invoker Commands exist the native command already opened the
-        // dialog; avoid a double invocation. Otherwise open imperatively.
-        if (supportsInvokerCommands()) return
-        event.preventDefault()
-        open.value = true
-      },
-    },
+    triggerProps: modal
+      ? { commandfor: id, command: "show-modal", onClick: onTriggerClick }
+      : { onClick: onTriggerClick },
     dialogProps: {
       id,
       ...(options.closedby ? { closedby: options.closedby } : {}),
       onClose: (event: Event) => mirror(event, false),
-      onCancel: (event: Event) => mirror(event, false),
       onToggle: (event: ToggleEvent) => mirror(event, event.newState === "open"),
     },
   }
@@ -164,6 +162,7 @@ export const vDialogClose: ObjectDirective<HTMLElement, string> = {
   mounted(el, binding) {
     el.setAttribute("commandfor", binding.value)
     el.setAttribute("command", "close")
+    el.addEventListener("click", closeDialogFallback)
   },
   updated(el, binding) {
     if (binding.value !== binding.oldValue) {
@@ -174,4 +173,17 @@ export const vDialogClose: ObjectDirective<HTMLElement, string> = {
   getSSRProps(binding) {
     return { commandfor: binding.value, command: "close" }
   },
+  beforeUnmount(el) {
+    el.removeEventListener("click", closeDialogFallback)
+  },
+}
+
+function closeDialogFallback(event: MouseEvent) {
+  if (supportsInvokerCommands()) return
+  event.preventDefault()
+  const trigger = event.currentTarget as HTMLElement
+  const targetId = trigger.getAttribute("commandfor")
+  if (!targetId || typeof document === "undefined") return
+  const target = document.getElementById(targetId) as DialogElement | null
+  if (target?.open) target.close()
 }

@@ -35,6 +35,14 @@ function toggleEvent(target: FakeHint, newState: "open" | "closed") {
   return { target, newState } as unknown as ToggleEvent
 }
 
+function pointerEvent() {
+  return { currentTarget: { isConnected: true } } as unknown as PointerEvent
+}
+
+function focusEvent() {
+  return { currentTarget: { isConnected: true } } as unknown as FocusEvent
+}
+
 test("emits describedby and tooltip role, popover value stays in template", () => {
   const { triggerProps, tooltipProps } = useTooltip({ id: "tip-1" })
 
@@ -51,7 +59,7 @@ test("hover opens after the open delay and pointer-leave closes it", (t) => {
 
   tooltipProps.onToggle(toggleEvent(element, "closed"))
 
-  triggerProps.onPointerenter()
+  triggerProps.onPointerenter(pointerEvent())
   assert.equal(open.value, false)
   t.mock.timers.tick(149)
   assert.equal(open.value, false)
@@ -60,23 +68,26 @@ test("hover opens after the open delay and pointer-leave closes it", (t) => {
   assert.deepEqual(element.calls, ["show"])
 
   element.openState = true
-  triggerProps.onPointerleave()
+  triggerProps.onPointerleave(pointerEvent())
+  t.mock.timers.tick(0)
   assert.equal(open.value, false)
   assert.deepEqual(element.calls, ["show", "hide"])
 })
 
-test("focus opens immediately, blur closes", () => {
+test("focus opens immediately, blur closes", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] })
   const element = fakeHint()
   const { open, triggerProps, tooltipProps } = useTooltip({ id: "tip-3", openDelay: 500 })
 
   tooltipProps.onToggle(toggleEvent(element, "closed"))
 
-  triggerProps.onFocus()
+  triggerProps.onFocus(focusEvent())
   assert.equal(open.value, true)
   assert.deepEqual(element.calls, ["show"])
 
   element.openState = true
-  triggerProps.onBlur()
+  triggerProps.onBlur(focusEvent())
+  t.mock.timers.tick(0)
   assert.equal(open.value, false)
 })
 
@@ -87,8 +98,8 @@ test("a pending hover-open is cancelled by an early leave", (t) => {
 
   tooltipProps.onToggle(toggleEvent(element, "closed"))
 
-  triggerProps.onPointerenter()
-  triggerProps.onPointerleave()
+  triggerProps.onPointerenter(pointerEvent())
+  triggerProps.onPointerleave(pointerEvent())
   t.mock.timers.tick(200)
   assert.equal(open.value, false)
   assert.deepEqual(element.calls, [])
@@ -101,4 +112,41 @@ test("UA toggle mirrors into open", () => {
   element.openState = true
   tooltipProps.onToggle(toggleEvent(element, "open"))
   assert.equal(open.value, true)
+})
+
+test("keeps the tooltip open while either focus or trigger hover remains", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] })
+  const element = fakeHint()
+  const { open, triggerProps, tooltipProps } = useTooltip({ id: "tip-6", openDelay: 0 })
+
+  tooltipProps.onToggle(toggleEvent(element, "closed"))
+  triggerProps.onPointerenter(pointerEvent())
+  triggerProps.onFocus(focusEvent())
+  element.openState = true
+
+  triggerProps.onPointerleave(pointerEvent())
+  t.mock.timers.tick(0)
+  assert.equal(open.value, true)
+
+  triggerProps.onBlur(focusEvent())
+  t.mock.timers.tick(0)
+  assert.equal(open.value, false)
+})
+
+test("allows the pointer to move from the trigger onto the tooltip", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] })
+  const element = fakeHint()
+  const { open, triggerProps, tooltipProps } = useTooltip({ id: "tip-7", openDelay: 0 })
+
+  tooltipProps.onToggle(toggleEvent(element, "closed"))
+  triggerProps.onPointerenter(pointerEvent())
+  element.openState = true
+  triggerProps.onPointerleave(pointerEvent())
+  tooltipProps.onPointerenter()
+  t.mock.timers.tick(0)
+  assert.equal(open.value, true)
+
+  tooltipProps.onPointerleave()
+  t.mock.timers.tick(0)
+  assert.equal(open.value, false)
 })

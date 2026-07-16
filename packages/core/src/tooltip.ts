@@ -1,6 +1,7 @@
 import {
   getCurrentInstance,
   onBeforeUnmount,
+  onMounted,
   ref,
   useId,
   watch,
@@ -26,16 +27,18 @@ export interface UseTooltipOptions {
 export interface TooltipTriggerProps {
   "aria-describedby": string
   style?: CSSProperties
-  onPointerenter: () => void
-  onPointerleave: () => void
-  onFocus: () => void
-  onBlur: () => void
+  onPointerenter: (event: PointerEvent) => void
+  onPointerleave: (event: PointerEvent) => void
+  onFocus: (event: FocusEvent) => void
+  onBlur: (event: FocusEvent) => void
 }
 
 export interface TooltipProps {
   id: string
   role: "tooltip"
   style?: CSSProperties
+  onPointerenter: () => void
+  onPointerleave: () => void
   onToggle: (event: ToggleEvent) => void
 }
 
@@ -66,7 +69,11 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   const closeDelay = options.closeDelay ?? 0
 
   let element: HintElement | null = null
+  let triggerElement: HTMLElement | null = null
   let timer: ReturnType<typeof setTimeout> | null = null
+  let triggerHovered = false
+  let tooltipHovered = false
+  let triggerFocused = false
 
   function resolve(): HintElement | null {
     if (element?.isConnected) return element
@@ -83,12 +90,23 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
     : null
   let detachAnchor: (() => void) | null = null
 
+  function resolveTrigger(): HTMLElement | null {
+    if (triggerElement?.isConnected) return triggerElement
+    if (typeof document === "undefined") return null
+    triggerElement = Array.from(
+      document.querySelectorAll<HTMLElement>("[aria-describedby]"),
+    ).find((candidate) =>
+      candidate.getAttribute("aria-describedby")?.split(/\s+/).includes(id),
+    ) ?? null
+    return triggerElement
+  }
+
   function syncAnchor(target: HintElement, isOpen: boolean) {
     if (!anchor || anchor.native) return
     detachAnchor?.()
     detachAnchor = null
     if (!isOpen || typeof document === "undefined") return
-    const trigger = document.querySelector<HTMLElement>(`[aria-describedby="${id}"]`)
+    const trigger = resolveTrigger()
     if (trigger) detachAnchor = anchor.attach(trigger, target)
   }
 
@@ -110,22 +128,41 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
     }
   }
 
-  function schedule(next: boolean, delay: number) {
+  function scheduleOpen() {
     clearTimer()
-    if (delay <= 0) {
-      open.value = next
+    if (open.value) return
+    if (openDelay <= 0) {
+      open.value = true
       return
     }
     timer = setTimeout(() => {
       timer = null
-      open.value = next
-    }, delay)
+      if (triggerHovered || triggerFocused) open.value = true
+    }, openDelay)
+  }
+
+  function scheduleClose() {
+    clearTimer()
+    if (triggerHovered || tooltipHovered || triggerFocused) return
+    // Even a zero delay uses a task so pointerenter on the tooltip can cancel
+    // a trigger pointerleave without a close/reopen flicker.
+    timer = setTimeout(() => {
+      timer = null
+      if (!triggerHovered && !tooltipHovered && !triggerFocused) {
+        open.value = false
+      }
+    }, Math.max(0, closeDelay))
   }
 
   watch(open, (next) => apply(next), { flush: "sync" })
 
   if (instance) {
-    onBeforeUnmount(clearTimer)
+    onMounted(() => apply(open.value))
+    onBeforeUnmount(() => {
+      clearTimer()
+      detachAnchor?.()
+      detachAnchor = null
+    })
   }
 
   return {
@@ -142,19 +179,43 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
     triggerProps: {
       "aria-describedby": id,
       ...(anchor ? { style: anchor.anchorStyle } : {}),
-      onPointerenter: () => schedule(true, openDelay),
-      onPointerleave: () => schedule(false, closeDelay),
+      onPointerenter: (event: PointerEvent) => {
+        triggerElement = event.currentTarget as HTMLElement
+        triggerHovered = true
+        scheduleOpen()
+      },
+      onPointerleave: () => {
+        triggerHovered = false
+        scheduleClose()
+      },
       // Focus reveals the tooltip immediately — keyboard users get no hover.
-      onFocus: () => schedule(true, 0),
-      onBlur: () => schedule(false, 0),
+      onFocus: (event: FocusEvent) => {
+        triggerElement = event.currentTarget as HTMLElement
+        triggerFocused = true
+        clearTimer()
+        open.value = true
+      },
+      onBlur: () => {
+        triggerFocused = false
+        scheduleClose()
+      },
     },
     tooltipProps: {
       id,
       role: "tooltip",
       ...(anchor ? { style: anchor.positionedStyle } : {}),
+      onPointerenter: () => {
+        tooltipHovered = true
+        clearTimer()
+      },
+      onPointerleave: () => {
+        tooltipHovered = false
+        scheduleClose()
+      },
       onToggle: (event: ToggleEvent) => {
         element = event.target as HintElement
         const actual = event.newState === "open"
+        if (!actual) clearTimer()
         syncAnchor(element, actual)
         if (open.value !== actual) open.value = actual
       },
