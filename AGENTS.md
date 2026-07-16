@@ -1,0 +1,31 @@
+# AGENTS.md
+
+For architecture and design constraints, read `CHARTER.md` and `CLAUDE.md`
+first. Use Vite+ (`vp`) as the repository entrypoint for Node, package-manager,
+task, and package-binary commands. Do not invoke `pnpm` directly.
+
+## Cursor Cloud specific instructions
+
+Environment is a pnpm workspace (`@nagi-labs/nagi-ui`) managed through `vp`.
+Dependencies are refreshed automatically on startup; the notes below cover
+non-obvious startup/run caveats only.
+
+- **Node version gotcha.** The repo needs Node `>=22.18.0` (CI uses Node 24)
+  because the test script runs TypeScript through Node's native type stripping.
+  Use `vp env use 24` when the current runtime is too old; do not install a
+  second Node toolchain or modify global `PATH` symlinks. Verify with
+  `vp node --version`.
+- **Dependencies:** `vp install --frozen-lockfile`. The underlying pnpm version
+  is pinned to `11.1.3` by the `packageManager` field and resolved by `vp`.
+- **Tests:** `vp run test` (plain `node --test`). `tests/ssr.test.ts` spins up
+  an in-process Vite server (no external service) and writes a zero-JS
+  artifact to `/tmp/nagi-zero-js-demo.html`.
+- **Playground (interactive UI):** there is no `dev` script. Start the Vite
+  dev server with `vp exec vite playground` (add `--host 127.0.0.1 --port
+  5173` to pin the address). `PopoverLab.vue` demos `usePopover`, the dropdown
+  blueprint, and toast/dialog stacking; `?autotest=stacking` paints a
+  PASS/FAIL banner for the top-layer re-promotion self-test.
+- **Cross-repo lint.** Blueprints must pass `nagi-css check` from the sibling
+  `../nagi-css` repo. That check needs an external config (kept in the
+  gitignored `.sandbox/`, not committed); it is optional for running/testing
+  this repo.
