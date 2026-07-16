@@ -1,5 +1,6 @@
 import {
   getCurrentInstance,
+  onBeforeUnmount,
   onMounted,
   ref,
   useId,
@@ -90,7 +91,9 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
     detachAnchor?.()
     detachAnchor = null
     if (!isOpen || typeof document === "undefined") return
-    const trigger = document.querySelector<HTMLElement>(`[popovertarget="${id}"]`)
+    const trigger = Array.from(
+      document.querySelectorAll<HTMLElement>("[popovertarget]"),
+    ).find((candidate) => candidate.getAttribute("popovertarget") === id)
     if (trigger) detachAnchor = anchor.attach(trigger, target)
   }
 
@@ -109,6 +112,10 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
   if (instance) {
     onMounted(() => {
       if (open.value) apply(true)
+    })
+    onBeforeUnmount(() => {
+      detachAnchor?.()
+      detachAnchor = null
     })
   }
 
