@@ -8,8 +8,8 @@
 
 ## 0. 一言定義
 
-**Nagi UI は、振る舞いを JS で再演せずブラウザ標準へ委譲する、Vue 向け attribute 注入型 headless レイヤーである。**
-Nagi CSS Contract(別文書 `CONTRACT.md`)を styling の基礎とし、その reference implementation として機能する。
+**Nagi UI は、振る舞いを JS で再演せずブラウザ標準へ委譲し、通常は themeable package、必要時は所有可能な SFC として使える Vue UI システムである。**
+attribute 注入型 headless core を内部の芯とし、Nagi CSS Contract(別文書 `CONTRACT.md`)を styling の基礎、その reference implementation を package component / Blueprint の単一ソースとして提供する。
 
 ## 1. 決定原理(すべての設計判断の根拠)
 
@@ -29,16 +29,37 @@ Nagi CSS Contract(別文書 `CONTRACT.md`)を styling の基礎とし、その r
 - **Nagi CSS 契約上のペナルティ差**: compound 形式ではライブラリコンポーネントが boundary class となり、自分のダイアログ内部が slot sub-surface 宣言 + descendant step を要求される。Teleport 実装なら `detachedSlotSurfaces` 宣言まで必要。attribute 注入なら全域が owned DOM となり、Element Class Table と `>` チェーンがそのまま通る。
 - **Teleport が不要な理由(重要)**: ネイティブ popover の top layer は**レンダリング概念であって DOM 移動ではない**。popover 要素は DOM ツリー上その場に留まる。よって契約の `>` チェーンが壊れず、`overflow: hidden` / `z-index` / `transform` の祖先にも切り取られない。**Teleport / portal を実装に導入した時点で本プロジェクトの存在理由が消える。使用禁止。**
 
-## 3. プロダクト構成(三層)
+## 3. プロダクト構成(package-first / own-on-demand)
 
 | 層 | 配布 | 中身 | スタイル |
 |---|---|---|---|
 | **core** | npm パッケージ | composable 群 + ディレクティブ糖衣。ネイティブ属性 + ARIA を注入。完全に型付け | CSS を一切含まない |
-| **blueprints** | copy-in(shadcn 方式) | Nagi CSS 準拠で書かれた SFC。利用者のリポジトリへ複製して所有させる | Nagi CSS 契約準拠の読める CSS。**Tailwind 不使用** |
+| **components / blueprints** | npm component + on-demand copy-in | Nagi CSS 準拠の同一 SFC。通常は import して使い、構造変更が必要になった component だけ利用者のリポジトリへ複製する | Nagi CSS 契約準拠の読める CSS。**Tailwind 不使用** |
+| **theme** | Nagi CSS package | 色・spacing・radius・typography・shadow・control size・state appearance の token | DOM / behavior は変更しない |
 | **contract preset** | npm(linter 側) | Nagi CSS linter 用の Nagi UI プリセット設定(`componentSlots` 等が必要になった場合のみ) | — |
 
-- shadcn から継承するのは **copy-in 配布モデル(所有権の移譲)のみ**。Tailwind・ユーティリティクラスは採らない。コピーされたコードは契約により決定的な命名を持つため、利用者の linter を最初から通る。
+- 通常の導入体験は PrimeVue 型(package import + theme token)とし、**最初から全 SFC の copy を要求しない**。package API で足りない component だけ `nagi-ui own <component>` 相当の workflow で所有へ移る。
+- shadcn から継承するのは **必要時に source ownership を移譲できること**。Tailwind・ユーティリティクラスは採らない。コピーされたコードは契約により決定的な命名を持つため、利用者の linter を最初から通る。
 - 本当の商品は契約であり、Nagi UI はその実演装置(reference implementation)である。差別化は「契約 + linter + ライブラリ」の三位一体にあり、ライブラリ単体の機能差ではない(機能差は既存勢に 2〜3 年で吸収される)。
+
+### 単一ソース原則(必須)
+
+package component と own コマンドのコピー元を**別実装にしてはならない**。`blueprints/<component>/*.vue` の同じ SFC を package build と source ownership の双方へ使う。package だけ修正され copy 元が古い、または逆の状態は出荷不具合である。
+
+### カスタマイズの段階
+
+1. Theme token
+2. 小さな props / items schema
+3. 宣言済みの少数 slot
+4. それ以上は source ownership
+
+PrimeVue 型の巨大な pass-through props / slot surface は作らない。「API で表せない要求は source を所有する」が package API を小さく保つ境界である。一方、avatar・router-link・description 程度の要求で毎回所有が必要になるなら Theme と ownership の間が崖になっている。§3.5 の優先順と実利用データで境界を調整し、投機的 API は増やさない。
+
+### ownership 後の保守契約
+
+「所有可能」は「fork して取り残される」の言い換えであってはならない。owned source にはコピー元 component と version を機械可読な形で記録し、upstream diff / migration、Nagi UI lint、integration test により a11y・browser 修正を追えるようにする。`own` / `diff` の具体的 CLI と metadata 形式は Phase 4 で固定する。
+
+このモデルの成功条件・失敗パターン・検証実験は `docs/package-ownership-model.md` を正本とする。
 
 ## 3.5 Blueprint の形態選択(owned DOM / props / items schema / slot)
 
@@ -69,7 +90,7 @@ slot は正当な機構である。§2 の compound 禁止は「**ライブラ�
 
 ### 「User owns the DOM」の解釈
 
-利用者が**所有するコード**(copy-in SFC を含む)で最終 DOM・state selector・CSS ownership が追えること。全利用側 SFC に DOM が現れることまでは要求しない。schema 版 menu でも DOM は copy-in された `DropdownMenu.vue` 1 ファイルから追える。
+利用者が必要になった時点で**所有できるコード**により、最終 DOM・state selector・CSS ownership が追えること。package 利用中から全 DOM が利用側 SFC に現れることは要求しない。ownership 後は package と同じ source SFC が手元に移り、schema 版 menu でも DOM は owned `DropdownMenu.vue` から追える。
 
 ### styling-only blueprint
 
@@ -311,12 +332,12 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 3.5 — Verified integration
 
-**Status: Deferred — interaction API が安定した後、Phase 4 の製品化前に実施**
+**Status: In progress (2026-07-18)** — slice 1 として `mergeNagiProps()` と template-only `eslint-plugin-nagi-ui/verified-bindings` を実装。runtime assertions と rendered accessibility checks は残る。詳細は `docs/phase3.5-verified-integration.md`。
 
 出荷済み core の挙動テストとは別に、利用者や coding agent が Blueprint を変更した後の integration contract を機械的に守る。
 
-- `mergeNagiProps()` — event / class / style と token-list ARIA 属性を結合し、`id`、`role`、`popovertarget`、`aria-haspopup` 等の意味的競合を検出する
-- `eslint-plugin-nagi-ui` — `triggerProps` / `menuProps` / `itemProps(item)` の適用先、必要な native 属性、親子関係、上書き、`v-for` key を Vue SFC の script + template AST から検証する
+- `mergeNagiProps()` — **slice 1 完了**。event / class / style と token-list ARIA 属性を結合し、それ以外の重複値が異なれば semantic conflict として例外にする。reactive getter は freeze しない
+- `eslint-plugin-nagi-ui` — **slice 1 完了**。`triggerProps` / `menuProps` / `itemProps(item)` 等の適用先、必要な native 属性、直接上書き、複数 object binding、`v-for` key を Vue template AST から検証する。TypeScript 7 対応 parser がない間は公式の `parser: false` による template-only pass とし、script data-flow / component 境界をまたぐ親子関係は runtime 側で検証する
 - dev-only runtime assertions — 動的 ID reference、active descendant、重複 item key、実 DOM 上の trigger / popup 関係を警告する
 - rendered accessibility checks — Blueprint を開いた各状態で axe-core を実行し、Playwright の keyboard / focus contract tests と併用する
 - Nagi CSS は owned DOM / selector contract、Nagi UI lint は behavior wiring を担当し、責務を混在させない
@@ -333,6 +354,8 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-18** Phase 3.5 slice 1 を開始。`mergeNagiProps()` は class/style/event/token-list ARIA の合成、semantic conflict、live getter を検証。`eslint-plugin-nagi-ui/verified-bindings` は behavior props の適用先・native属性・直接上書き・複数binding・keyを全出荷Blueprintに対して検査する。TypeScript ESLintがTS7を読めないため、`skipLibCheck`やTS downgradeではなくvue-eslint-parser公式のtemplate-only modeを採用。
+- **2026-07-18** 配布モデルを copy-first から package-first / own-on-demand へ改訂。通常は themeable package component、深い変更時だけ同一 SFC を所有する。package build と copy 元の単一ソース、Theme→小 API→少数 slot→ownership の段階、owned source の version / diff / lint / integration 保守契約を §3 に固定した。成功条件と失敗パターンは `docs/package-ownership-model.md` に記録。
 - **2026-07-18** Phase 3 完了。Select は native `<select>` を stable path とし、`appearance: base-select` は progressive enhancement、`<selectedcontent>` は採用保留と決定。customizable Select 全体と `<selectedcontent>` 単体の標準化強度を分離し、Vue compiler 対応・3エンジン stable 実装・相互運用検証を昇格条件に固定した。Combobox 派生の自前 Select fallback は作らない。
 - **2026-07-17** Phase 3 の Listbox + Combobox slice 完了。Combobox は input value / committed selection / provisional active option を分離し、filter で確定選択を prune しない。APG に従い popup option の候補フォーカスは `aria-selected` で表すため、§6 の `data-active` 例を Menu / Listbox に訂正した。
 - **2026-07-17** §3.5「Blueprint の形態選択」を追加(owned DOM / props / items schema / slot の優先順)。compound 禁止の範囲を「ライブラリ出荷の behavior 分散タグ族」に明文化し、copy-in SFC の slot を宣言済み境界として正当化(§9 も更新)。「User owns the DOM」を「所有するコードで DOM が追える」と解釈固定。menu 系の items schema 化を Phase 2.6 として追加(blueprint-local、core 非昇格、Phase 3 と並行可)。styling-only blueprint は phase 進行と独立に追加可とした。

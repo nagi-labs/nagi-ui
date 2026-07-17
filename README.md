@@ -1,9 +1,10 @@
 # Nagi UI
 
-**A Vue headless layer that injects standard attributes instead of replaying
-behavior in JS.** Popovers, dialogs, and tooltips are delegated to the
-platform (Popover API, `<dialog>`, Invoker Commands); JS effort is reserved
-for the patterns the platform does not cover (Menu / Listbox / Combobox).
+**A Vue UI system that delegates behavior to standard attributes and lets
+consumers own the source only when they need to.** The normal path is a
+themeable package component; the same SFC is the source for on-demand
+ownership. Popovers, dialogs, and tooltips are delegated to the platform;
+JS effort is reserved for Menu / Listbox / Combobox.
 
 Nagi UI is the reference implementation of the
 [Nagi CSS contract](../nagi-css/CONTRACT.md): no wrapper tags, no Teleport,
@@ -17,7 +18,9 @@ learning lands.
 
 - `packages/core` — `@nagi-labs/nagi-ui`: composables plus directive sugar.
   Ships no CSS.
-- `blueprints/` — copy-in SFCs written under the Nagi CSS contract.
+- `blueprints/` — canonical SFCs used by both the future package build and
+  on-demand source ownership; see
+  [`docs/package-ownership-model.md`](docs/package-ownership-model.md).
 - `playground/` — Vite labs for the phase slices (`vp exec vite playground`;
   `?autotest=stacking` runs the Demo B self-test).
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app
@@ -27,8 +30,9 @@ learning lands.
 
 ## Status
 
-Phases 0–2.6 complete — see CHARTER §10. Phase 3 Listbox and Combobox have
-landed; the customizable-select standards decision is next.
+Phases 0–3 complete — see CHARTER §10. Phase 3.5 verified integration is in
+progress; the customizable-select decision is recorded in
+[`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 ### Phase 0 — vertical slice
 
@@ -111,5 +115,7 @@ The complete playground is available at `/dropdown.html` after running
   [`docs/phase3-combobox.md`](docs/phase3-combobox.md)
 
 Verified integration (`mergeNagiProps`, Nagi-aware SFC lint, and dev runtime
-assertions) is intentionally deferred until the Menu/Listbox/Combobox props
-contracts stabilize, then lands before Phase 4 productization.
+assertions) follows the stabilized Menu/Listbox/Combobox contracts before
+Phase 4 productization. Slice 1 has landed: `mergeNagiProps` plus template-only
+`eslint-plugin-nagi-ui/verified-bindings`; see
+[`docs/phase3.5-verified-integration.md`](docs/phase3.5-verified-integration.md).
