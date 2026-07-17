@@ -332,14 +332,14 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 3.5 — Verified integration
 
-**Status: In progress (2026-07-18)** — slice 1 として `mergeNagiProps()` と template-only `eslint-plugin-nagi-ui/verified-bindings` を実装。runtime assertions と rendered accessibility checks は残る。詳細は `docs/phase3.5-verified-integration.md`。
+**Status: Complete (2026-07-18)** — `mergeNagiProps()`、template-only `eslint-plugin-nagi-ui/verified-bindings`、最終 DOM の relationship verifier、開いた Blueprint 状態の axe-core 検査を実装。valid/corrupted DOM graph と keyboard/focus contract を含む browser suite 28/28 を検証した。詳細は `docs/phase3.5-verified-integration.md`。
 
 出荷済み core の挙動テストとは別に、利用者や coding agent が Blueprint を変更した後の integration contract を機械的に守る。
 
-- `mergeNagiProps()` — **slice 1 完了**。event / class / style と token-list ARIA 属性を結合し、それ以外の重複値が異なれば semantic conflict として例外にする。reactive getter は freeze しない
-- `eslint-plugin-nagi-ui` — **slice 1 完了**。`triggerProps` / `menuProps` / `itemProps(item)` 等の適用先、必要な native 属性、直接上書き、複数 object binding、`v-for` key を Vue template AST から検証する。TypeScript 7 対応 parser がない間は公式の `parser: false` による template-only pass とし、script data-flow / component 境界をまたぐ親子関係は runtime 側で検証する
-- dev-only runtime assertions — 動的 ID reference、active descendant、重複 item key、実 DOM 上の trigger / popup 関係を警告する
-- rendered accessibility checks — Blueprint を開いた各状態で axe-core を実行し、Playwright の keyboard / focus contract tests と併用する
+- `mergeNagiProps()` — event / class / style と token-list ARIA 属性を結合し、それ以外の重複値が異なれば semantic conflict として例外にする。reactive getter は freeze しない
+- `eslint-plugin-nagi-ui` — `triggerProps` / `menuProps` / `itemProps(item)` 等の適用先、必要な native 属性、直接上書き、複数 object binding、`v-for` key を Vue template AST から検証する。TypeScript 7 対応 parser がない間は公式の `parser: false` による template-only pass とし、script data-flow / component 境界をまたぐ親子関係は runtime 側で検証する
+- runtime DOM verification — `verifyNagiDom()` / `assertNagiDom()` と明示的に dev で有効化する `observeNagiDom()` により、動的 ID reference、active descendant、重複 ID、native popover target、実 DOM 上の trigger / popup 関係を検査する。production observer は暗黙に導入しない
+- rendered accessibility checks — Action Menu、完全な Dropdown + submenu、Listbox、Combobox、Dialog、Tooltip を開いた状態で axe-core WCAG 2.1 AA 検査を行い、Playwright の keyboard / focus contract tests と併用する。rule 除外は行わない
 - Nagi CSS は owned DOM / selector contract、Nagi UI lint は behavior wiring を担当し、責務を混在させない
 
 この Phase を後段に置く理由は、Menu / Listbox / Combobox の props contract が固まる前に lint 規則を固定して二重改修することを避けるためである。
@@ -354,6 +354,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-18** Phase 3.5 完了。最終 DOM の IDREF / active descendant / native popover 関係を検査する `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` と、開いた全主要 Blueprint 状態の axe-core 検査を追加。axe が発見した Dropdown / Listbox / Combobox の secondary text contrast を rule 除外せず修正し、browser 28/28 を確認した。
 - **2026-07-18** Phase 3.5 slice 1 を開始。`mergeNagiProps()` は class/style/event/token-list ARIA の合成、semantic conflict、live getter を検証。`eslint-plugin-nagi-ui/verified-bindings` は behavior props の適用先・native属性・直接上書き・複数binding・keyを全出荷Blueprintに対して検査する。TypeScript ESLintがTS7を読めないため、`skipLibCheck`やTS downgradeではなくvue-eslint-parser公式のtemplate-only modeを採用。
 - **2026-07-18** 配布モデルを copy-first から package-first / own-on-demand へ改訂。通常は themeable package component、深い変更時だけ同一 SFC を所有する。package build と copy 元の単一ソース、Theme→小 API→少数 slot→ownership の段階、owned source の version / diff / lint / integration 保守契約を §3 に固定した。成功条件と失敗パターンは `docs/package-ownership-model.md` に記録。
 - **2026-07-18** Phase 3 完了。Select は native `<select>` を stable path とし、`appearance: base-select` は progressive enhancement、`<selectedcontent>` は採用保留と決定。customizable Select 全体と `<selectedcontent>` 単体の標準化強度を分離し、Vue compiler 対応・3エンジン stable 実装・相互運用検証を昇格条件に固定した。Combobox 派生の自前 Select fallback は作らない。

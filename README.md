@@ -30,8 +30,7 @@ learning lands.
 
 ## Status
 
-Phases 0–3 complete — see CHARTER §10. Phase 3.5 verified integration is in
-progress; the customizable-select decision is recorded in
+Phases 0–3.5 complete — see CHARTER §10. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 ### Phase 0 — vertical slice
@@ -114,8 +113,8 @@ The complete playground is available at `/dropdown.html` after running
   positioning, and `/combobox.html`; design notes in
   [`docs/phase3-combobox.md`](docs/phase3-combobox.md)
 
-Verified integration (`mergeNagiProps`, Nagi-aware SFC lint, and dev runtime
-assertions) follows the stabilized Menu/Listbox/Combobox contracts before
-Phase 4 productization. Slice 1 has landed: `mergeNagiProps` plus template-only
-`eslint-plugin-nagi-ui/verified-bindings`; see
+Verified integration is complete: `mergeNagiProps`, template-only
+`eslint-plugin-nagi-ui/verified-bindings`, opt-in runtime DOM verification,
+and axe checks for opened Blueprint states now protect the stabilized
+Menu/Listbox/Combobox contracts before Phase 4 productization; see
 [`docs/phase3.5-verified-integration.md`](docs/phase3.5-verified-integration.md).

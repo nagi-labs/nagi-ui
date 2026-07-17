@@ -1,8 +1,8 @@
 # Phase 3.5 — Verified integration
 
-Status: In progress. Slice 1 (`mergeNagiProps` + template binding lint) is
-complete. Runtime relationship assertions and rendered accessibility checks
-remain.
+Status: Complete (2026-07-18). Prop composition, template binding lint,
+runtime relationship verification, and rendered accessibility checks are all
+implemented and exercised against the shipped Blueprints.
 
 ## Why this phase exists
 
@@ -87,13 +87,52 @@ Consequences:
 - a future TypeScript 7-compatible parser can enrich analysis without
   changing the initial rule contract.
 
-## Remaining slices
+## Runtime DOM verification
 
-1. Runtime DOM assertions for missing ID targets, invalid
-   `aria-activedescendant`, duplicate item IDs/keys, and trigger/popup
-   relationship mismatches.
-2. Rendered accessibility checks for each opened Blueprint state, combined
-   with the existing Playwright keyboard/focus contracts.
-3. Ownership workflow integration: run the same checks against package-source
-   SFCs and owned copies, then use them as safety rails for upstream diff and
-   migration.
+Static template analysis ends at component boundaries and cannot see dynamic
+IDs or the final rendered relationship graph. The core package therefore
+exports three explicit runtime APIs:
+
+```ts
+import { assertNagiDom, observeNagiDom, verifyNagiDom } from "@nagi-labs/nagi-ui"
+
+const issues = verifyNagiDom(document)
+assertNagiDom(document)
+
+if (import.meta.env.DEV) {
+  const stop = observeNagiDom(document)
+  // call stop() when the application root is disposed
+}
+```
+
+`verifyNagiDom()` reports duplicate IDs, missing ARIA IDREF targets, an
+`aria-activedescendant` outside its owning/controlled DOM, invalid native
+popover targets, trigger/popup relationship mismatches, and missing
+`commandfor` targets. `assertNagiDom()` converts the issue list to an
+`AggregateError` for tests. `observeNagiDom()` batches mutation-driven checks
+and is deliberately opt-in: Nagi does not install a production-wide observer.
+
+Browser fixtures prove both sides of the contract: valid opened Dropdown,
+Listbox, and Combobox graphs return no issues, while deliberately corrupted
+graphs produce the expected issue codes.
+
+## Rendered accessibility checks
+
+The Playwright suite runs axe-core with WCAG 2 A/AA and WCAG 2.1 A/AA tags
+against states that static markup checks miss:
+
+- an open Action Menu;
+- the complete Dropdown with its submenu open;
+- single and multiple Listboxes after keyboard selection;
+- the Combobox with an open popup and active descendant;
+- open Dialog and Tooltip states.
+
+These checks augment rather than replace the existing keyboard, focus,
+selection, dismiss, and submenu tests. No axe rule is excluded. Adding the
+suite exposed insufficient secondary-text contrast in Dropdown, Listbox, and
+Combobox; the shipped Blueprint colors and equivalent explicit-DOM fixture
+were corrected before the phase was marked complete.
+
+The complete browser suite is 28/28 green. Package-source versus owned-copy
+parity and upstream diff/migration integration belong to the Phase 4
+ownership tooling, built on these same checks.
