@@ -82,3 +82,11 @@ export {
   NagiPropConflictError,
   type MergedNagiProps,
 } from "./merge-props.ts"
+export {
+  assertNagiDom,
+  observeNagiDom,
+  verifyNagiDom,
+  type NagiDomIssue,
+  type NagiDomIssueCode,
+  type ObserveNagiDomOptions,
+} from "./verify-dom.ts"
