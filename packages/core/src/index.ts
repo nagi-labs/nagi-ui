@@ -69,3 +69,11 @@ export {
   type UseListboxOptions,
   type UseListboxReturn,
 } from "./listbox.ts"
+export {
+  useCombobox,
+  type ComboboxInputProps,
+  type ComboboxListboxProps,
+  type ComboboxOptionProps,
+  type UseComboboxOptions,
+  type UseComboboxReturn,
+} from "./combobox.ts"

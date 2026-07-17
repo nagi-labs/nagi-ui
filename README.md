@@ -27,8 +27,8 @@ learning lands.
 
 ## Status
 
-Phases 0–2.6 complete — see CHARTER §10. Phase 3 is in progress:
-`useListbox` has landed, `useCombobox` is next.
+Phases 0–2.6 complete — see CHARTER §10. Phase 3 Listbox and Combobox have
+landed; the customizable-select standards decision is next.
 
 ### Phase 0 — vertical slice
 
@@ -105,7 +105,10 @@ The complete playground is available at `/dropdown.html` after running
   strategy, controlled `selected` ref, no-prune filtering invariant, Listbox
   blueprint + `/listbox.html`, browser suite 14/14; design notes in
   [`docs/phase3-listbox.md`](docs/phase3-listbox.md)
-- [ ] `useCombobox` input, filtering, and active-descendant coordination
+- [x] `useCombobox` editable value + filtering, provisional active option vs.
+  committed selection, input-owned DOM focus, native popover + anchor
+  positioning, and `/combobox.html`; design notes in
+  [`docs/phase3-combobox.md`](docs/phase3-combobox.md)
 
 Verified integration (`mergeNagiProps`, Nagi-aware SFC lint, and dev runtime
 assertions) is intentionally deferred until the Menu/Listbox/Combobox props

@@ -36,6 +36,9 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
     const lab = (
       await server.ssrLoadModule("/@fs" + path.join(repo, "playground/src/PopoverLab.vue"))
     ).default
+    const combobox = (
+      await server.ssrLoadModule("/@fs" + path.join(repo, "blueprints/combobox/Combobox.vue"))
+    ).default
 
     const items = [
       { key: "rename", label: "Rename" },
@@ -45,6 +48,9 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
       createSSRApp({ render: () => h(blueprint, { label: "Actions", items }) }),
     )
     const labHtml = await renderToString(createSSRApp(lab))
+    const comboboxHtml = await renderToString(
+      createSSRApp({ render: () => h(combobox, { label: "Fruit", items }) }),
+    )
 
     // The trigger carries popovertarget, and its value matches the popover id.
     const target = blueprintHtml.match(/popovertarget="([^"]+)"/)?.[1]
@@ -59,6 +65,17 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
     const directiveButton = labHtml.match(/<button([^>]*)>Directive trigger/)?.[1]
     assert.ok(directiveButton !== undefined, "directive trigger button renders")
     assert.match(directiveButton, /popovertarget="/, "v-popover-trigger renders via getSSRProps")
+
+    // Thick components are also attribute-complete on the server. Combobox
+    // interaction needs JS, but its accessible relationship does not wait for
+    // hydration to exist.
+    const comboboxPopup = comboboxHtml.match(/aria-controls="([^"]+)"/)?.[1]
+    assert.ok(comboboxPopup, "combobox input renders aria-controls")
+    assert.ok(comboboxHtml.includes(`id="${comboboxPopup}"`), "aria-controls targets the listbox")
+    assert.match(comboboxHtml, /role="combobox"/, "combobox role is server-rendered")
+    assert.match(comboboxHtml, /aria-autocomplete="list"/, "autocomplete mode is server-rendered")
+    assert.match(comboboxHtml, /role="listbox"/, "listbox role is server-rendered")
+    assert.match(comboboxHtml, /<ul[^>]*\spopover[\s>]/, "combobox popover is server-rendered")
 
     // Write the zero-JS artifact: the blueprint's server HTML with no script
     // tags at all. Opening it in a browser, the dropdown opens natively.

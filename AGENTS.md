@@ -31,7 +31,8 @@ non-obvious startup/run caveats only.
   PASS/FAIL banner for the top-layer re-promotion self-test. Phase 2 Menu is
   available at `/phase2.html`; the complete Dropdown is available at
   `/dropdown.html` — the schema-driven Blueprint (LTR/RTL) beside the
-  explicit-DOM fixture (`playground/src/DropdownFixture.vue`).
+  explicit-DOM fixture (`playground/src/DropdownFixture.vue`). Phase 3 labs
+  are available at `/listbox.html` and `/combobox.html`.
 - **Cross-repo lint.** Blueprints must pass `nagi-css check` from the sibling
   `../nagi-css` repo. That check needs an external config (kept in the
   gitignored `.sandbox/`, not committed); it is optional for running/testing
