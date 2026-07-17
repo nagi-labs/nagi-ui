@@ -2,6 +2,12 @@
 
 Status: Implemented
 
+> **Note (Phase 2.6):** the blueprint validated here was since replaced by the
+> schema-driven `blueprints/menu/DropdownMenu.vue`; the explicit-DOM SFC this
+> document describes now lives at `playground/src/DropdownFixture.vue` and
+> remains the reference for the composable-level escape path. See
+> [`phase2.6-dropdown-schema.md`](./phase2.6-dropdown-schema.md).
+
 ## Outcome
 
 The Phase 2 attribute-injection shape still holds at the complete Dropdown

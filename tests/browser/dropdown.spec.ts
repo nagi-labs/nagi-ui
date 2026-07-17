@@ -104,6 +104,45 @@ test("pointer grace keeps the submenu open while crossing from its trigger", asy
   await expect(ltr.submenu).toBeVisible();
 });
 
+test("items recompute while open keeps the tree, and submenus register dynamically", async ({
+  page,
+}) => {
+  const ltr = dropdown(page, "LTR");
+
+  await ltr.trigger.click();
+  const advancedToggle = ltr.section.getByRole("menuitemcheckbox", { name: "Show advanced" });
+  await advancedToggle.click();
+  await expect(advancedToggle).toHaveAttribute("aria-checked", "true");
+  await expect(ltr.root).toBeVisible();
+
+  const advanced = ltr.section.getByRole("menuitem", { name: "Advanced" });
+  await expect(advanced).toBeVisible();
+  await advanced.hover();
+  const advancedMenu = ltr.section.getByRole("menu").nth(1);
+  await expect(advancedMenu).toBeVisible();
+
+  const verbose = advancedMenu.getByRole("menuitemcheckbox", { name: "Verbose logging" });
+  await verbose.click();
+  await expect(verbose).toHaveAttribute("aria-checked", "true");
+  await expect(advancedMenu).toBeVisible();
+  await expect(ltr.root).toBeVisible();
+  await expect(page.getByTestId("verbose-state")).toHaveText("true");
+
+  await advancedMenu.getByRole("menuitem", { name: "Reset settings" }).click();
+  await expect(ltr.root).toBeHidden();
+  await expect(page.getByTestId("action-state")).toHaveText("reset");
+
+  await ltr.trigger.click();
+  await ltr.section.getByRole("menuitemcheckbox", { name: "Show advanced" }).click();
+  await expect(ltr.section.getByRole("menuitem", { name: "Advanced" })).toBeHidden();
+  await ltr.root.press("End");
+  await ltr.root.press("ArrowUp");
+  await expect(ltr.section.getByRole("menuitem", { name: "Share" })).toHaveAttribute(
+    "data-active",
+    "",
+  );
+});
+
 test("light dismiss closes both levels of the native popover tree", async ({ page }) => {
   const ltr = dropdown(page, "LTR");
 

@@ -27,7 +27,7 @@ learning lands.
 
 ## Status
 
-Phases 0–2.5 complete — see CHARTER §10. Phase 3 begins with `useListbox`.
+Phases 0–2.6 complete — see CHARTER §10. Phase 3 begins with `useListbox`.
 
 ### Phase 0 — vertical slice
 
@@ -83,6 +83,20 @@ Phases 0–2.5 complete — see CHARTER §10. Phase 3 begins with `useListbox`.
 
 The complete playground is available at `/dropdown.html` after running
 `vp exec vite playground`.
+
+### Phase 2.6 — Dropdown items schema Blueprint
+
+- [x] Blueprint-local `DropdownMenuNode` union (six node kinds) +
+  `menuEntries()` flatten in `blueprints/menu/dropdown-schema.ts`
+- [x] Schema renderer: `DropdownMenu.vue` + recursive `DropdownMenuItem.vue`
+  and per-node `DropdownSubmenu.vue`; consumers pass `:items` data only
+- [x] Explicit-DOM blueprint demoted to `playground/src/DropdownFixture.vue`
+  (the composable-level escape path)
+- [x] `nagi-css check` clean; unit/type/SSR verified; extension recipe in
+  [`docs/phase2.6-dropdown-schema.md`](docs/phase2.6-dropdown-schema.md)
+- [x] Browser coverage — the five Phase 2.5 specs run unchanged against the
+  schema Blueprint, plus a spec for items recompute while the tree is open
+  and dynamic submenu registration/removal (10 passed)
 
 ### Next — Phase 3
 

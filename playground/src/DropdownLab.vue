@@ -1,37 +1,152 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
-import DropdownMenu, { type DropdownSort } from "../../blueprints/menu/DropdownMenu.vue";
+import DropdownMenu from "../../blueprints/menu/DropdownMenu.vue";
+import type { DropdownMenuNode } from "../../blueprints/menu/dropdown-schema.ts";
+import DropdownFixture, { type DropdownSort } from "./DropdownFixture.vue";
 
 const lastAction = ref("none");
 const showToolbar = ref(true);
+const showAdvanced = ref(false);
+const verbose = ref(false);
 const sortBy = ref<DropdownSort>("name");
+
+const items = computed<readonly DropdownMenuNode[]>(() => [
+  {
+    type: "group",
+    key: "file",
+    label: "File",
+    items: [
+      {
+        type: "action",
+        key: "duplicate",
+        label: "Duplicate",
+        shortcut: "⌘D",
+        onSelect: () => (lastAction.value = "duplicate"),
+      },
+      {
+        type: "action",
+        key: "archive",
+        label: "Archive",
+        shortcut: "⇧⌘A",
+        disabled: true,
+        onSelect: () => (lastAction.value = "archive"),
+      },
+    ],
+  },
+  { type: "separator", key: "file-separator" },
+  {
+    type: "group",
+    key: "view",
+    label: "View",
+    items: [
+      {
+        type: "checkbox",
+        key: "show-toolbar",
+        label: "Show toolbar",
+        checked: showToolbar.value,
+        onCheckedChange: (checked) => (showToolbar.value = checked),
+      },
+      {
+        type: "checkbox",
+        key: "show-advanced",
+        label: "Show advanced",
+        checked: showAdvanced.value,
+        onCheckedChange: (checked) => (showAdvanced.value = checked),
+      },
+      {
+        type: "radio-group",
+        key: "sort",
+        value: sortBy.value,
+        onValueChange: (value) => (sortBy.value = value as DropdownSort),
+        items: [
+          { key: "name", label: "Sort by name" },
+          { key: "modified", label: "Sort by modified date" },
+        ],
+      },
+    ],
+  },
+  { type: "separator", key: "view-separator" },
+  {
+    type: "submenu",
+    key: "share",
+    label: "Share",
+    items: [
+      {
+        type: "action",
+        key: "copy-link",
+        label: "Copy link",
+        shortcut: "⌘L",
+        onSelect: () => (lastAction.value = "copy-link"),
+      },
+      {
+        type: "action",
+        key: "email",
+        label: "Email link",
+        onSelect: () => (lastAction.value = "email"),
+      },
+    ],
+  },
+  ...(showAdvanced.value
+    ? ([
+        {
+          type: "submenu",
+          key: "advanced",
+          label: "Advanced",
+          items: [
+            {
+              type: "checkbox",
+              key: "verbose",
+              label: "Verbose logging",
+              checked: verbose.value,
+              onCheckedChange: (checked) => (verbose.value = checked),
+            },
+            {
+              type: "action",
+              key: "reset",
+              label: "Reset settings",
+              onSelect: () => (lastAction.value = "reset"),
+            },
+          ],
+        },
+      ] satisfies readonly DropdownMenuNode[])
+    : []),
+  { type: "separator", key: "danger-separator" },
+  {
+    type: "action",
+    key: "delete",
+    label: "Delete",
+    shortcut: "⌫",
+    variant: "danger",
+    onSelect: () => (lastAction.value = "delete"),
+  },
+]);
 </script>
 
 <template>
   <main class="dropdown-lab">
     <h1 class="title">Nagi UI — complete Dropdown</h1>
     <p class="text">
-      Action、checkbox、radio、submenu を、同じ native DOM + 属性注入モデルで構成しています。
+      schema 版 Blueprint(items データを渡す)と、明示 DOM 版 fixture を並置しています。behavior
+      はどちらも同じ useMenu / useSubmenu です。
     </p>
 
     <section class="section">
       <h2 class="title">LTR</h2>
-      <DropdownMenu
-        v-model:show-toolbar="showToolbar"
-        v-model:sort-by="sortBy"
-        label="File actions"
-        @action="lastAction = $event"
-      />
+      <DropdownMenu label="File actions" :items="items" />
     </section>
 
     <section class="section" dir="rtl">
       <h2 class="title">RTL</h2>
-      <DropdownMenu
+      <DropdownMenu label="RTL actions" :items="items" dir="rtl" />
+    </section>
+
+    <section class="section">
+      <h2 class="title">Explicit DOM fixture</h2>
+      <DropdownFixture
         v-model:show-toolbar="showToolbar"
         v-model:sort-by="sortBy"
-        label="RTL actions"
-        dir="rtl"
+        label="Fixture actions"
         @action="lastAction = $event"
       />
     </section>
@@ -44,6 +159,10 @@ const sortBy = ref<DropdownSort>("name");
       <div class="item">
         <dt class="term">sort by</dt>
         <dd class="definition" data-testid="sort-state">{{ sortBy }}</dd>
+      </div>
+      <div class="item">
+        <dt class="term">verbose</dt>
+        <dd class="definition" data-testid="verbose-state">{{ verbose }}</dd>
       </div>
       <div class="item">
         <dt class="term">last action</dt>
