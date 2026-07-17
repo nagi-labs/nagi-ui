@@ -40,6 +40,41 @@ Nagi CSS Contract(別文書 `CONTRACT.md`)を styling の基礎とし、その r
 - shadcn から継承するのは **copy-in 配布モデル(所有権の移譲)のみ**。Tailwind・ユーティリティクラスは採らない。コピーされたコードは契約により決定的な命名を持つため、利用者の linter を最初から通る。
 - 本当の商品は契約であり、Nagi UI はその実演装置(reference implementation)である。差別化は「契約 + linter + ライブラリ」の三位一体にあり、ライブラリ単体の機能差ではない(機能差は既存勢に 2〜3 年で吸収される)。
 
+## 3.5 Blueprint の形態選択(owned DOM / props / items schema / slot)
+
+Blueprint の各部分をどの機構で利用者へ開くかは、次の優先順で判定する。上の行で表せるものを下の行の機構にしてはならない。
+
+| 中身の性質 | 機構 | 例 |
+|---|---|---|
+| 構造が固定 | owned DOM(template 直書き) | menu の list 骨格、card の frame |
+| 文字列・真偽・列挙で表せる | props | title、image src、`variant` |
+| 同型項目の繰り返し | items schema(blueprint-local) | menu items、select options、toast |
+| 本当に自由な markup | slot(宣言済み sub-surface) | card の本文、dialog の本文 |
+
+### items schema の位置づけ
+
+- copy-in Blueprint 内部の**編集可能な型**として提供する。core 公開 API へ昇格させない(core の商品は composable。schema を core に入れた瞬間、安定 DSL としての互換性負債が発生する)。
+- menu 系(Dropdown / ContextMenu / Menubar)が該当する。menu item は icon+label+shortcut の同型行であり、プラットフォーム(NSMenu、Electron、VS Code)が一貫してデータとして定義してきた UI である。**この判断は menu の性質に依存する例外であり、既定方針ではない。**
+- schema の拡張手順(union member 追加 → template 分岐追加 → CSS 追加 → `nagi-css check`)を Blueprint に文書として同梱する。**この拡張レシピの同梱が採用の成功条件である**(欠けると利用者が slot 化へ逃げて CSS ownership が崩れる)。
+- escape hatch(slot 差し込み・`component` field)は設けない。離脱路は①copy-in した renderer の編集、②union の拡張、③`useMenu` / `useSubmenu` への降下、の 3 つで足りる。
+
+### slot の位置づけ
+
+slot は正当な機構である。§2 の compound 禁止は「**ライブラリが behavior の状態機械を複数タグへ分散して出荷する**」形態の禁止であり、利用者所有の copy-in SFC が slot を持つことは対象外。Nagi CSS は slot sub-surface として境界を価格付けしており(宣言 + descendant step)、宣言して払えば契約違反ではない。条件:
+
+- **境界は最小に保つ。** タグ族への分割(`CardHeader` / `CardContent` / `CardFooter` 等)は禁止。frame の anatomy は owned DOM で持ち、穴は default slot(必要なら named slot)で開ける。
+- **slot を behavior 配線の通り道にしない。** slot 内容と親の状態を provide/inject で結合し始めたら、それは compound の再実装である。behavior は composable / props 経由のみ。menu の item 用 slot(`#item` に `itemProps` を渡して bind させる形)はこの違反例であり、item のカスタマイズは copy-in renderer の union 拡張で行う。
+- データ形で表せる部分(title、image 等)を slot にしない(上表の優先順)。props に寄せるほど利用側が境界越しにスタイルを当てる頻度が下がる。
+- **投機的な named slot を出荷しない。** slot は後から利用者が自分のコピーへ足すのは安いが、一度配ると利用箇所が依存して消せない。出荷形は「存在理由そのものの slot(Card / Dialog の本文等)」に限り、`#header-extra` のような予備枠は実際の要求が出てから追加する。
+
+### 「User owns the DOM」の解釈
+
+利用者が**所有するコード**(copy-in SFC を含む)で最終 DOM・state selector・CSS ownership が追えること。全利用側 SFC に DOM が現れることまでは要求しない。schema 版 menu でも DOM は copy-in された `DropdownMenu.vue` 1 ファイルから追える。
+
+### styling-only blueprint
+
+behavior(core composable)を持たない blueprint(Card、Alert、Badge 等)は Nagi UI の composable 検証(§10 の phase 系列)の対象外であり、Nagi CSS 準拠の copy-in SFC として **phase 進行と独立に追加してよい**。一回きり・ページ固有の構造はコンポーネント化せず inline で書く選択も通常どおり有効。
+
 ## 4. core の API 設計
 
 ### 4.1 三層 API: composable が芯、ディレクティブは糖衣
@@ -176,7 +211,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 9. アンチゴール(実装してはならないもの)
 
-- ❌ compound component 公開 API(`<NagiRoot>` / `<NagiTrigger>` 等)
+- ❌ compound component 公開 API(`<NagiRoot>` / `<NagiTrigger>` 等)。禁止対象はライブラリ出荷の behavior 分散タグ族であり、利用者所有 copy-in SFC の slot は対象外(§3.5)
 - ❌ `asChild` / `render` prop 方式(包む前提の発想ごと不要)
 - ❌ Teleport / portal(top layer が代替。§2 参照)
 - ❌ 独自フォーカストラップ(`<dialog>.showModal()` に委譲)
@@ -244,6 +279,25 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 **判定: 維持できる。** `useSubmenu(parent, triggerItem, options)` が menu tree の open path / focus owner / close depth / RTL / pointer grace を core に閉じ込め、SFC は native な group / label / separator / shortcut と各 item への props 適用をそのまま表示する。action / checkbox / radio の close policy も props 単位で明示できる。完成形と利用側 SFC、比較、invariant、検証結果は `docs/phase2.5-dropdown.md` に記録した。
 
+### Phase 2.6 — Dropdown items schema blueprint
+
+**Status: Complete (2026-07-17)** — unit / type / SSR / `nagi-css check` / browser(Playwright 10 件 pass、items 再計算・動的 submenu 含む)をすべて検証済み。学び(内部 SFC は filename 由来の surface root class を持ち element class を置き換える、surface は自分の margin を持たない)は `docs/phase2.6-dropdown-schema.md` に記録。
+
+**検証仮説**: blueprint-local の recursive items schema(§3.5)が、明示 DOM 版と同じ behavior 保証・Nagi CSS 適合を保ったまま、利用側の認知負荷と配線ミスを減らす。
+
+この Phase は blueprint の**配布形態**の検証であり、core composable の検証系列とは独立。Phase 3 と並行してよい。
+
+- schema は blueprint-local(§3.5)。node は `action` / `checkbox` / `radio-group` / `group` / `separator` / `submenu` の 6 種類から始める。`label` は独立 node にせず `group`(`role="group"` + `aria-labelledby` と一致)へ統合。`action` に `variant?: "danger"`。`checked` は `MaybeRefOrGetter` ではなく plain 値とし、親が items 全体を computed で再生成する(core は `getKey` 同定 + `toValue(items)` のため状態は壊れない)
+- submenu の再帰描画は blueprint 内部の自己参照 component で行う(`useSubmenu` が setup 文脈を要するため)。core は動的 register/unregister 済みで改修不要
+- avatar / router-link / description / permission 制御は schema に**入れない**。表示制御は computed での filter、それ以外は拡張レシピの題材とする
+- 現行の hardcoded `DropdownMenu.vue` は playground の全機能 fixture へ降格し、明示 DOM 版の書き方は composable への離脱パスの実例として docs に残す
+- 完了条件:
+  1. 再帰 renderer が `nagi-css check` を通る(通らなければ案自体を見直す)
+  2. menu open 中に items が再計算されても open path / active item / focus owner が維持されることを browser test で固定化する
+  3. submenu node の動的追加・削除で register/unregister が leak しない
+  4. schema を故意に壊した際の TS エラーが変更箇所を指す(AI agent 前提の指標)
+  5. 拡張レシピ文書を同梱し、schema 外の要求(avatar / router-link)をレシピ通りの局所 diff で追加できることを実証する
+
 ### Phase 3 — 厚い側の本丸
 
 **検証仮説**: Phase 2 の項目配布パターンが選択モデル・入力連動(filtering)と組み合わさっても崩れない。
@@ -275,6 +329,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-17** §3.5「Blueprint の形態選択」を追加(owned DOM / props / items schema / slot の優先順)。compound 禁止の範囲を「ライブラリ出荷の behavior 分散タグ族」に明文化し、copy-in SFC の slot を宣言済み境界として正当化(§9 も更新)。「User owns the DOM」を「所有するコードで DOM が追える」と解釈固定。menu 系の items schema 化を Phase 2.6 として追加(blueprint-local、core 非昇格、Phase 3 と並行可)。styling-only blueprint は phase 進行と独立に追加可とした。
 - **2026-07-17** Phase 2.5 完了。checkbox / radio / mixed state、任意階層の `useSubmenu` menu tree、LTR/RTL keyboard、pointer grace、nested Popover + Anchor Positioning を実装。完全な Dropdown Blueprint と利用側 SFC が Nagi CSS、unit/type/browser tests を通り、明示的 DOM + 属性注入形式を Phase 3 へ継続すると判定した。
 - **2026-07-17** Phase 2.5 に Dropdown Menu の完成形検証を追加。action menu の成功だけで結論を出さず、checkbox / radio / submenu と menu tree coordination まで載せた SFC の可読性を検証してから Listbox へ進む。props contract 安定後に `mergeNagiProps`、Nagi UI 専用 lint、dev assertions を実装する Phase 3.5 も追加。
 - **2026-07-16** Phase 1 完了。Dialog の non-modal open は標準 command が存在しないため `show()` fallback とし、native `cancel` は prevent 可能なまま保持。Tooltip は trigger hover / tooltip hover / focus の union とした。
