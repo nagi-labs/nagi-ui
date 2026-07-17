@@ -60,3 +60,12 @@ export {
   type UseMenuOptions,
   type UseMenuReturn,
 } from "./menu.ts"
+export {
+  useListbox,
+  type ListboxOptionProps,
+  type ListboxOrientation,
+  type ListboxProps,
+  type ListboxSelectionMode,
+  type UseListboxOptions,
+  type UseListboxReturn,
+} from "./listbox.ts"

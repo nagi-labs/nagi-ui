@@ -27,7 +27,8 @@ learning lands.
 
 ## Status
 
-Phases 0–2.6 complete — see CHARTER §10. Phase 3 begins with `useListbox`.
+Phases 0–2.6 complete — see CHARTER §10. Phase 3 is in progress:
+`useListbox` has landed, `useCombobox` is next.
 
 ### Phase 0 — vertical slice
 
@@ -98,9 +99,12 @@ The complete playground is available at `/dropdown.html` after running
   schema Blueprint, plus a spec for items recompute while the tree is open
   and dynamic submenu registration/removal (10 passed)
 
-### Next — Phase 3
+### Phase 3 — thick list components (in progress)
 
-- [ ] `useListbox` single and multiple selection
+- [x] `useListbox` single and multiple selection — shared activedescendant
+  strategy, controlled `selected` ref, no-prune filtering invariant, Listbox
+  blueprint + `/listbox.html`, browser suite 14/14; design notes in
+  [`docs/phase3-listbox.md`](docs/phase3-listbox.md)
 - [ ] `useCombobox` input, filtering, and active-descendant coordination
 
 Verified integration (`mergeNagiProps`, Nagi-aware SFC lint, and dev runtime
