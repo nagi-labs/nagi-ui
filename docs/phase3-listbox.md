@@ -33,6 +33,10 @@ listbox.selectedKeys                 // the selection source of truth (the contr
 - **Focus strategy is shared with `useMenu`**: DOM focus stays on the
   `role="listbox"` container, options are `aria-activedescendant` targets.
   One strategy across list-like components, per CHARTER §7.
+- **`aria-selected` here means the committed selection** (visual focus is
+  `data-active`). The Combobox popup uses the opposite APG convention —
+  `aria-selected` marks the provisional active suggestion. See "Consumer
+  notes" in [`phase3-combobox.md`](./phase3-combobox.md).
 - **Selection is an array of keys, in both modes.** Single mode holds at most
   one key. One shape keeps the controlled contract (`selected` ref +
   `onSelectionChange`) and the blueprint `v-model:selected` identical across

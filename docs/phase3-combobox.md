@@ -98,6 +98,29 @@ content remains a local Blueprint edit, not a core DSL or compound component.
 
 Playground: `/combobox.html`.
 
+## Consumer notes (deliberate behaviors worth knowing)
+
+Three consequences of the design above are intentional, not omissions:
+
+1. **`aria-selected` means different things in Listbox and Combobox.** In
+   `useListbox`, `aria-selected` is the committed selection and `data-active`
+   is the visual focus. In the Combobox popup, `aria-selected` marks the
+   provisional active suggestion, per the APG combobox listbox-popup contract
+   (CHARTER §6). Style sheets and tests written against one component must not
+   assume the other's semantics.
+2. **The committed option has no visual marker when the popup reopens** (no
+   check mark). This matches the APG list-autocomplete examples. If a product
+   wants one, it is a copy-in Blueprint edit: compare
+   `combobox.selectedKey.value` against the option key in the `<li>` loop and
+   style via a documented `data-*` attribute — do not repurpose
+   `aria-selected`, which already carries the active-suggestion state.
+3. **Blur keeps uncommitted text.** Typing "che" and leaving the field keeps
+   the input showing "che" while `selectedKey` still holds the previously
+   committed option — `inputValue !== getTextValue(selected)` is a
+   representable state, the price of lossless Escape and non-destructive
+   typing. Consumers that need strict agreement (e.g. form submission) should
+   validate or reset from `selectedKey` at submit/blur time in the caller.
+
 ## Verification
 
 - Unit (`tests/combobox.test.ts`): standard attribute graph, controlled refs,
