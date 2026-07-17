@@ -22,5 +22,8 @@ repository `../nagi-css` (see its `CONTRACT.md`). Blueprints must pass
 Follow the phase order in CHARTER §10; do not skip ahead of an unfinished
 phase's completion criteria.
 
-Run tests with `pnpm test` (plain `node --test`; TypeScript runs via Node's
-type stripping — erasable syntax only, no enums/namespaces).
+Use Vite+ for every Node/package task; do not invoke `pnpm` directly. Run unit
+tests with `vp run test`, TypeScript 7 checks with `vp run typecheck`, and
+browser keyboard/focus tests with `vp run test:browser`. Runtime tests use
+Node's type stripping, so test files must keep erasable syntax only (no
+enums/namespaces).

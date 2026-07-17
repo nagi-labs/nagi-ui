@@ -54,7 +54,7 @@ native attributes (popovertarget, aria-*, id) ← 最終出力は常に標準語
 
 理由: ディレクティブはテンプレート型検査(vue-tsc)が効かず、修飾子に型表現がない。型が欲しい利用者は composable、簡潔さが欲しい利用者はディレクティブを選べるようにする。**ディレクティブ単体でしか使えない機能を作ってはならない**(必ず composable に同等物があること)。
 
-composable 形態の実証状況: 薄い側(属性オブジェクトを返すだけ)はリスクなし。厚い側(Combobox 等)も React Aria hooks が composable 形式での WAI-ARIA 準拠実装の存在証明になっている。**唯一の未検証点は `v-for` 項目群への属性配布(`itemProps(item)` 型 API)の Vue テンプレートでの書き味**であり、これは §10 Phase 2 で最優先検証する。
+composable 形態の実証状況: 薄い側(属性オブジェクトを返すだけ)はリスクなし。厚い側(Combobox 等)も React Aria hooks が composable 形式での WAI-ARIA 準拠実装の存在証明になっている。`v-for` 項目群への属性配布(`itemProps(item)` 型 API)の Vue テンプレートでの書き味は §10 Phase 2 の `useMenu` + ActionMenu blueprint で検証済み。結果と比較は `docs/phase2-menu.md` を正本とする。
 
 ### 4.2 正規形(Dialog/Popover の場合)
 
@@ -138,7 +138,7 @@ open 状態の所有者はブラウザ(UA)だが、アプリ側 store を単一�
 | Toast | 中(見た目より罠が多い) | popover ベース。**top layer の重なり順は「開いた順」固定で z-index 無効**のため、dialog が開いた際にトーストが下に潜る。さらに **`showModal()` は仕様上、開いている popover を全て強制クローズする**ため、「開いていたら hide→show」では再昇格できない。`useToast` は**自身のモデル(生きている toast があるか)を条件に、top layer の同居者が開いた toggle を検知して再 show** する。利用者には見せない (2026-07-15 改訂) |
 | Disclosure / Accordion | 薄い | `<details>` ベース + アニメーション CSS |
 | Tabs | 中 | roving tabindex、キーボードナビ(ネイティブ代替なし) |
-| Menu / Listbox / Combobox | **厚い**(本プロジェクトの JS 工数の本丸) | タイプアヘッド、`aria-activedescendant` 管理、roving tabindex、選択モデル。表層(浮遊部)は popover に委譲しつつ、対話モデルは自前実装 |
+| Menu / Listbox / Combobox | **厚い**(本プロジェクトの JS 工数の本丸) | タイプアヘッド、focus 管理、選択モデル。Menu は `aria-activedescendant` 方式を採用し、roving tabindex と混在させない。表層(浮遊部)は popover に委譲しつつ、対話モデルだけを自前実装 |
 | Select | 中〜厚 | customizable select(`<selectedcontent>` 等)の標準化動向を監視し、委譲可能になり次第委譲 |
 
 a11y 実装工数の 7 割はここ(Menu/Listbox/Combobox 系)に集中する想定。「ネイティブで全部薄くなる」という誤解に基づく設計をしないこと。
@@ -205,6 +205,8 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 1 — 薄い側の横展開
 
+**Status: Complete (2026-07-16)**
+
 **検証仮説**: Phase 0 の型(属性注入 + native state)が他の薄いコンポーネントにそのまま複製できる。
 
 - `useDialog`(`<dialog>` / `showModal` 委譲、controlled 両対応、`closedby` の feature detect)
@@ -215,9 +217,12 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 2 — リスト系 composable の DX 検証(形態の最後の未検証点)
 
+**Status: Complete (2026-07-17)**
+
 **検証仮説**: `v-for` で回る項目群への属性配布(`itemProps(item)` 型 API)が、囲いタグ方式より苦痛にならない。
 
-- `useMenu` を対象とする(roving tabindex、タイプアヘッド、`aria-activedescendant`)。表層の浮遊は Phase 0 の popover に委譲し、対話モデルだけを新規実装する
+- `useMenu` を対象とする(typeahead、disabled skip、keyboard selection、focus restoration)。表層の浮遊は Phase 0 の popover に委譲し、対話モデルだけを新規実装する
+- focus 戦略は WAI-ARIA APG が示す代替案のうち `aria-activedescendant` を採用した。DOM focus は `role="menu"` container に置き、items は `tabindex="-1"` とする。roving tabindex とは混在させない
 - composable 形式で thick component が成立すること自体は React Aria hooks が存在証明済み。**ここで検証するのは可否ではなく Vue テンプレートでの書き味**である
 - 完了条件: Menu blueprint のテンプレートを Reka UI の同等品と並べ、行数・可読性・linter 適合で劣後しないこと。劣後する場合はディレクティブ糖衣(`v-menu-item`)で吸収できるかを判定してから次へ進む
 
@@ -237,6 +242,9 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 ---
 
 ## 改訂履歴
+
+- **2026-07-16** Phase 1 完了。Dialog の non-modal open は標準 command が存在しないため `show()` fallback とし、native `cancel` は prevent 可能なまま保持。Tooltip は trigger hover / tooltip hover / focus の union とした。
+- **2026-07-17** Phase 2 完了。`useMenu<Item>()` の `itemProps(item)` と ActionMenu blueprint で Vue template DX を検証。Menu の focus 戦略を `aria-activedescendant` に固定し、roving tabindex との混在を禁止した。根拠・比較・invariant は `docs/phase2-menu.md` に記録。
 
 - **2026-07-15** リポジトリ `CHARTER.md` を正本化。§4.4 の controlled mode 実装方式を「beforetoggle preventDefault」から「双方向ミラー同期(sync flush + 冪等適用)」へ改訂 — Popover API 仕様で hide 方向の beforetoggle が cancel 不能なため。目的(4.4 の3要件)は不変。
 - **2026-07-15** §7 Toast 再昇格の機構を訂正: `showModal()` が open popover を全強制クローズする(HTML 仕様)ため、「開いていたら hide→show」は成立しない。再昇格の条件は region の DOM 状態ではなく useToast 自身のモデル(生きている toast の有無)とし、top layer 同居者の open toggle で再 show する方式に改めた。実装バグとして実際に検出・修正済み。

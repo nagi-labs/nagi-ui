@@ -16,6 +16,9 @@ jobs:
           cache: true
       - run: vp install --frozen-lockfile
       - run: vp run test
+      - run: vp run typecheck
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:browser
       - run: vp install --frozen-lockfile
         working-directory: demos/nuxt
       - run: vp run build

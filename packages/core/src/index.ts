@@ -43,3 +43,11 @@ export {
   type UseDisclosureOptions,
   type UseDisclosureReturn,
 } from "./disclosure.ts"
+export {
+  useMenu,
+  type MenuItemProps,
+  type MenuProps,
+  type MenuTriggerProps,
+  type UseMenuOptions,
+  type UseMenuReturn,
+} from "./menu.ts"

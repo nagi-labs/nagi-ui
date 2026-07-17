@@ -17,14 +17,19 @@ non-obvious startup/run caveats only.
   `vp node --version`.
 - **Dependencies:** `vp install --frozen-lockfile`. The underlying pnpm version
   is pinned to `11.1.3` by the `packageManager` field and resolved by `vp`.
-- **Tests:** `vp run test` (plain `node --test`). `tests/ssr.test.ts` spins up
+- **Tests:** `vp run test` (plain `node --test`) and `vp run typecheck`
+  (TypeScript 7). `tests/ssr.test.ts` spins up
   an in-process Vite server (no external service) and writes a zero-JS
   artifact to `/tmp/nagi-zero-js-demo.html`.
+- **Browser tests:** `vp run test:browser` starts the playground through the
+  Playwright `webServer` config and runs Chromium keyboard/focus coverage.
+  Install the browser once with `vp exec playwright install chromium`.
 - **Playground (interactive UI):** there is no `dev` script. Start the Vite
   dev server with `vp exec vite playground` (add `--host 127.0.0.1 --port
   5173` to pin the address). `PopoverLab.vue` demos `usePopover`, the dropdown
   blueprint, and toast/dialog stacking; `?autotest=stacking` paints a
-  PASS/FAIL banner for the top-layer re-promotion self-test.
+  PASS/FAIL banner for the top-layer re-promotion self-test. Phase 2 Menu is
+  available at `/phase2.html`.
 - **Cross-repo lint.** Blueprints must pass `nagi-css check` from the sibling
   `../nagi-css` repo. That check needs an external config (kept in the
   gitignored `.sandbox/`, not committed); it is optional for running/testing
