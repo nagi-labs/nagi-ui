@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@nagi-labs/nagi-ui": "workspace:*",
     "@playwright/test": "1.61.1",
     "@vitejs/plugin-vue": "^6.0.8",

@@ -132,7 +132,7 @@ const visibleToppings = computed(() =>
         grid-template-columns: 9rem 1fr;
 
         > .term {
-          color: #61777e;
+          color: #50676f;
         }
 
         > .definition {

@@ -219,7 +219,7 @@ const sortModifiedOptions = {
       }
 
       > .icon {
-        color: #61777e;
+        color: #50676f;
         line-height: 1;
       }
     }
@@ -258,7 +258,7 @@ const sortModifiedOptions = {
     > .item {
       &.-category {
         padding: 0.35rem 0.6rem 0.25rem;
-        color: #667d84;
+        color: #50676f;
         font-size: 0.72rem;
         font-weight: 750;
         letter-spacing: 0.05em;
@@ -327,7 +327,7 @@ const sortModifiedOptions = {
 
               > .text {
                 &.-shortcut {
-                  color: #788b91;
+                  color: #526970;
                   font-size: 0.75rem;
                 }
               }
@@ -369,7 +369,7 @@ const sortModifiedOptions = {
         > .icon {
           &.-shortcut,
           &.-submenu {
-            color: #788b91;
+            color: #526970;
             font-size: 0.75rem;
           }
         }
@@ -434,7 +434,7 @@ const sortModifiedOptions = {
 
             > .text {
               &.-shortcut {
-                color: #788b91;
+                color: #526970;
                 font-size: 0.75rem;
               }
             }

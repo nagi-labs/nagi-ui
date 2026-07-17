@@ -96,7 +96,7 @@ const selected = ref<string | null>("vue");
         grid-template-columns: 7rem 1fr;
 
         > .term {
-          color: #61777e;
+          color: #50676f;
         }
 
         > .definition {

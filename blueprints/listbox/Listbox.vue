@@ -58,7 +58,7 @@ const listbox = useListbox<ListboxOption>({
 
   > .text {
     margin-block: 0 0.35rem;
-    color: #667d84;
+    color: #50676f;
     font-size: 0.72rem;
     font-weight: 750;
     letter-spacing: 0.05em;

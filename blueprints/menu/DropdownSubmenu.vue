@@ -81,7 +81,7 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
       text-align: center;
 
       &.-submenu {
-        color: #788b91;
+        color: #526970;
         font-size: 0.75rem;
       }
     }

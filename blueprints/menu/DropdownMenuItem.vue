@@ -130,7 +130,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     > .text {
       &.-category {
         padding: 0.35rem 0.6rem 0.25rem;
-        color: #667d84;
+        color: #50676f;
         font-size: 0.72rem;
         font-weight: 750;
         letter-spacing: 0.05em;
@@ -242,7 +242,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 
     > .text {
       &.-shortcut {
-        color: #788b91;
+        color: #526970;
         font-size: 0.75rem;
       }
     }

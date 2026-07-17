@@ -223,7 +223,7 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
         grid-template-columns: 9rem 1fr;
 
         > .term {
-          color: #61777e;
+          color: #50676f;
         }
 
         > .definition {
