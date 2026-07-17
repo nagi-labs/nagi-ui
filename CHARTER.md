@@ -226,12 +226,42 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 - composable 形式で thick component が成立すること自体は React Aria hooks が存在証明済み。**ここで検証するのは可否ではなく Vue テンプレートでの書き味**である
 - 完了条件: Menu blueprint のテンプレートを Reka UI の同等品と並べ、行数・可読性・linter 適合で劣後しないこと。劣後する場合はディレクティブ糖衣(`v-menu-item`)で吸収できるかを判定してから次へ進む
 
+### Phase 2.5 — Dropdown の完成形検証
+
+**Status: Next**
+
+**検証仮説**: action item だけで成立した Phase 2 の明示的な DOM + 属性注入形式が、Dropdown Menu の全機能を載せても compound components より理解しやすいまま保てる。
+
+- 表示専用 parts: group、label、separator、shortcut。専用 component を増やさず、semantic HTML と Blueprint の anatomy として表現する
+- stateful items: checkbox item、radio group / radio item、indeterminate state、選択後に menu を閉じるか維持するかの policy
+- submenu: 独立した `useMenu` の入れ子ではなく、open path、active item、focus owner、close depth、RTL、pointer grace を共有する menu tree model を設計する
+- nested Popover と Anchor Positioning を利用し、overlay の top-layer / collision 処理は可能な限り platform へ委譲する
+- keyboard: Enter / Space、ArrowRight / ArrowLeft、Escape、Tab、typeahead を階層単位で処理し、子 menu の event が親 menu で二重処理されないこと
+- Blueprint は「完成した Dropdown Menu SFC」と「それを利用する側の SFC」の両方を提示する。最終 DOM、state selector、CSS ownership が一つの SFC から追えることを優先する
+- 完了条件: Reka UI / shadcn-vue の Dropdown Menu suite と同じ機能境界で比較し、submenu・checkbox・radio を含めても Nagi の SFC が局所変更しやすく、browser / keyboard / focus tests が通ること
+
+この Phase は機能 parity 自体を目的にしない。**Dropdown を最後まで複雑化した時にも「behavior は core に隠し、structure と integration は見せる」という設計が維持できるか**を判定する最終形の検証である。
+
 ### Phase 3 — 厚い側の本丸
 
 **検証仮説**: Phase 2 の項目配布パターンが選択モデル・入力連動(filtering)と組み合わさっても崩れない。
 
 - `useListbox`(単一/複数選択)→ `useCombobox`(入力 + filtering + activedescendant)の順
 - Select は customizable select(`<selectedcontent>`)の標準化動向を見て、委譲可能なら Phase 3 末尾、不可なら Combobox の派生として実装
+
+### Phase 3.5 — Verified integration
+
+**Status: Deferred — interaction API が安定した後、Phase 4 の製品化前に実施**
+
+出荷済み core の挙動テストとは別に、利用者や coding agent が Blueprint を変更した後の integration contract を機械的に守る。
+
+- `mergeNagiProps()` — event / class / style と token-list ARIA 属性を結合し、`id`、`role`、`popovertarget`、`aria-haspopup` 等の意味的競合を検出する
+- `eslint-plugin-nagi-ui` — `triggerProps` / `menuProps` / `itemProps(item)` の適用先、必要な native 属性、親子関係、上書き、`v-for` key を Vue SFC の script + template AST から検証する
+- dev-only runtime assertions — 動的 ID reference、active descendant、重複 item key、実 DOM 上の trigger / popup 関係を警告する
+- rendered accessibility checks — Blueprint を開いた各状態で axe-core を実行し、Playwright の keyboard / focus contract tests と併用する
+- Nagi CSS は owned DOM / selector contract、Nagi UI lint は behavior wiring を担当し、責務を混在させない
+
+この Phase を後段に置く理由は、Menu / Listbox / Combobox の props contract が固まる前に lint 規則を固定して二重改修することを避けるためである。
 
 ### Phase 4 — 製品化
 
@@ -243,6 +273,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-17** Phase 2.5 に Dropdown Menu の完成形検証を追加。action menu の成功だけで結論を出さず、checkbox / radio / submenu と menu tree coordination まで載せた SFC の可読性を検証してから Listbox へ進む。props contract 安定後に `mergeNagiProps`、Nagi UI 専用 lint、dev assertions を実装する Phase 3.5 も追加。
 - **2026-07-16** Phase 1 完了。Dialog の non-modal open は標準 command が存在しないため `show()` fallback とし、native `cancel` は prevent 可能なまま保持。Tooltip は trigger hover / tooltip hover / focus の union とした。
 - **2026-07-17** Phase 2 完了。`useMenu<Item>()` の `itemProps(item)` と ActionMenu blueprint で Vue template DX を検証。Menu の focus 戦略を `aria-activedescendant` に固定し、roving tabindex との混在を禁止した。根拠・比較・invariant は `docs/phase2-menu.md` に記録。
 

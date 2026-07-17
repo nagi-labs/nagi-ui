@@ -9,7 +9,8 @@ typed behavior to repeated Vue template items through `itemProps(item)` without
 introducing compound component wrappers.
 
 This phase covers an action menu only. Checkable items, radio items, groups,
-submenus, listbox selection, and combobox filtering remain later work.
+and submenus are the Phase 2.5 Dropdown completion scope. Listbox selection
+and combobox filtering remain Phase 3 work.
 
 ## Behavior contract
 
