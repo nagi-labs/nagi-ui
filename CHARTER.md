@@ -174,7 +174,7 @@ open 状態の所有者はブラウザ(UA)だが、アプリ側 store を単一�
 | Disclosure / Accordion | 薄い | `<details>` ベース + アニメーション CSS |
 | Tabs | 中 | roving tabindex、キーボードナビ(ネイティブ代替なし) |
 | Menu / Listbox / Combobox | **厚い**(本プロジェクトの JS 工数の本丸) | タイプアヘッド、focus 管理、選択モデル。Menu は `aria-activedescendant` 方式を採用し、roving tabindex と混在させない。表層(浮遊部)は popover に委譲しつつ、対話モデルだけを自前実装 |
-| Select | 中〜厚 | customizable select(`<selectedcontent>` 等)の標準化動向を監視し、委譲可能になり次第委譲 |
+| Select | **薄い**(native stable path) | 通常の `<select>` / `<option>` に behavior・form・validation・a11y を委譲する。`appearance: base-select` は progressive enhancement としてのみ使用可。`<selectedcontent>` は Vue と3エンジンの出荷条件を満たすまで stable Blueprint に含めない |
 
 a11y 実装工数の 7 割はここ(Menu/Listbox/Combobox 系)に集中する想定。「ネイティブで全部薄くなる」という誤解に基づく設計をしないこと。
 
@@ -303,10 +303,11 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 **検証仮説**: Phase 2 の項目配布パターンが選択モデル・入力連動(filtering)と組み合わさっても崩れない。
 
-**Status: Listbox + Combobox complete (2026-07-17)** — `useListbox` の no-prune selection を土台に、`useCombobox` では入力値・確定選択・候補内 active option を分離。DOM focus を input に保った `aria-activedescendant`、filtering、disabled skip、Enter/click commit、lossless Escape、native Popover + Anchor Positioning を unit / type / SSR / `nagi-css check` / browser で検証した。詳細は `docs/phase3-listbox.md` と `docs/phase3-combobox.md`。Select の採否判断は残る。
+**Status: Complete (2026-07-18)** — `useListbox` の no-prune selection を土台に、`useCombobox` では入力値・確定選択・候補内 active option を分離。DOM focus を input に保った `aria-activedescendant`、filtering、disabled skip、Enter/click commit、lossless Escape、native Popover + Anchor Positioning を unit / type / SSR / `nagi-css check` / browser で検証した。Select は native `<select>` への委譲を stable path とし、自前の `useSelect` や Combobox 派生 fallback は作らないと決定した。詳細は `docs/phase3-listbox.md`、`docs/phase3-combobox.md`、`docs/phase3-select-decision.md`。
 
 - `useListbox`(単一/複数選択)→ `useCombobox`(入力 + filtering + activedescendant)の順
-- Select は customizable select(`<selectedcontent>`)の標準化動向を見て、委譲可能なら Phase 3 末尾、不可なら Combobox の派生として実装
+- Select の stable surface は通常の `<select>` / `<option>`。`appearance: base-select` は非対応環境が native rendering に戻る progressive enhancement とし、rich option DOM や `<selectedcontent>` を前提にしない
+- `<selectedcontent>` は HTML Standard に存在しても、Vue compiler の native tag / nesting 対応、Blink・WebKit・Gecko の stable 実装、SSR/hydration と keyboard/form の相互運用検証が揃うまで採用保留。見た目の同一性のために Combobox から Select を再実装しない
 
 ### Phase 3.5 — Verified integration
 
@@ -332,6 +333,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-18** Phase 3 完了。Select は native `<select>` を stable path とし、`appearance: base-select` は progressive enhancement、`<selectedcontent>` は採用保留と決定。customizable Select 全体と `<selectedcontent>` 単体の標準化強度を分離し、Vue compiler 対応・3エンジン stable 実装・相互運用検証を昇格条件に固定した。Combobox 派生の自前 Select fallback は作らない。
 - **2026-07-17** Phase 3 の Listbox + Combobox slice 完了。Combobox は input value / committed selection / provisional active option を分離し、filter で確定選択を prune しない。APG に従い popup option の候補フォーカスは `aria-selected` で表すため、§6 の `data-active` 例を Menu / Listbox に訂正した。
 - **2026-07-17** §3.5「Blueprint の形態選択」を追加(owned DOM / props / items schema / slot の優先順)。compound 禁止の範囲を「ライブラリ出荷の behavior 分散タグ族」に明文化し、copy-in SFC の slot を宣言済み境界として正当化(§9 も更新)。「User owns the DOM」を「所有するコードで DOM が追える」と解釈固定。menu 系の items schema 化を Phase 2.6 として追加(blueprint-local、core 非昇格、Phase 3 と並行可)。styling-only blueprint は phase 進行と独立に追加可とした。
 - **2026-07-17** Phase 2.5 完了。checkbox / radio / mixed state、任意階層の `useSubmenu` menu tree、LTR/RTL keyboard、pointer grace、nested Popover + Anchor Positioning を実装。完全な Dropdown Blueprint と利用側 SFC が Nagi CSS、unit/type/browser tests を通り、明示的 DOM + 属性注入形式を Phase 3 へ継続すると判定した。
