@@ -27,8 +27,7 @@ learning lands.
 
 ## Status
 
-Phases 0–2 complete — see CHARTER §10. Phase 2.5 completes the Dropdown Menu
-suite (checkbox, radio, and submenu) before Phase 3 begins with `useListbox`.
+Phases 0–2.5 complete — see CHARTER §10. Phase 3 begins with `useListbox`.
 
 ### Phase 0 — vertical slice
 
@@ -70,15 +69,25 @@ suite (checkbox, radio, and submenu) before Phase 3 begins with `useListbox`.
 - [x] Unit/type/browser coverage and documented Reka UI DX comparison in
   [`docs/phase2-menu.md`](docs/phase2-menu.md)
 
-### Next — Phase 2.5 Dropdown completion
+### Phase 2.5 — complete Dropdown
 
-- [ ] Checkable and radio items with explicit close policies
-- [ ] Shared menu tree model for submenu focus, keyboard, pointer, RTL, and
+- [x] Checkable and radio items with explicit close policies
+- [x] Shared menu tree model for submenu focus, keyboard, pointer, RTL, and
   close-depth coordination
-- [ ] Full Dropdown Blueprint plus consuming SFC, compared at the same feature
+- [x] Full Dropdown Blueprint plus consuming SFC, compared at the same feature
   boundary as Reka UI / shadcn-vue
-- [ ] Browser coverage for nested selection, Escape, ArrowLeft/ArrowRight,
+- [x] Browser coverage for nested selection, Escape, ArrowLeft/ArrowRight,
   pointer grace, light dismiss, and RTL
+- [x] Design result and invariants documented in
+  [`docs/phase2.5-dropdown.md`](docs/phase2.5-dropdown.md)
+
+The complete playground is available at `/dropdown.html` after running
+`vp exec vite playground`.
+
+### Next — Phase 3
+
+- [ ] `useListbox` single and multiple selection
+- [ ] `useCombobox` input, filtering, and active-descendant coordination
 
 Verified integration (`mergeNagiProps`, Nagi-aware SFC lint, and dev runtime
 assertions) is intentionally deferred until the Menu/Listbox/Combobox props

@@ -17,6 +17,8 @@ export interface AnchorOptions {
   offset?: number
   /** Test hook: force the CSS Anchor Positioning support decision. */
   supportsAnchor?: boolean
+  /** Reading direction used to resolve logical inline placement on both paths. */
+  direction?: "ltr" | "rtl"
 }
 
 export interface AnchorPair {
@@ -54,6 +56,18 @@ const FLOATING_PLACEMENTS: Record<AnchorArea, string> = {
   "inline-end": "right",
 }
 
+function floatingPlacement(area: AnchorArea, direction: "ltr" | "rtl"): string {
+  if (area === "inline-start") return direction === "rtl" ? "right" : "left"
+  if (area === "inline-end") return direction === "rtl" ? "left" : "right"
+  return FLOATING_PLACEMENTS[area]
+}
+
+function nativePositionArea(area: AnchorArea, direction: "ltr" | "rtl"): AnchorArea {
+  if (area === "inline-start") return direction === "rtl" ? "right" : "left"
+  if (area === "inline-end") return direction === "rtl" ? "left" : "right"
+  return area
+}
+
 /**
  * Two-stage positioning per CHARTER §5: native CSS Anchor Positioning where
  * supported, Floating UI otherwise. Floating UI is loaded lazily so the
@@ -63,6 +77,7 @@ const FLOATING_PLACEMENTS: Record<AnchorArea, string> = {
 export function createAnchorPair(id: string, options: AnchorOptions = {}): AnchorPair {
   const area = options.area ?? "block-end"
   const offset = options.offset ?? 4
+  const direction = options.direction ?? "ltr"
   // SSR is optimistically native: unsupported browsers ignore the unknown
   // properties harmlessly, supporting ones get anchored placement with zero
   // JS, and the client run re-detects during hydration.
@@ -86,7 +101,10 @@ export function createAnchorPair(id: string, options: AnchorOptions = {}): Ancho
       anchorStyle: { "anchor-name": anchorName } as CSSProperties,
       positionedStyle: {
         "position-anchor": anchorName,
-        "position-area": area,
+        // Chromium currently resolves logical position-area against the
+        // top-layer containing block rather than this popup's inherited dir.
+        // Resolve inline areas explicitly so native and Floating UI agree.
+        "position-area": nativePositionArea(area, direction),
         "position-try-fallbacks": "flip-block, flip-inline",
         [margins[area] as string]: `${offset}px`,
       } as CSSProperties,
@@ -106,7 +124,7 @@ export function createAnchorPair(id: string, options: AnchorOptions = {}): Ancho
         stop = autoUpdate(trigger, popover, () => {
           computePosition(trigger, popover, {
             strategy: "fixed",
-            placement: FLOATING_PLACEMENTS[area] as never,
+            placement: floatingPlacement(area, direction) as never,
             middleware: [offsetFn(offset), flip(), shift({ padding: 8 })],
           }).then(({ x, y }) => {
             popover.style.position = "fixed"

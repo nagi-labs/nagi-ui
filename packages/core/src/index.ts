@@ -45,8 +45,17 @@ export {
 } from "./disclosure.ts"
 export {
   useMenu,
+  useSubmenu,
+  type MenuActionItemOptions,
+  type MenuCheckboxItemOptions,
+  type MenuCheckboxItemProps,
+  type MenuCheckedState,
+  type MenuDirection,
   type MenuItemProps,
   type MenuProps,
+  type MenuRadioItemOptions,
+  type MenuRadioItemProps,
+  type MenuSubmenuTriggerProps,
   type MenuTriggerProps,
   type UseMenuOptions,
   type UseMenuReturn,

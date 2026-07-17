@@ -228,7 +228,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 2.5 — Dropdown の完成形検証
 
-**Status: Next**
+**Status: Complete (2026-07-17)**
 
 **検証仮説**: action item だけで成立した Phase 2 の明示的な DOM + 属性注入形式が、Dropdown Menu の全機能を載せても compound components より理解しやすいまま保てる。
 
@@ -241,6 +241,8 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 - 完了条件: Reka UI / shadcn-vue の Dropdown Menu suite と同じ機能境界で比較し、submenu・checkbox・radio を含めても Nagi の SFC が局所変更しやすく、browser / keyboard / focus tests が通ること
 
 この Phase は機能 parity 自体を目的にしない。**Dropdown を最後まで複雑化した時にも「behavior は core に隠し、structure と integration は見せる」という設計が維持できるか**を判定する最終形の検証である。
+
+**判定: 維持できる。** `useSubmenu(parent, triggerItem, options)` が menu tree の open path / focus owner / close depth / RTL / pointer grace を core に閉じ込め、SFC は native な group / label / separator / shortcut と各 item への props 適用をそのまま表示する。action / checkbox / radio の close policy も props 単位で明示できる。完成形と利用側 SFC、比較、invariant、検証結果は `docs/phase2.5-dropdown.md` に記録した。
 
 ### Phase 3 — 厚い側の本丸
 
@@ -273,6 +275,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-17** Phase 2.5 完了。checkbox / radio / mixed state、任意階層の `useSubmenu` menu tree、LTR/RTL keyboard、pointer grace、nested Popover + Anchor Positioning を実装。完全な Dropdown Blueprint と利用側 SFC が Nagi CSS、unit/type/browser tests を通り、明示的 DOM + 属性注入形式を Phase 3 へ継続すると判定した。
 - **2026-07-17** Phase 2.5 に Dropdown Menu の完成形検証を追加。action menu の成功だけで結論を出さず、checkbox / radio / submenu と menu tree coordination まで載せた SFC の可読性を検証してから Listbox へ進む。props contract 安定後に `mergeNagiProps`、Nagi UI 専用 lint、dev assertions を実装する Phase 3.5 も追加。
 - **2026-07-16** Phase 1 完了。Dialog の non-modal open は標準 command が存在しないため `show()` fallback とし、native `cancel` は prevent 可能なまま保持。Tooltip は trigger hover / tooltip hover / focus の union とした。
 - **2026-07-17** Phase 2 完了。`useMenu<Item>()` の `itemProps(item)` と ActionMenu blueprint で Vue template DX を検証。Menu の focus 戦略を `aria-activedescendant` に固定し、roving tabindex との混在を禁止した。根拠・比較・invariant は `docs/phase2-menu.md` に記録。

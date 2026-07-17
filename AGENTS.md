@@ -29,7 +29,8 @@ non-obvious startup/run caveats only.
   5173` to pin the address). `PopoverLab.vue` demos `usePopover`, the dropdown
   blueprint, and toast/dialog stacking; `?autotest=stacking` paints a
   PASS/FAIL banner for the top-layer re-promotion self-test. Phase 2 Menu is
-  available at `/phase2.html`.
+  available at `/phase2.html`; the complete Phase 2.5 Dropdown is available at
+  `/dropdown.html`.
 - **Cross-repo lint.** Blueprints must pass `nagi-css check` from the sibling
   `../nagi-css` repo. That check needs an external config (kept in the
   gitignored `.sandbox/`, not committed); it is optional for running/testing
