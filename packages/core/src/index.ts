@@ -77,3 +77,8 @@ export {
   type UseComboboxOptions,
   type UseComboboxReturn,
 } from "./combobox.ts"
+export {
+  mergeNagiProps,
+  NagiPropConflictError,
+  type MergedNagiProps,
+} from "./merge-props.ts"
