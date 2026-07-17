@@ -11,5 +11,9 @@
     "target": "ES2024",
     "verbatimModuleSyntax": true
   },
-  "include": ["packages/core/src/**/*.ts", "tests/types/**/*.ts"]
+  "include": [
+    "packages/core/src/**/*.ts",
+    "packages/eslint-plugin-nagi-ui/src/**/*.ts",
+    "tests/types/**/*.ts"
+  ]
 }

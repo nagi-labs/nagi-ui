@@ -18,7 +18,7 @@ function pick(key: string) {
 
 <template>
   <div class="dropdown-menu">
-    <button class="button -trigger" v-bind="triggerProps">{{ label }}</button>
+    <button class="button -trigger" type="button" v-bind="triggerProps">{{ label }}</button>
     <div class="zone" popover v-bind="popoverProps">
       <ul class="list">
         <li v-for="item in items" :key="item.key" class="item">

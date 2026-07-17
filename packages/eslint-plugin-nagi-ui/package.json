@@ -1,0 +1,13 @@
+{
+  "name": "eslint-plugin-nagi-ui",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "files": [
+    "src"
+  ],
+  "peerDependencies": {
+    "eslint": ">=9.0.0",
+    "vue-eslint-parser": ">=10.0.0"
+  }
+}
