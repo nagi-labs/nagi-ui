@@ -79,13 +79,15 @@ ownershipされやすい点で危険になる。
 - Nagi CSS lintとNagi UI behavior lint
 - keyboard/focus/form/a11y integration test recipe
 
-概念例:
+metadata形式は Phase 4 slice 2 の実装検証を経て次の形へ**固定済み**
+(詳細は `docs/phase4-ownership-cli.md`):
 
 ```html
-<!-- @nagi-source dropdown-menu@0.4.0 -->
+<!-- @nagi-source dropdown-menu/DropdownMenu.vue@0.4.0 -->
 ```
 
-metadata形式と`own` / `diff` CLIは、実装検証を経ずに上記コメント形式へ固定しない。
+`nagi-ui own` がコピー時に刻印し、`nagi-ui diff` が clean / modified / drifted /
+unknown-source を判定して CI gate に使える exit code を返す。
 
 ## 狙いが外れるパターン
 

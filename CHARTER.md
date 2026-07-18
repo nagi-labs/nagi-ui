@@ -351,8 +351,8 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 スライス順:
 
-1. **Package 実体化** — blueprints を単一ソースのまま raw SFC として export し、component import と `theme.css` を実働させる。theme token は Nagi CSS CONTRACT の non-owned customization ladder(props → Pass Through → CSS custom properties → `::part()`)に従い、**現行 blueprint で実際に反復している値だけ**の最小語彙から始める。設計正本は `docs/phase4-package-design.md`
-2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定**(§3 保守契約。形式は実装検証を経て確定する)
+1. **Package 実体化** — **完了(2026-07-18)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export、semantic token 17 個(fallback 必須 + parity test)と `theme.css` を実装。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
+2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定** — **完了(2026-07-18)**。`nagi-ui own/diff/list` を package 同梱 bin として実装し、metadata を `@nagi-source <component>/<file>@<version>`(per-file 刻印)に固定。`diff` は clean / modified / drifted / unknown-source を判定し CI gate に使える。詳細は `docs/phase4-ownership-cli.md`
 3. **早期検証実験** — `docs/package-ownership-model.md` の Button / Dropdown / Combobox 3 境界を人間 + coding agent で計測し、モデルの成否を判定する
 4. **blueprints の拡充**(styling-only 含む全コンポーネントの Nagi CSS 準拠 SFC)、Nagi CSS linter プリセット同梱
 5. §8 の制約を「Nagi UI が向かないケース」としてドキュメント化(dismiss 細粒度・ジェスチャーシート・Motion 級アニメが要件なら他ライブラリ併用を案内)、テストレシピ(Vitest browser mode / Playwright)同梱
@@ -361,6 +361,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-18** Phase 4 slice 1–2 完了。package 実体化(raw SFC 配布、`/components` + `theme.css` exports、semantic token 17 個 + parity test)と ownership CLI(`nagi-ui own/diff/list`)を実装し、`@nagi-source <component>/<file>@<version>` を §3 保守契約の確定 metadata 形式とした。
 - **2026-07-18** Phase 4 を package-first の宿題に合わせて再定義。スライス順(package 実体化 → own/diff CLI → 早期検証実験 → blueprint 拡充 → 向かないケース文書化)と検証仮説を明記し、slice 1 の設計正本を `docs/phase4-package-design.md` に置いた。
 - **2026-07-18** package-first 改訂(§3)の残存整理。§3.5 等の copy-in 前提の文言を own-on-demand 用語へ更新し、items schema が package 利用中は component の最小 props API(component version に紐づく)として公開される帰結と、その下での「DSL を育てない」規律の強化を明文化。混在可能性(§8.2)の根拠を copy-in 配布から「囲いタグ・provider・グローバル状態の不在」へ訂正。package 利用中の consumer styling 境界は `docs/package-ownership-model.md` に追記。
 - **2026-07-18** Phase 3.5 完了。最終 DOM の IDREF / active descendant / native popover 関係を検査する `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` と、開いた全主要 Blueprint 状態の axe-core 検査を追加。axe が発見した Dropdown / Listbox / Combobox の secondary text contrast を rule 除外せず修正し、browser 28/28 を確認した。

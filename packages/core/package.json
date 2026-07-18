@@ -6,11 +6,16 @@
     ".": "./src/index.ts",
     "./components": "./components.ts",
     "./theme.css": "./theme/theme.css",
-    "./blueprints/*": "./blueprints/*"
+    "./blueprints/*": "./blueprints/*",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "nagi-ui": "./cli/nagi-ui.mjs"
   },
   "files": [
     "src",
     "blueprints",
+    "cli",
     "components.ts",
     "theme"
   ],

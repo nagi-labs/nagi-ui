@@ -33,6 +33,11 @@ learning lands.
 
 Phases 0–3.5 complete — see CHARTER §10. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
+Phase 4 is in progress: slice 1 (package materialization: `/components`,
+`theme.css`, 17 semantic tokens — [`docs/phase4-package-design.md`](docs/phase4-package-design.md))
+and slice 2 (`nagi-ui own` / `diff` with the fixed `@nagi-source` metadata —
+[`docs/phase4-ownership-cli.md`](docs/phase4-ownership-cli.md)) have landed;
+the validation experiments come next.
 
 ### Phase 0 — vertical slice
 
