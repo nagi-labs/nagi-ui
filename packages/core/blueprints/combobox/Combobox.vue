@@ -64,12 +64,12 @@ const { visibleItems } = combobox;
 .combobox {
   display: inline-grid;
   min-inline-size: 16rem;
-  color: #17323b;
+  color: var(--nagi-color-text, #17323b);
 
   > .label {
     margin-block-end: 0.35rem;
-    color: #50676f;
-    font-size: 0.72rem;
+    color: var(--nagi-color-text-muted, #50676f);
+    font-size: var(--nagi-font-size-label, 0.72rem);
     font-weight: 750;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -79,21 +79,21 @@ const { visibleItems } = combobox;
     inline-size: 100%;
     box-sizing: border-box;
     padding: 0.55rem 0.7rem;
-    border: 1px solid #b9cbd1;
-    border-radius: 0.55rem;
+    border: 1px solid var(--nagi-color-border, #b9cbd1);
+    border-radius: var(--nagi-radius-control, 0.55rem);
     outline: none;
-    background: #fff;
+    background: var(--nagi-color-surface, #fff);
     color: inherit;
     font: inherit;
 
     &:focus-visible,
     &[aria-expanded="true"] {
-      border-color: #75adba;
-      box-shadow: 0 0 0 2px rgb(117 173 186 / 0.35);
+      border-color: var(--nagi-color-focus-ring, #75adba);
+      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
     }
 
     &::placeholder {
-      color: #91a1a6;
+      color: var(--nagi-color-text-disabled, #91a1a6);
     }
   }
 
@@ -103,12 +103,12 @@ const { visibleItems } = combobox;
     margin: 0;
     padding: 0.4rem;
     overflow-y: auto;
-    border: 1px solid #c8d8dd;
-    border-radius: 0.65rem;
+    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
+    border-radius: var(--nagi-radius-overlay, 0.65rem);
     outline: none;
-    background: #fff;
-    box-shadow: 0 14px 36px rgb(22 48 60 / 0.2);
-    color: #17323b;
+    background: var(--nagi-color-surface, #fff);
+    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
+    color: var(--nagi-color-text, #17323b);
     list-style: none;
     opacity: 0;
     transform: translateY(-0.25rem) scale(0.99);
@@ -130,19 +130,19 @@ const { visibleItems } = combobox;
     }
 
     > .item {
-      min-block-size: 2rem;
+      min-block-size: var(--nagi-size-control, 2rem);
       padding: 0.4rem 0.6rem;
-      border-radius: 0.4rem;
+      border-radius: var(--nagi-radius-item, 0.4rem);
       cursor: pointer;
 
       &[aria-selected="true"] {
-        background: #e5f1f4;
-        outline: 2px solid #75adba;
+        background: var(--nagi-color-surface-active, #e5f1f4);
+        outline: 2px solid var(--nagi-color-focus-ring, #75adba);
         outline-offset: -2px;
       }
 
       &[aria-disabled="true"] {
-        color: #91a1a6;
+        color: var(--nagi-color-text-disabled, #91a1a6);
         cursor: not-allowed;
       }
     }

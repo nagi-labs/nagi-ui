@@ -31,13 +31,13 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
 
   try {
     const blueprint = (
-      await server.ssrLoadModule("/@fs" + path.join(repo, "blueprints/dropdown/DropdownMenu.vue"))
+      await server.ssrLoadModule("/@fs" + path.join(repo, "packages/core/blueprints/dropdown/DropdownMenu.vue"))
     ).default
     const lab = (
       await server.ssrLoadModule("/@fs" + path.join(repo, "playground/src/PopoverLab.vue"))
     ).default
     const combobox = (
-      await server.ssrLoadModule("/@fs" + path.join(repo, "blueprints/combobox/Combobox.vue"))
+      await server.ssrLoadModule("/@fs" + path.join(repo, "packages/core/blueprints/combobox/Combobox.vue"))
     ).default
 
     const items = [

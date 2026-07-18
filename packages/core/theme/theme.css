@@ -1,0 +1,28 @@
+/**
+ * Nagi UI default theme — semantic tokens (CHARTER §3,
+ * docs/phase4-package-design.md).
+ *
+ * Importing this file is optional: every shipped Blueprint carries the same
+ * values as var() fallbacks, so components render identically without it.
+ * Token names are public API, versioned with the components; values here must
+ * stay equal to the blueprint fallbacks (enforced by tests/theme-parity.test.ts).
+ */
+:root {
+  --nagi-color-accent: #16768b;
+  --nagi-color-border: #b9cbd1;
+  --nagi-color-border-muted: #c8d8dd;
+  --nagi-color-focus-ring: #75adba;
+  --nagi-color-surface: #fff;
+  --nagi-color-surface-active: #e5f1f4;
+  --nagi-color-text: #17323b;
+  --nagi-color-text-disabled: #91a1a6;
+  --nagi-color-text-muted: #50676f;
+  --nagi-font-size-icon: 0.78rem;
+  --nagi-font-size-label: 0.72rem;
+  --nagi-radius-control: 0.55rem;
+  --nagi-radius-item: 0.4rem;
+  --nagi-radius-overlay: 0.65rem;
+  --nagi-shadow-focus: 0 0 0 2px rgb(117 173 186 / 0.35);
+  --nagi-shadow-overlay: 0 14px 36px rgb(22 48 60 / 0.2);
+  --nagi-size-control: 2rem;
+}

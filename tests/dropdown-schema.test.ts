@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   menuEntries,
   type DropdownMenuNode,
-} from "../blueprints/menu/dropdown-schema.ts";
+} from "../packages/core/blueprints/menu/dropdown-schema.ts";
 
 const noop = () => {};
 

@@ -81,7 +81,7 @@ the input retained focus.
 
 ## Blueprint
 
-`blueprints/combobox/Combobox.vue` uses the Phase 3 schema shape:
+`packages/core/blueprints/combobox/Combobox.vue` uses the Phase 3 schema shape:
 
 ```vue
 <Combobox

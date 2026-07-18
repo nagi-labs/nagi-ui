@@ -29,6 +29,13 @@ test("complete Dropdown is axe-clean with a submenu open", async ({ page }) => {
   await expectAxeClean(page)
 })
 
+test("token-themed Dropdown stays axe-clean while open", async ({ page }) => {
+  await page.goto("/dropdown.html")
+  await page.getByRole("button", { name: "Themed actions" }).click()
+  await expect(page.getByRole("menu")).toBeVisible()
+  await expectAxeClean(page)
+})
+
 test("single and multiple Listboxes are axe-clean after keyboard navigation", async ({ page }) => {
   await page.goto("/listbox.html")
   const listboxes = page.getByRole("listbox")

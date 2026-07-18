@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import Listbox, { type ListboxOption } from "../../blueprints/listbox/Listbox.vue";
+import { Listbox, type ListboxOption } from "@nagi-labs/nagi-ui/components";
 
 const fruits: readonly ListboxOption[] = [
   { key: "apple", label: "Apple" },

@@ -99,11 +99,11 @@ test("requires popover for the Combobox popup but not standalone Listbox", () =>
 
 test("all shipped Blueprints satisfy verified-bindings", () => {
   const files = fs
-    .readdirSync(path.join(repo, "blueprints"), { recursive: true })
+    .readdirSync(path.join(repo, "packages/core/blueprints"), { recursive: true })
     .filter((file): file is string => typeof file === "string" && file.endsWith(".vue"))
 
   const failures = files.flatMap((file) => {
-    const absolute = path.join(repo, "blueprints", file)
+    const absolute = path.join(repo, "packages/core/blueprints", file)
     return verify(fs.readFileSync(absolute, "utf8"), absolute).map((message) => ({
       file,
       line: message.line,

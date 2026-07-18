@@ -56,7 +56,7 @@ listbox.selectedKeys                 // the selection source of truth (the contr
 
 ## Blueprint
 
-`blueprints/listbox/Listbox.vue` — flat `items` prop
+`packages/core/blueprints/listbox/Listbox.vue` — flat `items` prop
 (`{ key, label, disabled? }[]`), `v-model:selected`, `mode` prop. Options are
 data-shaped (CHARTER §3.5), so the blueprint is schema-style with no slots;
 custom option content is an owned-source edit exactly like the dropdown recipe

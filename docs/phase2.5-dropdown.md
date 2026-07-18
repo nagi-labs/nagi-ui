@@ -3,7 +3,7 @@
 Status: Implemented
 
 > **Note (Phase 2.6):** the blueprint validated here was since replaced by the
-> schema-driven `blueprints/menu/DropdownMenu.vue`; the explicit-DOM SFC this
+> schema-driven `packages/core/blueprints/menu/DropdownMenu.vue`; the explicit-DOM SFC this
 > document describes now lives at `playground/src/DropdownFixture.vue` and
 > remains the reference for the composable-level escape path. See
 > [`phase2.6-dropdown-schema.md`](./phase2.6-dropdown-schema.md).
@@ -94,7 +94,7 @@ direction explicitly.
 ## Visible structure and Nagi CSS
 
 The complete reference is
-[`blueprints/menu/DropdownMenu.vue`](../blueprints/menu/DropdownMenu.vue), and
+[`packages/core/blueprints/menu/DropdownMenu.vue`](../packages/core/blueprints/menu/DropdownMenu.vue), and
 its consuming SFC is
 [`playground/src/DropdownLab.vue`](../playground/src/DropdownLab.vue).
 

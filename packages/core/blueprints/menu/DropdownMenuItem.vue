@@ -130,8 +130,8 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     > .text {
       &.-category {
         padding: 0.35rem 0.6rem 0.25rem;
-        color: #50676f;
-        font-size: 0.72rem;
+        color: var(--nagi-color-text-muted, #50676f);
+        font-size: var(--nagi-font-size-label, 0.72rem);
         font-weight: 750;
         letter-spacing: 0.05em;
         text-transform: uppercase;
@@ -151,10 +151,10 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
             gap: 0.55rem;
             align-items: center;
             inline-size: 100%;
-            min-block-size: 2rem;
+            min-block-size: var(--nagi-size-control, 2rem);
             padding: 0.35rem 0.55rem;
             border: 0;
-            border-radius: 0.4rem;
+            border-radius: var(--nagi-radius-item, 0.4rem);
             background: transparent;
             color: inherit;
             font: inherit;
@@ -162,13 +162,13 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
             cursor: pointer;
 
             &[data-active] {
-              background: #e5f1f4;
-              outline: 2px solid #75adba;
+              background: var(--nagi-color-surface-active, #e5f1f4);
+              outline: 2px solid var(--nagi-color-focus-ring, #75adba);
               outline-offset: -2px;
             }
 
             &[aria-disabled="true"] {
-              color: #91a1a6;
+              color: var(--nagi-color-text-disabled, #91a1a6);
               cursor: not-allowed;
             }
 
@@ -179,8 +179,8 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
             }
 
             > .icon {
-              color: #16768b;
-              font-size: 0.78rem;
+              color: var(--nagi-color-accent, #16768b);
+              font-size: var(--nagi-font-size-icon, 0.78rem);
               text-align: center;
 
               &.-dot {
@@ -199,10 +199,10 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     gap: 0.55rem;
     align-items: center;
     inline-size: 100%;
-    min-block-size: 2rem;
+    min-block-size: var(--nagi-size-control, 2rem);
     padding: 0.35rem 0.55rem;
     border: 0;
-    border-radius: 0.4rem;
+    border-radius: var(--nagi-radius-item, 0.4rem);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -210,13 +210,13 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     cursor: pointer;
 
     &[data-active] {
-      background: #e5f1f4;
-      outline: 2px solid #75adba;
+      background: var(--nagi-color-surface-active, #e5f1f4);
+      outline: 2px solid var(--nagi-color-focus-ring, #75adba);
       outline-offset: -2px;
     }
 
     &[aria-disabled="true"] {
-      color: #91a1a6;
+      color: var(--nagi-color-text-disabled, #91a1a6);
       cursor: not-allowed;
     }
 
@@ -231,8 +231,8 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     }
 
     > .icon {
-      color: #16768b;
-      font-size: 0.78rem;
+      color: var(--nagi-color-accent, #16768b);
+      font-size: var(--nagi-font-size-icon, 0.78rem);
       text-align: center;
 
       &.-dot {
@@ -242,7 +242,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 
     > .text {
       &.-shortcut {
-        color: #526970;
+        color: var(--nagi-color-text-muted, #50676f);
         font-size: 0.75rem;
       }
     }

@@ -46,21 +46,21 @@ const menu = useMenu<DropdownMenuEntry>({
       gap: 0.5rem;
       align-items: center;
       padding: 0.5rem 0.8rem;
-      border: 1px solid #b9cbd1;
-      border-radius: 0.55rem;
-      background: #fff;
-      color: #17323b;
+      border: 1px solid var(--nagi-color-border, #b9cbd1);
+      border-radius: var(--nagi-radius-control, 0.55rem);
+      background: var(--nagi-color-surface, #fff);
+      color: var(--nagi-color-text, #17323b);
       font: inherit;
       font-weight: 650;
       cursor: pointer;
 
       &:hover,
       &[aria-expanded="true"] {
-        background: #edf5f7;
+        background: var(--nagi-color-surface-active, #e5f1f4);
       }
 
       > .icon {
-        color: #61777e;
+        color: var(--nagi-color-text-muted, #50676f);
         line-height: 1;
       }
     }
@@ -70,12 +70,12 @@ const menu = useMenu<DropdownMenuEntry>({
     min-inline-size: 16rem;
     margin: 0;
     padding: 0.4rem;
-    border: 1px solid #c8d8dd;
-    border-radius: 0.65rem;
+    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
+    border-radius: var(--nagi-radius-overlay, 0.65rem);
     outline: none;
-    background: #fff;
-    box-shadow: 0 14px 36px rgb(22 48 60 / 0.2);
-    color: #17323b;
+    background: var(--nagi-color-surface, #fff);
+    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
+    color: var(--nagi-color-text, #17323b);
     list-style: none;
     opacity: 0;
     transform: translateY(-0.35rem) scale(0.98);

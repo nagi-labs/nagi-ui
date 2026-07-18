@@ -1,6 +1,6 @@
 # Phase 4 slice 1 — Package 実体化の設計
 
-Status: Design for review (2026-07-18). 実装前にこの文書の D1〜D5 を確定する。
+Status: Implemented (2026-07-18). D1〜D5 はレビュー確定済み・実装済み。実装結果は末尾。
 
 ## 目的
 
@@ -28,13 +28,14 @@ core は既に raw TS 配布である(`exports: "./src/index.ts"`、build なし
 
 ## D2. パッケージ内配置: blueprints をパッケージ内へ移動
 
-npm はパッケージルート外のファイルを含められないため、`blueprints/` を
-`packages/core/blueprints/` へ移動する(git mv、履歴保持)。
+npm はパッケージルート外のファイルを含められないため、リポジトリルートの
+`blueprints/` を `packages/core/blueprints/` へ移動する(git mv、履歴保持)。
 
 ```text
 packages/core/
   src/            ← composable 層。CSS を一切含まない(§3 の不変条件は layer 単位)
   blueprints/     ← component 層。SFC(scoped CSS 込み)
+  components.ts   ← "/components" entry(SFC の named re-export のみ)
   theme/theme.css ← token 定義
 ```
 
@@ -42,10 +43,10 @@ exports map:
 
 ```jsonc
 {
-  ".": "./src/index.ts",                  // composables のみ(現状維持)
-  "./components": "./src/components.ts",  // blueprint SFC の named re-export
+  ".": "./src/index.ts",              // composables のみ(現状維持)
+  "./components": "./components.ts",  // blueprint SFC の named re-export
   "./theme.css": "./theme/theme.css",
-  "./blueprints/*": "./blueprints/*"      // own コマンドと direct import 用
+  "./blueprints/*": "./blueprints/*"  // own コマンドと direct import 用
 }
 ```
 
@@ -165,4 +166,26 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 
 1. exports は `/components` 分離(D2 推奨案)を採用
 2. theme token は小 semantic セット(形態②)+ 上記 7 か条の運用原理で設計する
-3. `blueprints/` は `packages/core/blueprints/` へ移動(D2 の dir 設計どおり)
+3. `blueprints/` はリポジトリルートから `packages/core/blueprints/` へ移動(D2 の dir 設計どおり)
+
+## 実装結果(2026-07-18)
+
+- 出荷 component は `DropdownMenu` / `Listbox` / `Combobox` の 3 つ
+  (+ schema 型)。`ActionMenu` と phase 0 の popover Dropdown は phase 検証用の
+  歴史的 blueprint として残置し、`/components` から export せず token 化もしない
+- token は導出手順の結果 **17 個**で確定(color 9 / radius 3 / shadow 2 / size 1 /
+  font 2)。棚卸しで muted 系文字色 3 値(#50676f / #526970 / #61777e)を
+  `--nagi-color-text-muted` に、hover/active 背景 2 値(#e5f1f4 / #edf5f7)を
+  `--nagi-color-surface-active` に統合した
+- **原理 1 をそのまま適用した結果、`danger`(menu のみ)と `separator`(menu のみ)は
+  token 化していない。** どちらも第 2 の使用 component(Button 実験、将来の
+  ContextMenu 等)が現れた時点での昇格第一候補
+- fallback ↔ theme.css の parity は `tests/theme-parity.test.ts` が機械検証する
+  (全 token が使用されていること・fallback 欠落が無いことも含む)
+- playground は package 消費経路の実証に切替済み(labs は
+  `@nagi-labs/nagi-ui/components` を import、`/dropdown.html` は `theme.css` を読み、
+  「Themed」セクションが token 上書きだけのブランド変更を実演。popover は
+  Teleport されないため custom property が開いた menu tree へそのまま継承される)
+- 検証: unit 89/89(parity 3 件含む)、typecheck、`test:integration`、
+  `nagi-css check` clean、labs 3 種の SSR 実行 OK。browser suite(29 spec:
+  themed axe 検査を追加)はローカル実行待ち

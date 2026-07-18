@@ -16,11 +16,12 @@ learning lands.
 
 ## Layout
 
-- `packages/core` — `@nagi-labs/nagi-ui`: composables plus directive sugar.
-  Ships no CSS.
-- `blueprints/` — canonical SFCs used by both the future package build and
-  on-demand source ownership; see
-  [`docs/package-ownership-model.md`](docs/package-ownership-model.md).
+- `packages/core` — `@nagi-labs/nagi-ui`. `.` exports the composable layer
+  (ships no CSS); `./components` exports the Blueprint SFCs;
+  `./theme.css` supplies the semantic tokens.
+- `packages/core/blueprints/` — canonical SFCs, distributed as raw source:
+  the same files serve package consumption and on-demand source ownership;
+  see [`docs/package-ownership-model.md`](docs/package-ownership-model.md).
 - `playground/` — Vite labs for the phase slices (`vp exec vite playground`;
   `?autotest=stacking` runs the Demo B self-test).
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app
@@ -69,7 +70,7 @@ Phases 0–3.5 complete — see CHARTER §10. The customizable-select decision i
 - [x] Generic `useMenu<Item>()` with typed `itemProps(item)`
 - [x] APG `aria-activedescendant` focus management; disabled skipping,
   wrapping arrows, Home/End, typeahead, selection, Escape, and Tab behavior
-- [x] Nagi CSS compliant `blueprints/menu/ActionMenu.vue`
+- [x] Nagi CSS compliant `packages/core/blueprints/menu/ActionMenu.vue`
 - [x] Unit/type/browser coverage and documented Reka UI DX comparison in
   [`docs/phase2-menu.md`](docs/phase2-menu.md)
 
@@ -91,7 +92,7 @@ The complete playground is available at `/dropdown.html` after running
 ### Phase 2.6 — Dropdown items schema Blueprint
 
 - [x] Blueprint-local `DropdownMenuNode` union (six node kinds) +
-  `menuEntries()` flatten in `blueprints/menu/dropdown-schema.ts`
+  `menuEntries()` flatten in `packages/core/blueprints/menu/dropdown-schema.ts`
 - [x] Schema renderer: `DropdownMenu.vue` + recursive `DropdownMenuItem.vue`
   and per-node `DropdownSubmenu.vue`; consumers pass `:items` data only
 - [x] Explicit-DOM blueprint demoted to `playground/src/DropdownFixture.vue`

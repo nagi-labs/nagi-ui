@@ -2,9 +2,21 @@
   "name": "@nagi-labs/nagi-ui",
   "version": "0.0.0",
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components": "./components.ts",
+    "./theme.css": "./theme/theme.css",
+    "./blueprints/*": "./blueprints/*"
+  },
   "files": [
-    "src"
+    "src",
+    "blueprints",
+    "components.ts",
+    "theme"
+  ],
+  "sideEffects": [
+    "**/*.vue",
+    "**/*.css"
   ],
   "peerDependencies": {
     "vue": ">=3.5.0"

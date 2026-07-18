@@ -4,7 +4,7 @@ import nagiUi from "./packages/eslint-plugin-nagi-ui/src/index.ts"
 
 export default [
   {
-    files: ["blueprints/**/*.vue"],
+    files: ["packages/core/blueprints/**/*.vue"],
     languageOptions: {
       parser: vueParser,
       parserOptions: {

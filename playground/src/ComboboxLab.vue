@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import Combobox, { type ComboboxOption } from "../../blueprints/combobox/Combobox.vue";
+import { Combobox, type ComboboxOption } from "@nagi-labs/nagi-ui/components";
 
 const frameworks: readonly ComboboxOption[] = [
   { key: "vue", label: "Vue" },

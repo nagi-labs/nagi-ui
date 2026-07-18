@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import DropdownMenu from "../../blueprints/menu/DropdownMenu.vue";
-import type { DropdownMenuNode } from "../../blueprints/menu/dropdown-schema.ts";
+import { DropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
 import DropdownFixture, { type DropdownSort } from "./DropdownFixture.vue";
 
 const lastAction = ref("none");
@@ -141,6 +140,11 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
       <DropdownMenu label="RTL actions" :items="items" dir="rtl" />
     </section>
 
+    <section class="section -themed">
+      <h2 class="title">Themed</h2>
+      <DropdownMenu label="Themed actions" :items="items" />
+    </section>
+
     <section class="section">
       <h2 class="title">Explicit DOM fixture</h2>
       <DropdownFixture
@@ -206,6 +210,17 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
     > .title {
       margin-block: 0 0.75rem;
       font-size: 0.85rem;
+    }
+
+    /* Brand change through semantic tokens only — no ownership, no component
+       edit. Popovers stay in place in the DOM (no Teleport), so the custom
+       properties inherit into the open menu tree as well. */
+    &.-themed {
+      --nagi-color-accent: #6d28d9;
+      --nagi-color-border: #c4b5fd;
+      --nagi-color-focus-ring: #8b5cf6;
+      --nagi-color-surface-active: #ede9fe;
+      --nagi-radius-item: 0.8rem;
     }
   }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import ActionMenu, { type ActionMenuItem } from "../../blueprints/menu/ActionMenu.vue";
+import ActionMenu, { type ActionMenuItem } from "../../packages/core/blueprints/menu/ActionMenu.vue";
 
 const items: readonly ActionMenuItem[] = [
   { key: "duplicate", label: "Duplicate" },

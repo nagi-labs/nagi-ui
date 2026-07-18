@@ -10,7 +10,7 @@ Nagi UI の完成形は「PrimeVue の導入体験 + shadcn の所有権」で�
 で足りなくなった component だけ source ownership へ移る。
 
 ```ts
-import { DropdownMenu, Listbox } from "@nagi-labs/nagi-ui"
+import { DropdownMenu, Listbox } from "@nagi-labs/nagi-ui/components"
 import "@nagi-labs/nagi-ui/theme.css"
 ```
 
@@ -51,7 +51,7 @@ avatar、router-link、特殊レイアウト等を安定DSLへ足し続けず、
 package版とownership版を別々に実装してはならない。
 
 ```text
-blueprints/dropdown/DropdownMenu.vue
+packages/core/blueprints/dropdown/DropdownMenu.vue
                  ├─ package component build
                  └─ own command copy source
 ```

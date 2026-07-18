@@ -19,10 +19,10 @@ versioned with the component; the extension recipe below applies after
 
 | File | Role |
 | --- | --- |
-| `blueprints/menu/dropdown-schema.ts` | `DropdownMenuNode` union + `menuEntries()` flatten + entry builders |
-| `blueprints/menu/DropdownMenu.vue` | Public entry: trigger + root list; `useMenu` over flattened entries |
-| `blueprints/menu/DropdownMenuItem.vue` | One node per instance; self-recursive for `group` |
-| `blueprints/menu/DropdownSubmenu.vue` | One `useSubmenu` per submenu node; mutual recursion with the item SFC |
+| `packages/core/blueprints/menu/dropdown-schema.ts` | `DropdownMenuNode` union + `menuEntries()` flatten + entry builders |
+| `packages/core/blueprints/menu/DropdownMenu.vue` | Public entry: trigger + root list; `useMenu` over flattened entries |
+| `packages/core/blueprints/menu/DropdownMenuItem.vue` | One node per instance; self-recursive for `group` |
+| `packages/core/blueprints/menu/DropdownSubmenu.vue` | One `useSubmenu` per submenu node; mutual recursion with the item SFC |
 | `playground/src/DropdownFixture.vue` | The former hardcoded blueprint, demoted to the full-feature fixture |
 | `playground/src/DropdownLab.vue` | Schema consumer (LTR / RTL) beside the explicit-DOM fixture |
 
@@ -75,7 +75,7 @@ render time and was exercised by SSR-rendering the lab page.
    depth for free.
 
 The external check config (uncommitted, `.sandbox/nagi.config.mjs`) only needed
-`blueprints/menu/*.vue` plus the playground files in its file lists —
+`packages/core/blueprints/menu/*.vue` plus the playground files in its file lists —
 `semantic: {}` remains empty.
 
 ## Extension recipe (the deliverable that makes owned schema work)
@@ -135,7 +135,7 @@ schema exists to close.
 - **SSR execution**: `DropdownLab.vue` renders through Vite `ssrLoadModule` +
   `renderToString` with all roles/ids/popover wiring present (also proves the
   component cycle and per-level `useSubmenu` registration execute).
-- **`nagi-css check`**: clean over `blueprints/menu/*.vue`,
+- **`nagi-css check`**: clean over `packages/core/blueprints/menu/*.vue`,
   `DropdownLab.vue`, and `DropdownFixture.vue`.
 - **Browser** (`tests/browser/dropdown.spec.ts`): the pre-existing five specs
   run against the schema-driven blueprint unchanged; a sixth spec covers

@@ -5,7 +5,7 @@ import { useTemplateRef } from "vue"
 
 import { usePopover, useToast, vPopoverTrigger } from "@nagi-labs/nagi-ui"
 
-import DropdownMenu from "../../blueprints/dropdown/DropdownMenu.vue"
+import DropdownMenu from "../../packages/core/blueprints/dropdown/DropdownMenu.vue"
 
 const dialogElement = useTemplateRef<HTMLDialogElement>("dialogElement")
 const notifier = useToast({ duration: 3000 })
