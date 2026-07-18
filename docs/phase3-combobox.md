@@ -92,9 +92,10 @@ the input retained focus.
 />
 ```
 
-The copy-in SFC owns the `<label>`, `<input>`, popover `<ul>`, option `<li>`
+The Blueprint SFC owns the `<label>`, `<input>`, popover `<ul>`, option `<li>`
 loop, and all CSS. The consumer owns only data and models. Custom option
-content remains a local Blueprint edit, not a core DSL or compound component.
+content remains an owned-Blueprint edit (own the source, then edit it), not a
+core DSL or compound component.
 
 Playground: `/combobox.html`.
 
@@ -110,7 +111,7 @@ Three consequences of the design above are intentional, not omissions:
    assume the other's semantics.
 2. **The committed option has no visual marker when the popup reopens** (no
    check mark). This matches the APG list-autocomplete examples. If a product
-   wants one, it is a copy-in Blueprint edit: compare
+   wants one, it is an owned-Blueprint edit: compare
    `combobox.selectedKey.value` against the option key in the `<li>` loop and
    style via a documented `data-*` attribute — do not repurpose
    `aria-selected`, which already carries the active-suggestion state.

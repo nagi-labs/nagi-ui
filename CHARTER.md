@@ -74,17 +74,18 @@ Blueprint の各部分をどの機構で利用者へ開くかは、次の優先�
 
 ### items schema の位置づけ
 
-- copy-in Blueprint 内部の**編集可能な型**として提供する。core 公開 API へ昇格させない(core の商品は composable。schema を core に入れた瞬間、安定 DSL としての互換性負債が発生する)。
+- Blueprint 内部の**編集可能な型**として提供する。core 公開 API へ昇格させない(core の商品は composable。schema を core に入れた瞬間、安定 DSL としての互換性負債が発生する)。
+- package-first 化(§3)の帰結として、package 利用中はこの union が **component の props API** として公開される。したがって node 種は component version に紐づく最小の安定 API であり、「DSL を育てない」規律は copy-first 時代より**強く**適用する。union に表せない要求への答えは property 追加ではなく source ownership である。
 - menu 系(Dropdown / ContextMenu / Menubar)が該当する。menu item は icon+label+shortcut の同型行であり、プラットフォーム(NSMenu、Electron、VS Code)が一貫してデータとして定義してきた UI である。**この判断は menu の性質に依存する例外であり、既定方針ではない。**
 - schema の拡張手順(union member 追加 → template 分岐追加 → CSS 追加 → `nagi-css check`)を Blueprint に文書として同梱する。**この拡張レシピの同梱が採用の成功条件である**(欠けると利用者が slot 化へ逃げて CSS ownership が崩れる)。
-- escape hatch(slot 差し込み・`component` field)は設けない。離脱路は①copy-in した renderer の編集、②union の拡張、③`useMenu` / `useSubmenu` への降下、の 3 つで足りる。
+- escape hatch(slot 差し込み・`component` field)は設けない。離脱路は①source を所有(own)した renderer の編集、②owned union の拡張、③`useMenu` / `useSubmenu` への降下、の 3 つで足りる。
 
 ### slot の位置づけ
 
-slot は正当な機構である。§2 の compound 禁止は「**ライブラリが behavior の状態機械を複数タグへ分散して出荷する**」形態の禁止であり、利用者所有の copy-in SFC が slot を持つことは対象外。Nagi CSS は slot sub-surface として境界を価格付けしており(宣言 + descendant step)、宣言して払えば契約違反ではない。条件:
+slot は正当な機構である。§2 の compound 禁止は「**ライブラリが behavior の状態機械を複数タグへ分散して出荷する**」形態の禁止であり、利用者が所有する(own した)SFC が slot を持つことは対象外。Nagi CSS は slot sub-surface として境界を価格付けしており(宣言 + descendant step)、宣言して払えば契約違反ではない。条件:
 
 - **境界は最小に保つ。** タグ族への分割(`CardHeader` / `CardContent` / `CardFooter` 等)は禁止。frame の anatomy は owned DOM で持ち、穴は default slot(必要なら named slot)で開ける。
-- **slot を behavior 配線の通り道にしない。** slot 内容と親の状態を provide/inject で結合し始めたら、それは compound の再実装である。behavior は composable / props 経由のみ。menu の item 用 slot(`#item` に `itemProps` を渡して bind させる形)はこの違反例であり、item のカスタマイズは copy-in renderer の union 拡張で行う。
+- **slot を behavior 配線の通り道にしない。** slot 内容と親の状態を provide/inject で結合し始めたら、それは compound の再実装である。behavior は composable / props 経由のみ。menu の item 用 slot(`#item` に `itemProps` を渡して bind させる形)はこの違反例であり、item のカスタマイズは owned renderer の union 拡張で行う。
 - データ形で表せる部分(title、image 等)を slot にしない(上表の優先順)。props に寄せるほど利用側が境界越しにスタイルを当てる頻度が下がる。
 - **投機的な named slot を出荷しない。** slot は後から利用者が自分のコピーへ足すのは安いが、一度配ると利用箇所が依存して消せない。出荷形は「存在理由そのものの slot(Card / Dialog の本文等)」に限り、`#header-extra` のような予備枠は実際の要求が出てから追加する。
 
@@ -94,7 +95,7 @@ slot は正当な機構である。§2 の compound 禁止は「**ライブラ�
 
 ### styling-only blueprint
 
-behavior(core composable)を持たない blueprint(Card、Alert、Badge 等)は Nagi UI の composable 検証(§10 の phase 系列)の対象外であり、Nagi CSS 準拠の copy-in SFC として **phase 進行と独立に追加してよい**。一回きり・ページ固有の構造はコンポーネント化せず inline で書く選択も通常どおり有効。
+behavior(core composable)を持たない blueprint(Card、Alert、Badge 等)は Nagi UI の composable 検証(§10 の phase 系列)の対象外であり、Nagi CSS 準拠の package component / ownable SFC として **phase 進行と独立に追加してよい**。一回きり・ページ固有の構造はコンポーネント化せず inline で書く選択も通常どおり有効。
 
 ## 4. core の API 設計
 
@@ -220,7 +221,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 | controlled mode | **高 — 未解決なら製品不成立** | §4.4 の通り composable 内部に封じ込め。§10 の vertical slice 成立条件に含める |
 | Toast × Dialog の重なり順 | **高 — デモで 30 秒で露見する** | `useToast` に再昇格ロジック内蔵。共存デモで先回りして証明する(§10) |
 | JS アニメーションとの統合 | 中 | popover/dialog は閉じてもアンマウントされない(display 切替)ため、`v-if` 前提の Motion 系・exit オーケストレーションと相性が悪い。CSS で足りる範囲(§5)を正とし、超える要件は「向かないケース」に明記 |
-| ジェスチャー駆動の中断可能クローズ(vaul 的ボトムシート) | 中 | スコープ外と明記。copy-in 配布のため、該当コンポーネントだけ他ライブラリと混在可能なことをドキュメントで案内 |
+| ジェスチャー駆動の中断可能クローズ(vaul 的ボトムシート) | 中 | スコープ外と明記。囲いタグ・provider・グローバル状態がなく component 単位で導入できるため、該当コンポーネントだけ他ライブラリと混在可能なことをドキュメントで案内 |
 | テスト環境(jsdom の dialog/popover サポート不完全) | 中 | Vitest browser mode / Playwright 前提のテストレシピを blueprints に同梱 |
 | Invoker Commands フォールバック維持 | 低 | feature detect の二重経路を普及完了まで保守(§5 既定) |
 
@@ -233,7 +234,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 9. アンチゴール(実装してはならないもの)
 
-- ❌ compound component 公開 API(`<NagiRoot>` / `<NagiTrigger>` 等)。禁止対象はライブラリ出荷の behavior 分散タグ族であり、利用者所有 copy-in SFC の slot は対象外(§3.5)
+- ❌ compound component 公開 API(`<NagiRoot>` / `<NagiTrigger>` 等)。禁止対象はライブラリ出荷の behavior 分散タグ族であり、利用者が所有する SFC の slot は対象外(§3.5)
 - ❌ `asChild` / `render` prop 方式(包む前提の発想ごと不要)
 - ❌ Teleport / portal(top layer が代替。§2 参照)
 - ❌ 独自フォーカストラップ(`<dialog>.showModal()` に委譲)
@@ -354,6 +355,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-18** package-first 改訂(§3)の残存整理。§3.5 等の copy-in 前提の文言を own-on-demand 用語へ更新し、items schema が package 利用中は component の最小 props API(component version に紐づく)として公開される帰結と、その下での「DSL を育てない」規律の強化を明文化。混在可能性(§8.2)の根拠を copy-in 配布から「囲いタグ・provider・グローバル状態の不在」へ訂正。package 利用中の consumer styling 境界は `docs/package-ownership-model.md` に追記。
 - **2026-07-18** Phase 3.5 完了。最終 DOM の IDREF / active descendant / native popover 関係を検査する `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` と、開いた全主要 Blueprint 状態の axe-core 検査を追加。axe が発見した Dropdown / Listbox / Combobox の secondary text contrast を rule 除外せず修正し、browser 28/28 を確認した。
 - **2026-07-18** Phase 3.5 slice 1 を開始。`mergeNagiProps()` は class/style/event/token-list ARIA の合成、semantic conflict、live getter を検証。`eslint-plugin-nagi-ui/verified-bindings` は behavior props の適用先・native属性・直接上書き・複数binding・keyを全出荷Blueprintに対して検査する。TypeScript ESLintがTS7を読めないため、`skipLibCheck`やTS downgradeではなくvue-eslint-parser公式のtemplate-only modeを採用。
 - **2026-07-18** 配布モデルを copy-first から package-first / own-on-demand へ改訂。通常は themeable package component、深い変更時だけ同一 SFC を所有する。package build と copy 元の単一ソース、Theme→小 API→少数 slot→ownership の段階、owned source の version / diff / lint / integration 保守契約を §3 に固定した。成功条件と失敗パターンは `docs/package-ownership-model.md` に記録。

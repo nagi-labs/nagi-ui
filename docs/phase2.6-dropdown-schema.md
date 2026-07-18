@@ -8,9 +8,12 @@ recompute while the tree is open and dynamic submenu registration/removal.
 
 A blueprint-local recursive items schema keeps the behavior guarantees and
 Nagi CSS conformance of the explicit-DOM Dropdown while reducing caller-side
-cognitive load and wiring mistakes. The schema is copy-in starter code owned
-together with its renderer — it is not a stable core API and must not be
-promoted into `@nagi-labs/nagi-ui`.
+cognitive load and wiring mistakes. The schema is Blueprint-local and owned
+together with its renderer — it is not a core composable API and must not be
+promoted into the composable layer. Under the package-first model (CHARTER
+§3), the union doubles as the package component's minimal props API,
+versioned with the component; the extension recipe below applies after
+`own`, and speculative node kinds are not added to the package API.
 
 ## Files
 
@@ -75,7 +78,7 @@ The external check config (uncommitted, `.sandbox/nagi.config.mjs`) only needed
 `blueprints/menu/*.vue` plus the playground files in its file lists —
 `semantic: {}` remains empty.
 
-## Extension recipe (the deliverable that makes copy-in schema work)
+## Extension recipe (the deliverable that makes owned schema work)
 
 To add a node kind — e.g. an account row with an avatar — every step is a
 local diff in code you own:

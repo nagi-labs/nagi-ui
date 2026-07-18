@@ -1,10 +1,12 @@
 /**
  * Blueprint-local dropdown schema (CHARTER §3.5 / Phase 2.6).
  *
- * This union is copy-in starter code, not a stable library protocol. Extend it
- * together with the renderer: add a union member here, add a template branch in
- * DropdownMenuItem.vue, add its CSS block, then run `nagi-css check`. See
- * docs/phase2.6-dropdown-schema.md for the full recipe.
+ * While DropdownMenu is consumed as a package component, this union is that
+ * component's minimal props API, versioned with the component — new node
+ * kinds are not added speculatively. After `own`, the union is yours: extend
+ * it together with the renderer by adding a union member here, a template
+ * branch in DropdownMenuItem.vue, and its CSS block, then run
+ * `nagi-css check`. See docs/phase2.6-dropdown-schema.md for the full recipe.
  *
  * Keys must be unique within one menu level (radio item keys included).
  */

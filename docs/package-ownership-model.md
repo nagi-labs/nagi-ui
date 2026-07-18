@@ -61,6 +61,12 @@ behavior、a11y、browser workaround、markup、default stylingの修正は常�
 
 ## Nagiが提供する保証の境界
 
+package利用中のstylingはtheme tokenとcomponentのpublic API(props / 宣言済みslot)まで
+とする。package componentのrootはNagi CSS契約上のUI library boundary classであり、
+内部DOMへのconsumer CSSはboundary越えのdescendant step + 宣言を要する構造で、
+契約が「そこはあなたの所有物ではない」と示している。内部のmarkupやselectorを
+直接styleしたくなった時点が、theme token追加要求かsource ownershipへの移行点である。
+
 package利用中は通常のversion updateで修正を受け取れる。ownership後はlocal sourceが
 優先されるため、自動更新されない。この逆転は、複雑で修正が重要なcomponentほど
 ownershipされやすい点で危険になる。

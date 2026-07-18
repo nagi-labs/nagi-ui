@@ -52,9 +52,9 @@ not a native element. Vue also warns that `<button>` cannot be a child of
 `<select>` and that rich descendants cannot be children of `<option>`.
 
 `compilerOptions.isCustomElement` can force the element classification, but it
-does not update the nesting validation and would require every copy-in consumer
-to change global build configuration. That is not an acceptable Blueprint
-contract. Vue has open issues and an open compiler PR for this support; Nagi
+does not update the nesting validation and would require every consuming
+application — package users included — to change global build configuration.
+That is not an acceptable Blueprint contract. Vue has open issues and an open compiler PR for this support; Nagi
 must wait for a released framework fix rather than embed a local workaround.
 
 ### Local browser probe
