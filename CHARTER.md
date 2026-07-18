@@ -347,14 +347,21 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 4 — 製品化
 
-- blueprints の拡充(全コンポーネントの Nagi CSS 準拠 SFC)、Nagi CSS linter プリセット同梱
-- §8 の制約を「Nagi UI が向かないケース」としてドキュメント化(dismiss 細粒度・ジェスチャーシート・Motion 級アニメが要件なら他ライブラリ併用を案内)
-- テストレシピ(Vitest browser mode / Playwright)同梱
+**検証仮説**: package-first / own-on-demand(§3)が実装として成立する — 通常利用は package import + theme token で完結し、所有しても保守可能である。§0 の一言定義を実装が追い越すまで製品とは呼ばない。
+
+スライス順:
+
+1. **Package 実体化** — blueprints を単一ソースのまま raw SFC として export し、component import と `theme.css` を実働させる。theme token は Nagi CSS CONTRACT の non-owned customization ladder(props → Pass Through → CSS custom properties → `::part()`)に従い、**現行 blueprint で実際に反復している値だけ**の最小語彙から始める。設計正本は `docs/phase4-package-design.md`
+2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定**(§3 保守契約。形式は実装検証を経て確定する)
+3. **早期検証実験** — `docs/package-ownership-model.md` の Button / Dropdown / Combobox 3 境界を人間 + coding agent で計測し、モデルの成否を判定する
+4. **blueprints の拡充**(styling-only 含む全コンポーネントの Nagi CSS 準拠 SFC)、Nagi CSS linter プリセット同梱
+5. §8 の制約を「Nagi UI が向かないケース」としてドキュメント化(dismiss 細粒度・ジェスチャーシート・Motion 級アニメが要件なら他ライブラリ併用を案内)、テストレシピ(Vitest browser mode / Playwright)同梱
 
 ---
 
 ## 改訂履歴
 
+- **2026-07-18** Phase 4 を package-first の宿題に合わせて再定義。スライス順(package 実体化 → own/diff CLI → 早期検証実験 → blueprint 拡充 → 向かないケース文書化)と検証仮説を明記し、slice 1 の設計正本を `docs/phase4-package-design.md` に置いた。
 - **2026-07-18** package-first 改訂(§3)の残存整理。§3.5 等の copy-in 前提の文言を own-on-demand 用語へ更新し、items schema が package 利用中は component の最小 props API(component version に紐づく)として公開される帰結と、その下での「DSL を育てない」規律の強化を明文化。混在可能性(§8.2)の根拠を copy-in 配布から「囲いタグ・provider・グローバル状態の不在」へ訂正。package 利用中の consumer styling 境界は `docs/package-ownership-model.md` に追記。
 - **2026-07-18** Phase 3.5 完了。最終 DOM の IDREF / active descendant / native popover 関係を検査する `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` と、開いた全主要 Blueprint 状態の axe-core 検査を追加。axe が発見した Dropdown / Listbox / Combobox の secondary text contrast を rule 除外せず修正し、browser 28/28 を確認した。
 - **2026-07-18** Phase 3.5 slice 1 を開始。`mergeNagiProps()` は class/style/event/token-list ARIA の合成、semantic conflict、live getter を検証。`eslint-plugin-nagi-ui/verified-bindings` は behavior props の適用先・native属性・直接上書き・複数binding・keyを全出荷Blueprintに対して検査する。TypeScript ESLintがTS7を読めないため、`skipLibCheck`やTS downgradeではなくvue-eslint-parser公式のtemplate-only modeを採用。
