@@ -89,5 +89,5 @@ registry, verified bindings, theme parity, owned/consumer Nagi CSS, native
 FormData/validation/reset/keyboard behavior, Combobox loading/empty/clear and
 opened-state axe checks. The interactive specimen is `/forms.html`.
 
-Final evidence: unit 124/124, browser + axe 50/50, TypeScript 7, verified
+Final evidence: unit 124/124, browser + axe 51/51, TypeScript 7, verified
 bindings, owned/consumer Nagi CSS and package tarball contents are green.

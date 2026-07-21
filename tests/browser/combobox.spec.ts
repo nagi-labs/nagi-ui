@@ -79,3 +79,15 @@ test("no matches expose empty status and light dismiss closes the native popover
   await expect(input).toHaveValue("s");
   await expect(page.getByTestId("selected-state")).toHaveText("vue");
 });
+
+test("single-line option padding stays inside the control-size box", async ({ page }) => {
+  await page.getByRole("combobox", { name: "Framework" }).click();
+  const option = page.getByRole("option", { name: "Vue" });
+  await expect(option).toBeVisible();
+
+  const dimensions = await option.evaluate((element) => ({
+    height: element.getBoundingClientRect().height,
+    minHeight: Number.parseFloat(getComputedStyle(element).minBlockSize),
+  }));
+  expect(dimensions.height).toBeCloseTo(dimensions.minHeight, 0);
+});

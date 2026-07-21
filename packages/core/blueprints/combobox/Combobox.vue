@@ -261,6 +261,7 @@ watchEffect(() => {
         list-style: none;
 
         > .item {
+          box-sizing: border-box;
           min-block-size: var(--nagi-size-control, 2rem);
           padding: var(--nagi-space-item, 0.35rem 0.55rem);
           border-radius: var(--nagi-radius-item, 0.4rem);
@@ -280,6 +281,7 @@ watchEffect(() => {
       }
 
       > .status {
+        box-sizing: border-box;
         min-block-size: var(--nagi-size-control, 2rem);
         padding: var(--nagi-space-item, 0.35rem 0.55rem);
         color: var(--nagi-color-text-muted, #50676f);
