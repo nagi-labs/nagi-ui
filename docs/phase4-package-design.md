@@ -205,6 +205,13 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
   `nagi-css check` clean、labs 3 種の SSR 実行 OK。browser suite は themed
   axe 検査を含め 29/29 green(2026-07-21 実行)
 
+### Slice 4 token promotion (2026-07-21)
+
+初期22 tokenに対し、AlertとBadgeで2 component反復が成立したpositive / warning
+foregroundとaccent / positive / warning / danger surfaceの6 roleを追加し、現在は
+28 token。値が一致する`surface-accent`と`surface-active`も役割が異なるため統合せず、
+theme public API上で別名を維持する。詳細は`docs/phase4-blueprint-catalog.md`。
+
 ## Release invariant
 
 `packages/core/package.json` の version を変更した直後、tag / publish より前に

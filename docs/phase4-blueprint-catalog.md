@@ -1,8 +1,7 @@
 # Phase 4 slice 4 — Blueprint catalog expansion
 
-Status: Behavior-catalog sub-slice complete (2026-07-21). This closes the gap
-between the public behavior core and the package/ownable component catalog;
-styling-only expansion remains.
+Status: Complete (2026-07-21). The v0 catalog now covers every public behavior
+primitive plus the finite styling-only baseline defined by CHARTER §3.5.
 
 ## Scope boundary
 
@@ -31,6 +30,21 @@ contain free application markup. Behavior wiring never crosses a slot. Trigger,
 close, summary, tooltip, and toast anatomy remain owned by the SFC; requests to
 replace them structurally use `nagi-ui own`.
 
+The styling-only baseline is intentionally small:
+
+| Component | Shape choice | Public customization boundary |
+|---|---|---|
+| `Button` | fixed native button | label slot + variant prop |
+| `Card` | fixed frame | title/description props + body slot |
+| `Alert` | fixed status frame | title/tone/role props + body slot |
+| `Badge` | fixed inline label | label/tone props |
+
+Card, Alert, and Badge are the concrete styling-only examples named in CHARTER
+§3.5. This is the v0 completion boundary, not a claim that future needs such
+as an application-specific skeleton or empty state are forbidden. New
+styling-only components remain phase-independent and require observed reuse;
+they do not reopen Phase 4 or justify copying another suite's catalog.
+
 ## API discipline
 
 - no `Root` / `Trigger` / `Content` component families;
@@ -42,7 +56,7 @@ replace them structurally use `nagi-ui own`.
 
 ## Completion criteria
 
-1. package entry and ownership registry expose all five sources;
+1. package entry and ownership registry expose all v0 sources;
 2. SSR proves the native relationship attributes before hydration;
 3. browser tests prove open/close/focus behavior through the package import;
 4. opened states pass axe with no rule exclusions;
@@ -74,16 +88,29 @@ components uses this preset. Applying the opaque-boundary preset to the raw
 Blueprint implementation itself would intentionally reject its owned `>`
 chains and is a configuration error.
 
+## Tone tokens
+
+Alert and Badge are the second concrete users of positive/warning semantic
+colors and tone surfaces. That satisfies the "two Blueprints before token
+promotion" rule from `phase4-package-design.md`, so six roles join the public
+theme vocabulary:
+
+- `--nagi-color-success` / `--nagi-color-warning`;
+- `--nagi-color-surface-accent`;
+- `--nagi-color-surface-success` / `surface-warning` / `surface-danger`.
+
+The `success` prop maps to CSS variant `-positive`: Nagi CSS reserves
+`success` as runtime-state vocabulary, while the styling choice is a stable
+tone identity. Default foreground/background pairs are all WCAG AA and remain
+covered by the no-exclusion axe catalog test.
+
 ## Result
 
-- `/components` and `nagi-ui own/list/diff` expose all five new raw SFCs;
+- `/components` and `nagi-ui own/list/diff` expose 12 v0 components, including
+  the eight behavior-backed components and Button/Card/Alert/Badge;
 - package-facade SSR verifies native IDs, commands, popovers, roles, and live
   regions before hydration;
-- unit 102/102, TypeScript 7, verified-bindings, theme parity, and Nagi CSS
+- unit 103/103, TypeScript 7, verified-bindings, theme parity, and Nagi CSS
   checks pass;
 - the package-import playground at `/catalog.html` passes behavior, runtime
-  relationship, and no-exclusion axe coverage; the browser suite is 36/36.
-
-Styling-only Card/Alert/Badge-style surfaces are the next sub-slice. Their
-inventory will be driven by concrete composition needs and does not block
-behavior-catalog parity.
+  relationship, and no-exclusion axe coverage; the browser suite is 37/37.

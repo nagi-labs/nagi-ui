@@ -34,18 +34,21 @@ learning lands.
 Phases 0–3.5 complete — see CHARTER §10. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 Phase 4 is in progress: slice 1 (package materialization: `/components`,
-`theme.css`, 22 semantic tokens — [`docs/phase4-package-design.md`](docs/phase4-package-design.md))
+`theme.css`, now 28 semantic tokens — [`docs/phase4-package-design.md`](docs/phase4-package-design.md))
 and slice 2 (`nagi-ui own` / `diff` with the fixed `@nagi-source` metadata —
 [`docs/phase4-ownership-cli.md`](docs/phase4-ownership-cli.md)) have landed.
 Slice 3's coding-agent validation arm passed all three boundary experiments;
-slice 4 now has behavior-catalog parity plus the consumer Nagi CSS preset.
-Styling-only catalog expansion and productization guidance remain.
+slice 4 is complete with a 12-component v0 catalog and the consumer Nagi CSS
+preset. Productization guidance remains.
 
 Package components are available without copying source:
 
 ```ts
 import {
+  Alert,
+  Badge,
   Button,
+  Card,
   Combobox,
   Dialog,
   Disclosure,
@@ -58,7 +61,7 @@ import {
 import "@nagi-labs/nagi-ui/theme.css"
 ```
 
-The thin component catalog runs at `/catalog.html`; package/ownership details
+The component catalog runs at `/catalog.html`; package/ownership details
 are in [`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md).
 
 ### Phase 0 — vertical slice
