@@ -193,7 +193,7 @@ open 状態の所有者はブラウザ(UA)だが、アプリ側 store を単一�
 | コンポーネント | 実装の厚さ | 中身 |
 |---|---|---|
 | Popover / Tooltip / Dialog | **薄い**(属性注入 + 位置決めのみ) | popovertarget 配線、anchor positioning、`<dialog>` 委譲 |
-| Toast | 中(見た目より罠が多い) | popover ベース。**top layer の重なり順は「開いた順」固定で z-index 無効**のため、dialog が開いた際にトーストが下に潜る。さらに **`showModal()` は仕様上、開いている popover を全て強制クローズする**ため、「開いていたら hide→show」では再昇格できない。`useToast` は**自身のモデル(生きている toast があるか)を条件に、top layer の同居者が開いた toggle を検知して再 show** する。利用者には見せない (2026-07-15 改訂) |
+| Toast | 中(見た目より罠が多い) | queue/timer は明示的 `createToastManager()`、DOM/top-layer/F6 配線は `useToast` に分離し、Provider・singleton は持たない。popover の重なり順は open 順で `z-index` 無効、さらに `showModal()` は open popover を強制 close するため、**生きている toast model を条件に再 show**する。title/description だけを top-layer 外の polite/assertive live node で通知し、hover/focus/document hidden 中はtimerを停止する。詳細は `docs/base-ui-alignment-c.md`。 |
 | Disclosure / Accordion | 薄い | `<details>` ベース + アニメーション CSS |
 | Tabs | 中 | roving tabindex、キーボードナビ(ネイティブ代替なし) |
 | Menu / Listbox / Combobox | **厚い**(本プロジェクトの JS 工数の本丸) | タイプアヘッド、focus 管理、選択モデル。Menu は `aria-activedescendant` 方式を採用し、roving tabindex と混在させない。表層(浮遊部)は popover に委譲しつつ、対話モデルだけを自前実装 |
@@ -211,6 +211,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 |---|---|---|
 | dismiss ポリシーの細粒度カスタム | light dismiss は UA の状態機械内。選べる粒度は `popover="auto/manual/hint"` のみ。「外側クリックで閉じるが ESC では閉じない」等は不可 | `manual` に落として自前実装するのは Base UI の再実装であり**禁止**。`<dialog>` の `closedby` 属性など、プラットフォーム側の拡張を feature detect で取り込む方針。ドキュメントに「向かないケース」として明記 |
 | top layer のスタッキング制御 | 重なり順は開いた順で固定、`z-index` 無効 | Toast のみ §7 の再昇格ロジックで内部対処。それ以外の任意順序制御は提供しない |
+| modal 外 Toast の操作・通知 | native modal は dialog 外を inert にする。外側の Toast を再昇格して視認できても action / focus は modal 外へ出せず、外側 live node も accessibility tree から外れ得る | `F6` は active modal 外へ focus を移さない。modal 中に操作または AT 通知が必要なら同じ明示 manager の renderer を dialog 内へ置く。Teleport / inert 解除はしない |
 | `::backdrop` に実 DOM を置けない | 擬似要素のためインタラクティブな overlay 不可 | 制約として文書化のみ(要件として稀) |
 | UA 挙動差・UA バグの自前修正 | 振る舞いの実装が UA 側にあるため、ライブラリパッチで統一できない | evergreen ブラウザ前提と明記。対応下限はプラットフォームに従属 |
 | Shadow DOM 越えの idref 配線 | `popovertarget` / `aria-controls` は shadow root を越えない | v1 非対応。Reference Target 仕様の標準化を監視 |
@@ -366,6 +367,7 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 ## 改訂履歴
 
+- **2026-07-21** Base UI alignment C 完了。Toast を明示的 `createToastManager()` と単一 Blueprint に分離し、structured title/description/tone/action、polite/assertive announcement、explicit-id upsert、limit、update/close-all/promise、timer pause/resume、複数regionを巡回するF6 focus returnを追加。Provider/Portal/singleton/swipe/stack physicsは不採用。native modal外のrendererへF6を出さずlive nodeのinert境界も固定し、unit 137/137、browser + axe 59/59、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-c.md`。
 - **2026-07-21** Base UI alignment B 完了。Input / Checkbox / Radio / Switch / Select / Fieldset / Progress / Meter / single-thumb Slider をnative-first package/ownership Blueprintとして追加。Comboboxにdisabled/read-only/required、selected-key submission、clear、empty/loading、resetを追加し、popupとlistboxをARIA上分離。native reset後もDOM/Vue model/FormDataを一致させる小さなbridgeのみcoreへ置き、compound Field、`useField()`、custom Select、multi-thumb Sliderは不採用。unit 124/124、browser + axe 51/51、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-b.md`。
 - **2026-07-21** Phase 4 完了。Web標準への委譲が合わないproduct要件とcomponent単位の混在判断を利用者向けに公開し、package/owned双方で使えるVitest Browser Mode / Playwright recipeをnpm packageへ同梱。`own`完了時にも即commit・test recipe・`diff` gateを案内し、「所有しても取り残されない」をconsumer側の実行可能な契約まで接続。unit 116/116、browser + axe 41/41と実tarball収録を確認した。
 - **2026-07-21** framework integration setup を追加。`nagi-ui setup` が Vue / Nuxt、native / Vue Router / Nuxt Link、native image / Nuxt Image を選び local adapter を生成する。Dropdown schema は router DSL や framework component を受けず、実 `<a href>` に optional `navigate` / `prefetch` callback のみを足す。Nuxt Image も `useImage` の安定 URL 生成を標準 `<img>` 属性へ落とし、package / own の単一 SFC を維持する。

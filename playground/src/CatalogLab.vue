@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from "vue";
+import { ref } from "vue";
+import { createToastManager } from "@nagi-labs/nagi-ui";
 
 import {
   Alert,
@@ -13,20 +14,92 @@ import {
   Tooltip,
 } from "@nagi-labs/nagi-ui/components";
 
-interface ToastHandle {
-  toast: (message: string, options?: { duration?: number }) => number;
-  dismiss: (toastId: number) => void;
-}
-
 const dialogOpen = ref(false);
 const disclosureOpen = ref(false);
 const focusableDisabledClicks = ref(0);
-const toaster = useTemplateRef<ToastHandle>("toaster");
+const toastManager = createToastManager({ duration: 0, limit: 3 });
+const secondaryToastManager = createToastManager({ duration: 0, limit: 3 });
+const undoneActions = ref(0);
 let toastCount = 0;
+let syncRevision = 0;
 
 function showToast() {
   toastCount += 1;
-  toaster.value?.toast(`Catalog notification ${toastCount}`, { duration: 0 });
+  toastManager.add({
+    title: "Catalog update",
+    description: `Catalog notification ${toastCount}`,
+  });
+}
+
+function showUndoToast() {
+  toastManager.add({
+    id: "catalog-undo",
+    title: "Item archived",
+    description: "The item can be restored.",
+    tone: "warning",
+    action: {
+      label: "Undo",
+      onClick(id) {
+        undoneActions.value += 1;
+        toastManager.close(id);
+      },
+    },
+  });
+}
+
+function removeUndoAction() {
+  toastManager.update("catalog-undo", { action: null });
+}
+
+function upsertToast() {
+  syncRevision += 1;
+  toastManager.add({
+    id: "catalog-sync",
+    title: "Sync status",
+    description: `Revision ${syncRevision}`,
+    tone: syncRevision > 1 ? "success" : "accent",
+  });
+}
+
+function fillToastLimit() {
+  toastManager.close();
+  for (const number of [1, 2, 3, 4]) {
+    toastManager.add({ id: `limited-${number}`, description: `Limited notification ${number}` });
+  }
+}
+
+function showUrgentToast() {
+  toastManager.add({
+    id: "catalog-urgent",
+    title: "Connection lost",
+    description: "Changes are not being saved.",
+    tone: "danger",
+    priority: "assertive",
+  });
+}
+
+function showTimedToast() {
+  toastManager.add({
+    id: "catalog-timed",
+    description: "This notification pauses while focused.",
+    duration: 200,
+  });
+}
+
+function showSecondaryToast() {
+  secondaryToastManager.add({ description: "Secondary notification" });
+}
+
+function runPromiseToast() {
+  void toastManager.promise(Promise.resolve("2 records"), {
+    loading: { description: "Saving records", tone: "accent" },
+    success: (result) => ({
+      title: "Save complete",
+      description: `${result} saved`,
+      tone: "success",
+    }),
+    error: { title: "Save failed", description: "Try again", tone: "danger" },
+  });
 }
 </script>
 
@@ -138,8 +211,21 @@ function showToast() {
 
     <section class="section" aria-labelledby="toast-heading">
       <h2 id="toast-heading" class="title">Toast</h2>
-      <Button @click="showToast">Show toast</Button>
-      <Toast ref="toaster" :duration="0" />
+      <div class="list">
+        <Button @click="showToast">Show toast</Button>
+        <Button @click="showUndoToast">Show undo toast</Button>
+        <Button @click="removeUndoAction">Remove undo action</Button>
+        <Button @click="upsertToast">Upsert sync toast</Button>
+        <Button @click="fillToastLimit">Fill toast limit</Button>
+        <Button @click="showUrgentToast">Show urgent toast</Button>
+        <Button @click="showTimedToast">Show timed toast</Button>
+        <Button @click="showSecondaryToast">Show secondary toast</Button>
+        <Button @click="runPromiseToast">Run successful promise</Button>
+        <Button @click="toastManager.close()">Close all notifications</Button>
+      </div>
+      <output data-testid="undone-actions">undo actions: {{ undoneActions }}</output>
+      <Toast :manager="toastManager" />
+      <Toast :manager="secondaryToastManager" label="Secondary notifications" />
     </section>
   </main>
 </template>

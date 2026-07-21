@@ -13,9 +13,21 @@ export {
   type AnchorPair,
 } from "./anchor.ts"
 export {
+  createToastManager,
   useToast,
+  type CreateToastManagerOptions,
+  type ToastAction,
+  type ToastAddOptions,
+  type ToastContentOptions,
+  type ToastId,
   type ToastItem,
+  type ToastManager,
+  type ToastPriority,
+  type ToastPromiseOptions,
+  type ToastPromiseState,
   type ToastRegionProps,
+  type ToastTone,
+  type ToastUpdateOptions,
   type UseToastOptions,
   type UseToastReturn,
 } from "./toast.ts"

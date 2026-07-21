@@ -86,7 +86,118 @@ test("package Disclosure uses native details state", async ({ page }) => {
 
 test("package Toast exposes notification and dismiss operations", async ({ page }) => {
   await page.getByRole("button", { name: "Show toast" }).click();
-  await expect(page.getByText("Catalog notification 1")).toBeVisible();
+  await expect(page.getByText("Catalog notification 1", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Dismiss notification" }).click();
-  await expect(page.getByText("Catalog notification 1")).toBeHidden();
+  await expect(page.getByText("Catalog notification 1", { exact: true })).toBeHidden();
+});
+
+test("Toast exposes structured actions and F6 focus without stealing trigger focus", async ({
+  page,
+}) => {
+  const trigger = page.getByRole("button", { name: "Show undo toast" });
+  await trigger.click();
+  await expect(trigger).toBeFocused();
+
+  const region = page.getByRole("region", { name: "Notifications" });
+  await expect(region.getByText("Item archived", { exact: true })).toBeVisible();
+  await expect(region.getByText("The item can be restored.", { exact: true })).toBeVisible();
+
+  await page.keyboard.press("Shift+F6");
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("F6");
+  await expect(region).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(region.getByRole("button", { name: "Undo" })).toBeFocused();
+  await region.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByTestId("undone-actions")).toHaveText("undo actions: 1");
+  await expect(region.getByText("Item archived", { exact: true })).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test("Toast repairs focus when an update removes the focused action", async ({ page }) => {
+  const trigger = page.getByRole("button", { name: "Show undo toast" });
+  const region = page.getByRole("region", { name: "Notifications" });
+  await trigger.click();
+  await page.keyboard.press("F6");
+  await page.keyboard.press("Tab");
+  await expect(region.getByRole("button", { name: "Undo" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Remove undo action" }).evaluate(
+    (button: HTMLButtonElement) => button.click(),
+  );
+  const dismiss = region.getByRole("button", { name: "Dismiss notification" });
+  await expect(dismiss).toBeFocused();
+  await dismiss.click();
+  await expect(trigger).toBeFocused();
+});
+
+test("Toast upserts by explicit id, limits live items, and closes all", async ({ page }) => {
+  const region = page.getByRole("region", { name: "Notifications" });
+  const upsert = page.getByRole("button", { name: "Upsert sync toast" });
+  await upsert.click();
+  await page.keyboard.press("F6");
+  await page.keyboard.press("Tab");
+  const dismiss = region.getByRole("button", { name: "Dismiss notification" });
+  await expect(dismiss).toBeFocused();
+  await upsert.evaluate((button: HTMLButtonElement) => button.click());
+  await expect(dismiss).toBeFocused();
+  await expect(region.getByRole("listitem")).toHaveCount(1);
+  await expect(region.getByText("Revision 2", { exact: true })).toBeVisible();
+  await expect(region.getByText("Revision 1", { exact: true })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Fill toast limit" }).click();
+  await expect(region.getByRole("listitem")).toHaveCount(3);
+  await expect(region.getByText("Limited notification 1", { exact: true })).toHaveCount(0);
+  for (const number of [2, 3, 4]) {
+    await expect(region.getByText(`Limited notification ${number}`, { exact: true })).toBeVisible();
+  }
+
+  await page.getByRole("button", { name: "Close all notifications" }).click();
+  await expect(region.getByRole("listitem")).toHaveCount(0);
+  await expect(region).toBeHidden();
+});
+
+test("Toast promise and priority update the visual and live contracts", async ({ page }) => {
+  await page.getByRole("button", { name: "Run successful promise" }).click();
+  const region = page.getByRole("region", { name: "Notifications" });
+  await expect(region.getByText("Save complete", { exact: true })).toBeVisible();
+  await expect(region.getByText("2 records saved", { exact: true })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Save complete" })).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Show urgent toast" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Connection lost" })).toHaveCount(1);
+  await expect(region.getByText("Changes are not being saved.", { exact: true })).toBeVisible();
+});
+
+test("Toast auto-dismiss pauses while the F6 region owns focus", async ({ page }) => {
+  const trigger = page.getByRole("button", { name: "Show timed toast" });
+  const region = page.getByRole("region", { name: "Notifications" });
+  await trigger.click();
+  await page.keyboard.press("F6");
+  await expect(region).toBeFocused();
+  await page.waitForTimeout(300);
+  await expect(region.getByText("This notification pauses while focused.")).toBeVisible();
+
+  await page.keyboard.press("F6");
+  await expect(trigger).toBeFocused();
+  await expect(region.getByText("This notification pauses while focused.")).toBeHidden({
+    timeout: 500,
+  });
+});
+
+test("F6 cycles multiple explicit Toast regions and returns to the external trigger", async ({
+  page,
+}) => {
+  await page.getByRole("button", { name: "Show toast" }).click();
+  const trigger = page.getByRole("button", { name: "Show secondary toast" });
+  await trigger.click();
+  const primary = page.getByRole("region", { name: "Notifications", exact: true });
+  const secondary = page.getByRole("region", { name: "Secondary notifications" });
+
+  await page.keyboard.press("F6");
+  await expect(primary).toBeFocused();
+  await page.keyboard.press("F6");
+  await expect(secondary).toBeFocused();
+  await page.keyboard.press("F6");
+  await expect(trigger).toBeFocused();
 });

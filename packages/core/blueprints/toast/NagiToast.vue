@@ -1,33 +1,141 @@
 <script setup lang="ts">
-import { useToast } from "@nagi-labs/nagi-ui";
+import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from "vue";
+
+import {
+  createToastManager,
+  useToast,
+  type ToastId,
+  type ToastItem,
+  type ToastManager,
+} from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
+    manager?: ToastManager;
     duration?: number;
+    limit?: number;
+    label?: string;
     dismissLabel?: string;
   }>(),
-  { duration: 4000, dismissLabel: "Dismiss notification" },
+  {
+    duration: 4000,
+    limit: 3,
+    label: "Notifications",
+    dismissLabel: "Dismiss notification",
+  },
 );
 
-const notifier = useToast({ duration: props.duration });
+const ownsManager = props.manager === undefined;
+const internalManager = props.manager
+  ?? createToastManager({ duration: props.duration, limit: props.limit });
+const notifier = useToast({ manager: internalManager, label: props.label });
+const region = useTemplateRef<HTMLElement>("region");
+const visibleToasts = computed(() => [...notifier.toasts.value].reverse());
 
-defineExpose({ toast: notifier.toast, dismiss: notifier.dismiss });
+onBeforeUnmount(() => {
+  if (ownsManager) internalManager.dispose();
+});
+
+function toneClass(item: ToastItem) {
+  if (item.tone === "neutral") return undefined;
+  return item.tone === "success" ? "-positive" : `-${item.tone}`;
+}
+
+function announcement(item: ToastItem) {
+  return [item.title, item.description].filter(Boolean).join(". ");
+}
+
+function runAction(item: ToastItem) {
+  return item.action?.onClick(item.id);
+}
+
+watch(notifier.toasts, async (next) => {
+  if (typeof document === "undefined") return;
+  const regionElement = region.value;
+  const active = document.activeElement;
+  if (!regionElement || !(active instanceof HTMLElement) || !regionElement.contains(active)) {
+    return;
+  }
+
+  const focusedItem = active.closest<HTMLElement>(".item");
+  if (!focusedItem) {
+    if (next.length === 0) {
+      await nextTick();
+      notifier.restoreFocus();
+    }
+    return;
+  }
+
+  const previousItems = [...regionElement.querySelectorAll<HTMLElement>(":scope > .list > .item")];
+  const focusedIndex = previousItems.indexOf(focusedItem);
+  await nextTick();
+  if (active.isConnected && regionElement.contains(active)) return;
+  const remainingItems = [...regionElement.querySelectorAll<HTMLElement>(":scope > .list > .item")];
+  if (remainingItems.length === 0) {
+    notifier.restoreFocus();
+    return;
+  }
+  const nextItem = remainingItems[Math.min(Math.max(focusedIndex, 0), remainingItems.length - 1)];
+  nextItem?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
+}, { flush: "pre" });
+
+function toast(message: string, options: { duration?: number } = {}): ToastId {
+  return notifier.toast(message, options);
+}
+
+defineExpose({
+  manager: internalManager,
+  add: internalManager.add,
+  update: internalManager.update,
+  close: internalManager.close,
+  promise: internalManager.promise,
+  toast,
+  dismiss: notifier.dismiss,
+});
 </script>
 
 <template>
   <div class="nagi-toast">
-    <div class="zone" v-bind="notifier.regionProps">
+    <div class="zone -announcements">
+      <p
+        v-for="item in notifier.toasts.value"
+        :key="`${item.id}-${item.revision}`"
+        class="text"
+        :role="item.priority === 'assertive' ? 'alert' : 'status'"
+        aria-atomic="true"
+      >
+        {{ announcement(item) }}
+      </p>
+    </div>
+
+    <div ref="region" class="zone" v-bind="notifier.regionProps">
       <ol class="list">
-        <li v-for="item in notifier.toasts.value" :key="item.id" class="item">
-          <span class="text">{{ item.message }}</span>
-          <button
-            class="button -dismiss"
-            type="button"
-            :aria-label="dismissLabel"
-            @click="notifier.dismiss(item.id)"
-          >
-            ×
-          </button>
+        <li
+          v-for="item in visibleToasts"
+          :key="item.id"
+          class="item"
+          :class="toneClass(item)"
+        >
+          <div v-if="item.title" class="title">{{ item.title }}</div>
+          <p v-if="item.description" class="text">{{ item.description }}</p>
+          <div class="actions">
+            <button
+              v-if="item.action"
+              class="button -action"
+              type="button"
+              @click="runAction(item)"
+            >
+              {{ item.action.label }}
+            </button>
+            <button
+              class="button -dismiss"
+              type="button"
+              :aria-label="dismissLabel"
+              @click="internalManager.close(item.id)"
+            >
+              ×
+            </button>
+          </div>
         </li>
       </ol>
     </div>
@@ -37,6 +145,19 @@ defineExpose({ toast: notifier.toast, dismiss: notifier.dismiss });
 <style scoped>
 .nagi-toast {
   display: contents;
+
+  > .zone.-announcements {
+    position: fixed;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+
+    > .text {
+      margin: 0;
+    }
+  }
 
   > .zone {
     position: fixed;
@@ -62,30 +183,82 @@ defineExpose({ toast: notifier.toast, dismiss: notifier.dismiss });
         padding: 0.65rem 0.75rem;
         border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
         border-radius: var(--nagi-radius-overlay, 0.65rem);
-        background: var(--nagi-color-text, #17323b);
-        color: var(--nagi-color-surface, #fff);
+        background: var(--nagi-color-surface, #fff);
+        color: var(--nagi-color-text, #17323b);
         box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
 
-        > .button {
-          inline-size: 1.75rem;
-          block-size: 1.75rem;
-          padding: 0;
-          border: 0;
-          border-radius: var(--nagi-radius-item, 0.4rem);
-          background: transparent;
-          color: inherit;
-          font: inherit;
-          font-size: 1.1rem;
-          cursor: pointer;
+        > .title {
+          grid-column: 1;
+          min-inline-size: 0;
+          margin: 0 0 0.2rem;
+          font-weight: 750;
+        }
 
-          &:hover {
-            background: rgb(255 255 255 / 0.12);
-          }
+        > .text {
+          grid-column: 1;
+          min-inline-size: 0;
+          margin: 0;
+          color: var(--nagi-color-text-muted, #50676f);
+          font-size: 0.875rem;
+        }
 
-          &:focus-visible {
-            outline: 2px solid var(--nagi-color-surface, #fff);
-            outline-offset: 1px;
+        > .actions {
+          grid-column: 2;
+          grid-row: 1 / span 2;
+          display: flex;
+          gap: 0.25rem;
+          align-items: center;
+
+          > .button {
+            min-block-size: 1.75rem;
+            padding-inline: 0.45rem;
+            border: 0;
+            border-radius: var(--nagi-radius-item, 0.4rem);
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+
+            &:hover {
+              background: color-mix(in srgb, currentColor 8%, transparent);
+            }
+
+            &:focus-visible {
+              outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+              outline-offset: 1px;
+            }
+
+            &.-action {
+              color: var(--nagi-color-accent, #16768b);
+              font-weight: 700;
+            }
+
+            &.-dismiss {
+              inline-size: 1.75rem;
+              padding: 0;
+              font-size: 1.1rem;
+            }
           }
+        }
+
+        &.-accent {
+          border-color: var(--nagi-color-accent, #16768b);
+          background: var(--nagi-color-surface-accent, #e5f1f4);
+        }
+
+        &.-positive {
+          border-color: var(--nagi-color-success, #18794e);
+          background: var(--nagi-color-surface-success, #e7f5ed);
+        }
+
+        &.-warning {
+          border-color: var(--nagi-color-warning, #8a5a00);
+          background: var(--nagi-color-surface-warning, #fff4d6);
+        }
+
+        &.-danger {
+          border-color: var(--nagi-color-danger, #aa3443);
+          background: var(--nagi-color-surface-danger, #fbeaec);
         }
       }
     }

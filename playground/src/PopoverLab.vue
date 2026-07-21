@@ -16,6 +16,10 @@ function fireToast() {
   notifier.toast(`Saved! (#${toastCount})`)
 }
 
+function toastAnnouncement(item: { title: string | undefined; description: string | undefined }) {
+  return [item.title, item.description].filter(Boolean).join(". ")
+}
+
 const basic = usePopover()
 
 const lastPick = ref("(none)")
@@ -108,10 +112,22 @@ const hinted = usePopover()
       </dialog>
     </section>
 
+    <div class="zone -announcements">
+      <p
+        v-for="item in notifier.toasts.value"
+        :key="`${item.id}-${item.revision}`"
+        class="text"
+        :role="item.priority === 'assertive' ? 'alert' : 'status'"
+        aria-atomic="true"
+      >
+        {{ toastAnnouncement(item) }}
+      </p>
+    </div>
+
     <div class="zone -toasts" v-bind="notifier.regionProps">
       <ul class="list">
         <li v-for="item in notifier.toasts.value" :key="item.id" class="item">
-          {{ item.message }}
+          {{ item.title ?? item.description }}
         </li>
       </ul>
     </div>
@@ -244,6 +260,19 @@ const hinted = usePopover()
           color: #f4f9fa;
           box-shadow: 0 8px 24px rgb(22 48 60 / 0.3);
         }
+      }
+    }
+
+    &.-announcements {
+      position: fixed;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+
+      > .text {
+        margin: 0;
       }
     }
   }

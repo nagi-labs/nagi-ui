@@ -204,4 +204,6 @@ upgrades.
   Fieldset, Progress, Meter and single-thumb Slider, and completes ordinary
   Combobox form behavior. See
   [`docs/base-ui-alignment-b.md`](docs/base-ui-alignment-b.md).
-- [ ] Alignment C strengthens Toast as explicit infrastructure.
+- [x] Alignment C strengthens Toast with an explicit manager, structured
+  notifications, upsert/update/close/promise, limit and F6 focus. See
+  [`docs/base-ui-alignment-c.md`](docs/base-ui-alignment-c.md).

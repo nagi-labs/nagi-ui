@@ -23,7 +23,7 @@ still existed only as playground fixtures. This slice ships the missing five:
 | `Dialog` | native `<dialog>` + `useDialog` | title/description props + body/action slots |
 | `Tooltip` | hint popover + `useTooltip` | trigger/text, disabled, `area`/`offset` props |
 | `Disclosure` | native `<details>` + `useDisclosure` | summary/disabled props + body slot |
-| `Toast` | manual popover + `useToast` | exposed `toast()` / `dismiss()` methods |
+| `Toast` | manual popover + `useToast` + explicit `createToastManager()` | manager prop; structured add/update/close/promise API and F6 notification region |
 
 The slot choices follow CHARTER §3.5: Popover, Dialog, and Disclosure exist to
 contain free application markup. Behavior wiring never crosses a slot. Trigger,
@@ -124,3 +124,8 @@ Post-v0 Alignment B adds nine native-first form/indicator Blueprints without
 reopening the historical v0 boundary. The current package catalog is therefore
 21 components; its contracts are recorded in
 [`base-ui-alignment-b.md`](base-ui-alignment-b.md).
+
+Post-v0 Alignment C keeps the catalog at 21 components while strengthening
+Toast into explicit notification infrastructure. Its manager, announcement,
+focus and deliberate modal boundary are recorded in
+[`base-ui-alignment-c.md`](base-ui-alignment-c.md).

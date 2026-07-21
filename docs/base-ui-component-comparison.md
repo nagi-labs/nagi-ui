@@ -91,7 +91,7 @@ name is an input to review, not an automatic requirement for Nagi.
 | [Slider](https://base-ui.com/react/components/slider) | Range selection, orientation and potentially multiple thumbs | Native single-thumb `Slider` ships range keyboard behavior, form/reset and a separately labelled output | **Shipped** | Multi-thumb collision logic is a separate thick component, not a prop on the native path. |
 | [Switch](https://base-ui.com/react/components/switch) | Boolean setting with switch semantics and form behavior | Native checkbox-backed `Switch` ships `role="switch"`, label, form/reset and forced-colors fallback | **Shipped** | Keep native checkbox focus/disabled/checked semantics. Do not invent non-native read-only behavior. |
 | [Tabs](https://base-ui.com/react/components/tabs) | Automatic/manual activation, orientation, roving focus and related panels | Listed in the Nagi investment map but not implemented | **Defer** | Implement `useTabs` as the behavior source. Validate an owned-DOM or small-schema Blueprint without publishing a Root/List/Trigger/Panel family. |
-| [Toast](https://base-ui.com/react/components/toast) | Managed notifications, structured content, action, priority, limit, update/close/promise, keyboard access and gestures | `Toast` ships message/duration/dismiss and top-layer re-promotion only | **Strengthen** | Add an explicit manager object, structured title/description/tone/action, priority, limit, update, close-all, promise and keyboard access. Defer swipe, anchored toasts and stack physics. |
+| [Toast](https://base-ui.com/react/components/toast) | Managed notifications, structured content, action, priority, limit, update/close/promise, keyboard access and gestures | `Toast` ships an explicit manager, structured content/action, polite/assertive announcements, id upsert, limit, update/close/promise, F6 focus and top-layer re-promotion | **Shipped** | Keep swipe, anchored toasts, stack physics, Provider/Portal and JS exit orchestration out. Native modal inertness remains intact; render an interactive Toast inside the dialog that owns it. |
 | [Toggle](https://base-ui.com/react/components/toggle) | Two-state pressed button | No Nagi equivalent | **Candidate** | Native `<button aria-pressed>` with controlled `v-model`; small styling Blueprint and no custom element rendering. |
 | [Toggle Group](https://base-ui.com/react/components/toggle-group) | Coordinated single/multiple toggle selection | No Nagi equivalent | **Candidate** | Items schema + native pressed buttons is reasonable. Add roving focus only when the chosen ARIA pattern requires it. |
 | [Toolbar](https://base-ui.com/react/components/toolbar) | Labeled horizontal/vertical control group with keyboard navigation | No Nagi equivalent | **Defer** | Implement an attribute-injection `useToolbar` for arbitrary owned buttons/controls. Avoid a ToolbarButton/ToolbarLink component family. |
@@ -150,10 +150,16 @@ The shipped contract and deliberate Base UI omissions are recorded in
 
 ### Alignment C — strengthen Toast as infrastructure
 
-- Explicit `createToastManager()`; no mandatory provider or hidden singleton.
-- Structured title/description/tone/action and polite/assertive priority.
-- `add`, `update`, `close`, close-all, deduplication and `promise`.
-- Limit and keyboard/focus contract before swipe or visual stack physics.
+Completed (2026-07-21):
+
+- explicit `createToastManager()` with no mandatory provider or hidden singleton;
+- structured title/description/tone/action and polite/assertive priority;
+- `add`, `update`, `close`, close-all, explicit-id upsert and `promise`;
+- limit, timer pause/resume and an F6 keyboard/focus contract;
+- dialog re-promotion without defeating native modal inertness.
+
+The shipped contract and deliberate omissions are recorded in
+[`base-ui-alignment-c.md`](base-ui-alignment-c.md).
 
 ### Alignment D — independent thick components
 

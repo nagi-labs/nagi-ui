@@ -9,6 +9,8 @@ import { createServer } from "vite";
 import { createSSRApp, h, type Component } from "vue";
 import { renderToString } from "vue/server-renderer";
 
+import { createToastManager } from "../packages/core/src/toast.ts";
+
 const repo = path.join(import.meta.dirname, "..");
 
 async function withComponents(
@@ -223,9 +225,24 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(disclosure, /<details[^>]*\sopen(?:="")?[\s>]/);
     assert.match(disclosure, /<summary[^>]*>Question<\/summary>/);
 
-    const toast = await render(components.Toast as Component, { duration: 0 });
+    const toastManager = createToastManager({ duration: 0 });
+    toastManager.add({
+      title: "Connection lost",
+      description: "Changes are not being saved.",
+      tone: "danger",
+      priority: "assertive",
+      action: { label: "Retry", onClick() {} },
+    });
+    const toast = await render(components.Toast as Component, { manager: toastManager });
     assert.match(toast, /popover="manual"/);
-    assert.match(toast, /aria-live="polite"/);
+    assert.match(toast, /role="region"/);
+    assert.match(toast, /aria-label="Notifications"/);
+    assert.match(toast, /aria-keyshortcuts="F6"/);
+    assert.match(toast, /role="alert"/);
+    assert.match(toast, /Connection lost/);
+    assert.match(toast, /Changes are not being saved/);
+    assert.match(toast, />Retry</);
+    assert.match(toast, /class="(?:item -danger|-danger item)"/);
   });
 });
 
