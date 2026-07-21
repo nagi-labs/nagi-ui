@@ -16,6 +16,8 @@ import { fileURLToPath } from "node:url"
 export const components = {
   button: { dir: "blueprints/button", files: ["NagiButton.vue"] },
   combobox: { dir: "blueprints/combobox", files: ["Combobox.vue"] },
+  dialog: { dir: "blueprints/dialog", files: ["NagiDialog.vue"] },
+  disclosure: { dir: "blueprints/disclosure", files: ["NagiDisclosure.vue"] },
   "dropdown-menu": {
     dir: "blueprints/menu",
     files: [
@@ -26,6 +28,9 @@ export const components = {
     ],
   },
   listbox: { dir: "blueprints/listbox", files: ["Listbox.vue"] },
+  popover: { dir: "blueprints/popover", files: ["NagiPopover.vue"] },
+  toast: { dir: "blueprints/toast", files: ["NagiToast.vue"] },
+  tooltip: { dir: "blueprints/tooltip", files: ["NagiTooltip.vue"] },
 }
 
 const MARKER_RE = /^(?:<!--|\/\/) @nagi-source ([a-z0-9-]+)\/([^@\s]+)@(\S+?)(?: -->)?$/

@@ -57,6 +57,18 @@ test("own copies the exact installed source with a stamped first line", () => {
   }
 });
 
+test("every registered component points at a shipped ownership source", () => {
+  for (const [name, spec] of Object.entries(components)) {
+    assert.ok(spec.files.length > 0, `${name} has at least one source file`);
+    for (const file of spec.files) {
+      assert.ok(
+        fs.existsSync(path.join(packageRoot, spec.dir, file)),
+        `${name}/${file} exists in the package`,
+      );
+    }
+  }
+});
+
 test("own refuses to overwrite a non-empty target without --force", () => {
   const targetRoot = tempDir();
   ownComponent("listbox", { packageRoot, targetRoot });

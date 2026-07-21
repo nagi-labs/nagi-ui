@@ -66,3 +66,26 @@ test("Dialog and Tooltip are axe-clean in their opened states", async ({ page })
   await expect(page.getByRole("tooltip")).toBeVisible()
   await expectAxeClean(page)
 })
+
+test("thin package Blueprint catalog is axe-clean in opened states", async ({ page }) => {
+  await page.goto("/catalog.html")
+
+  await page.getByRole("button", { name: "Open package popover" }).click()
+  await expectAxeClean(page)
+  await page.keyboard.press("Escape")
+
+  await page.getByRole("button", { name: "Open package dialog" }).click()
+  await expect(page.getByRole("dialog", { name: "Package dialog" })).toBeVisible()
+  await expectAxeClean(page)
+  await page.getByRole("dialog").getByRole("button", { name: "Close" }).click()
+
+  await page.getByRole("button", { name: "More information" }).focus()
+  await expect(page.getByRole("tooltip")).toBeVisible()
+  await expectAxeClean(page)
+  await page.getByRole("button", { name: "More information" }).blur()
+
+  await page.getByText("What does native mean?", { exact: true }).click()
+  await page.getByRole("button", { name: "Show toast" }).click()
+  await expect(page.getByText("Catalog notification 1")).toBeVisible()
+  await expectAxeClean(page)
+})
