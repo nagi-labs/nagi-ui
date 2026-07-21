@@ -71,6 +71,36 @@ test("every registered component points at a shipped ownership source", () => {
   }
 });
 
+test("every public package component has an ownership registry entry", () => {
+  const source = fs.readFileSync(path.join(packageRoot, "components.ts"), "utf8");
+  const publicComponents = Array.from(
+    source.matchAll(/export \{ default as ([A-Za-z0-9]+) \}/g),
+    (match) => (match[1] as string)
+      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
+      .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+      .toLowerCase(),
+  ).sort();
+  assert.deepEqual(Object.keys(components).sort(), publicComponents);
+});
+
+test("Tabs ownership stamps the package source and starts clean", () => {
+  const targetRoot = tempDir();
+  const result = ownComponent("tabs", { packageRoot, targetRoot });
+  assert.equal(result.files.length, 1);
+  const owned = result.files[0] as string;
+  const [marker, ...body] = fs.readFileSync(owned, "utf8").split("\n");
+  assert.deepEqual(parseMarker(marker as string), {
+    component: "tabs",
+    file: "Tabs.vue",
+    version: result.version,
+  });
+  assert.equal(
+    body.join("\n"),
+    fs.readFileSync(path.join(packageRoot, "blueprints/tabs/Tabs.vue"), "utf8"),
+  );
+  assert.equal(diffOwned(targetRoot, { packageRoot })[0]?.status, "clean");
+});
+
 test("own refuses to overwrite a non-empty target without --force", () => {
   const targetRoot = tempDir();
   ownComponent("listbox", { packageRoot, targetRoot });

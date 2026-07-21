@@ -51,7 +51,8 @@ verifies that the result retains the keys of every source.
 
 The first lint slice reads Vue's template AST and recognizes Nagi binding
 names such as `triggerProps`, `menuProps`, `itemProps(item)`, `listboxProps`,
-`optionProps(item)`, and `inputProps`.
+`optionProps(item)`, `inputProps`, `tablistProps`, `tabProps(item)`, and
+`panelProps(item)`.
 
 It currently reports:
 
@@ -108,13 +109,16 @@ if (import.meta.env.DEV) {
 `verifyNagiDom()` reports duplicate IDs, missing ARIA IDREF targets, an
 `aria-activedescendant` outside its owning/controlled DOM, invalid native
 popover targets, trigger/popup relationship mismatches, and missing
-`commandfor` targets. `assertNagiDom()` converts the issue list to an
+`commandfor` targets. Tabs-specific roving count and panel visibility stay in
+its dedicated browser contract instead of imposing Nagi's native-disabled /
+`hidden` choices on other tab implementations in the same document.
+`assertNagiDom()` converts the issue list to an
 `AggregateError` for tests. `observeNagiDom()` batches mutation-driven checks
 and is deliberately opt-in: Nagi does not install a production-wide observer.
 
 Browser fixtures prove both sides of the contract: valid opened Dropdown,
-Listbox, and Combobox graphs return no issues, while deliberately corrupted
-graphs produce the expected issue codes.
+Listbox, Combobox, and Tabs graphs return no issues, while deliberately
+corrupted generic relationship graphs produce the expected issue codes.
 
 ## Rendered accessibility checks
 
@@ -125,6 +129,7 @@ against states that static markup checks miss:
 - the complete Dropdown with its submenu open;
 - single and multiple Listboxes after keyboard selection;
 - the Combobox with an open popup and active descendant;
+- automatic/manual Tabs after keyboard navigation and dynamic item removal;
 - open Dialog and Tooltip states.
 
 These checks augment rather than replace the existing keyboard, focus,
@@ -133,6 +138,8 @@ suite exposed insufficient secondary-text contrast in Dropdown, Listbox, and
 Combobox; the shipped Blueprint colors and equivalent explicit-DOM fixture
 were corrected before the phase was marked complete.
 
-The complete browser suite is 28/28 green. Package-source versus owned-copy
-parity and upstream diff/migration integration belong to the Phase 4
-ownership tooling, built on these same checks.
+The initial Phase 3.5 browser suite was 28/28 green; post-v0 vertical slices
+extend the same executable contract and record current totals in their own
+alignment documents. Package-source versus owned-copy parity and upstream
+diff/migration integration belong to the Phase 4 ownership tooling, built on
+these same checks.

@@ -83,6 +83,17 @@ export {
   type UseListboxReturn,
 } from "./listbox.ts"
 export {
+  useTabs,
+  type TabsAccessibleName,
+  type TabsActivationMode,
+  type TabsListProps,
+  type TabsOrientation,
+  type TabsPanelProps,
+  type TabsTabProps,
+  type UseTabsOptions,
+  type UseTabsReturn,
+} from "./tabs.ts"
+export {
   useCombobox,
   type ComboboxInputProps,
   type ComboboxListboxProps,

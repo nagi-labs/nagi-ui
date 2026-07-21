@@ -11,10 +11,10 @@ vp exec nagi-ui own dropdown-menu [--dir src/components/nagi] [--force]
 vp exec nagi-ui diff [--dir src/components/nagi]
 ```
 
-Available component names are `alert`, `badge`, `button`, `card`, `combobox`,
-`dialog`, `disclosure`, `dropdown-menu`, `listbox`, `popover`, `toast`, and
-`tooltip`. `nagi-ui list` is the machine-readable source of truth for the
-installed version.
+`nagi-ui list` prints the available component names and is the machine-readable
+source of truth for the installed version. This document deliberately does not
+duplicate that growing registry as a static list; package-export/ownership
+parity is enforced by `tests/cli.test.ts`.
 
 The binary ships with `@nagi-labs/nagi-ui`. `packages/core/cli/nagi-ui.mjs`
 defines the `setup` / `list` / `own` / `diff` subcommands through `citty`;

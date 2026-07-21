@@ -25,6 +25,7 @@ export const nagiUiComponentClasses = {
   Select: "nagi-select",
   Slider: "nagi-slider",
   Switch: "nagi-switch",
+  Tabs: "tabs",
   Toast: "nagi-toast",
   Tooltip: "nagi-tooltip",
 }
@@ -40,6 +41,7 @@ export const nagiUiComponentSlots = {
   Disclosure: { default: "nagi-disclosure-content" },
   Fieldset: { default: "nagi-fieldset-content" },
   Popover: { default: "nagi-popover-content" },
+  Tabs: { panel: "tabs-panel" },
 }
 
 const nagiUiPreset = {

@@ -129,3 +129,7 @@ Post-v0 Alignment C keeps the catalog at 21 components while strengthening
 Toast into explicit notification infrastructure. Its manager, announcement,
 focus and deliberate modal boundary are recorded in
 [`base-ui-alignment-c.md`](base-ui-alignment-c.md).
+
+Post-v0 Alignment D1 adds Tabs as the 22nd package/ownable component. Its
+independent roving-focus core, content-only panel slot and deliberate omissions
+are recorded in [`base-ui-alignment-d-tabs.md`](base-ui-alignment-d-tabs.md).

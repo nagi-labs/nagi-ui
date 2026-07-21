@@ -52,6 +52,12 @@ test("components entry exposes every thin behavior Blueprint", async () => {
   });
 });
 
+test("components entry exposes the independent Tabs behavior Blueprint", async () => {
+  await withComponents(async (components) => {
+    assert.ok(components.Tabs, "Tabs is exported from /components");
+  });
+});
+
 test("components entry exposes every native form and indicator Blueprint", async () => {
   await withComponents(async (components) => {
     for (const name of [
@@ -243,6 +249,68 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(toast, /Changes are not being saved/);
     assert.match(toast, />Retry</);
     assert.match(toast, /class="(?:item -danger|-danger item)"/);
+  });
+});
+
+test("Tabs package Blueprint emits a complete ARIA relationship graph during SSR", async () => {
+  await withComponents(async (components) => {
+    const tabs = await render(components.Tabs as Component, {
+      label: "Project sections",
+      items: [
+        { key: "overview", label: "Overview", content: "Project summary" },
+        { key: "billing", label: "Billing", content: "Invoices", disabled: true },
+        { key: "activity", label: "Activity", content: "Recent changes" },
+      ],
+    });
+
+    assert.match(tabs, /role="tablist"/);
+    assert.match(tabs, /aria-label="Project sections"/);
+    const selectedTab = tabs.match(
+      /<button[^>]*id="([^"]+)"[^>]*role="tab"[^>]*aria-selected="true"[^>]*aria-controls="([^"]+)"/,
+    );
+    assert.ok(selectedTab);
+    const selectedTabId = selectedTab[1] as string;
+    const selectedPanelId = selectedTab[2] as string;
+    assert.ok(
+      tabs.includes(`id="${selectedPanelId}"`) &&
+        tabs.includes(`aria-labelledby="${selectedTabId}"`),
+    );
+    assert.match(tabs, /<button[^>]*disabled[^>]*aria-selected="false"/);
+    assert.match(tabs, /<section[^>]*role="tabpanel"[^>]*hidden/);
+    assert.match(tabs, /Project summary/);
+    assert.match(tabs, /Recent changes/);
+
+    for (const [selected, expected] of [
+      [null, "overview"],
+      ["missing", "overview"],
+      ["billing", "activity"],
+    ] as const) {
+      const controlled = await render(components.Tabs as Component, {
+        label: "Controlled sections",
+        selected,
+        "onUpdate:selected": () => undefined,
+        items: [
+          { key: "overview", label: "Overview", content: "Project summary" },
+          { key: "billing", label: "Billing", content: "Invoices", disabled: true },
+          { key: "activity", label: "Activity", content: "Recent changes" },
+        ],
+      });
+      assert.match(
+        controlled,
+        new RegExp(`<button[^>]*id="[^"]*-tab-${expected}"[^>]*aria-selected="true"`),
+      );
+      const activePanelId = controlled.match(
+        /<button[^>]*aria-selected="true"[^>]*aria-controls="([^"]+)"/,
+      )?.[1];
+      assert.ok(activePanelId);
+      const activePanelTag = controlled.match(
+        new RegExp(`<section[^>]*id="${activePanelId}"[^>]*>`),
+      )?.[0];
+      assert.ok(activePanelTag);
+      assert.match(activePanelTag, /role="tabpanel"/);
+      assert.match(activePanelTag, /aria-labelledby="[^"]+"/);
+      assert.doesNotMatch(activePanelTag, /\shidden(?:[=\s>])/);
+    }
   });
 });
 

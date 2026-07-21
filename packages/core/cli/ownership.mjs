@@ -30,6 +30,7 @@ export const components = {
   select: { dir: "blueprints/select", files: ["NagiSelect.vue"] },
   slider: { dir: "blueprints/slider", files: ["NagiSlider.vue"] },
   switch: { dir: "blueprints/switch", files: ["NagiSwitch.vue"] },
+  tabs: { dir: "blueprints/tabs", files: ["Tabs.vue"] },
   toast: { dir: "blueprints/toast", files: ["NagiToast.vue"] },
   tooltip: { dir: "blueprints/tooltip", files: ["NagiTooltip.vue"] },
 }

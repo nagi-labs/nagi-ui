@@ -160,6 +160,38 @@ const contracts: Record<string, BindingContract> = {
       "data-active",
     ),
   },
+  tablistProps: {
+    tags: ["div"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "dir",
+      "aria-label",
+      "aria-labelledby",
+      "aria-orientation",
+    ),
+  },
+  tabProps: {
+    tags: ["button"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "type",
+      "disabled",
+      "tabindex",
+      "aria-selected",
+      "aria-controls",
+    ),
+  },
+  panelProps: {
+    protectedAttributes: set(
+      "id",
+      "role",
+      "tabindex",
+      "hidden",
+      "aria-labelledby",
+    ),
+  },
   inputProps: {
     tags: ["input"],
     protectedAttributes: set(

@@ -90,7 +90,7 @@ name is an input to review, not an automatic requirement for Nagi.
 | [Separator](https://base-ui.com/react/components/separator) | Semantic or decorative visual division, including orientation | Menu-owned separators exist; no standalone component | **Candidate** | Use `<hr>` when content separation is semantic. A standalone decorative variant may use `role="separator"`; do not allow ambiguous duplicate separator forms without guidance. |
 | [Slider](https://base-ui.com/react/components/slider) | Range selection, orientation and potentially multiple thumbs | Native single-thumb `Slider` ships range keyboard behavior, form/reset and a separately labelled output | **Shipped** | Multi-thumb collision logic is a separate thick component, not a prop on the native path. |
 | [Switch](https://base-ui.com/react/components/switch) | Boolean setting with switch semantics and form behavior | Native checkbox-backed `Switch` ships `role="switch"`, label, form/reset and forced-colors fallback | **Shipped** | Keep native checkbox focus/disabled/checked semantics. Do not invent non-native read-only behavior. |
-| [Tabs](https://base-ui.com/react/components/tabs) | Automatic/manual activation, orientation, roving focus and related panels | Listed in the Nagi investment map but not implemented | **Defer** | Implement `useTabs` as the behavior source. Validate an owned-DOM or small-schema Blueprint without publishing a Root/List/Trigger/Panel family. |
+| [Tabs](https://base-ui.com/react/components/tabs) | Automatic/manual activation, orientation, roving focus and related panels | `useTabs` and the package/ownable `Tabs` Blueprint ship native buttons, owned tabpanels, dynamic fallback and focus repair | **Shipped** | Keep the flat items schema plus one content-only panel slot. Do not publish a Root/List/Tab/Panel family, Indicator geometry runtime or lazy automatic panels. |
 | [Toast](https://base-ui.com/react/components/toast) | Managed notifications, structured content, action, priority, limit, update/close/promise, keyboard access and gestures | `Toast` ships an explicit manager, structured content/action, polite/assertive announcements, id upsert, limit, update/close/promise, F6 focus and top-layer re-promotion | **Shipped** | Keep swipe, anchored toasts, stack physics, Provider/Portal and JS exit orchestration out. Native modal inertness remains intact; render an interactive Toast inside the dialog that owns it. |
 | [Toggle](https://base-ui.com/react/components/toggle) | Two-state pressed button | No Nagi equivalent | **Candidate** | Native `<button aria-pressed>` with controlled `v-model`; small styling Blueprint and no custom element rendering. |
 | [Toggle Group](https://base-ui.com/react/components/toggle-group) | Coordinated single/multiple toggle selection | No Nagi equivalent | **Candidate** | Items schema + native pressed buttons is reasonable. Add roving focus only when the chosen ARIA pattern requires it. |
@@ -167,6 +167,13 @@ Autocomplete, Context Menu, Menubar, Navigation Menu, OTP Field, Preview Card,
 Tabs and Toolbar each require a separate vertical slice with browser tests.
 They must not be implemented as modes that inflate Combobox, Menu, Popover or
 Disclosure.
+
+Tabs completed the first independent slice (2026-07-21): `useTabs` owns
+manual/automatic activation, roving focus, orientation/RTL, disabled and
+dynamic fallback behavior, while one SFC owns the tab/panel relationship graph.
+Its single scoped panel slot receives only caller data, never behavior props.
+See [`base-ui-alignment-d-tabs.md`](base-ui-alignment-d-tabs.md). The remaining
+seven components stay independent future slices.
 
 ## Capabilities that do not survive translation
 

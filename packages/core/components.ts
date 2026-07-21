@@ -27,6 +27,8 @@ export { default as Select } from "./blueprints/select/NagiSelect.vue";
 export type { NagiSelectOption } from "./blueprints/select/NagiSelect.vue";
 export { default as Slider } from "./blueprints/slider/NagiSlider.vue";
 export { default as Switch } from "./blueprints/switch/NagiSwitch.vue";
+export { default as Tabs } from "./blueprints/tabs/Tabs.vue";
+export type { TabsItem } from "./blueprints/tabs/Tabs.vue";
 export { default as Toast } from "./blueprints/toast/NagiToast.vue";
 export { default as Tooltip } from "./blueprints/tooltip/NagiTooltip.vue";
 export type {

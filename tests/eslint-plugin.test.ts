@@ -129,6 +129,38 @@ test("protects Combobox disabled and readonly behavior from DOM-only overrides",
   )
 })
 
+test("accepts owned Tabs wiring and protects its role relationships", () => {
+  const valid = verify(`
+    <template>
+      <div v-bind="tabs.tablistProps">
+        <button
+          v-for="item in items"
+          :key="item.key"
+          v-bind="tabs.tabProps(item)"
+        >{{ item.label }}</button>
+      </div>
+      <section
+        v-for="item in items"
+        :key="item.key"
+        v-bind="tabs.panelProps(item)"
+      ></section>
+    </template>
+  `)
+  assert.deepEqual(valid, [])
+
+  const invalid = verify(`
+    <template>
+      <ul v-bind="tabs.tablistProps"></ul>
+      <button role="button" v-bind="tabs.tabProps(item)">Tab</button>
+      <section hidden v-bind="tabs.panelProps(item)"></section>
+    </template>
+  `)
+  assert.deepEqual(
+    invalid.map((message) => message.messageId),
+    ["wrongElement", "protectedOverride", "protectedOverride"],
+  )
+})
+
 test("all shipped Blueprints satisfy verified-bindings", () => {
   const files = fs
     .readdirSync(path.join(repo, "packages/core/blueprints"), { recursive: true })

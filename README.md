@@ -4,7 +4,7 @@
 consumers own the source only when they need to.** The normal path is a
 themeable package component; the same SFC is the source for on-demand
 ownership. Popovers, dialogs, and tooltips are delegated to the platform;
-JS effort is reserved for Menu / Listbox / Combobox.
+JS effort is reserved for Menu / Listbox / Combobox / Tabs.
 
 Nagi UI is the reference implementation of the
 [Nagi CSS contract](../nagi-css/CONTRACT.md): no wrapper tags, no Teleport,
@@ -66,6 +66,7 @@ import {
   Select,
   Slider,
   Switch,
+  Tabs,
   Toast,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components"
@@ -73,7 +74,8 @@ import "@nagi-labs/nagi-ui/theme.css"
 ```
 
 The component catalog runs at `/catalog.html`; native form controls and the
-strengthened Combobox run at `/forms.html`. Package/ownership details are in
+strengthened Combobox run at `/forms.html`; the Alignment D Tabs matrix runs at
+`/tabs.html`. Package/ownership details are in
 [`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md).
 
 Framework integration is selected once through the setup wizard:
@@ -207,3 +209,7 @@ upgrades.
 - [x] Alignment C strengthens Toast with an explicit manager, structured
   notifications, upsert/update/close/promise, limit and F6 focus. See
   [`docs/base-ui-alignment-c.md`](docs/base-ui-alignment-c.md).
+- [x] Alignment D1 ships Tabs as an independent thick slice with
+  manual/automatic activation, roving focus, orientation/RTL, dynamic fallback
+  and a content-only panel slot. See
+  [`docs/base-ui-alignment-d-tabs.md`](docs/base-ui-alignment-d-tabs.md).
