@@ -11,7 +11,7 @@ withDefaults(
 
 <template>
   <section
-    class="alert"
+    class="n-alert"
     :class="tone === 'neutral' ? undefined : tone === 'success' ? '-positive' : `-${tone}`"
     :role="role"
   >
@@ -28,7 +28,7 @@ withDefaults(
 </template>
 
 <style scoped>
-.alert {
+.n-alert {
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--nagi-color-border-muted);
   border-radius: var(--nagi-radius-control);

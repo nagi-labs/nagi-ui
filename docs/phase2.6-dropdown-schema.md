@@ -110,7 +110,7 @@ local diff in code you own:
    and focus wiring stays inside the renderer:
 
    ```vue
-   <li v-else-if="node.type === 'account'" class="dropdown-menu-item" role="none">
+   <li v-else-if="node.type === 'account'" class="n-dropdown-menu-item" role="none">
      <button class="button" type="button" v-bind="menu.itemProps(accountEntry(node), ...)">
        <img class="image -avatar" :src="node.avatarSrc" alt="" />
        <span class="text">{{ node.name }}</span>
@@ -119,7 +119,7 @@ local diff in code you own:
    </li>
    ```
 
-3. **CSS block** under `.dropdown-menu-item` in the same file.
+3. **CSS block** under `.n-dropdown-menu-item` in the same file.
 4. **Run `nagi-css check`**, `vp run test`, `vp run typecheck`.
 
 Native URL links ship as the `link` node. Vue Router and Nuxt client navigation

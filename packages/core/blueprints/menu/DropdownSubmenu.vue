@@ -23,7 +23,7 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
 </script>
 
 <template>
-  <li class="dropdown-submenu" role="none">
+  <li class="n-dropdown-submenu" role="none">
     <button
       class="button"
       type="button"
@@ -46,7 +46,7 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
 </template>
 
 <style scoped>
-.dropdown-submenu {
+.n-dropdown-submenu {
   > .button {
     display: grid;
     grid-template-columns: 1rem minmax(0, 1fr) auto;

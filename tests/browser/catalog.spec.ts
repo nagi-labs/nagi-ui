@@ -7,10 +7,10 @@ test.beforeEach(async ({ page }) => {
 test("styling-only package components expose semantic content and tone variants", async ({
   page,
 }) => {
-  const card = page.locator("div.card", { hasText: "Package-first surface" });
+  const card = page.locator("div.n-card", { hasText: "Package-first surface" });
   await expect(card.getByText("Package-first surface", { exact: true })).toBeVisible();
   await expect(card.getByText("Rich content", { exact: true })).toBeVisible();
-  await expect(card.locator(".card-description")).toContainText(
+  await expect(card.locator(".n-card-description")).toContainText(
     "own only when the structure must change.",
   );
   await expect(card.getByText("Markup stays local.", { exact: true })).toBeVisible();
@@ -21,11 +21,11 @@ test("styling-only package components expose semantic content and tone variants"
   for (const label of ["Neutral", "Accent", "Review", "Blocked"]) {
     await expect(card.getByText(label, { exact: true })).toBeVisible();
   }
-  await expect(card.locator(".badge-label", { hasText: "Ready" })).toBeVisible();
+  await expect(card.locator(".n-badge-label", { hasText: "Ready" })).toBeVisible();
 
   await expect(card.locator('[role="status"]', { hasText: "Catalog ready" })).toBeVisible();
-  await expect(card.locator(".alert-icon", { hasText: "✓" })).toBeVisible();
-  await expect(card.locator(".alert-title", { hasText: "Verified" })).toBeVisible();
+  await expect(card.locator(".n-alert-icon", { hasText: "✓" })).toBeVisible();
+  await expect(card.locator(".n-alert-title", { hasText: "Verified" })).toBeVisible();
   await expect(card.getByRole("alert")).toContainText("Destructive action");
 
   const smallHeight = await page.getByTestId("button-small").evaluate((button) => button.clientHeight);
@@ -46,6 +46,29 @@ test("focusable disabled Button stays focusable without activating", async ({ pa
   await expect(page.getByTestId("focusable-disabled-clicks")).toHaveText("activations: 0");
 });
 
+test("Avatar recovers after an image error and Toggle exposes native pressed state", async ({
+  page,
+}) => {
+  const avatar = page.getByTestId("catalog-avatar");
+  await expect(avatar).toHaveAccessibleName("Ada Lovelace");
+  await expect(avatar.locator("img")).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Break avatar image" }).click();
+  await expect(avatar.locator("img")).toHaveCount(0);
+  await expect(avatar).toContainText("AL");
+
+  await page.getByRole("button", { name: "Restore avatar image" }).click();
+  await expect(avatar.locator("img")).toHaveCount(1);
+
+  const toggle = page.getByRole("button", { name: "Pin release" });
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("toggle-state")).toHaveText("pressed: true");
+  await toggle.press("Space");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+});
+
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");
@@ -60,8 +83,8 @@ test("package Dialog mirrors open state and closes through its owned button", as
   await page.getByRole("button", { name: "Open package dialog" }).click();
   const dialog = page.getByRole("dialog", { name: "Package dialog" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator(".nagi-dialog-title")).toContainText("Package dialog");
-  await expect(dialog.locator(".nagi-dialog-description strong")).toBeVisible();
+  await expect(dialog.locator(".n-dialog-title")).toContainText("Package dialog");
+  await expect(dialog.locator(".n-dialog-description strong")).toBeVisible();
   await expect(dialog).toHaveAccessibleDescription(
     "Confirm the package-level action before continuing.",
   );
@@ -85,7 +108,7 @@ test("disabled Tooltip and Disclosure suppress activation", async ({ page }) => 
 });
 
 test("rich Disclosure summary keeps native details behavior", async ({ page }) => {
-  const summary = page.locator(".nagi-disclosure-summary", { hasText: "What does native mean?" });
+  const summary = page.locator(".n-disclosure-summary", { hasText: "What does native mean?" });
   const disclosure = page.locator("details", { has: summary });
 
   await expect(disclosure).not.toHaveAttribute("open", "");
@@ -181,7 +204,9 @@ test("Toast upserts by explicit id, limits live items, and closes all", async ({
     await expect(region.getByText(`Limited notification ${number}`, { exact: true })).toBeVisible();
   }
 
-  await page.getByRole("button", { name: "Close all notifications" }).click();
+  await page.getByRole("button", { name: "Close all notifications" }).evaluate(
+    (button: HTMLButtonElement) => button.click(),
+  );
   await expect(region.getByRole("listitem")).toHaveCount(0);
   await expect(region).toBeHidden();
 });

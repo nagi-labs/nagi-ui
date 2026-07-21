@@ -34,7 +34,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 </script>
 
 <template>
-  <div class="nagi-dialog">
+  <div class="n-dialog">
     <button class="button -trigger" type="button" v-bind="dialog.triggerProps">
       {{ triggerLabel }}
     </button>
@@ -70,7 +70,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 </template>
 
 <style scoped>
-.nagi-dialog {
+.n-dialog {
   display: inline-block;
   color: var(--nagi-color-text);
 

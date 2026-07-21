@@ -17,7 +17,7 @@ const selected = ref<string | null>("vue");
 </script>
 
 <template>
-  <main class="combobox-lab">
+  <main class="n-combobox-lab">
     <h1 class="title">Nagi UI — Combobox</h1>
     <p class="text">
       DOM focus は input に残り、候補だけを aria-activedescendant で移動します。入力で候補を
@@ -51,7 +51,7 @@ const selected = ref<string | null>("vue");
 </template>
 
 <style scoped>
-.combobox-lab {
+.n-combobox-lab {
   min-block-size: 100vh;
   padding: 2rem;
   background: #f6fafb;

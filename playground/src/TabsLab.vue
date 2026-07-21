@@ -65,7 +65,7 @@ function resetDynamicTabs() {
 </script>
 
 <template>
-  <main class="tabs-lab">
+  <main class="n-tabs-lab">
     <h1 class="title">Nagi UI — Tabs</h1>
     <p class="text">
       Native buttons and sections wired with the APG roving-tabindex pattern. Automatic,
@@ -77,13 +77,13 @@ function resetDynamicTabs() {
       <p class="text">Arrow focus activates immediately and skips disabled tabs.</p>
       <button class="button" type="button" data-testid="before-tabs">Before tabs</button>
       <Tabs
-        class="tabs"
+        class="n-tabs"
         v-model:selected="automaticSelected"
         label="Account sections"
         :items="automaticItems"
       >
         <template #panel="{ item }">
-          <article class="tabs-panel">
+          <article class="n-tabs-panel">
             <p class="text">{{ item.content }}</p>
           </article>
         </template>
@@ -98,7 +98,7 @@ function resetDynamicTabs() {
       <h2 class="title">Manual vertical</h2>
       <p class="text">Arrow focus moves independently; Enter or Space activates.</p>
       <Tabs
-        class="tabs"
+        class="n-tabs"
         v-model:selected="manualSelected"
         label="Profile sections"
         :items="manualItems"
@@ -112,7 +112,7 @@ function resetDynamicTabs() {
       <h2 class="title">Automatic horizontal RTL</h2>
       <p class="text">Horizontal arrows follow logical reading direction.</p>
       <Tabs
-        class="tabs"
+        class="n-tabs"
         v-model:selected="rtlSelected"
         label="RTL sections"
         :items="rtlItems"
@@ -125,7 +125,7 @@ function resetDynamicTabs() {
       <h2 class="title">Dynamic collection</h2>
       <p class="text">Removing or disabling the selected tab repairs selection and focus.</p>
       <Tabs
-        class="tabs"
+        class="n-tabs"
         v-model:selected="dynamicSelected"
         label="Dynamic sections"
         :items="dynamicItems"
@@ -158,7 +158,7 @@ function resetDynamicTabs() {
 </template>
 
 <style scoped>
-.tabs-lab {
+.n-tabs-lab {
   min-block-size: 100vh;
   padding: 2rem;
   background: #f6fafb;
@@ -247,10 +247,10 @@ function resetDynamicTabs() {
 </style>
 
 <style scoped>
-.tabs-lab {
+.n-tabs-lab {
   > .section {
-    > .tabs {
-      .tabs-panel {
+    > .n-tabs {
+      .n-tabs-panel {
         padding: 0.6rem;
 
         > .text {

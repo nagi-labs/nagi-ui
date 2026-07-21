@@ -10,7 +10,7 @@ withDefaults(
 
 <template>
   <fieldset
-    class="nagi-fieldset"
+    class="n-fieldset"
     :disabled="disabled"
   >
     <legend class="legend">{{ legend }}</legend>
@@ -21,7 +21,7 @@ withDefaults(
 </template>
 
 <style scoped>
-.nagi-fieldset {
+.n-fieldset {
   min-inline-size: 0;
   padding: 0.75rem;
   border: 1px solid var(--nagi-color-border-muted);

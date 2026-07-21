@@ -1,81 +1,79 @@
 <script setup lang="ts">
-import { ref, useAttrs } from "vue";
+import { ref, useId } from "vue";
 
-import { useNativeCheckboxControl } from "@nagi-labs/nagi-ui";
+import { useNativeRadioReset } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
     label: string;
+    value: string;
+    id?: string;
     name?: string;
-    value?: string;
-    form?: string;
     disabled?: boolean;
     required?: boolean;
+    form?: string;
   }>(),
   {
-    value: "on",
     disabled: false,
     required: false,
   },
 );
 
-const checked = defineModel<boolean>({ default: false });
-const indeterminate = defineModel<boolean>("indeterminate", { default: false });
-const attrs = useAttrs();
+const model = defineModel<string | null>({ default: null });
+const generatedId = useId();
 const input = ref<HTMLInputElement | null>(null);
 
-useNativeCheckboxControl(input, checked, indeterminate);
+useNativeRadioReset(input, model);
 </script>
 
 <template>
-  <label class="nagi-checkbox">
+  <div class="n-radio">
     <input
-      v-bind="attrs"
       ref="input"
-      v-model="checked"
+      v-model="model"
+      v-bind="$attrs"
       class="input"
-      type="checkbox"
-      :name="name"
-      :form="form"
+      type="radio"
+      :id="id ?? generatedId"
       :value="value"
+      :name="name"
       :disabled="disabled"
       :required="required"
+      :form="form"
     />
-    <span class="zone">{{ label }}</span>
-  </label>
+    <label class="label" :for="id ?? generatedId">{{ label }}</label>
+  </div>
 </template>
 
 <style scoped>
-.nagi-checkbox {
+.n-radio {
   display: inline-flex;
   gap: var(--nagi-space-item-gap);
-  align-items: flex-start;
+  align-items: center;
   color: var(--nagi-color-text);
+  font: inherit;
   cursor: pointer;
 
   &:has(> .input:disabled) {
-    > .zone {
+    cursor: not-allowed;
+
+    > .label {
       color: var(--nagi-color-text-disabled);
-      cursor: not-allowed;
     }
   }
 
   > .input {
-    inline-size: 1.1rem;
-    block-size: 1.1rem;
-    margin: 0.12rem 0 0;
+    inline-size: 1rem;
+    block-size: 1rem;
+    margin: 0;
     accent-color: var(--nagi-color-accent);
-    cursor: pointer;
+    cursor: inherit;
 
     &:focus-visible {
       outline: none;
       box-shadow: var(--nagi-shadow-focus);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
     }
 
     &:user-invalid,
@@ -84,10 +82,9 @@ useNativeCheckboxControl(input, checked, indeterminate);
       outline-offset: 1px;
     }
 
-  }
-
-  > .zone {
-    line-height: 1.35;
+    &:disabled {
+      cursor: not-allowed;
+    }
   }
 }
 </style>

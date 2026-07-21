@@ -24,7 +24,7 @@ const menu = useMenu<DropdownMenuEntry>({
 </script>
 
 <template>
-  <div class="dropdown-menu">
+  <div class="n-dropdown-menu">
     <button class="button -trigger" type="button" v-bind="menu.triggerProps">
       {{ label }}
       <span class="icon -trigger" aria-hidden="true">⌄</span>
@@ -37,7 +37,7 @@ const menu = useMenu<DropdownMenuEntry>({
 </template>
 
 <style scoped>
-.dropdown-menu {
+.n-dropdown-menu {
   display: inline-block;
 
   > .button {

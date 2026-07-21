@@ -33,7 +33,7 @@ useNativeNumberReset(input, model);
 </script>
 
 <template>
-  <div class="nagi-slider">
+  <div class="n-slider">
     <label class="label" :for="id ?? generatedId">{{ label }}</label>
     <input
       v-bind="attrs"
@@ -54,7 +54,7 @@ useNativeNumberReset(input, model);
 </template>
 
 <style scoped>
-.nagi-slider {
+.n-slider {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--nagi-space-item-gap);

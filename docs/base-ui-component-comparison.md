@@ -21,18 +21,18 @@ requirements users repeatedly expect around that behavior.
 
 The primary coverage scope is:
 
-- every component Nagi currently ships: **22 / 22** below;
+- every component Nagi currently ships: **25 / 25** below;
 - every component in the Base UI 1.6.0 baseline: **37 / 37**, split between
-  the 18 direct shipped mappings and 19 unshipped capabilities below.
+  the 21 direct shipped mappings and 16 unshipped capabilities below.
 
 PrimeVue's 90+ catalog and every shadcn-vue block are not automatic Nagi scope.
 Data grids, calendars and other product domains should receive their own
 benchmark slice when Nagi chooses to enter that domain.
 
 For component-creation progress, the adopted implementation set is currently
-37 slices: 22 shipped components plus 15 unbuilt component slices (eight
+37 slices: 25 shipped components plus 12 unbuilt component slices (five
 `Candidate`, six `Defer`, and the separate multi-thumb Slider). This is
-**22 / 37 = 59.5%**. `Native/recipe` and `Decline` rows are deliberately not
+**25 / 37 = 67.6%**. `Native/recipe` and `Decline` rows are deliberately not
 counted as components to build. This metric tracks Nagi's chosen product, not
 API parity with any reference catalog.
 
@@ -102,6 +102,7 @@ This table applies the same four-axis review to every package/ownable component.
 | Nagi component | Platform / Base UI guarantee | shadcn-vue product signal | PrimeVue product signal | Nagi decision |
 |---|---|---|---|---|
 | `Alert` | Native `status`/`alert`; Base UI has Alert Dialog, not a visual callout | [Alert](https://www.shadcn-vue.com/docs/components/alert): icon, title, description, destructive variant | [Message](https://primevue.dev/message/): severity, icon and optional close behavior | **Shipped**: required title prop with a same-name rich-content slot, body/tone/role and one free-markup `icon` slot cover the common anatomy. The owned heading and status role remain fixed. Dismiss remains non-common. |
+| `Avatar` | [Avatar](https://base-ui.com/react/components/avatar): image loading and fallback state | [Avatar](https://www.shadcn-vue.com/docs/components/avatar): image plus fallback | [Avatar](https://primevue.dev/avatar/): image, label and icon forms | **Shipped**: native image, stable wrapper accessible name, deterministic text fallback, rich fallback content and tested load/error/source-recovery. Group/stack anatomy remains composition. |
 | `Badge` | No behavior primitive required | [Badge](https://www.shadcn-vue.com/docs/components/badge): compact variant label and icon composition | [Tag](https://primevue.dev/tag/): value, severity, icon, template content and rounded presentation | **Shipped**: required label prop with a same-name phrasing-content slot plus tone cover the common status-label core. The outer span retains typography and tone. Size additions need a more precise common contract. |
 | `Button` | [Button](https://base-ui.com/react/components/button): native semantics and focusable-disabled behavior | [Button](https://www.shadcn-vue.com/docs/components/button): variants, small/default/large and icon sizes, icon/spinner composition | [Button](https://primevue.dev/button/): severity/variants, sizes, icons and loading | **Shipped**: native button, variants, arbitrary label/icon content, focusable-disabled and the small/default/large enum cover the common contract. Loading remains composable content plus explicit busy semantics until its contract is fixed. |
 | `Card` | No direct Base UI Card; semantics should remain caller-owned | [Card](https://www.shadcn-vue.com/docs/components/card): header/title/description/action/content/footer, size and image composition | [Card](https://primevue.dev/card/): header media, title/subtitle, content and footer | **Shipped**: title/description string props with same-name rich-content slots, body and one minimal footer slot cover the common frame without compound parts. Title/description slots replace content only; the SFC retains its header wrappers and typography. The footer wrapper stays a neutral `div`, preserving caller-owned semantics. Header action is shadcn-specific; image/media is common in capability but still needs a prop/integration decision. |
@@ -118,18 +119,20 @@ This table applies the same four-axis review to every package/ownable component.
 | `Progress` | [Progress](https://base-ui.com/react/components/progress) and native `<progress>` define determinate/indeterminate semantics | [Progress](https://www.shadcn-vue.com/docs/components/progress): value-driven bar | [ProgressBar](https://primevue.dev/progressbar/): determinate/indeterminate bar and optional value label | **Shipped**: native progress plus an accessible label. Decorative value rendering can remain caller/owned markup. |
 | `Radio` | [Radio](https://base-ui.com/react/components/radio): exclusive selection, form and validation behavior | [Radio Group](https://www.shadcn-vue.com/docs/components/radio-group): explicit group with repeated items | [RadioButton](https://primevue.dev/radiobutton/): repeated same-name controls | **Shipped**: real radios share one `v-model` and native name, with Fieldset for group labeling. A package RadioGroup is not yet common across the two Vue references. |
 | `Select` | [Select](https://base-ui.com/react/components/select): custom popup, keyboard, form and rich item capability | [Native Select](https://www.shadcn-vue.com/docs/components/native-select) and custom [Select](https://www.shadcn-vue.com/docs/components/select) are both offered | [Select](https://primevue.dev/select/): custom popup, filtering, multiple selection and templates | **Shipped / deliberate boundary**: native `<select>/<option>` is the stable path. Cross-library custom rendering is real demand, but rebuilding Select conflicts with Nagi's platform-first contract; use Combobox, ownership or another component library. |
+| `Separator` | [Separator](https://base-ui.com/react/components/separator): semantic/decorative orientation | [Separator](https://www.shadcn-vue.com/docs/components/separator): horizontal/vertical decorative line | [Divider](https://primevue.dev/divider/): horizontal/vertical content divider | **Shipped**: native `<hr>` for horizontal semantic separation, explicit `role="separator"` for vertical, and an `aria-hidden` decorative form. Content-bearing Divider is a different product. |
 | `Slider` | [Slider](https://base-ui.com/react/components/slider): orientation and multiple thumbs above range-input behavior | [Slider](https://www.shadcn-vue.com/docs/components/slider): one or multiple values | [Slider](https://primevue.dev/slider/): single/range and horizontal/vertical modes | **Shipped + separate Candidate**: native single-thumb Slider is complete. Multi-thumb/range is common evidence but must be a separately tested thick component, not a mode that compromises the native path. |
 | `Switch` | [Switch](https://base-ui.com/react/components/switch): boolean setting, focus and form behavior | [Switch](https://www.shadcn-vue.com/docs/components/switch): checked/disabled control | [ToggleSwitch](https://primevue.dev/toggleswitch/): checked/disabled/form states | **Shipped**: native checkbox-backed switch with label, form/reset/validation and forced-colors support. |
 | `Tabs` | [Tabs](https://base-ui.com/react/components/tabs): activation modes, orientation, focus and panel relationships | [Tabs](https://www.shadcn-vue.com/docs/components/tabs): list/trigger/content composition | [Tabs](https://primevue.dev/tabs/): value-driven tab list/panels with scrollable/dynamic examples | **Shipped**: flat items, manual/automatic activation, orientation/RTL, disabled/dynamic repair and rich panel content. Compound parts, indicator geometry and PrimeVue-only window-like features remain out. |
 | `Toast` | [Toast](https://base-ui.com/react/components/toast): manager, priority, actions, lifecycle and keyboard access | [Toast](https://www.shadcn-vue.com/docs/components/toast) / Sonner: app-level notifications and actions | [Toast](https://primevue.dev/toast/): service-driven severity, summary/detail, groups, position and lifetime | **Shipped**: explicit manager, structured content/action, priority, update/close/promise, limit/timers and F6. Placement is styling/ownership; providers, portals, swipe and stack physics remain out. |
+| `Toggle` | [Toggle](https://base-ui.com/react/components/toggle): controlled pressed and disabled semantics | [Toggle](https://www.shadcn-vue.com/docs/components/toggle): pressed button with content | [ToggleButton](https://primevue.dev/togglebutton/): binary pressed control | **Shipped**: native `<button aria-pressed>`, controlled/uncontrolled model, disabled behavior and free label/icon content. No arbitrary-element rendering or custom state vocabulary. |
 | `Tooltip` | [Tooltip](https://base-ui.com/react/components/tooltip): hover/focus, delay, positioning and disabled handling | [Tooltip](https://www.shadcn-vue.com/docs/components/tooltip): arbitrary trigger/content with provider coordination | [Tooltip](https://primevue.dev/tooltip/): directive on arbitrary targets with position/delay options | **Shipped**: hover/focus union, delays, controlled state, disabled and positioning. Arbitrary package triggers use the composable or ownership; no mandatory provider or trigger slot carrying behavior props. |
 
-Audit result: **22 / 22 shipped Nagi components reviewed through the same
+Audit result: **25 / 25 shipped Nagi components reviewed through the same
 platform/Base UI + shadcn-vue + PrimeVue + Nagi translation rule.**
 
 ## Unshipped Base UI baseline
 
-These 19 rows complete the Base UI 1.6.0 catalog audit. Styled-library
+These 16 rows complete the Base UI 1.6.0 catalog audit. Styled-library
 agreement changes priority, but never bypasses the architectural translation.
 
 | Capability | Base UI | shadcn-vue | PrimeVue | Nagi decision |
@@ -137,7 +140,6 @@ agreement changes priority, but never bypasses the architectural translation.
 | Accordion | [Accordion](https://base-ui.com/react/components/accordion) | [Accordion](https://www.shadcn-vue.com/docs/components/accordion) | [Accordion](https://primevue.dev/accordion/) | **Candidate**: strong three-source signal. Start with repeated Disclosure/native `<details name>` and a flat package anatomy; no item compound family. |
 | Alert Dialog | [Alert Dialog](https://base-ui.com/react/components/alert-dialog) | [Alert Dialog](https://www.shadcn-vue.com/docs/components/alert-dialog) | [ConfirmDialog](https://primevue.dev/confirmdialog/) | **Candidate**: strict native Dialog Blueprint with `role="alertdialog"`, description and explicit actions. Do not overload visual Alert. |
 | Autocomplete | [Autocomplete](https://base-ui.com/react/components/autocomplete) | Combobox is the nearest recipe | [AutoComplete](https://primevue.dev/autocomplete/) | **Defer**: distinct free-form `useAutocomplete`; do not add free-form modes to restricted Combobox. |
-| Avatar | [Avatar](https://base-ui.com/react/components/avatar) | [Avatar](https://www.shadcn-vue.com/docs/components/avatar) | [Avatar](https://primevue.dev/avatar/) | **Candidate**: strong common signal. Native image, deterministic text/icon fallback and tested load/error transition. |
 | Checkbox Group | [Checkbox Group](https://base-ui.com/react/components/checkbox-group) | Repeated Checkbox in Field/Form | Repeated Checkbox values | **Native/recipe**: native names plus Fieldset first; add an items schema only if package repetition proves useful. |
 | Context Menu | [Context Menu](https://base-ui.com/react/components/context-menu) | [Context Menu](https://www.shadcn-vue.com/docs/components/context-menu) | [ContextMenu](https://primevue.dev/contextmenu/) | **Defer**: strong common signal but needs a virtual pointer anchor, right-click/long-press policy and mobile browser tests. Reuse menu schema/core. |
 | Drawer | [Drawer](https://base-ui.com/react/components/drawer) | [Drawer](https://www.shadcn-vue.com/docs/components/drawer) | [Drawer](https://primevue.dev/drawer/) | **Decline** gesture/snap parity. A static edge panel is positioned Dialog; Vaul-class interrupted gestures should use another library. |
@@ -149,13 +151,11 @@ agreement changes priority, but never bypasses the architectural translation.
 | OTP Field | [OTP Field](https://base-ui.com/react/components/otp-field) | [Pin Input](https://www.shadcn-vue.com/docs/components/pin-input) | [InputOtp](https://primevue.dev/inputotp/) | **Defer**: strong common signal but mobile paste, password-manager and one-real-input behavior need a focused slice. |
 | Preview Card | [Preview Card](https://base-ui.com/react/components/preview-card) | [Hover Card](https://www.shadcn-vue.com/docs/components/hover-card) | Popover/Tooltip are the nearest products | **Candidate**: real link trigger, pointer transit and interactive preview semantics over hint popover positioning. |
 | Scroll Area | [Scroll Area](https://base-ui.com/react/components/scroll-area) | [Scroll Area](https://www.shadcn-vue.com/docs/components/scroll-area) | [ScrollArea](https://primevue.dev/scrollarea/) | **Native/recipe** despite strong demand: prefer `overflow: auto`, `scrollbar-*` CSS and platform scrollbars; do not add synchronized custom-thumb behavior for parity alone. |
-| Separator | [Separator](https://base-ui.com/react/components/separator) | [Separator](https://www.shadcn-vue.com/docs/components/separator) | [Divider](https://primevue.dev/divider/) | **Candidate**: strong common signal and thin implementation. Use `<hr>` for semantic separation and one clearly documented decorative/oriented form. |
-| Toggle | [Toggle](https://base-ui.com/react/components/toggle) | [Toggle](https://www.shadcn-vue.com/docs/components/toggle) | [ToggleButton](https://primevue.dev/togglebutton/) | **Candidate**: strong common signal. Native `<button aria-pressed>` with controlled model, no arbitrary-element rendering. |
 | Toggle Group | [Toggle Group](https://base-ui.com/react/components/toggle-group) | [Toggle Group](https://www.shadcn-vue.com/docs/components/toggle-group) | [SelectButton](https://primevue.dev/selectbutton/) | **Candidate**: strong common signal. Flat items schema and pressed buttons; add roving focus only when the selected ARIA pattern requires it. |
 | Toolbar | [Toolbar](https://base-ui.com/react/components/toolbar) | No direct Toolbar component | [Toolbar](https://primevue.dev/toolbar/) | **Defer**: attribute-injection `useToolbar` for arbitrary owned controls; avoid a ToolbarButton/ToolbarLink family. |
 
-Base UI catalog result: **37 / 37 represented** (18 direct shipped mappings +
-19 unshipped decisions). Nagi's four additional shipped products are Alert,
+Base UI catalog result: **37 / 37 represented** (21 direct shipped mappings +
+16 unshipped decisions). Nagi's four additional shipped products are Alert,
 Badge, Card and standalone Listbox.
 
 ## First strengthening result
@@ -188,6 +188,19 @@ The same rule also confirms deliberate non-parity:
   behavior-bearing slot;
 - rich Combobox/Menu rows remain ownership extensions rather than an expanding
   stable schema.
+
+## Alignment D2 result
+
+The next thin slice moved three strong common candidates into the shipped
+ledger without copying compound APIs: Avatar owns native image/fallback
+recovery, Separator owns the minimum semantic/decorative orientation split,
+and Toggle owns only a native pressed button model. The package catalog is now
+25 components and the adopted implementation set is 67.6% complete.
+
+The same slice separates three naming concerns: public component names and SFC
+filenames stay prefix-free (`Button` / `Button.vue`), while Nagi CSS derives the
+owned surface exactly from configured namespace plus filename (`.n-button`).
+Missing prefixes and unrelated `.n-*` names are lint errors.
 
 ## Capabilities that do not survive translation
 

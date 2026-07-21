@@ -4,19 +4,26 @@ import { createToastManager } from "@nagi-labs/nagi-ui";
 
 import {
   Alert,
+  Avatar,
   Badge,
   Button,
   Card,
   Dialog,
   Disclosure,
   Popover,
+  Separator,
   Toast,
+  Toggle,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components";
 
+const avatarImage =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%2316768b'/%3E%3Ccircle cx='40' cy='31' r='15' fill='white'/%3E%3Cpath d='M14 80c3-19 13-28 26-28s23 9 26 28' fill='white'/%3E%3C/svg%3E";
+const avatarSrc = ref(avatarImage);
 const dialogOpen = ref(false);
 const disclosureOpen = ref(false);
 const focusableDisabledClicks = ref(0);
+const pinned = ref(false);
 const toastManager = createToastManager({ duration: 0, limit: 3 });
 const secondaryToastManager = createToastManager({ duration: 0, limit: 3 });
 const undoneActions = ref(0);
@@ -104,7 +111,7 @@ function runPromiseToast() {
 </script>
 
 <template>
-  <main class="catalog-lab">
+  <main class="n-catalog-lab">
     <header class="header">
       <p class="text -eyebrow">Package components</p>
       <h1 class="title">Package Blueprint catalog</h1>
@@ -117,38 +124,38 @@ function runPromiseToast() {
     <section class="section" aria-labelledby="styling-heading">
       <h2 id="styling-heading" class="title">Styling-only baseline</h2>
       <Card
-        class="card"
+        class="n-card"
         title="Package-first surface"
         description="Theme by default; own only when the structure must change."
       >
         <template #title="{ title }">
-          <span class="card-title">
+          <span class="n-card-title">
             <span>{{ title }}</span>
             <Badge label="Rich content" tone="accent" />
           </span>
         </template>
         <template #description="{ description }">
-          <span class="card-description">
+          <span class="n-card-description">
             {{ description }} <strong>Markup stays local.</strong>
           </span>
         </template>
-        <div class="card-content">
+        <div class="n-card-content">
           <p class="text">The consumer owns and styles this declared slot sub-surface.</p>
           <div class="list" aria-label="Package status badges">
             <Badge label="Neutral" />
             <Badge label="Accent" tone="accent" />
             <Badge label="Ready" tone="success">
               <template #label="{ label }">
-                <span class="badge-label"><span aria-hidden="true">✓</span> {{ label }}</span>
+                <span class="n-badge-label"><span aria-hidden="true">✓</span> {{ label }}</span>
               </template>
             </Badge>
             <Badge label="Review" tone="warning" />
             <Badge label="Blocked" tone="danger" />
           </div>
           <Alert title="Catalog ready" tone="success">
-            <template #icon><span class="alert-icon" aria-hidden="true">✓</span></template>
+            <template #icon><span class="n-alert-icon" aria-hidden="true">✓</span></template>
             <template #title="{ title }">
-              <span class="alert-title">{{ title }} <Badge label="Verified" /></span>
+              <span class="n-alert-title">{{ title }} <Badge label="Verified" /></span>
             </template>
             <p class="text">Card, Alert, and Badge complete the initial styling-only baseline.</p>
           </Alert>
@@ -175,12 +182,37 @@ function runPromiseToast() {
           </div>
         </div>
         <template #footer>
-          <div class="card-footer">
+          <div class="n-card-footer">
             <span>Package component with an owned footer surface.</span>
             <Button size="small" variant="accent">Manage package</Button>
           </div>
         </template>
       </Card>
+    </section>
+
+    <section class="section" aria-labelledby="primitive-heading">
+      <h2 id="primitive-heading" class="title">Small native primitives</h2>
+      <div class="list -primitives">
+        <Avatar
+          data-testid="catalog-avatar"
+          :src="avatarSrc"
+          alt="Ada Lovelace"
+        />
+        <Button size="small" @click="avatarSrc = '/missing-avatar.png'">
+          Break avatar image
+        </Button>
+        <Button size="small" @click="avatarSrc = avatarImage">
+          Restore avatar image
+        </Button>
+      </div>
+      <Separator />
+      <div class="list -primitives">
+        <Toggle v-model="pinned">Pin release</Toggle>
+        <output data-testid="toggle-state">pressed: {{ pinned }}</output>
+        <Separator orientation="vertical" aria-label="Toggle status" />
+        <span>Native pressed state</span>
+      </div>
+      <Separator decorative />
     </section>
 
     <section class="section" aria-labelledby="popover-heading">
@@ -200,15 +232,15 @@ function runPromiseToast() {
         description="Confirm the package-level action before continuing."
       >
         <template #title="{ title }">
-          <span class="nagi-dialog-title">{{ title }} <span aria-hidden="true">✓</span></span>
+          <span class="n-dialog-title">{{ title }} <span aria-hidden="true">✓</span></span>
         </template>
         <template #description="{ description }">
-          <span class="nagi-dialog-description"><strong>{{ description }}</strong></span>
+          <span class="n-dialog-description"><strong>{{ description }}</strong></span>
         </template>
         <p class="text">The browser owns modality, focus trapping, and Escape.</p>
         <template #actions>
           <Button
-            class="nagi-dialog-actions"
+            class="n-dialog-actions"
             variant="accent"
             @click="dialogOpen = false"
           >
@@ -239,7 +271,7 @@ function runPromiseToast() {
       <h2 id="disclosure-heading" class="title">Disclosure</h2>
       <Disclosure v-model:open="disclosureOpen" summary="What does native mean?">
         <template #summary="{ summary }">
-          <span class="nagi-disclosure-summary">
+          <span class="n-disclosure-summary">
             <span aria-hidden="true">◆</span> {{ summary }}
           </span>
         </template>
@@ -272,7 +304,7 @@ function runPromiseToast() {
 </template>
 
 <style scoped>
-.catalog-lab {
+.n-catalog-lab {
   display: grid;
   gap: 1rem;
   max-inline-size: 62rem;
@@ -320,8 +352,18 @@ function runPromiseToast() {
       color: var(--nagi-color-text-muted, #50676f);
     }
 
-    > .card {
-      .card-content {
+    > .list {
+      display: flex;
+      gap: 0.65rem;
+      align-items: center;
+
+      &.-primitives {
+        min-block-size: 3rem;
+      }
+    }
+
+    > .n-card {
+      .n-card-content {
         display: grid;
         gap: 0.75rem;
 
@@ -338,18 +380,18 @@ function runPromiseToast() {
         }
       }
 
-      .card-title {
+      .n-card-title {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
         align-items: center;
       }
 
-      .card-description {
+      .n-card-description {
         display: inline;
       }
 
-      .card-footer {
+      .n-card-footer {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;

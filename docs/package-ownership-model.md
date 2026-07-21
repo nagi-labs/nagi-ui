@@ -94,9 +94,10 @@ metadata形式は Phase 4 slice 2 の実装検証を経て次の形へ**固定�
 `nagi-ui own` がコピー時に刻印し、`nagi-ui diff` が clean / modified / drifted /
 unknown-source を判定して CI gate に使える exit code を返す。
 
-## 次の ownership slice: `vue` / `all`
+## Deferred design: `vue` / `all` ownership layers
 
-Status: **設計固定、未実装** (2026-07-21)。reset / theme 契約の変更とは分離して実装する。
+Status: **設計固定、実装延期** (2026-07-22)。component catalog拡充を優先し、
+composable ownershipの具体的需要が観測されるまで次スライスとして着手しない。
 
 behavior を小さな composable に隠しても、所有者が必要な層だけを選べるようにする。ただし
 初期 surface は利用頻度が高い次の2段に絞り、`composable-only` は実需要が観測されるまで
@@ -123,6 +124,33 @@ SHA-256を記録する。hash は「何をコピーしたか」の照合には�
 この構造は `composable-only` の将来追加を妨げない。自分でDOMを書くが標準 behavior で
 よい利用者は package composable を直接 import できるため、先に3層目を出して CLI・dependency
 closure・test matrix を増やさない。
+
+### Owned sourceのsurface namespace
+
+canonical SFCは `Button.vue` のようにfilenameへlibrary名を混ぜず、root classを
+`.n-button` とする。Nagi CSSはprefixを単なる`startsWith` escape hatchにせず、
+`surfaceRootPrefixes` + filename kebabの完全一致として検査する。したがって
+`Button.vue`でbare `.button`や`.n-control`は不正である。
+
+package componentとして使うだけならconsumer presetのboundary classで完結する。
+`own`したSFCをNagi CSSで検査するconsumerは、自身のsurface prefixと合わせて
+`nagiUiSurfaceRootPrefixes`を外部configへ追加する。
+
+```js
+import nagiUi, {
+  nagiUiSurfaceRootPrefixes,
+} from "@nagi-labs/nagi-ui/nagi-css-preset"
+
+export default {
+  semantic: {
+    ...nagiUi,
+    surfaceRootPrefixes: ["app-", ...nagiUiSurfaceRootPrefixes],
+  },
+}
+```
+
+複数prefixは異なるowned namespaceを同じrepoで検査するための候補であり、任意の
+suffixを許可しない。各候補ともfilenameとの完全一致が必要である。
 
 ## 狙いが外れるパターン
 

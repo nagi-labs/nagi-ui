@@ -88,6 +88,46 @@ test("components entry exposes the independent Tabs behavior Blueprint", async (
   });
 });
 
+test("components entry exposes Avatar, Separator, and Toggle", async () => {
+  await withComponents(async (components) => {
+    for (const name of ["Avatar", "Separator", "Toggle"]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+  });
+});
+
+test("small native primitives preserve their semantics during SSR", async () => {
+  await withComponents(async (components) => {
+    const avatar = await render(components.Avatar as Component, {
+      src: "/ada.jpg",
+      alt: "Ada Lovelace",
+    });
+    assert.match(avatar, /class="n-avatar"[^>]*role="img"/);
+    assert.match(avatar, /aria-label="Ada Lovelace"/);
+    assert.match(avatar, /<img[^>]*src="\/ada.jpg"[^>]*alt=""/);
+
+    const separator = await render(components.Separator as Component);
+    assert.match(separator, /<hr[^>]*class="n-separator"/);
+
+    const verticalSeparator = await render(components.Separator as Component, {
+      orientation: "vertical",
+    });
+    assert.match(verticalSeparator, /role="separator"/);
+    assert.match(verticalSeparator, /aria-orientation="vertical"/);
+
+    const decorativeSeparator = await render(components.Separator as Component, {
+      decorative: true,
+    });
+    assert.match(decorativeSeparator, /aria-hidden="true"/);
+    assert.doesNotMatch(decorativeSeparator, /role="separator"/);
+
+    const toggle = await render(components.Toggle as Component, { modelValue: true }, "Pinned");
+    assert.match(toggle, /<button[^>]*type="button"/);
+    assert.match(toggle, /aria-pressed="true"/);
+    assert.match(toggle, />Pinned</);
+  });
+});
+
 test("components entry exposes every native form and indicator Blueprint", async () => {
   await withComponents(async (components) => {
     for (const name of [
@@ -392,7 +432,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       { title: "Profile", description: "Owned when needed" },
       "Card body",
     );
-    assert.match(card, /<div[^>]*class="card"/);
+    assert.match(card, /<div[^>]*class="n-card"/);
     assert.match(card, /<div[^>]*class="title"/);
     assert.match(card, /Profile/);
     assert.match(card, /Owned when needed/);
@@ -429,7 +469,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(cardWithSlotOnlyHeader, /Slot-only description/);
 
     const untitledCard = await render(components.Card as Component, {}, "Untitled card body");
-    assert.match(untitledCard, /<div[^>]*class="card"/);
+    assert.match(untitledCard, /<div[^>]*class="n-card"/);
     assert.doesNotMatch(untitledCard, /<header/);
     assert.match(untitledCard, /Untitled card body/);
 
@@ -439,7 +479,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       "Review the change",
     );
     assert.match(alert, /role="alert"/);
-    assert.match(alert, /class="alert -danger"/);
+    assert.match(alert, /class="n-alert -danger"/);
     assert.match(alert, /Action required/);
 
     const alertWithIcon = await renderSlots(
@@ -461,15 +501,15 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     const smallButton = await render(components.Button as Component, { size: "small" }, "Small");
     const defaultButton = await render(components.Button as Component, {}, "Default");
     const largeButton = await render(components.Button as Component, { size: "large" }, "Large");
-    assert.match(smallButton, /class="nagi-button -compact"/);
-    assert.match(defaultButton, /class="nagi-button"/);
-    assert.match(largeButton, /class="nagi-button -large"/);
+    assert.match(smallButton, /class="n-button -compact"/);
+    assert.match(defaultButton, /class="n-button"/);
+    assert.match(largeButton, /class="n-button -large"/);
 
     const badge = await render(components.Badge as Component, {
       label: "Ready",
       tone: "success",
     });
-    assert.match(badge, /class="badge -positive"/);
+    assert.match(badge, /class="n-badge -positive"/);
     assert.match(badge, /Ready/);
 
     const badgeWithRichLabel = await renderSlotFunctions(
@@ -477,7 +517,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       { label: "Ready", tone: "success" },
       { label: (slotProps) => h("span", `Icon ${String(slotProps.label)}`) },
     );
-    assert.match(badgeWithRichLabel, /class="badge -positive"/);
+    assert.match(badgeWithRichLabel, /class="n-badge -positive"/);
     assert.match(badgeWithRichLabel, /<span>Icon Ready<\/span>/);
   });
 });

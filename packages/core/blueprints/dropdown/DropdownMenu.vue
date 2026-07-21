@@ -17,7 +17,7 @@ function pick(key: string) {
 </script>
 
 <template>
-  <div class="dropdown-menu">
+  <div class="n-dropdown-menu">
     <button class="button -trigger" type="button" v-bind="triggerProps">{{ label }}</button>
     <div class="zone" popover v-bind="popoverProps">
       <ul class="list">
@@ -30,7 +30,7 @@ function pick(key: string) {
 </template>
 
 <style scoped>
-.dropdown-menu {
+.n-dropdown-menu {
   display: inline-block;
 
   > .button {

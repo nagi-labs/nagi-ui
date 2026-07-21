@@ -76,11 +76,11 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 </script>
 
 <template>
-  <li v-if="node.type === 'separator'" class="dropdown-menu-item" role="separator"></li>
+  <li v-if="node.type === 'separator'" class="n-dropdown-menu-item" role="separator"></li>
 
   <li
     v-else-if="node.type === 'group'"
-    class="dropdown-menu-item"
+    class="n-dropdown-menu-item"
     role="group"
     :aria-labelledby="node.label ? labelId : undefined"
   >
@@ -97,7 +97,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 
   <li
     v-else-if="node.type === 'radio-group'"
-    class="dropdown-menu-item"
+    class="n-dropdown-menu-item"
     role="group"
     :aria-labelledby="node.label ? labelId : undefined"
   >
@@ -118,7 +118,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 
   <DropdownSubmenu v-else-if="node.type === 'submenu'" :menu="menu" :node="node" />
 
-  <li v-else-if="node.type === 'checkbox'" class="dropdown-menu-item" role="none">
+  <li v-else-if="node.type === 'checkbox'" class="n-dropdown-menu-item" role="none">
     <button
       class="button"
       type="button"
@@ -130,7 +130,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     </button>
   </li>
 
-  <li v-else-if="node.type === 'link'" class="dropdown-menu-item" role="none">
+  <li v-else-if="node.type === 'link'" class="n-dropdown-menu-item" role="none">
     <a
       class="link"
       :href="node.href"
@@ -143,7 +143,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     </a>
   </li>
 
-  <li v-else class="dropdown-menu-item" role="none">
+  <li v-else class="n-dropdown-menu-item" role="none">
     <button
       class="button"
       type="button"
@@ -158,7 +158,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 </template>
 
 <style scoped>
-.dropdown-menu-item {
+.n-dropdown-menu-item {
   &[role="separator"] {
     box-sizing: content-box;
     block-size: 1px;

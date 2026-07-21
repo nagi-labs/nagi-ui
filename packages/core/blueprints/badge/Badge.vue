@@ -10,7 +10,7 @@ withDefaults(
 
 <template>
   <span
-    class="badge"
+    class="n-badge"
     :class="tone === 'neutral' ? undefined : tone === 'success' ? '-positive' : `-${tone}`"
   >
     <slot name="label" :label="label">{{ label }}</slot>
@@ -18,7 +18,7 @@ withDefaults(
 </template>
 
 <style scoped>
-.badge {
+.n-badge {
   display: inline-flex;
   align-items: center;
   min-block-size: 1.5rem;

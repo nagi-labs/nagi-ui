@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useAttrs } from "vue";
 
-import { useNativeCheckedReset } from "@nagi-labs/nagi-ui";
+import { useNativeCheckboxControl } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -22,21 +22,21 @@ const props = withDefaults(
 );
 
 const checked = defineModel<boolean>({ default: false });
+const indeterminate = defineModel<boolean>("indeterminate", { default: false });
 const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
 
-useNativeCheckedReset(input, checked);
+useNativeCheckboxControl(input, checked, indeterminate);
 </script>
 
 <template>
-  <label class="nagi-switch">
+  <label class="n-checkbox">
     <input
       v-bind="attrs"
       ref="input"
       v-model="checked"
       class="input"
       type="checkbox"
-      role="switch"
       :name="name"
       :form="form"
       :value="value"
@@ -48,10 +48,10 @@ useNativeCheckedReset(input, checked);
 </template>
 
 <style scoped>
-.nagi-switch {
+.n-checkbox {
   display: inline-flex;
   gap: var(--nagi-space-item-gap);
-  align-items: center;
+  align-items: flex-start;
   color: var(--nagi-color-text);
   cursor: pointer;
 
@@ -63,31 +63,11 @@ useNativeCheckedReset(input, checked);
   }
 
   > .input {
-    appearance: none;
-    flex: 0 0 auto;
-    inline-size: 2.5rem;
-    block-size: 1.4rem;
-    margin: 0;
-    border: 1px solid var(--nagi-color-border);
-    border-radius: 999px;
-    background-color: var(--nagi-color-border);
-    background-image: radial-gradient(
-      circle at 0.65rem 50%,
-      var(--nagi-color-surface) 0 0.45rem,
-      transparent 0.48rem
-    );
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    margin: 0.12rem 0 0;
+    accent-color: var(--nagi-color-accent);
     cursor: pointer;
-    transition: border-color 120ms ease, background-color 120ms ease;
-
-    &:checked {
-      border-color: var(--nagi-color-accent);
-      background-color: var(--nagi-color-accent);
-      background-image: radial-gradient(
-        circle at calc(100% - 0.65rem) 50%,
-        var(--nagi-color-surface) 0 0.45rem,
-        transparent 0.48rem
-      );
-    }
 
     &:focus-visible {
       outline: none;
@@ -95,38 +75,19 @@ useNativeCheckedReset(input, checked);
     }
 
     &:disabled {
-      border-color: var(--nagi-color-border-muted);
-      background-color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
 
     &:user-invalid,
     &[aria-invalid="true"] {
-      border-color: var(--nagi-color-danger);
+      outline: 1px solid var(--nagi-color-danger);
+      outline-offset: 1px;
     }
 
   }
 
   > .zone {
     line-height: 1.35;
-  }
-}
-
-@media (forced-colors: active) {
-  .nagi-switch {
-    > .input {
-      appearance: auto;
-      inline-size: auto;
-      block-size: auto;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nagi-switch {
-    > .input {
-      transition: none;
-    }
   }
 }
 </style>

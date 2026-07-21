@@ -35,7 +35,7 @@ const listbox = useListbox<ListboxOption>({
 </script>
 
 <template>
-  <div class="listbox">
+  <div class="n-listbox">
     <p :id="labelId" class="text">{{ label }}</p>
     <ul class="list" v-bind="listbox.listboxProps" :aria-labelledby="labelId">
       <li
@@ -52,7 +52,7 @@ const listbox = useListbox<ListboxOption>({
 </template>
 
 <style scoped>
-.listbox {
+.n-listbox {
   display: inline-block;
   min-inline-size: 14rem;
 

@@ -95,7 +95,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="nagi-toast">
+  <div class="n-toast">
     <div class="zone -announcements">
       <p
         v-for="item in notifier.toasts.value"
@@ -143,7 +143,7 @@ defineExpose({
 </template>
 
 <style scoped>
-.nagi-toast {
+.n-toast {
   display: contents;
 
   > .zone.-announcements {

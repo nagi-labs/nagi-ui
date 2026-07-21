@@ -25,7 +25,7 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
 </script>
 
 <template>
-  <div class="action-menu">
+  <div class="n-action-menu">
     <button class="button -trigger" type="button" v-bind="triggerProps">
       {{ label }}
     </button>
@@ -40,7 +40,7 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
 </template>
 
 <style scoped>
-.action-menu {
+.n-action-menu {
   display: inline-block;
 
   > .button {

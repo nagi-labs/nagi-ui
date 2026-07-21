@@ -6,6 +6,7 @@ import test from "node:test";
 import preset, {
   nagiUiComponentClasses,
   nagiUiComponentSlots,
+  nagiUiSurfaceRootPrefixes,
   nagiUiThemeTokens,
 } from "../packages/core/nagi-css-preset.mjs";
 import { requiredNagiThemeTokens } from "../packages/core/src/index.ts";
@@ -22,6 +23,7 @@ test("Nagi CSS preset covers every package component export", () => {
   assert.deepEqual(Object.keys(nagiUiComponentClasses).sort(), exportedComponents);
   assert.equal(preset.componentClasses, nagiUiComponentClasses);
   assert.equal(preset.componentSlots, nagiUiComponentSlots);
+  assert.deepEqual(nagiUiSurfaceRootPrefixes, ["n-"]);
   assert.equal(nagiUiThemeTokens, requiredNagiThemeTokens);
 });
 

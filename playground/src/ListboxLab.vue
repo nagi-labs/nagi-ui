@@ -30,7 +30,7 @@ const visibleToppings = computed(() =>
 </script>
 
 <template>
-  <main class="listbox-lab">
+  <main class="n-listbox-lab">
     <h1 class="title">Nagi UI — Listbox</h1>
     <p class="text">
       useListbox の aria-activedescendant 方式。single は selection follows focus、multiple は
@@ -75,7 +75,7 @@ const visibleToppings = computed(() =>
 </template>
 
 <style scoped>
-.listbox-lab {
+.n-listbox-lab {
   min-block-size: 100vh;
   padding: 2rem;
   background: #f6fafb;

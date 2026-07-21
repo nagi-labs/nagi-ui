@@ -138,7 +138,7 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
 </script>
 
 <template>
-  <main class="dropdown-lab">
+  <main class="n-dropdown-lab">
     <h1 class="title">Nagi UI — complete Dropdown</h1>
     <p class="text">
       schema 版 Blueprint(items データを渡す)と、明示 DOM 版 fixture を並置しています。behavior
@@ -212,7 +212,7 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
 </template>
 
 <style scoped>
-.dropdown-lab {
+.n-dropdown-lab {
   min-block-size: 100vh;
   padding: 2rem;
   background: #f6fafb;

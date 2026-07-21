@@ -72,7 +72,7 @@ function captureSubmission(event: SubmitEvent) {
 </script>
 
 <template>
-  <main class="forms-lab">
+  <main class="n-forms-lab">
     <header class="header">
       <p class="text -eyebrow">Base UI alignment B</p>
       <h1 class="title">Native form controls</h1>
@@ -293,7 +293,7 @@ function captureSubmission(event: SubmitEvent) {
 </template>
 
 <style scoped>
-.forms-lab {
+.n-forms-lab {
   display: grid;
   gap: 1rem;
   max-inline-size: 70rem;

@@ -178,11 +178,11 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 - 出荷 component は `Button` / `DropdownMenu` / `Listbox` / `Combobox` の 4 つ
   (+ schema 型)。`ActionMenu` と phase 0 の popover Dropdown は phase 検証用の
   歴史的 blueprint として残置し、`/components` から export せず token 化もしない
-- **命名規則(契約学び)**: surface root class は filename 由来だが、`button` /
-  `dialog` / `select` のような **element 語彙と衝突する component は `Nagi` prefix
-  付き filename にする**(`NagiButton.vue` → root class `nagi-button`)。element
-  class を component root に借りることは CONTRACT(reserved-element-name rule /
-  data-table 前例)が禁止している。export 名は素の `Button` のままでよい
+- **命名規則(2026-07-22改訂)**: SFC filename と公開exportは `Button.vue` / `Button`
+  のように製品名をそのまま使い、library namespaceをfilenameへ混ぜない。surface
+  rootは Nagi CSS の厳密な `surfaceRootPrefixes: ["n-"]` 契約により
+  `n-` + filename kebab (`Button.vue` → `.n-button`)へ一意に導出する。bare
+  `.button` とfilename不一致の`.n-control`はどちらもlint errorとなる
 - token は導出手順の結果 **22 個**(color 10 / font 2 / radius 3 / shadow 2 /
   size 1 / space 4)。`--nagi-color-danger` は予告どおり Button(第 2 使用者)の
   登場で昇格した。棚卸しで muted 系文字色 3 値(#50676f / #526970 / #61777e)を

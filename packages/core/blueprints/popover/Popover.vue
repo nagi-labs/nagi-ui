@@ -21,7 +21,7 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
 </script>
 
 <template>
-  <div class="nagi-popover">
+  <div class="n-popover">
     <button
       class="button"
       type="button"
@@ -37,7 +37,7 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
 </template>
 
 <style scoped>
-.nagi-popover {
+.n-popover {
   display: inline-block;
   color: var(--nagi-color-text);
 

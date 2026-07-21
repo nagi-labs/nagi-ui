@@ -41,7 +41,7 @@ const hinted = usePopover()
 </script>
 
 <template>
-  <main class="popover-lab">
+  <main class="n-popover-lab">
     <h1 class="title">Nagi UI — usePopover lab</h1>
 
     <section class="section -uncontrolled">
@@ -135,7 +135,7 @@ const hinted = usePopover()
 </template>
 
 <style scoped>
-.popover-lab {
+.n-popover-lab {
   padding: 2rem;
   font-family: ui-sans-serif, system-ui, sans-serif;
 

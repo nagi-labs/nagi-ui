@@ -94,7 +94,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="combobox">
+  <div class="n-combobox">
     <label :id="labelId" class="label" :for="combobox.inputId">{{ label }}</label>
     <div class="zone -control">
       <input
@@ -155,7 +155,7 @@ watchEffect(() => {
 </template>
 
 <style scoped>
-.combobox {
+.n-combobox {
   display: inline-grid;
   min-inline-size: 16rem;
   color: var(--nagi-color-text);

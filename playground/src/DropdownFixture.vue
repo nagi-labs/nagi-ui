@@ -87,7 +87,7 @@ const sortModifiedOptions = {
 </script>
 
 <template>
-  <div class="dropdown-fixture">
+  <div class="n-dropdown-fixture">
     <button class="button -trigger" type="button" v-bind="menu.triggerProps">
       {{ label }}
       <span class="icon -trigger" aria-hidden="true">⌄</span>
@@ -196,7 +196,7 @@ const sortModifiedOptions = {
 </template>
 
 <style scoped>
-.dropdown-fixture {
+.n-dropdown-fixture {
   display: inline-block;
 
   > .button {

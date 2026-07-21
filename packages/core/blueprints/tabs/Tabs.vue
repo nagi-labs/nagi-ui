@@ -72,7 +72,7 @@ const tabs = useTabs<TabsItem>({
 </script>
 
 <template>
-  <div class="tabs">
+  <div class="n-tabs">
     <div class="list" v-bind="tabs.tablistProps">
       <button
         v-for="item in items"
@@ -97,7 +97,7 @@ const tabs = useTabs<TabsItem>({
 </template>
 
 <style scoped>
-.tabs {
+.n-tabs {
   display: grid;
   gap: var(--nagi-space-item-gap);
   color: var(--nagi-color-text);
@@ -176,22 +176,22 @@ const tabs = useTabs<TabsItem>({
 }
 
 @media (max-width: 38rem) {
-  .tabs:has(> .list[aria-orientation="vertical"]) {
+  .n-tabs:has(> .list[aria-orientation="vertical"]) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (forced-colors: active) {
-  .tabs > .list > .button[aria-selected="true"] {
+  .n-tabs > .list > .button[aria-selected="true"] {
     border-width: 2px;
   }
 
-  .tabs > .list > .button:focus-visible {
+  .n-tabs > .list > .button:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
 
-  .tabs > .section:focus-visible {
+  .n-tabs > .section:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }

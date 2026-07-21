@@ -67,8 +67,8 @@ they do not reopen Phase 4 or justify copying another suite's catalog.
 ## Nagi CSS consumer preset
 
 `@nagi-labs/nagi-ui/nagi-css-preset` exports the fixed package-component
-boundary classes and declared default-slot sub-surfaces. A consumer merges it
-into the `semantic` section of its external Nagi CSS config:
+boundary classes and declared default-slot sub-surfaces. A package consumer
+merges it into the `semantic` section of its external Nagi CSS config:
 
 ```js
 import nagiUi from "@nagi-labs/nagi-ui/nagi-css-preset"
@@ -82,7 +82,10 @@ export default {
 
 Package use is therefore opaque at the SFC boundary. After `own`, the copied
 filename-derived surface becomes ordinary application-owned DOM and no
-package-boundary entry is needed for that local import.
+package-boundary entry is needed for that local import. Owned Nagi sources use
+prefix-free filenames and exact `n-` roots (`Button.vue` → `.n-button`); add
+the separately exported `nagiUiSurfaceRootPrefixes` to the consumer's
+`surfaceRootPrefixes` when linting owned sources.
 
 The two modes must be linted separately: package/owned Blueprint source uses
 normal filename-derived surface rules, while a consumer SFC importing package
@@ -136,7 +139,14 @@ Post-v0 Alignment D1 adds Tabs as the 22nd package/ownable component. Its
 independent roving-focus core, content-only panel slot and deliberate omissions
 are recorded in [`base-ui-alignment-d-tabs.md`](base-ui-alignment-d-tabs.md).
 
-The first cross-library strengthening slice keeps the catalog at 22 while
+Post-v0 Alignment D2 adds Avatar, Separator and Toggle as components 23–25.
+Avatar keeps a stable accessible name across native image error/fallback and
+source recovery; Separator translates horizontal semantics to `<hr>` and
+vertical semantics to `role="separator"`; Toggle uses a native
+`<button aria-pressed>`. The same slice removes `Nagi` from every SFC filename
+and moves every Blueprint surface to the exact `.n-<filename-kebab>` namespace.
+
+The first cross-library strengthening slice originally kept the catalog at 22 while
 adding the product anatomy independently established by shadcn-vue and
 PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
 content. A follow-up applies the same rule to the stable title/description
@@ -146,5 +156,5 @@ and receive those values as slot props. The SFCs continue to own the wrappers,
 ARIA relationships, native summary behavior, typography and tone. All remain
 one-SFC package/ownership surfaces; no compound family, whole-header slot,
 behavior-bearing slot, icon-name DSL, or expanded pass-through API was introduced. The complete
-decision ledger and 59.5% component-creation metric are in
+decision ledger and current 67.6% component-creation metric are in
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md).

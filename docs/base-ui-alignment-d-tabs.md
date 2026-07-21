@@ -62,7 +62,7 @@ const items: readonly TabsItem[] = [
 <template>
   <Tabs v-model:selected="selected" :items="items" label="Settings">
     <template #panel="{ item }">
-      <div class="tabs-panel">
+      <div class="n-tabs-panel">
         <AccountSettings v-if="item.key === 'account'" />
         <SecuritySettings v-else />
       </div>
@@ -99,7 +99,7 @@ Tabs extends both Nagi verification layers:
   different panel-hiding technique.
 
 The Nagi CSS preset declares `.tabs` as the package boundary and `panel` as the
-single `.tabs-panel` consumer sub-surface. The Blueprint uses only existing
+single `.n-tabs-panel` consumer sub-surface. The Blueprint uses only existing
 semantic theme tokens; no Tabs-specific token language was added.
 
 ## Deliberate omissions

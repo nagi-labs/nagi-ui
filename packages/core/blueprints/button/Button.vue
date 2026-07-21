@@ -32,7 +32,7 @@ function guardFocusableDisabled(event: MouseEvent) {
 
 <template>
   <button
-    class="nagi-button"
+    class="n-button"
     :class="[
       variant === 'default' ? undefined : `-${variant}`,
       sizeClass[size],
@@ -47,7 +47,7 @@ function guardFocusableDisabled(event: MouseEvent) {
 </template>
 
 <style scoped>
-.nagi-button {
+.n-button {
   display: inline-flex;
   gap: 0.5rem;
   align-items: center;

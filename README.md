@@ -44,7 +44,7 @@ orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 The cross-library component benchmark currently places creation progress at
-**22 / 37 (59.5%)**: 22 shipped components and 15 adopted component slices not
+**25 / 37 (67.6%)**: 25 shipped components and 12 adopted component slices not
 yet built. Native recipes and explicit declines are not counted as components;
 see [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
 
@@ -53,6 +53,7 @@ Package components are available without copying source:
 ```ts
 import {
   Alert,
+  Avatar,
   Badge,
   Button,
   Card,
@@ -69,10 +70,12 @@ import {
   Progress,
   Radio,
   Select,
+  Separator,
   Slider,
   Switch,
   Tabs,
   Toast,
+  Toggle,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components"
 import "@nagi-labs/nagi-ui/default-theme.css"
@@ -231,3 +234,7 @@ upgrades.
   manual/automatic activation, roving focus, orientation/RTL, dynamic fallback
   and a content-only panel slot. See
   [`docs/base-ui-alignment-d-tabs.md`](docs/base-ui-alignment-d-tabs.md).
+- [x] Alignment D2 ships Avatar, Separator and Toggle as small native
+  primitives, and normalizes every shipped SFC to a prefix-free filename with
+  an exact `n-` surface namespace. See
+  [`docs/base-ui-alignment-d2-primitives.md`](docs/base-ui-alignment-d2-primitives.md).

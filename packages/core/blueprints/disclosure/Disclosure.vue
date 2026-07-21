@@ -18,7 +18,7 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 </script>
 
 <template>
-  <details class="nagi-disclosure" v-bind="disclosure.detailsProps">
+  <details class="n-disclosure" v-bind="disclosure.detailsProps">
     <summary class="summary" v-bind="disclosure.summaryProps">
       <slot name="summary" :summary="summary">{{ summary }}</slot>
     </summary>
@@ -29,7 +29,7 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 </template>
 
 <style scoped>
-.nagi-disclosure {
+.n-disclosure {
   max-inline-size: 36rem;
   border: 1px solid var(--nagi-color-border-muted);
   border-radius: var(--nagi-radius-control);

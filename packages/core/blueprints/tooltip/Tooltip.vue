@@ -33,7 +33,7 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
 </script>
 
 <template>
-  <span class="nagi-tooltip">
+  <span class="n-tooltip">
     <button class="button" type="button" :disabled="disabled" v-bind="tooltip.triggerProps">
       {{ triggerLabel }}
     </button>
@@ -44,7 +44,7 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
 </template>
 
 <style scoped>
-.nagi-tooltip {
+.n-tooltip {
   display: inline-block;
   color: var(--nagi-color-text);
 

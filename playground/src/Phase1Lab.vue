@@ -14,7 +14,7 @@ const faq2 = useDisclosure({ name: "faq" })
 </script>
 
 <template>
-  <main class="phase1-lab">
+  <main class="n-phase1-lab">
     <h1 class="title">Nagi UI — Phase 1 thin composables</h1>
 
     <section class="section">
@@ -60,7 +60,7 @@ const faq2 = useDisclosure({ name: "faq" })
 </template>
 
 <style scoped>
-.phase1-lab {
+.n-phase1-lab {
   padding: 2rem;
   font-family: ui-sans-serif, system-ui, sans-serif;
 

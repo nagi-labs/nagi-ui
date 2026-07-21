@@ -6,7 +6,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="card">
+  <div class="n-card">
     <header v-if="title || description || $slots.title || $slots.description" class="header">
       <div v-if="title || $slots.title" class="title">
         <slot name="title" :title="title">{{ title }}</slot>
@@ -25,7 +25,7 @@ defineProps<{
 </template>
 
 <style scoped>
-.card {
+.n-card {
   overflow: hidden;
   border: 1px solid var(--nagi-color-border-muted);
   border-radius: var(--nagi-radius-overlay);

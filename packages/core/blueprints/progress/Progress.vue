@@ -18,7 +18,7 @@ const labelId = `${generatedId}-label`;
 </script>
 
 <template>
-  <div class="nagi-progress">
+  <div class="n-progress">
     <label :id="labelId" class="label" :for="id ?? generatedId">{{ label }}</label>
     <progress
       v-bind="$attrs"
@@ -34,7 +34,7 @@ const labelId = `${generatedId}-label`;
 </template>
 
 <style scoped>
-.nagi-progress {
+.n-progress {
   display: grid;
   gap: 0.35rem;
   color: var(--nagi-color-text);

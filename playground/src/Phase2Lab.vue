@@ -17,7 +17,7 @@ function select(item: ActionMenuItem) {
 </script>
 
 <template>
-  <main class="phase2-lab">
+  <main class="n-phase2-lab">
     <h1 class="title">Nagi UI — Phase 2 Menu DX</h1>
     <p class="text">
       DOM focus stays on the menu while <code class="code">itemProps(item)</code>
@@ -32,7 +32,7 @@ function select(item: ActionMenuItem) {
 </template>
 
 <style scoped>
-.phase2-lab {
+.n-phase2-lab {
   padding: 2rem;
   font-family: ui-sans-serif, system-ui, sans-serif;
 

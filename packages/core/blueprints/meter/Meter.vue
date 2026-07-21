@@ -25,7 +25,7 @@ const labelId = `${generatedId}-label`;
 </script>
 
 <template>
-  <div class="nagi-meter">
+  <div class="n-meter">
     <label :id="labelId" class="label" :for="id ?? generatedId">{{ label }}</label>
     <meter
       v-bind="$attrs"
@@ -45,7 +45,7 @@ const labelId = `${generatedId}-label`;
 </template>
 
 <style scoped>
-.nagi-meter {
+.n-meter {
   display: grid;
   gap: 0.35rem;
   color: var(--nagi-color-text);

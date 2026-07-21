@@ -94,6 +94,12 @@ export {
   type UseTabsReturn,
 } from "./tabs.ts"
 export {
+  useToggle,
+  type ToggleButtonProps,
+  type UseToggleOptions,
+  type UseToggleReturn,
+} from "./toggle.ts"
+export {
   useCombobox,
   type ComboboxInputProps,
   type ComboboxListboxProps,
