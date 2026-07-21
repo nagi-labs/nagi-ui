@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useAttrs } from "vue";
+import { ref } from "vue";
 
 import { useNativeCheckboxControl } from "@nagi-labs/nagi-ui";
 
@@ -23,7 +23,6 @@ const props = withDefaults(
 
 const checked = defineModel<boolean>({ default: false });
 const indeterminate = defineModel<boolean>("indeterminate", { default: false });
-const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
 
 useNativeCheckboxControl(input, checked, indeterminate);
@@ -32,7 +31,7 @@ useNativeCheckboxControl(input, checked, indeterminate);
 <template>
   <label class="n-checkbox">
     <input
-      v-bind="attrs"
+      v-bind="$attrs"
       ref="input"
       v-model="checked"
       class="input"

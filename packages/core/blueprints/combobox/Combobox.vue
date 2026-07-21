@@ -7,9 +7,15 @@ export interface ComboboxOption {
 </script>
 
 <script setup lang="ts">
-import { nextTick, useId, useTemplateRef, watchEffect } from "vue";
+import { useId, useTemplateRef } from "vue";
 
-import { useCombobox, useNativeFormReset } from "@nagi-labs/nagi-ui";
+import {
+  mergeNagiProps,
+  useCombobox,
+  useComboboxControl,
+} from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -47,9 +53,6 @@ const inputValue = defineModel<string>({ default: "" });
 const selected = defineModel<string | null>("selected", { default: null });
 const labelId = useId();
 const inputElement = useTemplateRef<HTMLInputElement>("input");
-const initialInputValue = inputValue.value;
-const initialSelected = selected.value;
-
 const combobox = useCombobox<ComboboxOption>({
   items: () => (props.loading ? [] : props.items),
   getKey: (item) => item.key,
@@ -63,33 +66,13 @@ const combobox = useCombobox<ComboboxOption>({
   openWhenEmpty: true,
 });
 const { visibleItems } = combobox;
-
-function clear() {
-  combobox.clear();
-  inputElement.value?.focus();
-}
-
-useNativeFormReset(
-  inputElement,
-  (control) => {
-    selected.value = initialSelected;
-    combobox.hide();
-    // selectedKey watchers canonicalize text to the option label. Reset owns
-    // both initial models, so re-apply a deliberately non-canonical initial
-    // text (for example key="vue", text="v") after those watchers settle.
-    void nextTick(() => {
-      inputValue.value = initialInputValue;
-      control.value = initialInputValue;
-    });
-  },
-);
-
-watchEffect(() => {
-  const input = inputElement.value;
-  if (!input) return;
-  input.setCustomValidity(
-    props.required && selected.value === null ? props.validationMessage : "",
-  );
+const control = useComboboxControl({
+  input: inputElement,
+  inputValue,
+  selected,
+  behavior: combobox,
+  required: () => props.required,
+  validationMessage: () => props.validationMessage,
 });
 </script>
 
@@ -105,14 +88,14 @@ watchEffect(() => {
         :form="form"
         :placeholder="placeholder"
         :aria-busy="loading ? 'true' : undefined"
-        v-bind="combobox.inputProps"
+        v-bind="mergeNagiProps(combobox.inputProps, $attrs)"
       />
       <button
         v-if="clearable && !disabled && !readOnly && (selected !== null || inputValue !== '')"
         class="button -clear"
         type="button"
         :aria-label="clearLabel"
-        @click="clear"
+        @click="control.clear"
       >
         <span aria-hidden="true">×</span>
       </button>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useFocusableDisabled } from "@nagi-labs/nagi-ui";
+
 const props = withDefaults(
   defineProps<{
     variant?: "default" | "accent" | "danger";
@@ -22,12 +24,9 @@ const sizeClass = {
   default: undefined,
   large: "-large",
 } as const;
-
-function guardFocusableDisabled(event: MouseEvent) {
-  if (!props.disabled || !props.focusableWhenDisabled) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}
+const focusableDisabled = useFocusableDisabled(
+  () => props.disabled && props.focusableWhenDisabled,
+);
 </script>
 
 <template>
@@ -40,7 +39,7 @@ function guardFocusableDisabled(event: MouseEvent) {
     :type="type"
     :disabled="disabled && !focusableWhenDisabled"
     :aria-disabled="disabled && focusableWhenDisabled ? 'true' : undefined"
-    @click.capture="guardFocusableDisabled"
+    @click.capture="focusableDisabled.onClick"
   >
     <slot />
   </button>

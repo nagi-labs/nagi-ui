@@ -45,7 +45,7 @@ test("markers round-trip for vue and ts files", () => {
 test("own copies the exact installed source with a stamped first line", () => {
   const targetRoot = tempDir();
   const result = ownComponent("dropdown-menu", { packageRoot, targetRoot });
-  assert.equal(result.files.length, 4);
+  assert.equal(result.files.length, components["dropdown-menu"].files.length);
 
   for (const file of result.files) {
     const content = fs.readFileSync(file, "utf8");
@@ -69,6 +69,33 @@ test("every registered component points at a shipped ownership source", () => {
         `${name}/${file} exists in the package`,
       );
     }
+  }
+});
+
+test("ownership includes every Blueprint-local relative dependency", () => {
+  for (const [name, spec] of Object.entries(components)) {
+    for (const file of spec.files) {
+      const source = fs.readFileSync(path.join(packageRoot, spec.dir, file), "utf8");
+      for (const match of source.matchAll(/(?:from\s+|import\s+)["'](\.\.?\/[^"']+)["']/g)) {
+        const dependency = path.posix.normalize(
+          path.posix.join(path.posix.dirname(file), match[1] as string),
+        );
+        assert.ok(
+          spec.files.includes(dependency),
+          `${name}/${file} depends on ${dependency}, which own must copy`,
+        );
+      }
+    }
+  }
+});
+
+test("ordinary ownership keeps package composables out of the copied source", () => {
+  for (const [name, spec] of Object.entries(components)) {
+    assert.deepEqual(
+      spec.files.filter((file) => /^use-.*\.ts$/u.test(file)),
+      [],
+      `${name} must import fixed composables from the package until ownership layers ship`,
+    );
   }
 });
 
@@ -157,7 +184,10 @@ test("diff reports clean, modified, and drifted owned sources", () => {
   ownComponent("combobox", { packageRoot, targetRoot });
 
   let entries = diffOwned(targetRoot, { packageRoot });
-  assert.equal(entries.length, 2);
+  assert.equal(
+    entries.length,
+    components.listbox.files.length + components.combobox.files.length,
+  );
   assert.ok(entries.every((entry) => entry.status === "clean"));
 
   const owned = path.join(targetRoot, "listbox/Listbox.vue");

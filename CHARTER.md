@@ -106,11 +106,12 @@ slot は正当な機構である。§2 の compound 禁止は「**ライブラ�
 
 ### Blueprint に配線を残す基準
 
-ownership 後に利用者が変更する可能性のある **policy と markup** は Blueprint に残す。一方、native event の順序、Vue model と DOM property の同期、browser 差異の吸収など、変更対象ではない **mechanism** は小さな helper に隠す。helper の採用基準は呼び出し回数ではなく、所有後にその箇所を変更するかどうかである。
+ownership 後に利用者へ修正してほしい **policy と markup** は Blueprint に残す。一方、native event の順序、Vue model と DOM property の同期、browser 差異の吸収など、利用者へ修正してほしくない **mechanism** は小さな helper に隠す。判断は「変更できるか」ではなく「通常ここを変更してほしいか」で行い、helper の採用基準を呼び出し回数に置かない。全件監査の台帳は `docs/blueprint-wiring-audit.md`。
 
 - 万能な config object、control kind の分岐、変換 callback 群を持つ汎用 helper は作らない。`useNativeRadioReset(input, model)` のように一つの固定された意味へ名前を付ける
 - helper を使うために Blueprint 側で同じ写像や DOM 規則を再宣言するなら抽象化に失敗しているため、明示実装へ戻す
-- renderer の DOM 構造を変更したとき同時に直す必要がある処理（schema node から menu option への変換、DOM 順に依存する focus repair 等）は、mechanism に見えても Blueprint に残す
+- 出荷SFC内の `watch` / `watchEffect` は禁止ではなく**要レビューのシグナル**とする。まず derived state で消せないか、次に固定意味の component-specific helper / composable へ移せないかを確認し、利用者が変更する policy の監視だけをSFCへ残す
+- renderer の DOM 構造を変更したとき同時に直す必要がある処理（schema node から menu option への変換等）は、mechanism に見えても Blueprint に残す。ただし変更不能なa11y invariantとして固定するfocus repairは、DOM契約をbrowser testで拘束したcomponent-specific composableへ隠してよい
 - 特殊要件で既定 mechanism を変えたい利用者は、ownership 後に helper を外して局所実装へ降りる。投機的な hook や options を helper に増やさない
 
 ### styling-only blueprint
@@ -395,6 +396,7 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 ## 改訂履歴
 
+- **2026-07-22** 全出荷Blueprintを「ユーザーに修正してほしい場所か」で配線監査。Toast lifecycle/focus repair、Avatar image race、Combobox native form channel、Tabs model bridge、Button disabled activationをpackage composableへ隠し、Dropdown node option変換は編集対象renderer moduleへ移した。Input/Checkbox/Switch/Sliderは`useAttrs()`をtemplateの`$attrs`へ簡約、Comboboxも追加属性をbehavior propsと安全にmergeしてnative inputへ固定した。通常`own`はcomposableをコピーせず、schema/rendererの相対dependency closureだけをunit testで保証する。SFC内`watch`等を禁止ではなくmechanism漏出のreview signalとする基準を§3.5へ追加し、現時点の出荷SFCはwatch/lifecycle/direct DOM global/useAttrs 0件。正本は`docs/blueprint-wiring-audit.md`。
 - **2026-07-22** Base UI alignment D2として Avatar / Separator / Toggleを追加し、component作成進捗を採用37 slice中25出荷の67.6%へ更新。Avatarはnative image + deterministic fallback + error/src recovery、Separatorはhorizontal `<hr>` / vertical ARIA / decorative、Toggleはnative `<button aria-pressed>` + controlled modelに限定し、compound/asChild/custom state語彙を導入しなかった。同時に全SFC filenameから`Nagi` prefixを除去し、全Blueprint surfaceをNagi CSSの厳密な`n-` + filename契約へ統一した。
 - **2026-07-22** composableをDLするownership layer (`vue` / `all`) は設計だけを保持し、component catalog拡充を優先して実装延期とした。package内部でmechanismをcomposableへ隠す方針とは分離し、composable ownershipの実需要が観測されるまで再開しない。
 - **2026-07-21** Card の `title` / `description`、Alert の `title`、Dialog の `title` / `description`、Disclosure の `summary`、Badge の `label` を、plain text props をfallbackとして保つ同名content-only slotへ拡張。propかslotかを排他的に決めず、安定visible partのrich content需要が確立している場合だけ、owned wrapperを維持した最小slotを併設できると§3.5へ明文化した。required text props、ARIA IDREF、native summary behavior、header anatomy、既定typography/toneはSFCが保持し、header全体のslot化・behavior propsの受け渡し・compound partsは引き続き不採用。

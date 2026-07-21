@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { useAvatar } from "@nagi-labs/nagi-ui";
 
 const props = defineProps<{
   src?: string;
@@ -11,44 +11,11 @@ defineSlots<{
   fallback(props: { fallback: string }): unknown;
 }>();
 
-const image = ref<HTMLImageElement | null>(null);
-const failed = ref(false);
-
-const fallbackText = computed(() => {
-  if (props.fallback !== undefined) return props.fallback;
-
-  const words = props.alt.trim().split(/\s+/u).filter(Boolean);
-  if (words.length === 0) return "?";
-
-  const first = Array.from(words[0] ?? "")[0] ?? "";
-  const last = Array.from(words.at(-1) ?? "")[0] ?? "";
-  return (words.length === 1 ? first : `${first}${last}`).toUpperCase();
+const { fallbackText, hasImage, image, onImageError } = useAvatar({
+  src: () => props.src,
+  alt: () => props.alt,
+  fallback: () => props.fallback,
 });
-
-const hasImage = computed(() => Boolean(props.src) && !failed.value);
-
-function markFailed(event: Event) {
-  const target = event.currentTarget;
-  if (!(target instanceof HTMLImageElement)) return;
-  if (target.getAttribute("src") !== props.src) return;
-  failed.value = true;
-}
-
-function detectMissedError() {
-  const target = image.value;
-  if (target?.complete && target.naturalWidth === 0) failed.value = true;
-}
-
-watch(
-  () => props.src,
-  () => {
-    failed.value = false;
-    void nextTick(detectMissedError);
-  },
-  { flush: "sync" },
-);
-
-onMounted(detectMissedError);
 </script>
 
 <template>
@@ -68,7 +35,7 @@ onMounted(detectMissedError);
       class="image"
       :src="src"
       alt=""
-      @error="markFailed"
+      @error="onImageError"
     />
   </span>
 </template>

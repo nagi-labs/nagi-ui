@@ -18,6 +18,7 @@ export const components = {
       "DropdownMenu.vue",
       "DropdownMenuItem.vue",
       "DropdownSubmenu.vue",
+      "dropdown-options.ts",
       "dropdown-schema.ts",
     ],
   },

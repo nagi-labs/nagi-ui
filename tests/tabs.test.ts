@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { customRef, nextTick, ref } from "vue";
+import { customRef, effectScope, nextTick, ref } from "vue";
 
-import { useTabs } from "@nagi-labs/nagi-ui";
+import { useTabs, useTabsModelBridge } from "@nagi-labs/nagi-ui";
 
 interface TabItem {
   key: string;
@@ -17,6 +17,20 @@ const tabs: readonly TabItem[] = [
   { key: "security", label: "Security" },
   { key: "activity", label: "Activity" },
 ];
+
+test("Tabs model bridge synchronizes both channels without exposing watchers", () => {
+  const model = ref<string | null>("overview");
+  const scope = effectScope();
+  const selected = scope.run(() => useTabsModelBridge(model));
+  assert.ok(selected);
+
+  selected.value = "security";
+  assert.equal(model.value, "security");
+
+  model.value = "activity";
+  assert.equal(selected.value, "activity");
+  scope.stop();
+});
 
 function createTabs(overrides: Partial<Parameters<typeof useTabs<TabItem>>[0]> = {}) {
   return useTabs<TabItem>({

@@ -14,6 +14,7 @@ import {
 } from "vue";
 
 import { createAnchorPair, type AnchorOptions } from "./anchor.ts";
+import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
 import { usePopover, type PopoverProps } from "./popover.ts";
 
 export interface UseComboboxOptions<Item, Key extends string = string> {
@@ -105,6 +106,53 @@ export interface UseComboboxReturn<Item, Key extends string = string> {
   popupProps: ComboboxPopupProps;
   listboxProps: ComboboxListboxProps;
   optionProps: (item: Item) => ComboboxOptionProps;
+}
+
+interface ComboboxControlBehavior {
+  clear: () => void;
+  hide: () => void;
+}
+
+export interface UseComboboxControlOptions<Key extends string> {
+  input: Readonly<Ref<HTMLInputElement | null>>;
+  inputValue: Ref<string>;
+  selected: Ref<Key | null>;
+  behavior: ComboboxControlBehavior;
+  required: () => boolean;
+  validationMessage: () => string;
+}
+
+/** Binds one editable combobox model to its native form-control channels. */
+export function useComboboxControl<Key extends string>(
+  options: UseComboboxControlOptions<Key>,
+) {
+  const initialInputValue = options.inputValue.value;
+  const initialSelected = options.selected.value;
+
+  useNativeFormReset(options.input, (control) => {
+    options.selected.value = initialSelected;
+    options.behavior.hide();
+    // Selection watchers canonicalize text to the option label. Reset owns
+    // both initial models, so restore deliberately non-canonical initial text
+    // after those watchers settle.
+    void nextTick(() => {
+      options.inputValue.value = initialInputValue;
+      control.value = initialInputValue;
+    });
+  });
+
+  useNativeCustomValidity(options.input, () =>
+    options.required() && options.selected.value === null
+      ? options.validationMessage()
+      : "",
+  );
+
+  function clear() {
+    options.behavior.clear();
+    options.input.value?.focus();
+  }
+
+  return { clear };
 }
 
 /**

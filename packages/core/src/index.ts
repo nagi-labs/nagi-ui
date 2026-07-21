@@ -15,6 +15,7 @@ export {
 export {
   createToastManager,
   useToast,
+  useToastRenderer,
   type CreateToastManagerOptions,
   type ToastAction,
   type ToastAddOptions,
@@ -26,11 +27,20 @@ export {
   type ToastPromiseOptions,
   type ToastPromiseState,
   type ToastRegionProps,
+  type ToastRendererItemProps,
   type ToastTone,
   type ToastUpdateOptions,
   type UseToastOptions,
+  type UseToastRendererReturn,
   type UseToastReturn,
 } from "./toast.ts"
+export {
+  useAvatar,
+  type UseAvatarOptions,
+} from "./avatar.ts"
+export {
+  useFocusableDisabled,
+} from "./button.ts"
 export {
   useDialog,
   vDialogClose,
@@ -83,6 +93,7 @@ export {
   type UseListboxReturn,
 } from "./listbox.ts"
 export {
+  useTabsModelBridge,
   useTabs,
   type TabsAccessibleName,
   type TabsActivationMode,
@@ -101,16 +112,19 @@ export {
 } from "./toggle.ts"
 export {
   useCombobox,
+  useComboboxControl,
   type ComboboxInputProps,
   type ComboboxListboxProps,
   type ComboboxOptionProps,
   type ComboboxPopupProps,
   type UseComboboxOptions,
+  type UseComboboxControlOptions,
   type UseComboboxReturn,
 } from "./combobox.ts"
 export {
   useNativeCheckedReset,
   useNativeCheckboxControl,
+  useNativeCustomValidity,
   useNativeFormReset,
   useNativeNumberReset,
   useNativeRadioReset,

@@ -155,8 +155,19 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
       name: "email",
       form: "profile",
       required: true,
+      autocomplete: "email",
+      inputmode: "email",
+      "aria-describedby": "email-help",
+      class: "consumer-control",
     });
+    const nativeInput = input.match(/<input[^>]*>/)?.[0] ?? "";
+    assert.match(input, /<label[^>]*class="n-input"/);
+    assert.doesNotMatch(input, /<label[^>]*consumer-control/);
     assert.match(input, /<input[^>]*type="email"/);
+    assert.match(nativeInput, /autocomplete="email"/);
+    assert.match(nativeInput, /inputmode="email"/);
+    assert.match(nativeInput, /aria-describedby="email-help"/);
+    assert.match(nativeInput, /class="[^"]*consumer-control/);
     assert.match(input, /name="email"/);
     assert.match(input, /form="profile"/);
     assert.match(input, /required/);
@@ -167,10 +178,16 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
       name: "updates",
       value: "yes",
       form: "profile",
+      "aria-describedby": "updates-help",
+      class: "consumer-checkbox",
     });
+    const nativeCheckbox = checkbox.match(/<input[^>]*>/)?.[0] ?? "";
+    assert.doesNotMatch(checkbox, /<label[^>]*consumer-checkbox/);
     assert.match(checkbox, /<input[^>]*type="checkbox"/);
     assert.match(checkbox, /checked/);
     assert.match(checkbox, /value="yes"/);
+    assert.match(nativeCheckbox, /aria-describedby="updates-help"/);
+    assert.match(nativeCheckbox, /class="[^"]*consumer-checkbox/);
 
     const radio = await render(components.Radio as Component, {
       label: "Email",
@@ -187,9 +204,15 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
       modelValue: true,
       name: "public",
       form: "profile",
+      "aria-describedby": "public-help",
+      class: "consumer-switch",
     });
+    const nativeSwitch = toggle.match(/<input[^>]*>/)?.[0] ?? "";
+    assert.doesNotMatch(toggle, /<label[^>]*consumer-switch/);
     assert.match(toggle, /role="switch"/);
     assert.match(toggle, /checked/);
+    assert.match(nativeSwitch, /aria-describedby="public-help"/);
+    assert.match(nativeSwitch, /class="[^"]*consumer-switch/);
 
     const select = await render(components.Select as Component, {
       label: "Framework",
@@ -240,10 +263,29 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
       form: "profile",
       min: 0,
       max: 100,
+      "aria-describedby": "volume-help",
+      class: "consumer-slider",
     });
+    const nativeSlider = slider.match(/<input[^>]*type="range"[^>]*>/)?.[0] ?? "";
+    assert.doesNotMatch(slider, /<div[^>]*n-slider[^>]*consumer-slider/);
     assert.match(slider, /<input[^>]*type="range"/);
     assert.match(slider, /name="volume"/);
     assert.match(slider, /form="profile"/);
+    assert.match(nativeSlider, /aria-describedby="volume-help"/);
+    assert.match(nativeSlider, /class="[^"]*consumer-slider/);
+
+    const combobox = await render(components.Combobox as Component, {
+      label: "Framework",
+      items: [{ key: "vue", label: "Vue" }],
+      inputmode: "search",
+      "aria-describedby": "framework-help",
+      class: "consumer-combobox",
+    });
+    const nativeCombobox = combobox.match(/<input[^>]*type="text"[^>]*>/)?.[0] ?? "";
+    assert.doesNotMatch(combobox, /<div[^>]*n-combobox[^>]*consumer-combobox/);
+    assert.match(nativeCombobox, /inputmode="search"/);
+    assert.match(nativeCombobox, /aria-describedby="framework-help"/);
+    assert.match(nativeCombobox, /class="[^"]*consumer-combobox/);
   });
 });
 

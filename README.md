@@ -238,3 +238,7 @@ upgrades.
   primitives, and normalizes every shipped SFC to a prefix-free filename with
   an exact `n-` surface namespace. See
   [`docs/base-ui-alignment-d2-primitives.md`](docs/base-ui-alignment-d2-primitives.md).
+- [x] The Blueprint wiring audit keeps ordinary product change points in SFCs,
+  moves fixed browser/Vue mechanisms behind narrow helpers, and verifies that
+  `own` copies every local dependency. See
+  [`docs/blueprint-wiring-audit.md`](docs/blueprint-wiring-audit.md).

@@ -60,6 +60,11 @@ test("Avatar recovers after an image error and Toggle exposes native pressed sta
   await page.getByRole("button", { name: "Restore avatar image" }).click();
   await expect(avatar.locator("img")).toHaveCount(1);
 
+  // A failed URL must be retried after another source has rendered.
+  await page.getByRole("button", { name: "Break avatar image" }).click();
+  await expect(avatar.locator("img")).toHaveCount(0);
+  await expect(avatar).toContainText("AL");
+
   const toggle = page.getByRole("button", { name: "Pin release" });
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
   await toggle.click();

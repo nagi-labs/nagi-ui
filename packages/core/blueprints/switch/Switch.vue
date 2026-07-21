@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useAttrs } from "vue";
+import { ref } from "vue";
 
 import { useNativeCheckedReset } from "@nagi-labs/nagi-ui";
 
@@ -22,7 +22,6 @@ const props = withDefaults(
 );
 
 const checked = defineModel<boolean>({ default: false });
-const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
 
 useNativeCheckedReset(input, checked);
@@ -31,7 +30,7 @@ useNativeCheckedReset(input, checked);
 <template>
   <label class="n-switch">
     <input
-      v-bind="attrs"
+      v-bind="$attrs"
       ref="input"
       v-model="checked"
       class="input"

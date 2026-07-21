@@ -84,6 +84,25 @@ export interface UseTabsReturn<Item, Key extends string = string> {
   panelProps: (item: Item) => TabsPanelProps;
 }
 
+/**
+ * Buffers a Vue component model so behavior code can write synchronously even
+ * while a controlled parent still exposes the previous prop snapshot.
+ */
+export function useTabsModelBridge<Key extends string>(
+  model: Ref<Key | null>,
+): Ref<Key | null> {
+  const selected = ref<Key | null>(model.value) as Ref<Key | null>;
+
+  watch(model, (value) => {
+    selected.value = value;
+  }, { flush: "sync" });
+  watch(selected, (value) => {
+    if (model.value !== value) model.value = value;
+  }, { flush: "sync" });
+
+  return selected;
+}
+
 interface ItemSnapshot<Key extends string> {
   key: Key;
   disabled: boolean;

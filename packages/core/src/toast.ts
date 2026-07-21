@@ -389,6 +389,15 @@ export interface UseToastReturn {
   regionProps: ToastRegionProps
 }
 
+export interface ToastRendererItemProps {
+  "data-nagi-toast-item": ""
+}
+
+export interface UseToastRendererReturn extends UseToastReturn {
+  /** Spread on each direct notification item; used only for focus repair. */
+  toastItemProps: ToastRendererItemProps
+}
+
 const toastFocusOrigins = new WeakMap<Document, HTMLElement>()
 
 function openToastRegions(document: Document): HTMLElement[] {
@@ -577,5 +586,51 @@ export function useToast(options: UseToastOptions = {}): UseToastReturn {
     },
     restoreFocus,
     regionProps,
+  }
+}
+
+/** Adds the fixed focus-repair contract used by the package Toast renderer. */
+export function useToastRenderer(options: UseToastOptions = {}): UseToastRendererReturn {
+  const notifier = useToast(options)
+
+  watch(notifier.toasts, async (next) => {
+    if (typeof document === "undefined") return
+    const region = document.getElementById(notifier.id)
+    const active = document.activeElement
+    if (!region || !(active instanceof HTMLElement) || !region.contains(active)) return
+
+    const focusedItem = active.closest<HTMLElement>("[data-nagi-toast-item]")
+    if (!focusedItem) {
+      if (next.length === 0) {
+        await nextTick()
+        notifier.restoreFocus()
+      }
+      return
+    }
+
+    const previousItems = [
+      ...region.querySelectorAll<HTMLElement>("[data-nagi-toast-item]"),
+    ]
+    const focusedIndex = previousItems.indexOf(focusedItem)
+    await nextTick()
+    if (active.isConnected && region.contains(active)) return
+
+    const remainingItems = [
+      ...region.querySelectorAll<HTMLElement>("[data-nagi-toast-item]"),
+    ]
+    if (remainingItems.length === 0) {
+      notifier.restoreFocus()
+      return
+    }
+
+    const nextItem = remainingItems[
+      Math.min(Math.max(focusedIndex, 0), remainingItems.length - 1)
+    ]
+    nextItem?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true })
+  }, { flush: "pre" })
+
+  return {
+    ...notifier,
+    toastItemProps: { "data-nagi-toast-item": "" },
   }
 }

@@ -9,14 +9,16 @@ import {
   checkboxEntry,
   linkEntry,
   radioEntry,
-  type DropdownMenuActionNode,
-  type DropdownMenuCheckboxNode,
   type DropdownMenuEntry,
-  type DropdownMenuLinkNode,
   type DropdownMenuNode,
-  type DropdownMenuRadioGroupNode,
-  type DropdownMenuRadioItem,
 } from "./dropdown-schema.ts";
+import {
+  actionOptions,
+  checkboxOptions,
+  linkOptions,
+  prefetchLink,
+  radioOptions,
+} from "./dropdown-options.ts";
 
 defineProps<{
   menu: UseMenuReturn<DropdownMenuEntry>;
@@ -24,55 +26,6 @@ defineProps<{
 }>();
 
 const labelId = useId();
-
-function actionOptions(node: DropdownMenuActionNode) {
-  return {
-    onSelect: () => node.onSelect(),
-    ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),
-  };
-}
-
-function checkboxOptions(node: DropdownMenuCheckboxNode) {
-  return {
-    checked: node.checked,
-    onCheckedChange: node.onCheckedChange,
-    ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),
-  };
-}
-
-function linkOptions(node: DropdownMenuLinkNode) {
-  return {
-    onSelect: (_entry: DropdownMenuEntry, event?: Event) => {
-      // DOM focus stays on the menu container (aria-activedescendant), so a
-      // keyboard activation has no native anchor default action to follow.
-      // A configured router adapter takes over ordinary activation while the
-      // real href remains available to SSR, no-JS, modified clicks, and copy.
-      const pointerEvent = typeof MouseEvent !== "undefined" && event instanceof MouseEvent;
-      const modifiedPointer =
-        pointerEvent &&
-        (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
-      if (node.navigate && !modifiedPointer) {
-        event?.preventDefault();
-        void node.navigate();
-      } else if (!node.navigate && event?.type === "keydown" && typeof window !== "undefined") {
-        window.location.assign(node.href);
-      }
-    },
-    ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),
-  };
-}
-
-function prefetchLink(node: DropdownMenuLinkNode) {
-  if (!node.disabled) void node.prefetch?.();
-}
-
-function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadioItem) {
-  return {
-    checked: group.value === item.key,
-    onSelect: () => group.onValueChange(item.key),
-    ...(group.closeOnSelect === undefined ? {} : { closeOnSelect: group.closeOnSelect }),
-  };
-}
 </script>
 
 <template>

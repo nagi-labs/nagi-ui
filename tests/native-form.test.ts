@@ -6,11 +6,31 @@ import { effectScope, nextTick, ref } from "vue";
 import {
   useNativeCheckedReset,
   useNativeCheckboxControl,
+  useNativeCustomValidity,
   useNativeFormReset,
   useNativeNumberReset,
   useNativeRadioReset,
   useNativeValueReset,
 } from "@nagi-labs/nagi-ui";
+
+test("native custom validity follows reactive message and control changes", async () => {
+  const messages: string[] = [];
+  const control = ref({
+    setCustomValidity(message: string) {
+      messages.push(message);
+    },
+  } as unknown as HTMLInputElement);
+  const message = ref("Select an option.");
+  const scope = effectScope();
+
+  scope.run(() => useNativeCustomValidity(control, message));
+  assert.deepEqual(messages, ["Select an option."]);
+
+  message.value = "";
+  await nextTick();
+  assert.deepEqual(messages, ["Select an option.", ""]);
+  scope.stop();
+});
 
 test("native form reset synchronization waits for the browser default action", async () => {
   const form = new EventTarget();

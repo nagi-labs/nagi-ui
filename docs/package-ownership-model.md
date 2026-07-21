@@ -99,6 +99,11 @@ unknown-source を判定して CI gate に使える exit code を返す。
 Status: **設計固定、実装延期** (2026-07-22)。component catalog拡充を優先し、
 composable ownershipの具体的需要が観測されるまで次スライスとして着手しない。
 
+固定behaviorのcomposableはpackage importのままとし、通常の`own <component>`では
+コピーしない。SFCが相対importするschema / renderer moduleだけは編集対象であり、
+componentの必須source dependencyとして一緒にコピーする。CLI testはVue/TSを問わず
+相対importの推移closureを検査し、registry漏れを禁止する。
+
 behavior を小さな composable に隠しても、所有者が必要な層だけを選べるようにする。ただし
 初期 surface は利用頻度が高い次の2段に絞り、`composable-only` は実需要が観測されるまで
 出荷しない。

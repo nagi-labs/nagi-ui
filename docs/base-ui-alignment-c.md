@@ -43,6 +43,11 @@ provider, `provide`/`inject` graph, hidden singleton, or Teleport. Applications
 may create a long-lived module export when notifications must be fired outside
 a component, but that ownership remains explicit. `useToast()` is the
 setup-scoped DOM binding; code outside Vue setup uses only the manager.
+It also owns renderer lifecycle and native-popover synchronization. The package
+`useToastRenderer()` composable owns the fixed focus-repair invariant which
+depends on the shipped renderer's DOM anatomy. The SFC keeps only presentation
+transforms and the editable DOM/CSS anatomy; ordinary `own` does not copy the
+composable.
 
 ## Manager contract
 

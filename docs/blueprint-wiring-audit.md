@@ -1,64 +1,79 @@
 # Blueprint wiring exposure audit
 
-Status: Reviewed (2026-07-21).
+Status: Complete (2026-07-22).
 
-This audit applies the CHARTER §3.5 rule that Blueprint source should expose
-what an owner is likely to change, not every browser/Vue synchronization
-mechanism used to uphold the package contract. All components exported from
-`@nagi-labs/nagi-ui/components` were reviewed; historical, unexported phase
-fixtures were excluded.
+## Decision rule
 
-## Extract now
+The deciding question is not whether a source owner *can* change a line. It is:
 
-Native form reset synchronization was repeated across Input, Select, Slider,
-Checkbox, Switch and Radio. Its event timing, canceled-reset handling, form
-owner rebinding, initial model capture and DOM-property repair are fixed
-mechanisms rather than ownership customization surfaces. Small semantic
-helpers now hide those mappings; Combobox keeps its explicit reset policy
-because it coordinates two models, popup state and a next-tick text repair.
+> Is this a place where Nagi wants the user to make ordinary product changes?
 
-These helpers deliberately do not accept a `kind` option, conversion callbacks
-or a generic config schema. A special reset policy is implemented by removing
-the helper after ownership.
+Keep product policy, visible markup, schema rendering, and CSS in the SFC. Hide
+browser ordering, lifecycle cleanup, focus repair, model/DOM synchronization,
+and race handling behind a narrowly named component or native helper.
 
-## Follow-up candidate
+`watch`, lifecycle hooks, template refs, and direct DOM APIs in a shipped SFC
+are review signals, not automatic violations. A one-line template ref passed to
+a fixed native reset helper is an intentional declaration; the reset event
+ordering itself does not belong in the SFC.
 
-Tabs contains a local bridge between `defineModel` and the synchronously
-writable selection passed to `useTabs`. This is a Vue model-proxy workaround,
-not a likely customization surface. It should eventually move behind the Tabs
-core contract, but not through a generic `useModelBridge`: changing it affects
-controlled identity, SSR canonicalization and dynamic focus repair and should
-be evaluated as its own tested slice.
+## Audit result
 
-## Keep visible
+| Group | Components | Result |
+|---|---|---|
+| presentation-only | Alert, Badge, Card, Fieldset, Separator | props, slots, DOM and CSS only |
+| native elements | Input, Checkbox, Radio, Select, Slider, Switch, Meter, Progress | native control remains visible; reset/property synchronization is in a fixed helper |
+| behavior composition | Dialog, Disclosure, Listbox, Popover, Tabs, Toast, Toggle, Tooltip | the SFC declares models and binds returned standard attributes; state machines stay in composables |
+| menu renderers | ActionMenu, DropdownMenu, DropdownSubmenu, DropdownMenuItem | editable schema-to-DOM branches stay visible; fixed node option and navigation mechanics moved to an owned helper |
+| renderer-specific mechanisms | Avatar, Combobox, Button | image races, native combobox form channels, and focusable-disabled activation are package composables and are not copied by ordinary `own` |
 
-- Dropdown renderer functions translate Blueprint-local schema nodes into Menu
-  options. Owners change these functions when extending the node union, so the
-  mapping belongs beside the renderer.
-- Toast item-removal focus repair queries the renderer's item/button DOM. An
-  owner changing that DOM must see and update the dependency; hiding selectors
-  in core would make ownership less safe.
-- Combobox reset and custom validity coordinate the selected key, deliberately
-  non-canonical input text, popup state and application-facing validation
-  message. Those are component policy and common form-library integration
-  change points.
-- Button's focusable-disabled guard directly implements its public prop in a
-  few lines. A helper would replace familiar event code with more Nagi-specific
-  vocabulary without removing meaningful wiring.
-- Generated ids, `defineExpose`, schema-to-class functions and straightforward
-  composable option objects remain visible because they describe component
-  anatomy or public policy rather than browser repair work.
+The current shipped SFC set contains no `watch` / `watchEffect`, lifecycle hook,
+`document` / `window` access, or `useAttrs()` call. This is an audit outcome,
+not a permanent ban on every future use.
+
+## Changes made
+
+- Toast delegates manager creation/disposal, popover synchronization, and F6
+  to `useToast`; renderer-specific focused-item repair lives in the package
+  `useToastRenderer`. Its SFC retains order, tone,
+  announcement text, DOM, and CSS.
+- Avatar delegates image load races, missed hydration errors, and default
+  initials to package `useAvatar`.
+- Combobox delegates native reset ordering, custom validity, and clear-focus to
+  package `useComboboxControl`.
+- Tabs delegates the controlled `defineModel` snapshot bridge to
+  `useTabsModelBridge`.
+- DropdownMenuItem delegates editable action/checkbox/radio/link adapter
+  mappings to `dropdown-options.ts`; the schema branches remain in the
+  template.
+- Button delegates focusable-disabled event suppression to package
+  `useFocusableDisabled`.
+- Input, Checkbox, Switch, and Slider bind `$attrs` directly in the template;
+  Combobox merges `$attrs` with its behavior props through `mergeNagiProps`.
+  Consumer attributes, classes, styles, and listeners intentionally target the
+  inner native control; root layout changes remain an ownership concern.
+
+## Deliberately visible
+
+- props, defaults, `defineModel`, public `defineExpose`, and IDs which connect
+  visible ARIA relationships;
+- composable option objects, because they state component policy;
+- schema-to-DOM branches and menu entry flattening, because owners extend them
+  together;
+- Toast order, tone and announcement transforms;
+- the native control ref plus a one-line reset helper declaration.
+
+## Ownership invariant
+
+Ordinary `own` does not copy composables. Fixed behavior remains a package
+dependency until the deferred `vue` / `all` ownership design is resumed.
+Blueprint-local schema and renderer modules are different: owners are expected
+to edit them with the SFC, so `own` copies their complete relative-import
+closure. A unit test scans every registered Vue/TS source and fails when the
+ownership registry omits an edge, including TS-to-TS dependencies.
 
 ## Styling is a separate boundary
 
-Blueprint CSS uses `var(--nagi-color-focus-ring)` without a literal fallback.
-Defaults live only in `default-theme.css`, so an omitted or incomplete theme is
-detectable instead of silently receiving a plausible color. The public token
-manifest, default theme and Blueprint references must remain identical; a
-replacement theme is checked by `nagi-ui theme check`, and consumers may opt
-into the computed-cascade development warning.
-
-Direct literals have a different rule. A visual role becomes a public theme
-token only after it repeats across at least two Blueprints; one-component
-details remain local ownership surfaces. Historical unexported fixtures are
-not part of the package theme contract.
+Blueprint CSS uses theme tokens without literal fallbacks. Visual DOM and CSS
+remain exposed because they are intended ownership surfaces; hiding behavior
+mechanisms does not move styling into a runtime API.

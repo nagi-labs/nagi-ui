@@ -2,16 +2,29 @@ import {
   getCurrentInstance,
   onScopeDispose,
   onUpdated,
+  toValue,
   watch,
   watchEffect,
+  type MaybeRefOrGetter,
 } from "vue";
 
 type NativeFormControl = HTMLInputElement | HTMLSelectElement;
 type NativeValueControl = HTMLInputElement | HTMLSelectElement;
-type ReadonlyControlRef<Control extends NativeFormControl> = Readonly<{
+type NativeValidityControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+type ReadonlyControlRef<Control> = Readonly<{
   value: Control | null;
 }>;
 type WritableModel<Value> = { value: Value };
+
+/** Applies a reactive constraint message to the browser-owned validity channel. */
+export function useNativeCustomValidity(
+  control: ReadonlyControlRef<NativeValidityControl>,
+  message: MaybeRefOrGetter<string>,
+): void {
+  watchEffect(() => {
+    control.value?.setCustomValidity(toValue(message));
+  });
+}
 
 /**
  * Keeps a controlled Vue model aligned with the browser after form.reset().

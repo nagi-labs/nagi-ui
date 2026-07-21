@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useAttrs, useId } from "vue";
+import { ref, useId } from "vue";
 
 import { useNativeNumberReset } from "@nagi-labs/nagi-ui";
 
@@ -25,7 +25,6 @@ const props = withDefaults(
 );
 
 const model = defineModel<number>({ default: 0 });
-const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
 const generatedId = useId();
 
@@ -36,7 +35,7 @@ useNativeNumberReset(input, model);
   <div class="n-slider">
     <label class="label" :for="id ?? generatedId">{{ label }}</label>
     <input
-      v-bind="attrs"
+      v-bind="$attrs"
       ref="input"
       v-model.number="model"
       class="input"

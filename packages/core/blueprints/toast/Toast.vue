@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from "vue";
+import { computed } from "vue";
 
 import {
-  createToastManager,
-  useToast,
-  type ToastId,
   type ToastItem,
   type ToastManager,
+  useToastRenderer,
 } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
@@ -25,16 +23,13 @@ const props = withDefaults(
   },
 );
 
-const ownsManager = props.manager === undefined;
-const internalManager = props.manager
-  ?? createToastManager({ duration: props.duration, limit: props.limit });
-const notifier = useToast({ manager: internalManager, label: props.label });
-const region = useTemplateRef<HTMLElement>("region");
-const visibleToasts = computed(() => [...notifier.toasts.value].reverse());
-
-onBeforeUnmount(() => {
-  if (ownsManager) internalManager.dispose();
+const notifier = useToastRenderer({
+  manager: props.manager,
+  duration: props.duration,
+  limit: props.limit,
+  label: props.label,
 });
+const visibleToasts = computed(() => [...notifier.toasts.value].reverse());
 
 function toneClass(item: ToastItem) {
   if (item.tone === "neutral") return undefined;
@@ -49,47 +44,13 @@ function runAction(item: ToastItem) {
   return item.action?.onClick(item.id);
 }
 
-watch(notifier.toasts, async (next) => {
-  if (typeof document === "undefined") return;
-  const regionElement = region.value;
-  const active = document.activeElement;
-  if (!regionElement || !(active instanceof HTMLElement) || !regionElement.contains(active)) {
-    return;
-  }
-
-  const focusedItem = active.closest<HTMLElement>(".item");
-  if (!focusedItem) {
-    if (next.length === 0) {
-      await nextTick();
-      notifier.restoreFocus();
-    }
-    return;
-  }
-
-  const previousItems = [...regionElement.querySelectorAll<HTMLElement>(":scope > .list > .item")];
-  const focusedIndex = previousItems.indexOf(focusedItem);
-  await nextTick();
-  if (active.isConnected && regionElement.contains(active)) return;
-  const remainingItems = [...regionElement.querySelectorAll<HTMLElement>(":scope > .list > .item")];
-  if (remainingItems.length === 0) {
-    notifier.restoreFocus();
-    return;
-  }
-  const nextItem = remainingItems[Math.min(Math.max(focusedIndex, 0), remainingItems.length - 1)];
-  nextItem?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true });
-}, { flush: "pre" });
-
-function toast(message: string, options: { duration?: number } = {}): ToastId {
-  return notifier.toast(message, options);
-}
-
 defineExpose({
-  manager: internalManager,
-  add: internalManager.add,
-  update: internalManager.update,
-  close: internalManager.close,
-  promise: internalManager.promise,
-  toast,
+  manager: notifier.manager,
+  add: notifier.add,
+  update: notifier.update,
+  close: notifier.close,
+  promise: notifier.promise,
+  toast: notifier.toast,
   dismiss: notifier.dismiss,
 });
 </script>
@@ -108,13 +69,14 @@ defineExpose({
       </p>
     </div>
 
-    <div ref="region" class="zone" v-bind="notifier.regionProps">
+    <div class="zone" v-bind="notifier.regionProps">
       <ol class="list">
         <li
           v-for="item in visibleToasts"
           :key="item.id"
           class="item"
           :class="toneClass(item)"
+          v-bind="notifier.toastItemProps"
         >
           <div v-if="item.title" class="title">{{ item.title }}</div>
           <p v-if="item.description" class="text">{{ item.description }}</p>
@@ -131,7 +93,7 @@ defineExpose({
               class="button -dismiss"
               type="button"
               :aria-label="dismissLabel"
-              @click="internalManager.close(item.id)"
+              @click="notifier.close(item.id)"
             >
               ×
             </button>

@@ -9,9 +9,9 @@ export interface TabsItem {
 </script>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
 import {
   useTabs,
+  useTabsModelBridge,
   type MenuDirection,
   type TabsActivationMode,
   type TabsOrientation,
@@ -35,28 +35,7 @@ const props = withDefaults(
 );
 
 const selectedModel = defineModel<string | null>("selected", { default: null });
-const selected = ref<string | null>(selectedModel.value);
-
-// defineModel emits to a controlled parent synchronously, but its getter can
-// keep returning the previous prop until the parent renders again. useTabs
-// needs a synchronously writable source for SSR and dynamic focus repair. The
-// bridge is registered before useTabs so its immediate snapshot watcher can be
-// the single canonicalization path for both package and core consumers.
-watch(
-  selectedModel,
-  (value) => {
-    selected.value = value;
-  },
-  { flush: "sync" },
-);
-watch(
-  selected,
-  () => {
-    const canonical = selected.value;
-    if (selectedModel.value !== canonical) selectedModel.value = canonical;
-  },
-  { flush: "sync" },
-);
+const selected = useTabsModelBridge(selectedModel);
 
 const tabs = useTabs<TabsItem>({
   items: () => props.items,

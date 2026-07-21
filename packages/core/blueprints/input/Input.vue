@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useAttrs } from "vue";
+import { ref } from "vue";
 
 import { useNativeValueReset } from "@nagi-labs/nagi-ui";
 
@@ -36,7 +36,6 @@ const props = withDefaults(
 );
 
 const model = defineModel<string>({ default: "" });
-const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
 
 useNativeValueReset(input, model);
@@ -46,7 +45,7 @@ useNativeValueReset(input, model);
   <label class="n-input">
     <span class="zone">{{ label }}</span>
     <input
-      v-bind="attrs"
+      v-bind="$attrs"
       ref="input"
       v-model="model"
       class="input"
