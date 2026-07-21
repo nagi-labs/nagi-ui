@@ -170,9 +170,16 @@ const contracts: Record<string, BindingContract> = {
       "aria-controls",
       "aria-expanded",
       "aria-activedescendant",
+      "aria-required",
+      "disabled",
+      "readonly",
     ),
   },
   popoverProps: {
+    requirePopover: true,
+    protectedAttributes: set("id"),
+  },
+  popupProps: {
     requirePopover: true,
     protectedAttributes: set("id"),
   },
@@ -350,10 +357,7 @@ export const verifiedBindingsRule: Rule.RuleModule = {
             })
           }
 
-          const needsPopover =
-            contract.requirePopover ||
-            (binding.name === "listboxProps" && binding.path?.startsWith("combobox."))
-          if (needsPopover && !hasAttribute(element, "popover")) {
+          if (contract.requirePopover && !hasAttribute(element, "popover")) {
             context.report({
               node: element.startTag,
               messageId: "missingPopover",

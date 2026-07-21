@@ -75,9 +75,11 @@ export {
   type ComboboxInputProps,
   type ComboboxListboxProps,
   type ComboboxOptionProps,
+  type ComboboxPopupProps,
   type UseComboboxOptions,
   type UseComboboxReturn,
 } from "./combobox.ts"
+export { useNativeFormReset } from "./native-form.ts"
 export {
   mergeNagiProps,
   NagiPropConflictError,

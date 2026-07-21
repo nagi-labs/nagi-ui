@@ -119,3 +119,8 @@ Post-v0 Base UI alignment A1 (2026-07-21) added the boundaries shown in the
 tables above plus a native-anchor Dropdown item. Current verification is unit
 108/108 and browser + axe 40/40, with TypeScript 7, verified-bindings, theme
 parity, and owned/consumer Nagi CSS checks green.
+
+Post-v0 Alignment B adds nine native-first form/indicator Blueprints without
+reopening the historical v0 boundary. The current package catalog is therefore
+21 components; its contracts are recorded in
+[`base-ui-alignment-b.md`](base-ui-alignment-b.md).

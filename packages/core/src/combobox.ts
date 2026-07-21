@@ -42,6 +42,14 @@ export interface UseComboboxOptions<Item, Key extends string = string> {
   id?: string;
   /** Wrap ArrowUp/ArrowDown at the ends. Defaults to false. */
   loop?: boolean;
+  /** Prevent every interaction and expose the native disabled state. */
+  disabled?: MaybeRefOrGetter<boolean>;
+  /** Allow inspection, but prevent editing, clearing, and selection changes. */
+  readOnly?: MaybeRefOrGetter<boolean>;
+  /** Expose aria-required; the renderer owns form constraint validation. */
+  required?: MaybeRefOrGetter<boolean>;
+  /** Keep the popup available for an application-owned empty/loading status. */
+  openWhenEmpty?: MaybeRefOrGetter<boolean>;
   /** Position the listbox against the input. Defaults to native/fallback anchoring. */
   anchor?: AnchorOptions | true;
 }
@@ -54,6 +62,9 @@ export interface ComboboxInputProps {
   "aria-controls": string;
   readonly "aria-expanded": "true" | "false";
   readonly "aria-activedescendant": string | undefined;
+  readonly "aria-required": "true" | undefined;
+  readonly disabled: boolean;
+  readonly readonly: boolean;
   style?: CSSProperties;
   onInput: (event: Event) => void;
   onClick: (event: MouseEvent) => void;
@@ -62,7 +73,10 @@ export interface ComboboxInputProps {
   onBlur: (event: FocusEvent) => void;
 }
 
-export interface ComboboxListboxProps extends PopoverProps {
+export interface ComboboxPopupProps extends PopoverProps {}
+
+export interface ComboboxListboxProps {
+  id: string;
   role: "listbox";
 }
 
@@ -88,6 +102,7 @@ export interface UseComboboxReturn<Item, Key extends string = string> {
   select: (item: Item) => void;
   clear: () => void;
   inputProps: ComboboxInputProps;
+  popupProps: ComboboxPopupProps;
   listboxProps: ComboboxListboxProps;
   optionProps: (item: Item) => ComboboxOptionProps;
 }
@@ -115,6 +130,18 @@ export function useCombobox<Item, Key extends string = string>(
 
   function isDisabled(item: Item): boolean {
     return options.isDisabled?.(item) ?? false;
+  }
+
+  function componentDisabled(): boolean {
+    return toValue(options.disabled) ?? false;
+  }
+
+  function componentReadOnly(): boolean {
+    return toValue(options.readOnly) ?? false;
+  }
+
+  function opensWhenEmpty(): boolean {
+    return toValue(options.openWhenEmpty) ?? false;
   }
 
   const initialSelected = options.selected?.value ?? options.defaultSelected ?? null;
@@ -152,7 +179,7 @@ export function useCombobox<Item, Key extends string = string>(
   const popover = usePopover({
     ...(options.open ? { open: options.open } : {}),
     ...(options.defaultOpen === undefined ? {} : { defaultOpen: options.defaultOpen }),
-    id,
+    id: `${id}-popup`,
   });
   const anchor = createAnchorPair(
     id,
@@ -208,7 +235,8 @@ export function useCombobox<Item, Key extends string = string>(
   }
 
   function show() {
-    if (enabledItems().length === 0) return;
+    if (componentDisabled()) return;
+    if (enabledItems().length === 0 && !opensWhenEmpty()) return;
     popover.show();
   }
 
@@ -218,7 +246,7 @@ export function useCombobox<Item, Key extends string = string>(
   }
 
   function select(item: Item) {
-    if (isDisabled(item)) return;
+    if (componentDisabled() || componentReadOnly() || isDisabled(item)) return;
     writeSelection(keyOf(item));
     writeInputValue(options.getTextValue(item));
     options.onSelect?.(item);
@@ -226,6 +254,7 @@ export function useCombobox<Item, Key extends string = string>(
   }
 
   function clear() {
+    if (componentDisabled() || componentReadOnly()) return;
     writeSelection(null);
     writeInputValue("");
     hide();
@@ -257,6 +286,7 @@ export function useCombobox<Item, Key extends string = string>(
 
   function onInput(event: Event) {
     recordInput(event);
+    if (componentDisabled() || componentReadOnly()) return;
     const target = event.currentTarget ?? event.target;
     if (typeof (target as HTMLInputElement | null)?.value !== "string") return;
     writeInputValue((target as HTMLInputElement).value);
@@ -265,13 +295,14 @@ export function useCombobox<Item, Key extends string = string>(
     // reflects the new prop. Wait for that render so filtering, rendered
     // options, and popover visibility advance as one transaction.
     void nextTick(() => {
-      if (enabledItems().length === 0) hide();
+      if (enabledItems().length === 0 && !opensWhenEmpty()) hide();
       else show();
     });
   }
 
   function onKeydown(event: KeyboardEvent) {
     recordInput(event);
+    if (componentDisabled()) return;
     if (event.isComposing || event.keyCode === 229) return;
 
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
@@ -282,9 +313,10 @@ export function useCombobox<Item, Key extends string = string>(
     }
 
     if (event.key === "Enter" && popover.open.value) {
-      handled(event);
       const item = activeItem();
-      if (item === undefined) hide();
+      if (item === undefined) return;
+      handled(event);
+      if (componentReadOnly()) hide();
       else select(item);
       return;
     }
@@ -296,16 +328,20 @@ export function useCombobox<Item, Key extends string = string>(
   }
 
   const originalOnToggle = popover.popoverProps.onToggle;
-  const listboxProps: ComboboxListboxProps = {
+  const popupProps: ComboboxPopupProps = {
     ...popover.popoverProps,
     style: anchor.positionedStyle,
-    role: "listbox",
     onToggle(event) {
       popupElement = event.target as HTMLElement;
       originalOnToggle(event);
       syncAnchor(event.newState === "open");
       if (event.newState === "closed") setActive(undefined);
     },
+  };
+
+  const listboxProps: ComboboxListboxProps = {
+    id,
+    role: "listbox",
   };
 
   const inputProps: ComboboxInputProps = {
@@ -321,6 +357,15 @@ export function useCombobox<Item, Key extends string = string>(
     },
     get "aria-activedescendant"() {
       return activeKey.value === null ? undefined : optionId(activeKey.value);
+    },
+    get disabled() {
+      return componentDisabled();
+    },
+    get readonly() {
+      return componentReadOnly();
+    },
+    get "aria-required"() {
+      return toValue(options.required) ? "true" : undefined;
     },
     style: anchor.anchorStyle,
     onInput,
@@ -355,7 +400,7 @@ export function useCombobox<Item, Key extends string = string>(
         event.preventDefault();
       },
       onClick(event) {
-        if (disabled) {
+        if (componentDisabled() || componentReadOnly() || disabled) {
           event.preventDefault();
           return;
         }
@@ -365,10 +410,17 @@ export function useCombobox<Item, Key extends string = string>(
   }
 
   watch(
-    () => enabledItems().map(keyOf),
-    (keys) => {
+    () => [enabledItems().map(keyOf), opensWhenEmpty()] as const,
+    ([keys, openWhenEmpty]) => {
       if (activeKey.value !== null && !keys.includes(activeKey.value)) setActive(undefined);
-      if (keys.length === 0 && popover.open.value) hide();
+      if (keys.length === 0 && !openWhenEmpty && popover.open.value) hide();
+    },
+  );
+
+  watch(
+    () => [componentDisabled(), componentReadOnly()] as const,
+    ([disabled, readOnly]) => {
+      if ((disabled || readOnly) && popover.open.value) hide();
     },
   );
 
@@ -398,6 +450,7 @@ export function useCombobox<Item, Key extends string = string>(
     select,
     clear,
     inputProps,
+    popupProps,
     listboxProps,
     optionProps,
   };

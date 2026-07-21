@@ -50,6 +50,125 @@ test("components entry exposes every thin behavior Blueprint", async () => {
   });
 });
 
+test("components entry exposes every native form and indicator Blueprint", async () => {
+  await withComponents(async (components) => {
+    for (const name of [
+      "Input",
+      "Checkbox",
+      "Radio",
+      "Switch",
+      "Select",
+      "Fieldset",
+      "Progress",
+      "Meter",
+      "Slider",
+    ]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+  });
+});
+
+test("native form and indicator Blueprints preserve platform markup during SSR", async () => {
+  await withComponents(async (components) => {
+    const input = await render(components.Input as Component, {
+      label: "Email",
+      modelValue: "dev@example.com",
+      type: "email",
+      name: "email",
+      form: "profile",
+      required: true,
+    });
+    assert.match(input, /<input[^>]*type="email"/);
+    assert.match(input, /name="email"/);
+    assert.match(input, /form="profile"/);
+    assert.match(input, /required/);
+
+    const checkbox = await render(components.Checkbox as Component, {
+      label: "Updates",
+      modelValue: true,
+      name: "updates",
+      value: "yes",
+      form: "profile",
+    });
+    assert.match(checkbox, /<input[^>]*type="checkbox"/);
+    assert.match(checkbox, /checked/);
+    assert.match(checkbox, /value="yes"/);
+
+    const radio = await render(components.Radio as Component, {
+      label: "Email",
+      modelValue: "email",
+      value: "email",
+      name: "channel",
+      form: "profile",
+    });
+    assert.match(radio, /<input[^>]*type="radio"/);
+    assert.match(radio, /checked/);
+
+    const toggle = await render(components.Switch as Component, {
+      label: "Public",
+      modelValue: true,
+      name: "public",
+      form: "profile",
+    });
+    assert.match(toggle, /role="switch"/);
+    assert.match(toggle, /checked/);
+
+    const select = await render(components.Select as Component, {
+      label: "Framework",
+      modelValue: "vue",
+      name: "framework",
+      form: "profile",
+      options: [
+        { label: "Vue", value: "vue" },
+        { label: "React", value: "react", disabled: true },
+      ],
+    });
+    assert.match(select, /<select[^>]*name="framework"/);
+    assert.match(select, /<option[^>]*value="vue"[^>]*selected/);
+    assert.match(select, /<option[^>]*value="react"[^>]*disabled/);
+
+    const fieldset = await render(
+      components.Fieldset as Component,
+      { legend: "Contact", disabled: true },
+      "Fields",
+    );
+    assert.match(fieldset, /<fieldset[^>]*disabled/);
+    assert.match(fieldset, /<legend[^>]*>Contact<\/legend>/);
+
+    const indeterminateProgress = await render(components.Progress as Component, {
+      label: "Uploading",
+      max: 100,
+    });
+    assert.match(indeterminateProgress, /<progress/);
+    assert.doesNotMatch(indeterminateProgress, /<progress[^>]*\svalue=/);
+
+    const meter = await render(components.Meter as Component, {
+      label: "Storage",
+      value: 72,
+      min: 0,
+      max: 100,
+      low: 20,
+      high: 80,
+      optimum: 40,
+    });
+    assert.match(meter, /<meter[^>]*value="72"/);
+    assert.match(meter, /low="20"/);
+    assert.match(meter, /high="80"/);
+
+    const slider = await render(components.Slider as Component, {
+      label: "Volume",
+      modelValue: 40,
+      name: "volume",
+      form: "profile",
+      min: 0,
+      max: 100,
+    });
+    assert.match(slider, /<input[^>]*type="range"/);
+    assert.match(slider, /name="volume"/);
+    assert.match(slider, /form="profile"/);
+  });
+});
+
 test("thin package Blueprints emit native relationship attributes during SSR", async () => {
   await withComponents(async (components) => {
     const popover = await render(

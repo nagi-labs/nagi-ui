@@ -75,7 +75,7 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
     assert.match(comboboxHtml, /role="combobox"/, "combobox role is server-rendered")
     assert.match(comboboxHtml, /aria-autocomplete="list"/, "autocomplete mode is server-rendered")
     assert.match(comboboxHtml, /role="listbox"/, "listbox role is server-rendered")
-    assert.match(comboboxHtml, /<ul[^>]*\spopover[\s>]/, "combobox popover is server-rendered")
+    assert.match(comboboxHtml, /<div[^>]*class="[^"]*-popup[^"]*"[^>]*\spopover[\s>]/, "combobox popover is server-rendered")
 
     // Write the zero-JS artifact: the blueprint's server HTML with no script
     // tags at all. Opening it in a browser, the dropdown opens natively.

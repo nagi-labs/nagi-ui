@@ -111,10 +111,22 @@ test("requires a key on the v-for owner", () => {
 })
 
 test("requires popover for the Combobox popup but not standalone Listbox", () => {
-  const combobox = verify(`<template><ul v-bind="combobox.listboxProps"></ul></template>`)
+  const combobox = verify(`<template><div v-bind="combobox.popupProps"></div></template>`)
   const listbox = verify(`<template><ul v-bind="listbox.listboxProps"></ul></template>`)
   assert.equal(combobox[0]?.messageId, "missingPopover")
   assert.deepEqual(listbox, [])
+})
+
+test("protects Combobox disabled and readonly behavior from DOM-only overrides", () => {
+  const messages = verify(`
+    <template>
+      <input disabled readonly v-bind="combobox.inputProps">
+    </template>
+  `)
+  assert.deepEqual(
+    messages.map((message) => message.messageId),
+    ["protectedOverride", "protectedOverride"],
+  )
 })
 
 test("all shipped Blueprints satisfy verified-bindings", () => {

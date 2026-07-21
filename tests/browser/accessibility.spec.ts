@@ -54,6 +54,13 @@ test("Combobox is axe-clean with its popup and active descendant", async ({ page
   await expectAxeClean(page)
 })
 
+test("native form catalog is axe-clean with an empty Combobox open", async ({ page }) => {
+  await page.goto("/forms.html")
+  await page.getByRole("combobox", { name: "Empty choices" }).click()
+  await expect(page.getByText("No matching framework", { exact: true })).toBeVisible()
+  await expectAxeClean(page)
+})
+
 test("Dialog and Tooltip are axe-clean in their opened states", async ({ page }) => {
   await page.goto("/phase1.html")
   await page.getByRole("button", { name: "Open dialog" }).click()

@@ -5,6 +5,7 @@ import {
   type ComboboxInputProps,
   type ComboboxListboxProps,
   type ComboboxOptionProps,
+  type ComboboxPopupProps,
   type UseComboboxReturn,
 } from "@nagi-labs/nagi-ui";
 
@@ -32,6 +33,7 @@ const combobox = useCombobox({
 
 const result: UseComboboxReturn<Fruit, "apple" | "cherry"> = combobox;
 const inputProps: ComboboxInputProps = combobox.inputProps;
+const popupProps: ComboboxPopupProps = combobox.popupProps;
 const listboxProps: ComboboxListboxProps = combobox.listboxProps;
 const optionProps: ComboboxOptionProps = combobox.optionProps(fruit);
 const active: "apple" | "cherry" | null = combobox.activeKey.value;
@@ -51,6 +53,7 @@ useCombobox({ items: fruits, getKey: (item: Fruit) => item.key });
 
 void result;
 void inputProps;
+void popupProps;
 void listboxProps;
 void optionProps;
 void active;

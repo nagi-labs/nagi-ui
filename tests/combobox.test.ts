@@ -58,6 +58,7 @@ test("emits the editable combobox/listbox relationship as standard attributes", 
   assert.equal(combobox.inputProps["aria-controls"], "fruit-combobox");
   assert.equal(combobox.inputProps["aria-expanded"], "false");
   assert.equal(combobox.inputProps["aria-activedescendant"], undefined);
+  assert.equal(combobox.popupProps.id, "fruit-combobox-popup");
   assert.equal(combobox.listboxProps.id, "fruit-combobox");
   assert.equal(combobox.listboxProps.role, "listbox");
 
@@ -204,4 +205,65 @@ test("visible item changes clear only an invalid active key", async () => {
   await nextTick();
   assert.equal(combobox.activeKey.value, null);
   assert.equal(combobox.selectedKey.value, "date");
+});
+
+test("disabled and read-only preserve the committed value without inventing state attributes", () => {
+  const disabled = ref(true);
+  const readOnly = ref(false);
+  const combobox = createCombobox({
+    defaultSelected: "date",
+    defaultInputValue: "Date",
+    disabled,
+    readOnly,
+    required: true,
+  });
+
+  assert.equal(combobox.inputProps.disabled, true);
+  assert.equal(combobox.inputProps.readonly, false);
+  assert.equal(combobox.inputProps["aria-required"], "true");
+  combobox.inputProps.onInput(input("Apple"));
+  combobox.inputProps.onKeydown(keydown("ArrowDown").event);
+  assert.equal(combobox.open.value, false);
+  assert.equal(combobox.inputValue.value, "Date");
+  assert.equal(combobox.selectedKey.value, "date");
+
+  disabled.value = false;
+  readOnly.value = true;
+  combobox.inputProps.onClick({} as MouseEvent);
+  assert.equal(combobox.open.value, true, "read-only options remain inspectable");
+  combobox.inputProps.onInput(input("Apple"));
+  combobox.inputProps.onKeydown(keydown("ArrowDown").event);
+  combobox.inputProps.onKeydown(keydown("Enter").event);
+  assert.equal(combobox.inputValue.value, "Date");
+  assert.equal(combobox.selectedKey.value, "date");
+  assert.equal(combobox.open.value, false);
+
+  combobox.clear();
+  assert.equal(combobox.selectedKey.value, "date");
+});
+
+test("openWhenEmpty leaves room for a caller-owned empty or loading status", async () => {
+  const items = ref<readonly Fruit[]>([]);
+  const openWhenEmpty = ref(true);
+  const combobox = createCombobox({ items, openWhenEmpty });
+
+  combobox.show();
+  assert.equal(combobox.open.value, true);
+  assert.deepEqual(combobox.visibleItems.value, []);
+
+  openWhenEmpty.value = false;
+  await nextTick();
+  assert.equal(combobox.open.value, false);
+});
+
+test("Enter without an active option remains browser-owned for form submission", () => {
+  const combobox = createCombobox({ items: [], openWhenEmpty: true });
+  combobox.show();
+  const enter = keydown("Enter");
+
+  combobox.inputProps.onKeydown(enter.event);
+
+  assert.equal(enter.prevented(), false);
+  assert.equal(enter.stopped(), false);
+  assert.equal(combobox.open.value, true);
 });

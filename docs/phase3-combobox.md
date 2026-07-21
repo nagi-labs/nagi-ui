@@ -25,7 +25,8 @@ const combobox = useCombobox({
 })
 
 combobox.inputProps                  // input: role, value, ARIA, handlers
-combobox.listboxProps                // popover listbox: id, role, toggle
+combobox.popupProps                  // native popover: id, toggle, position
+combobox.listboxProps                // inner listbox: id, role
 combobox.optionProps(item)           // option: id, state, click/pointer behavior
 combobox.visibleItems                // filtered render source
 combobox.activeKey                   // provisional keyboard suggestion

@@ -35,7 +35,8 @@ learning lands.
 
 Phases 0–4 are complete — see CHARTER §10. Phase 4 ships the package-first /
 own-on-demand model, fixed ownership metadata and CLI, validated ownership
-boundaries, a 12-component v0 catalog, the consumer Nagi CSS preset, and
+boundaries, a 12-component v0 baseline plus post-v0 native form controls, the
+consumer Nagi CSS preset, and
 real-browser consumer test recipes. Start with
 [`docs/when-not-to-use-nagi-ui.md`](docs/when-not-to-use-nagi-ui.md) when the
 product needs custom dismiss/stack state, gesture sheets, or Motion-level
@@ -50,20 +51,30 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Combobox,
   Dialog,
   Disclosure,
   DropdownMenu,
+  Fieldset,
+  Input,
   Listbox,
+  Meter,
   Popover,
+  Progress,
+  Radio,
+  Select,
+  Slider,
+  Switch,
   Toast,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components"
 import "@nagi-labs/nagi-ui/theme.css"
 ```
 
-The component catalog runs at `/catalog.html`; package/ownership details
-are in [`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md).
+The component catalog runs at `/catalog.html`; native form controls and the
+strengthened Combobox run at `/forms.html`. Package/ownership details are in
+[`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md).
 
 Framework integration is selected once through the setup wizard:
 
@@ -184,3 +195,13 @@ accessibility behavior executable after ownership. `nagi-ui diff` tells the
 consumer when upstream changed; the browser contract tells them whether their
 local version still works. Both signals are required for safe owned-source
 upgrades.
+
+### Post-v0 — Base UI alignment
+
+- [x] Alignment A adds local guarantees to existing components without
+  importing Base UI's compound API shape.
+- [x] Alignment B ships native-first Input, Checkbox, Radio, Switch, Select,
+  Fieldset, Progress, Meter and single-thumb Slider, and completes ordinary
+  Combobox form behavior. See
+  [`docs/base-ui-alignment-b.md`](docs/base-ui-alignment-b.md).
+- [ ] Alignment C strengthens Toast as explicit infrastructure.

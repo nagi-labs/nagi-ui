@@ -64,13 +64,13 @@ test("Enter and pointer selection commit the option and close the popup", async 
   await expect(listbox).toBeHidden();
 });
 
-test("no matches and light dismiss close the native popover", async ({ page }) => {
+test("no matches expose empty status and light dismiss closes the native popover", async ({ page }) => {
   const input = page.getByRole("combobox", { name: "Framework" });
   const listbox = page.getByRole("listbox", { name: "Framework" });
 
   await input.fill("no match");
-  await expect(listbox).toBeHidden();
-  await expect(input).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByText("No results", { exact: true })).toBeVisible();
+  await expect(input).toHaveAttribute("aria-expanded", "true");
 
   await input.fill("s");
   await expect(listbox).toBeVisible();
