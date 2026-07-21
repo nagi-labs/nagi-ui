@@ -121,8 +121,9 @@ The complete playground is available at `/dropdown.html` after running
 
 ### Phase 2.6 — Dropdown items schema Blueprint
 
-- [x] Blueprint-local `DropdownMenuNode` union (six node kinds) +
-  `menuEntries()` flatten in `packages/core/blueprints/menu/dropdown-schema.ts`
+- [x] Blueprint-local `DropdownMenuNode` union (seven node kinds, including a
+  native `<a href>` link) + `menuEntries()` flatten in
+  `packages/core/blueprints/menu/dropdown-schema.ts`
 - [x] Schema renderer: `DropdownMenu.vue` + recursive `DropdownMenuItem.vue`
   and per-node `DropdownSubmenu.vue`; consumers pass `:items` data only
 - [x] Explicit-DOM blueprint demoted to `playground/src/DropdownFixture.vue`

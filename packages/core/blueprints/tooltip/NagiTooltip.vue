@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTooltip } from "@nagi-labs/nagi-ui";
+import { useTooltip, type AnchorArea } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -7,8 +7,17 @@ const props = withDefaults(
     text: string;
     openDelay?: number;
     closeDelay?: number;
+    disabled?: boolean;
+    area?: AnchorArea;
+    offset?: number;
   }>(),
-  { openDelay: 150, closeDelay: 0 },
+  {
+    openDelay: 150,
+    closeDelay: 0,
+    disabled: false,
+    area: "block-start",
+    offset: 4,
+  },
 );
 
 const open = defineModel<boolean>("open", { default: false });
@@ -16,7 +25,8 @@ const tooltip = useTooltip({
   open,
   openDelay: props.openDelay,
   closeDelay: props.closeDelay,
-  anchor: true,
+  disabled: () => props.disabled,
+  anchor: { area: props.area, offset: props.offset },
 });
 
 defineExpose({ show: tooltip.show, hide: tooltip.hide });
@@ -24,7 +34,7 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
 
 <template>
   <span class="nagi-tooltip">
-    <button class="button" type="button" v-bind="tooltip.triggerProps">
+    <button class="button" type="button" :disabled="disabled" v-bind="tooltip.triggerProps">
       {{ triggerLabel }}
     </button>
     <span class="zone" popover="hint" v-bind="tooltip.tooltipProps">
@@ -47,6 +57,11 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
     color: inherit;
     font: inherit;
     cursor: help;
+
+    &:disabled {
+      color: var(--nagi-color-text-disabled, #91a1a6);
+      cursor: not-allowed;
+    }
 
     &:focus-visible {
       outline: none;

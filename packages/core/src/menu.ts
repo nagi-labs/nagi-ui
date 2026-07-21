@@ -25,7 +25,7 @@ export interface UseMenuOptions<Item, Key extends string = string> {
   getKey: (item: Item) => Key;
   getTextValue: (item: Item) => string;
   isDisabled?: (item: Item) => boolean;
-  onSelect?: (item: Item) => void;
+  onSelect?: (item: Item, event?: Event) => void;
   open?: Ref<boolean>;
   defaultOpen?: boolean;
   id?: string;
@@ -43,7 +43,7 @@ export interface UseMenuOptions<Item, Key extends string = string> {
 }
 
 export interface MenuActionItemOptions<Item> {
-  onSelect?: (item: Item) => void;
+  onSelect?: (item: Item, event?: Event) => void;
   /** Defaults to true. */
   closeOnSelect?: boolean;
 }
@@ -359,13 +359,13 @@ function createMenu<Item, Key extends string>(
     }
   }
 
-  function activate(item: Item, action: () => void, closeOnSelect: boolean, event?: Event) {
+  function activate(item: Item, action: (event?: Event) => void, closeOnSelect: boolean, event?: Event) {
     if (isDisabled(item)) {
       event?.preventDefault();
       event?.stopPropagation();
       return;
     }
-    action();
+    action(event);
     if (closeOnSelect) closeTree(true);
   }
 
@@ -374,7 +374,7 @@ function createMenu<Item, Key extends string>(
     activations.set(key, (event) => {
       activate(
         item,
-        () => (itemOptions.onSelect ?? options.onSelect)?.(item),
+        (event) => (itemOptions.onSelect ?? options.onSelect)?.(item, event),
         itemOptions.closeOnSelect ?? true,
         event,
       );
@@ -512,7 +512,7 @@ function createMenu<Item, Key extends string>(
         if (item !== undefined) {
           const action = activations.get(keyOf(item));
           if (action) action(event);
-          else activate(item, () => options.onSelect?.(item), true, event);
+          else activate(item, (event) => options.onSelect?.(item, event), true, event);
         }
         return;
       }

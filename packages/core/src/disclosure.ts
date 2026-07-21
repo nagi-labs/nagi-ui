@@ -2,8 +2,10 @@ import {
   getCurrentInstance,
   onMounted,
   ref,
+  toValue,
   useId,
   watch,
+  type MaybeRefOrGetter,
   type Ref,
 } from "vue"
 
@@ -16,6 +18,8 @@ export interface UseDisclosureOptions {
   id?: string
   /** Exclusive-accordion group name (`<details name>`, native). */
   name?: string
+  /** Suppress user toggling while retaining a focusable native `<summary>`. */
+  disabled?: MaybeRefOrGetter<boolean>
 }
 
 export interface DisclosureProps {
@@ -24,6 +28,12 @@ export interface DisclosureProps {
   open?: boolean
   name?: string
   onToggle: (event: ToggleEvent) => void
+}
+
+export interface DisclosureSummaryProps {
+  readonly "aria-disabled": "true" | undefined
+  onClick: (event: MouseEvent) => void
+  onKeydown: (event: KeyboardEvent) => void
 }
 
 export interface UseDisclosureReturn {
@@ -38,6 +48,8 @@ export interface UseDisclosureReturn {
    * native disclosure triangle and toggle behavior are the UA's.
    */
   detailsProps: DisclosureProps
+  /** Spread on the native `<summary>` to enforce the optional disabled contract. */
+  summaryProps: DisclosureSummaryProps
 }
 
 interface DetailsElement extends HTMLElement {
@@ -50,6 +62,7 @@ export function useDisclosure(options: UseDisclosureOptions = {}): UseDisclosure
   const instance = getCurrentInstance()
   const id = options.id ?? (instance ? useId() : `nagi-disclosure-${disclosureCount++}`)
   const open = options.open ?? ref(options.defaultOpen ?? false)
+  const disabled = () => toValue(options.disabled) ?? false
 
   let element: DetailsElement | null = null
 
@@ -93,6 +106,21 @@ export function useDisclosure(options: UseDisclosureOptions = {}): UseDisclosure
         element = event.target as DetailsElement
         const actual = event.newState === "open"
         if (open.value !== actual) open.value = actual
+      },
+    },
+    summaryProps: {
+      get "aria-disabled"() {
+        return disabled() ? "true" : undefined
+      },
+      onClick: (event: MouseEvent) => {
+        if (!disabled()) return
+        event.preventDefault()
+        event.stopPropagation()
+      },
+      onKeydown: (event: KeyboardEvent) => {
+        if (!disabled() || (event.key !== "Enter" && event.key !== " ")) return
+        event.preventDefault()
+        event.stopPropagation()
       },
     },
   }

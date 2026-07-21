@@ -40,6 +40,7 @@ export {
 export {
   useDisclosure,
   type DisclosureProps,
+  type DisclosureSummaryProps,
   type UseDisclosureOptions,
   type UseDisclosureReturn,
 } from "./disclosure.ts"

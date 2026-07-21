@@ -77,3 +77,35 @@ test("show/hide/toggle helpers drive the model", () => {
   toggle()
   assert.equal(open.value, true)
 })
+
+test("disabled summary remains focusable but suppresses native activation", () => {
+  const disabled = ref(true)
+  const { summaryProps } = useDisclosure({ id: "disc-7", disabled })
+  let prevented = false
+  let stopped = false
+
+  assert.equal(summaryProps["aria-disabled"], "true")
+  summaryProps.onClick({
+    preventDefault: () => { prevented = true },
+    stopPropagation: () => { stopped = true },
+  } as unknown as MouseEvent)
+  assert.equal(prevented, true)
+  assert.equal(stopped, true)
+
+  disabled.value = false
+  assert.equal(summaryProps["aria-disabled"], undefined)
+})
+
+test("disabled summary blocks Enter and Space without blocking navigation keys", () => {
+  const { summaryProps } = useDisclosure({ id: "disc-8", disabled: true })
+  const prevented: string[] = []
+
+  for (const key of ["Enter", " ", "ArrowDown"]) {
+    summaryProps.onKeydown({
+      key,
+      preventDefault: () => prevented.push(key),
+      stopPropagation() {},
+    } as unknown as KeyboardEvent)
+  }
+  assert.deepEqual(prevented, ["Enter", " "])
+})

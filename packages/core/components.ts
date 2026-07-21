@@ -24,6 +24,7 @@ export type {
   DropdownMenuCheckboxNode,
   DropdownMenuGroupChildNode,
   DropdownMenuGroupNode,
+  DropdownMenuLinkNode,
   DropdownMenuNode,
   DropdownMenuRadioGroupNode,
   DropdownMenuRadioItem,

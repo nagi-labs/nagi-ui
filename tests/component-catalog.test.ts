@@ -73,6 +73,19 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.ok(dialog.includes(`id="${dialogTarget}"`));
     assert.match(dialog, /command="close"/);
 
+    const describedDialog = await render(
+      components.Dialog as Component,
+      {
+        triggerLabel: "Open described dialog",
+        title: "Confirm",
+        description: "Review this action",
+      },
+      "Dialog body",
+    );
+    const descriptionTarget = describedDialog.match(/aria-describedby="([^"]+)"/)?.[1];
+    assert.ok(descriptionTarget);
+    assert.ok(describedDialog.includes(`id="${descriptionTarget}"`));
+
     const tooltip = await render(components.Tooltip as Component, {
       triggerLabel: "Help",
       text: "Hint text",
@@ -104,10 +117,15 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       { title: "Profile", description: "Owned when needed" },
       "Card body",
     );
-    assert.match(card, /<article[^>]*class="card"/);
-    assert.match(card, /<h2[^>]*>Profile<\/h2>/);
+    assert.match(card, /<div[^>]*class="card"/);
+    assert.match(card, /<div[^>]*class="title"[^>]*>Profile<\/div>/);
     assert.match(card, /Owned when needed/);
     assert.match(card, /Card body/);
+
+    const untitledCard = await render(components.Card as Component, {}, "Untitled card body");
+    assert.match(untitledCard, /<div[^>]*class="card"/);
+    assert.doesNotMatch(untitledCard, /<header/);
+    assert.match(untitledCard, /Untitled card body/);
 
     const alert = await render(
       components.Alert as Component,

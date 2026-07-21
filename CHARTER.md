@@ -310,9 +310,9 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 この Phase は blueprint の**配布形態**の検証であり、core composable の検証系列とは独立。Phase 3 と並行してよい。
 
-- schema は blueprint-local(§3.5)。node は `action` / `checkbox` / `radio-group` / `group` / `separator` / `submenu` の 6 種類から始める。`label` は独立 node にせず `group`(`role="group"` + `aria-labelledby` と一致)へ統合。`action` に `variant?: "danger"`。`checked` は `MaybeRefOrGetter` ではなく plain 値とし、親が items 全体を computed で再生成する(core は `getKey` 同定 + `toValue(items)` のため状態は壊れない)
+- schema は blueprint-local(§3.5)。node は `action` / `link` / `checkbox` / `radio-group` / `group` / `separator` / `submenu` の 7 種類。`link` は URL を受け取って実際の `<a href>` を出す Web 標準の基本項目であり、framework component を受け取る escape hatch ではない。`label` は独立 node にせず `group`(`role="group"` + `aria-labelledby` と一致)へ統合。`action` に `variant?: "danger"`。`checked` は `MaybeRefOrGetter` ではなく plain 値とし、親が items 全体を computed で再生成する(core は `getKey` 同定 + `toValue(items)` のため状態は壊れない)
 - submenu の再帰描画は blueprint 内部の自己参照 component で行う(`useSubmenu` が setup 文脈を要するため)。core は動的 register/unregister 済みで改修不要
-- avatar / router-link / description / permission 制御は schema に**入れない**。表示制御は computed での filter、それ以外は拡張レシピの題材とする
+- avatar / Vue Router の `<RouterLink>` / Nuxt の `<NuxtLink>` / description / permission 制御は schema に**入れない**。表示制御は computed での filter、それ以外は拡張レシピの題材とする。標準 URL navigation は `link`、router 固有の `to` object・prefetch・custom link component は ownership で拡張する
 - 現行の hardcoded `DropdownMenu.vue` は playground の全機能 fixture へ降格し、明示 DOM 版の書き方は composable への離脱パスの実例として docs に残す
 - 完了条件:
   1. 再帰 renderer が `nagi-css check` を通る(通らなければ案自体を見直す)
@@ -361,6 +361,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-21** Base UI alignment A1。Dropdown schema に標準の `<a href>` を所有する `link` node を追加し、framework 固有の router-link/component escape hatch とは境界を分離。Button focusable-disabled、Disclosure/Tooltip disabled、Popover/Tooltip positioning props、Dialog description/actions、neutral Card anatomy も既存の native-first / small API 規律内で追加し、unit 108/108、browser + axe 40/40、TypeScript 7、verified-bindings、owned/consumer Nagi CSSを確認。
 - **2026-07-21** Phase 4 slice 4 完了。styling-only baseline をCHARTER §3.5の具体例どおりButton / Card / Alert / Badgeに固定し、behavior-backed 8 componentと合わせたv0 catalog 12種をpackage/ownership/presetの全経路へ登録。Alert + Badgeで2 component反復したpositive/warning tone 6 tokenを昇格し、Nagi CSSで公開prop `success` とCSS identity `-positive`を分離。unit 103/103、browser + axe 37/37を確認。
 - **2026-07-21** Phase 4 slice 4 の behavior catalog を完了。Popover / Dialog / Tooltip / Disclosure / Toast の package/ownable SFCを追加し、公開 behavior core と component catalog の欠落を解消。package component boundary と slot sub-surface を定義する Nagi CSS presetを同梱し、owned-source検査とconsumer検査を分離した。unit 102/102、browser + axe 36/36、TypeScript 7、verified-bindings、theme parity、Nagi CSSを確認。
 - **2026-07-18** Phase 4 slice 1–2 完了。package 実体化(raw SFC 配布、`/components` + `theme.css` exports、semantic token 22 個 + parity test)と ownership CLI(`nagi-ui own/diff/list`)を実装し、`@nagi-source <component>/<file>@<version>` を §3 保守契約の確定 metadata 形式とした。

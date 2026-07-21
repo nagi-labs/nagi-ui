@@ -1,12 +1,25 @@
 <script setup lang="ts">
-withDefaults(
+const props = withDefaults(
   defineProps<{
     variant?: "default" | "accent" | "danger";
     type?: "button" | "submit" | "reset";
     disabled?: boolean;
+    /** Keep the button in the tab order while suppressing activation. */
+    focusableWhenDisabled?: boolean;
   }>(),
-  { variant: "default", type: "button", disabled: false },
+  {
+    variant: "default",
+    type: "button",
+    disabled: false,
+    focusableWhenDisabled: false,
+  },
 );
+
+function guardFocusableDisabled(event: MouseEvent) {
+  if (!props.disabled || !props.focusableWhenDisabled) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
 </script>
 
 <template>
@@ -14,7 +27,9 @@ withDefaults(
     class="nagi-button"
     :class="variant === 'default' ? undefined : `-${variant}`"
     :type="type"
-    :disabled="disabled"
+    :disabled="disabled && !focusableWhenDisabled"
+    :aria-disabled="disabled && focusableWhenDisabled ? 'true' : undefined"
+    @click.capture="guardFocusableDisabled"
   >
     <slot />
   </button>
@@ -46,7 +61,8 @@ withDefaults(
     box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
   }
 
-  &:disabled {
+  &:disabled,
+  &[aria-disabled="true"] {
     color: var(--nagi-color-text-disabled, #91a1a6);
     background: var(--nagi-color-surface, #fff);
     cursor: not-allowed;

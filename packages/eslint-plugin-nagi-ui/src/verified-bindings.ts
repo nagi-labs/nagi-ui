@@ -61,6 +61,7 @@ interface VElement {
 interface BindingContract {
   tags?: readonly string[]
   requireButtonType?: boolean
+  requireAnchorHref?: boolean
   requirePopover?: boolean
   protectedAttributes: ReadonlySet<string>
 }
@@ -96,8 +97,9 @@ const contracts: Record<string, BindingContract> = {
     ),
   },
   itemProps: {
-    tags: ["button"],
+    tags: ["button", "a"],
     requireButtonType: true,
+    requireAnchorHref: true,
     protectedAttributes: set("id", "role", "tabindex", "aria-disabled", "data-active"),
   },
   checkboxItemProps: {
@@ -282,6 +284,7 @@ export const verifiedBindingsRule: Rule.RuleModule = {
     messages: {
       wrongElement: "{{binding}} must be applied to {{expected}}, not <{{actual}}>.",
       missingButtonType: "A button using {{binding}} must declare type=\"button\".",
+      missingAnchorHref: "An anchor using {{binding}} must declare href.",
       missingPopover: "An element using {{binding}} must declare the native popover attribute.",
       protectedOverride:
         "{{attribute}} is owned by {{binding}}. Remove the direct attribute instead of overriding behavior wiring.",
@@ -323,10 +326,26 @@ export const verifiedBindingsRule: Rule.RuleModule = {
             })
           }
 
-          if (contract.requireButtonType && !hasStaticButtonType(element)) {
+          if (
+            contract.requireButtonType &&
+            element.name === "button" &&
+            !hasStaticButtonType(element)
+          ) {
             context.report({
               node: element.startTag,
               messageId: "missingButtonType",
+              data: { binding: binding.name },
+            })
+          }
+
+          if (
+            contract.requireAnchorHref &&
+            element.name === "a" &&
+            !hasAttribute(element, "href")
+          ) {
+            context.report({
+              node: element.startTag,
+              messageId: "missingAnchorHref",
               data: { binding: binding.name },
             })
           }

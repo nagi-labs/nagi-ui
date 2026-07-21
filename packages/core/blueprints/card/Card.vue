@@ -1,20 +1,20 @@
 <script setup lang="ts">
 defineProps<{
-  title: string;
+  title?: string;
   description?: string;
 }>();
 </script>
 
 <template>
-  <article class="card">
-    <header class="header">
-      <h2 class="title">{{ title }}</h2>
+  <div class="card">
+    <header v-if="title || description" class="header">
+      <div v-if="title" class="title">{{ title }}</div>
       <p v-if="description" class="text">{{ description }}</p>
     </header>
-    <section class="section">
+    <div class="zone">
       <slot />
-    </section>
-  </article>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -41,7 +41,7 @@ defineProps<{
     }
   }
 
-  > .section {
+  > .zone {
     padding: 1rem;
   }
 }

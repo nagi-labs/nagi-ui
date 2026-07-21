@@ -7,8 +7,8 @@ test.beforeEach(async ({ page }) => {
 test("styling-only package components expose semantic content and tone variants", async ({
   page,
 }) => {
-  const card = page.locator("article.card", { hasText: "Package-first surface" });
-  await expect(card.getByRole("heading", { name: "Package-first surface" })).toBeVisible();
+  const card = page.locator("div.card", { hasText: "Package-first surface" });
+  await expect(card.getByText("Package-first surface", { exact: true })).toBeVisible();
   await expect(card.getByText("The consumer owns and styles this declared slot sub-surface.")).toBeVisible();
 
   for (const label of ["Neutral", "Accent", "Ready", "Review", "Blocked"]) {
@@ -17,6 +17,17 @@ test("styling-only package components expose semantic content and tone variants"
 
   await expect(card.locator('[role="status"]', { hasText: "Catalog ready" })).toBeVisible();
   await expect(card.getByRole("alert")).toContainText("Destructive action");
+});
+
+test("focusable disabled Button stays focusable without activating", async ({ page }) => {
+  const button = page.getByRole("button", { name: "Focusable disabled" });
+  await expect(button).toHaveAttribute("aria-disabled", "true");
+  await expect(button).not.toHaveAttribute("disabled", "");
+
+  await button.focus();
+  await expect(button).toBeFocused();
+  await button.press("Enter");
+  await expect(page.getByTestId("focusable-disabled-clicks")).toHaveText("activations: 0");
 });
 
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
@@ -33,11 +44,26 @@ test("package Dialog mirrors open state and closes through its owned button", as
   await page.getByRole("button", { name: "Open package dialog" }).click();
   const dialog = page.getByRole("dialog", { name: "Package dialog" });
   await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAccessibleDescription(
+    "Confirm the package-level action before continuing.",
+  );
   await expect(page.getByText("model open: true")).toBeVisible();
 
   await dialog.getByRole("button", { name: "Close" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByText("model open: false")).toBeVisible();
+});
+
+test("disabled Tooltip and Disclosure suppress activation", async ({ page }) => {
+  const tooltipTrigger = page.getByRole("button", { name: "Unavailable information" });
+  await expect(tooltipTrigger).toBeDisabled();
+  await expect(tooltipTrigger).not.toHaveAttribute("aria-describedby", /.+/);
+
+  const summary = page.getByText("Unavailable disclosure", { exact: true });
+  const disclosure = page.locator("details", { has: summary });
+  await expect(summary).toHaveAttribute("aria-disabled", "true");
+  await summary.click({ force: true });
+  await expect(disclosure).not.toHaveAttribute("open", "");
 });
 
 test("package Tooltip follows focus and keeps the ARIA relationship", async ({ page }) => {

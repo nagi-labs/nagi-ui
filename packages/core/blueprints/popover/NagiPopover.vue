@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { usePopover } from "@nagi-labs/nagi-ui";
+import { usePopover, type AnchorArea } from "@nagi-labs/nagi-ui";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     triggerLabel: string;
     disabled?: boolean;
+    area?: AnchorArea;
+    offset?: number;
   }>(),
-  { disabled: false },
+  { disabled: false, area: "block-end", offset: 4 },
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const popover = usePopover({ open, anchor: true });
+const popover = usePopover({
+  open,
+  anchor: { area: props.area, offset: props.offset },
+});
 
 defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle });
 </script>

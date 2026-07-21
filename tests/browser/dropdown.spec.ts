@@ -36,6 +36,34 @@ test("checkbox and radio state changes remain visible in the open menu", async (
   await expect(ltr.root).toBeVisible();
 });
 
+test("native link items follow href with pointer and aria-activedescendant keyboard activation", async ({
+  page,
+}) => {
+  const ltr = dropdown(page, "LTR");
+
+  await ltr.trigger.click();
+  await ltr.section.getByRole("menuitem", { name: "Share" }).click();
+  const link = ltr.submenu.getByRole("menuitem", { name: "Documentation" });
+  await expect(link).toHaveAttribute("href", "#documentation");
+  await link.click();
+  await expect(page).toHaveURL(/#documentation$/);
+  await expect(ltr.root).toBeHidden();
+
+  await page.goto("/dropdown.html");
+  const keyboard = dropdown(page, "LTR");
+  await keyboard.trigger.press("ArrowDown");
+  await keyboard.root.press("End");
+  await keyboard.root.press("ArrowUp");
+  await keyboard.root.press("ArrowRight");
+  await keyboard.submenu.press("ArrowDown");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Documentation" })).toHaveAttribute(
+    "data-active",
+    "",
+  );
+  await keyboard.submenu.press("Enter");
+  await expect(page).toHaveURL(/#documentation$/);
+});
+
 test("keyboard enters a submenu, returns one level, and nested action closes the tree", async ({
   page,
 }) => {

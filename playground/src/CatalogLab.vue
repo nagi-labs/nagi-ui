@@ -20,6 +20,7 @@ interface ToastHandle {
 
 const dialogOpen = ref(false);
 const disclosureOpen = ref(false);
+const focusableDisabledClicks = ref(0);
 const toaster = useTemplateRef<ToastHandle>("toaster");
 let toastCount = 0;
 
@@ -62,13 +63,26 @@ function showToast() {
           <Alert title="Destructive action" tone="danger" role="alert">
             <p class="text">Use assertive semantics only for urgent, newly surfaced information.</p>
           </Alert>
+          <div class="list" aria-label="Disabled button examples">
+            <Button disabled>Native disabled</Button>
+            <Button
+              disabled
+              focusable-when-disabled
+              @click="focusableDisabledClicks += 1"
+            >
+              Focusable disabled
+            </Button>
+            <output data-testid="focusable-disabled-clicks">
+              activations: {{ focusableDisabledClicks }}
+            </output>
+          </div>
         </div>
       </Card>
     </section>
 
     <section class="section" aria-labelledby="popover-heading">
       <h2 id="popover-heading" class="title">Popover</h2>
-      <Popover trigger-label="Open package popover">
+      <Popover trigger-label="Open package popover" area="block-end" :offset="8">
         <p class="text">Popover body belongs to the application slot.</p>
       </Popover>
     </section>
@@ -80,8 +94,18 @@ function showToast() {
         v-model:open="dialogOpen"
         trigger-label="Open package dialog"
         title="Package dialog"
+        description="Confirm the package-level action before continuing."
       >
         <p class="text">The browser owns modality, focus trapping, and Escape.</p>
+        <template #actions>
+          <Button
+            class="nagi-dialog-actions"
+            variant="accent"
+            @click="dialogOpen = false"
+          >
+            Confirm
+          </Button>
+        </template>
       </Dialog>
     </section>
 
@@ -91,6 +115,14 @@ function showToast() {
         trigger-label="More information"
         text="This hint is linked with aria-describedby."
         :open-delay="0"
+        area="block-start"
+        :offset="8"
+      />
+      <Tooltip
+        trigger-label="Unavailable information"
+        text="Disabled tooltips do not open."
+        disabled
+        :open-delay="0"
       />
     </section>
 
@@ -98,6 +130,9 @@ function showToast() {
       <h2 id="disclosure-heading" class="title">Disclosure</h2>
       <Disclosure v-model:open="disclosureOpen" summary="What does native mean?">
         <p class="text">The details element owns disclosure state and keyboard behavior.</p>
+      </Disclosure>
+      <Disclosure summary="Unavailable disclosure" disabled>
+        <p class="text">Disabled disclosure content.</p>
       </Disclosure>
     </section>
 

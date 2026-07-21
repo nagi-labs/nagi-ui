@@ -1,6 +1,8 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 
+import { ref } from "vue"
+
 import { useTooltip } from "@nagi-labs/nagi-ui"
 
 interface FakeHint {
@@ -148,5 +150,29 @@ test("allows the pointer to move from the trigger onto the tooltip", (t) => {
 
   tooltipProps.onPointerleave()
   t.mock.timers.tick(0)
+  assert.equal(open.value, false)
+})
+
+test("disabled suppresses the relationship and every opening path", () => {
+  const disabled = ref(true)
+  const { open, show, triggerProps } = useTooltip({ id: "tip-8", disabled, openDelay: 0 })
+
+  assert.equal(triggerProps["aria-describedby"], undefined)
+  triggerProps.onPointerenter(pointerEvent())
+  triggerProps.onFocus(focusEvent())
+  show()
+  assert.equal(open.value, false)
+
+  disabled.value = false
+  assert.equal(triggerProps["aria-describedby"], "tip-8")
+  show()
+  assert.equal(open.value, true)
+})
+
+test("becoming disabled closes an open tooltip", () => {
+  const disabled = ref(false)
+  const { open } = useTooltip({ id: "tip-9", disabled, open: ref(true) })
+
+  disabled.value = true
   assert.equal(open.value, false)
 })

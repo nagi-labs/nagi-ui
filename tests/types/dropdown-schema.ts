@@ -17,6 +17,7 @@ const valid: readonly DropdownMenuNode[] = [
     items: [
       { type: "action", key: "duplicate", label: "Duplicate", shortcut: "⌘D", onSelect: noop },
       { type: "action", key: "delete", label: "Delete", variant: "danger", onSelect: noop },
+      { type: "link", key: "documentation", label: "Documentation", href: "/docs" },
     ],
   },
   { type: "separator", key: "s1" },

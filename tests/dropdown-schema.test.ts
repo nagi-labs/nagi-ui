@@ -16,6 +16,7 @@ const nodes: readonly DropdownMenuNode[] = [
     items: [
       { type: "action", key: "duplicate", label: "Duplicate", onSelect: noop },
       { type: "action", key: "archive", label: "Archive", disabled: true, onSelect: noop },
+      { type: "link", key: "documentation", label: "Documentation", href: "/docs" },
     ],
   },
   { type: "separator", key: "s1" },
@@ -48,7 +49,7 @@ test("menuEntries flattens one level in visual order", () => {
   const entries = menuEntries(nodes);
   assert.deepEqual(
     entries.map((entry) => entry.key),
-    ["duplicate", "archive", "toolbar", "name", "modified", "share"],
+    ["duplicate", "archive", "documentation", "toolbar", "name", "modified", "share"],
   );
 });
 
@@ -73,6 +74,7 @@ test("menuEntries resolves disabled defaults per node kind", () => {
   const byKey = new Map(entries.map((entry) => [entry.key, entry]));
   assert.equal(byKey.get("duplicate")?.disabled, false);
   assert.equal(byKey.get("archive")?.disabled, true);
+  assert.equal(byKey.get("documentation")?.kind, "link");
   assert.equal(byKey.get("modified")?.disabled, true);
   assert.equal(byKey.get("share")?.disabled, false);
 });

@@ -79,10 +79,10 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
         onSelect: () => (lastAction.value = "copy-link"),
       },
       {
-        type: "action",
-        key: "email",
-        label: "Email link",
-        onSelect: () => (lastAction.value = "email"),
+        type: "link",
+        key: "documentation",
+        label: "Documentation",
+        href: "#documentation",
       },
     ],
   },
@@ -165,7 +165,7 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
       />
     </section>
 
-    <dl class="list -state">
+    <dl id="documentation" class="list -state">
       <div class="item">
         <dt class="term">show toolbar</dt>
         <dd class="definition" data-testid="toolbar-state">{{ showToolbar }}</dd>

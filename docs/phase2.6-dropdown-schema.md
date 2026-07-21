@@ -38,16 +38,19 @@ computed rebuilding the array. Core keys every piece of menu state through
 `getKey` and reads items via `toValue()`, so identity churn on recompute is
 safe (`packages/core/src/menu.ts`).
 
-## Node vocabulary (six kinds)
+## Node vocabulary (seven kinds)
 
-`action` (`variant?: "danger"`, `shortcut?`, `closeOnSelect?`), `checkbox`
+`action` (`variant?: "danger"`, `shortcut?`, `closeOnSelect?`), `link`
+(a real `<a href>` with keyboard navigation under `aria-activedescendant`), `checkbox`
 (plain `checked: boolean | "mixed"`), `radio-group` (expands to one selectable
 entry per radio item), `group` (owns its label; groups do not nest),
 `separator`, `submenu` (recursive `items`).
 
-Deliberately excluded: avatar / router-link / description / permission
-visibility. Visibility is caller-side array filtering; the rest belong to the
-extension recipe below.
+Deliberately excluded: avatar / Vue Router `<RouterLink>` / Nuxt `<NuxtLink>` /
+description / permission visibility. Visibility is caller-side array
+filtering; the rest belong to the extension recipe below. The shipped `link`
+node covers standard URL navigation only and does not accept `to` objects,
+prefetch options, a component, or another router-specific DSL.
 
 ## Why the renderer recurses through components
 
@@ -115,8 +118,10 @@ local diff in code you own:
 3. **CSS block** under `.dropdown-menu-item` in the same file.
 4. **Run `nagi-css check`**, `vp run test`, `vp run typecheck`.
 
-A router-link item is the same recipe with an `<a class="link" :href>` element
-receiving `menu.itemProps()` (`role="menuitem"` on links is valid ARIA).
+Native URL links ship as the `link` node. Vue Router `<RouterLink>` and Nuxt
+`<NuxtLink>` integration are still ownership recipes: extend the renderer
+locally while preserving real anchor semantics and the `menu.itemProps()`
+wiring.
 
 Do **not** add an `#item` slot instead: passing `itemProps` through a slot for
 callers to bind is behavior wiring through a slot boundary — the violation

@@ -7,10 +7,12 @@ import DropdownSubmenu from "./DropdownSubmenu.vue";
 import {
   actionEntry,
   checkboxEntry,
+  linkEntry,
   radioEntry,
   type DropdownMenuActionNode,
   type DropdownMenuCheckboxNode,
   type DropdownMenuEntry,
+  type DropdownMenuLinkNode,
   type DropdownMenuNode,
   type DropdownMenuRadioGroupNode,
   type DropdownMenuRadioItem,
@@ -34,6 +36,20 @@ function checkboxOptions(node: DropdownMenuCheckboxNode) {
   return {
     checked: node.checked,
     onCheckedChange: node.onCheckedChange,
+    ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),
+  };
+}
+
+function linkOptions(node: DropdownMenuLinkNode) {
+  return {
+    onSelect: (_entry: DropdownMenuEntry, event?: Event) => {
+      // DOM focus stays on the menu container (aria-activedescendant), so a
+      // keyboard activation has no native anchor default action to follow.
+      // Pointer activation remains an ordinary anchor click.
+      if (event?.type === "keydown" && typeof window !== "undefined") {
+        window.location.assign(node.href);
+      }
+    },
     ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),
   };
 }
@@ -100,6 +116,18 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
       <span class="text">{{ node.label }}</span>
       <span v-if="node.shortcut" class="text -shortcut" aria-hidden="true">{{ node.shortcut }}</span>
     </button>
+  </li>
+
+  <li v-else-if="node.type === 'link'" class="dropdown-menu-item" role="none">
+    <a
+      class="link"
+      :href="node.href"
+      v-bind="menu.itemProps(linkEntry(node), linkOptions(node))"
+    >
+      <span class="icon" aria-hidden="true"></span>
+      <span class="text">{{ node.label }}</span>
+      <span v-if="node.shortcut" class="text -shortcut" aria-hidden="true">{{ node.shortcut }}</span>
+    </a>
   </li>
 
   <li v-else class="dropdown-menu-item" role="none">
@@ -193,7 +221,8 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     }
   }
 
-  > .button {
+  > .button,
+  > .link {
     display: grid;
     grid-template-columns: 1rem minmax(0, 1fr) auto;
     gap: var(--nagi-space-item-gap, 0.55rem);
@@ -206,6 +235,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     background: transparent;
     color: inherit;
     font: inherit;
+    text-decoration: none;
     text-align: start;
     cursor: pointer;
 

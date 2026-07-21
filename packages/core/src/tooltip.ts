@@ -3,9 +3,11 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  toValue,
   useId,
   watch,
   type CSSProperties,
+  type MaybeRefOrGetter,
   type Ref,
 } from "vue"
 
@@ -22,10 +24,12 @@ export interface UseTooltipOptions {
   closeDelay?: number
   /** Anchor the tooltip to its trigger (native, Floating UI fallback). Default block-start. */
   anchor?: AnchorOptions | true
+  /** Suppress hover/focus/programmatic opening. */
+  disabled?: MaybeRefOrGetter<boolean>
 }
 
 export interface TooltipTriggerProps {
-  "aria-describedby": string
+  readonly "aria-describedby": string | undefined
   style?: CSSProperties
   onPointerenter: (event: PointerEvent) => void
   onPointerleave: (event: PointerEvent) => void
@@ -67,6 +71,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   const open = options.open ?? ref(false)
   const openDelay = options.openDelay ?? 150
   const closeDelay = options.closeDelay ?? 0
+  const disabled = () => toValue(options.disabled) ?? false
 
   let element: HintElement | null = null
   let triggerElement: HTMLElement | null = null
@@ -130,14 +135,14 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
 
   function scheduleOpen() {
     clearTimer()
-    if (open.value) return
+    if (disabled() || open.value) return
     if (openDelay <= 0) {
       open.value = true
       return
     }
     timer = setTimeout(() => {
       timer = null
-      if (triggerHovered || triggerFocused) open.value = true
+      if (!disabled() && (triggerHovered || triggerFocused)) open.value = true
     }, openDelay)
   }
 
@@ -155,6 +160,14 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
   }
 
   watch(open, (next) => apply(next), { flush: "sync" })
+  watch(disabled, (next) => {
+    if (!next) return
+    clearTimer()
+    triggerHovered = false
+    tooltipHovered = false
+    triggerFocused = false
+    open.value = false
+  }, { flush: "sync", immediate: true })
 
   if (instance) {
     onMounted(() => apply(open.value))
@@ -170,16 +183,19 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
     open,
     show: () => {
       clearTimer()
-      open.value = true
+      if (!disabled()) open.value = true
     },
     hide: () => {
       clearTimer()
       open.value = false
     },
     triggerProps: {
-      "aria-describedby": id,
+      get "aria-describedby"() {
+        return disabled() ? undefined : id
+      },
       ...(anchor ? { style: anchor.anchorStyle } : {}),
       onPointerenter: (event: PointerEvent) => {
+        if (disabled()) return
         triggerElement = event.currentTarget as HTMLElement
         triggerHovered = true
         scheduleOpen()
@@ -190,6 +206,7 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
       },
       // Focus reveals the tooltip immediately — keyboard users get no hover.
       onFocus: (event: FocusEvent) => {
+        if (disabled()) return
         triggerElement = event.currentTarget as HTMLElement
         triggerFocused = true
         clearTimer()

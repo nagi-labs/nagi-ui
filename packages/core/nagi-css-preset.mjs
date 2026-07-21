@@ -24,7 +24,10 @@ export const nagiUiComponentSlots = {
   Alert: { default: "alert-content" },
   Button: { default: "nagi-button-content" },
   Card: { default: "card-content" },
-  Dialog: { default: "nagi-dialog-content" },
+  Dialog: {
+    default: "nagi-dialog-content",
+    actions: "nagi-dialog-actions",
+  },
   Disclosure: { default: "nagi-disclosure-content" },
   Popover: { default: "nagi-popover-content" },
 }

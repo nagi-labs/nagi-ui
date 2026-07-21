@@ -19,10 +19,10 @@ still existed only as playground fixtures. This slice ships the missing five:
 
 | Component | Platform/core source | Public customization boundary |
 |---|---|---|
-| `Popover` | Popover API + `usePopover` | trigger label prop + content slot |
-| `Dialog` | native `<dialog>` + `useDialog` | string props + body slot |
-| `Tooltip` | hint popover + `useTooltip` | trigger/text props |
-| `Disclosure` | native `<details>` + `useDisclosure` | summary prop + body slot |
+| `Popover` | Popover API + `usePopover` | trigger label, `area`/`offset` props + content slot |
+| `Dialog` | native `<dialog>` + `useDialog` | title/description props + body/action slots |
+| `Tooltip` | hint popover + `useTooltip` | trigger/text, disabled, `area`/`offset` props |
+| `Disclosure` | native `<details>` + `useDisclosure` | summary/disabled props + body slot |
 | `Toast` | manual popover + `useToast` | exposed `toast()` / `dismiss()` methods |
 
 The slot choices follow CHARTER §3.5: Popover, Dialog, and Disclosure exist to
@@ -34,8 +34,8 @@ The styling-only baseline is intentionally small:
 
 | Component | Shape choice | Public customization boundary |
 |---|---|---|
-| `Button` | fixed native button | label slot + variant prop |
-| `Card` | fixed frame | title/description props + body slot |
+| `Button` | fixed native button | label slot + variant/focusable-disabled props |
+| `Card` | semantically neutral frame | optional title/description props + body slot |
 | `Alert` | fixed status frame | title/tone/role props + body slot |
 | `Badge` | fixed inline label | label/tone props |
 
@@ -114,3 +114,8 @@ covered by the no-exclusion axe catalog test.
   checks pass;
 - the package-import playground at `/catalog.html` passes behavior, runtime
   relationship, and no-exclusion axe coverage; the browser suite is 37/37.
+
+Post-v0 Base UI alignment A1 (2026-07-21) added the boundaries shown in the
+tables above plus a native-anchor Dropdown item. Current verification is unit
+108/108 and browser + axe 40/40, with TypeScript 7, verified-bindings, theme
+parity, and owned/consumer Nagi CSS checks green.

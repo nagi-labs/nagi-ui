@@ -23,6 +23,17 @@ export interface DropdownMenuActionNode {
   onSelect: () => void;
 }
 
+export interface DropdownMenuLinkNode {
+  type: "link";
+  key: string;
+  label: string;
+  href: string;
+  shortcut?: string;
+  disabled?: boolean;
+  /** Defaults to true: following a link closes the whole tree. */
+  closeOnSelect?: boolean;
+}
+
 export interface DropdownMenuCheckboxNode {
   type: "checkbox";
   key: string;
@@ -75,6 +86,7 @@ export interface DropdownMenuSubmenuNode {
 /** Groups do not nest: a group accepts every node type except another group. */
 export type DropdownMenuGroupChildNode =
   | DropdownMenuActionNode
+  | DropdownMenuLinkNode
   | DropdownMenuCheckboxNode
   | DropdownMenuRadioGroupNode
   | DropdownMenuSeparatorNode
@@ -89,6 +101,7 @@ export type DropdownMenuNode = DropdownMenuGroupChildNode | DropdownMenuGroupNod
  */
 export type DropdownMenuEntry =
   | { kind: "action"; key: string; label: string; disabled: boolean; node: DropdownMenuActionNode }
+  | { kind: "link"; key: string; label: string; disabled: boolean; node: DropdownMenuLinkNode }
   | {
       kind: "checkbox";
       key: string;
@@ -114,6 +127,10 @@ export type DropdownMenuEntry =
 
 export function actionEntry(node: DropdownMenuActionNode): DropdownMenuEntry {
   return { kind: "action", key: node.key, label: node.label, disabled: node.disabled ?? false, node };
+}
+
+export function linkEntry(node: DropdownMenuLinkNode): DropdownMenuEntry {
+  return { kind: "link", key: node.key, label: node.label, disabled: node.disabled ?? false, node };
 }
 
 export function checkboxEntry(node: DropdownMenuCheckboxNode): DropdownMenuEntry {
@@ -162,6 +179,9 @@ export function menuEntries(nodes: readonly DropdownMenuNode[]): DropdownMenuEnt
     switch (node.type) {
       case "action":
         entries.push(actionEntry(node));
+        break;
+      case "link":
+        entries.push(linkEntry(node));
         break;
       case "checkbox":
         entries.push(checkboxEntry(node));

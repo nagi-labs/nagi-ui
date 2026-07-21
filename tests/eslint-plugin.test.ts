@@ -51,6 +51,26 @@ test("accepts a correctly wired menu and keyed item loop", () => {
   assert.deepEqual(messages, [])
 })
 
+test("accepts href anchors for action menu items and rejects anchor-shaped buttons", () => {
+  const valid = verify(`
+    <template>
+      <ul popover v-bind="menu.menuProps">
+        <li v-for="item in items" :key="item.key">
+          <a :href="item.href" v-bind="menu.itemProps(item)">{{ item.label }}</a>
+        </li>
+      </ul>
+    </template>
+  `)
+  assert.deepEqual(valid, [])
+
+  const invalid = verify(`
+    <template>
+      <a v-bind="menu.itemProps(item)">{{ item.label }}</a>
+    </template>
+  `)
+  assert.equal(invalid[0]?.messageId, "missingAnchorHref")
+})
+
 test("reports wrong targets and missing native attributes", () => {
   const messages = verify(`
     <template>
@@ -60,7 +80,7 @@ test("reports wrong targets and missing native attributes", () => {
   `)
   assert.deepEqual(
     messages.map((message) => message.messageId),
-    ["missingButtonType", "wrongElement", "missingPopover"],
+    ["wrongElement", "missingPopover"],
   )
 })
 

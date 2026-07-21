@@ -4,12 +4,14 @@ import { useDisclosure } from "@nagi-labs/nagi-ui";
 const props = defineProps<{
   summary: string;
   name?: string;
+  disabled?: boolean;
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
 const disclosure = useDisclosure({
   open,
   ...(props.name ? { name: props.name } : {}),
+  disabled: () => props.disabled ?? false,
 });
 
 defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.toggle });
@@ -17,7 +19,7 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 
 <template>
   <details class="nagi-disclosure" v-bind="disclosure.detailsProps">
-    <summary class="summary">{{ summary }}</summary>
+    <summary class="summary" v-bind="disclosure.summaryProps">{{ summary }}</summary>
     <section class="section">
       <slot />
     </section>
@@ -36,6 +38,11 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
     padding: var(--nagi-space-control, 0.5rem 0.75rem);
     font-weight: 650;
     cursor: pointer;
+
+    &[aria-disabled="true"] {
+      color: var(--nagi-color-text-disabled, #91a1a6);
+      cursor: not-allowed;
+    }
 
     &:focus-visible {
       outline: none;
