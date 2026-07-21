@@ -67,7 +67,7 @@ test("Dialog and Tooltip are axe-clean in their opened states", async ({ page })
   await expectAxeClean(page)
 })
 
-test("thin package Blueprint catalog is axe-clean in opened states", async ({ page }) => {
+test("package Blueprint catalog is axe-clean in opened states", async ({ page }) => {
   await page.goto("/catalog.html")
 
   await page.getByRole("button", { name: "Open package popover" }).click()

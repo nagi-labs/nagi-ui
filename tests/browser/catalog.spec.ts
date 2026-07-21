@@ -4,6 +4,21 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/catalog.html");
 });
 
+test("styling-only package components expose semantic content and tone variants", async ({
+  page,
+}) => {
+  const card = page.locator("article.card", { hasText: "Package-first surface" });
+  await expect(card.getByRole("heading", { name: "Package-first surface" })).toBeVisible();
+  await expect(card.getByText("The consumer owns and styles this declared slot sub-surface.")).toBeVisible();
+
+  for (const label of ["Neutral", "Accent", "Ready", "Review", "Blocked"]) {
+    await expect(card.getByText(label, { exact: true })).toBeVisible();
+  }
+
+  await expect(card.locator('[role="status"]', { hasText: "Catalog ready" })).toBeVisible();
+  await expect(card.getByRole("alert")).toContainText("Destructive action");
+});
+
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");

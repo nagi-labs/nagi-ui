@@ -6,7 +6,10 @@
  * places where consumer-owned markup can resume a styled sub-surface.
  */
 export const nagiUiComponentClasses = {
+  Alert: "alert",
+  Badge: "badge",
   Button: "nagi-button",
+  Card: "card",
   Combobox: "combobox",
   Dialog: "nagi-dialog",
   Disclosure: "nagi-disclosure",
@@ -18,7 +21,9 @@ export const nagiUiComponentClasses = {
 }
 
 export const nagiUiComponentSlots = {
+  Alert: { default: "alert-content" },
   Button: { default: "nagi-button-content" },
+  Card: { default: "card-content" },
   Dialog: { default: "nagi-dialog-content" },
   Disclosure: { default: "nagi-disclosure-content" },
   Popover: { default: "nagi-popover-content" },

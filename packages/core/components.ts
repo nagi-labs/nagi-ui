@@ -5,7 +5,10 @@
  * loadable by plain Node and ships no CSS. The re-exported SFCs are the same
  * files the `own` workflow copies (single-source principle, CHARTER §3).
  */
+export { default as Alert } from "./blueprints/alert/Alert.vue";
+export { default as Badge } from "./blueprints/badge/Badge.vue";
 export { default as Button } from "./blueprints/button/NagiButton.vue";
+export { default as Card } from "./blueprints/card/Card.vue";
 export { default as Combobox } from "./blueprints/combobox/Combobox.vue";
 export type { ComboboxOption } from "./blueprints/combobox/Combobox.vue";
 export { default as Dialog } from "./blueprints/dialog/NagiDialog.vue";

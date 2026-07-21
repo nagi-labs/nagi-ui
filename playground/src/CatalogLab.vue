@@ -2,7 +2,10 @@
 import { ref, useTemplateRef } from "vue";
 
 import {
+  Alert,
+  Badge,
   Button,
+  Card,
   Dialog,
   Disclosure,
   Popover,
@@ -30,12 +33,38 @@ function showToast() {
   <main class="catalog-lab">
     <header class="header">
       <p class="text -eyebrow">Package components</p>
-      <h1 class="title">Thin platform Blueprint catalog</h1>
+      <h1 class="title">Package Blueprint catalog</h1>
       <p class="text">
         These examples import raw SFCs from the package. The same files are copied by
         <code class="code">nagi-ui own</code>.
       </p>
     </header>
+
+    <section class="section" aria-labelledby="styling-heading">
+      <h2 id="styling-heading" class="title">Styling-only baseline</h2>
+      <Card
+        class="card"
+        title="Package-first surface"
+        description="Theme by default; own only when the structure must change."
+      >
+        <div class="card-content">
+          <p class="text">The consumer owns and styles this declared slot sub-surface.</p>
+          <div class="list" aria-label="Package status badges">
+            <Badge label="Neutral" />
+            <Badge label="Accent" tone="accent" />
+            <Badge label="Ready" tone="success" />
+            <Badge label="Review" tone="warning" />
+            <Badge label="Blocked" tone="danger" />
+          </div>
+          <Alert title="Catalog ready" tone="success">
+            <p class="text">Card, Alert, and Badge complete the initial styling-only baseline.</p>
+          </Alert>
+          <Alert title="Destructive action" tone="danger" role="alert">
+            <p class="text">Use assertive semantics only for urgent, newly surfaced information.</p>
+          </Alert>
+        </div>
+      </Card>
+    </section>
 
     <section class="section" aria-labelledby="popover-heading">
       <h2 id="popover-heading" class="title">Popover</h2>
@@ -127,6 +156,24 @@ function showToast() {
 
     > .text {
       color: var(--nagi-color-text-muted, #50676f);
+    }
+
+    > .card {
+      .card-content {
+        display: grid;
+        gap: 0.75rem;
+
+        > .text {
+          margin: 0;
+          color: var(--nagi-color-text-muted, #50676f);
+        }
+
+        > .list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.4rem;
+        }
+      }
     }
   }
 }

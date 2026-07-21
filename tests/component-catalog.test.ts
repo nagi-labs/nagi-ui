@@ -96,3 +96,33 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(toast, /aria-live="polite"/);
   });
 });
+
+test("styling-only package Blueprints emit semantic, readable markup during SSR", async () => {
+  await withComponents(async (components) => {
+    const card = await render(
+      components.Card as Component,
+      { title: "Profile", description: "Owned when needed" },
+      "Card body",
+    );
+    assert.match(card, /<article[^>]*class="card"/);
+    assert.match(card, /<h2[^>]*>Profile<\/h2>/);
+    assert.match(card, /Owned when needed/);
+    assert.match(card, /Card body/);
+
+    const alert = await render(
+      components.Alert as Component,
+      { title: "Action required", tone: "danger", role: "alert" },
+      "Review the change",
+    );
+    assert.match(alert, /role="alert"/);
+    assert.match(alert, /class="alert -danger"/);
+    assert.match(alert, /Action required/);
+
+    const badge = await render(components.Badge as Component, {
+      label: "Ready",
+      tone: "success",
+    });
+    assert.match(badge, /class="badge -positive"/);
+    assert.match(badge, />\s*Ready\s*<\/span>/);
+  });
+});

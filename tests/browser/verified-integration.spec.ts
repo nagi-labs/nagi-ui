@@ -107,7 +107,7 @@ test("observeNagiDom reports relationship issues introduced by a mutation", asyn
   expect(codes).toContain("missing-id-target")
 })
 
-test("thin package Blueprints render a valid relationship graph", async ({ page }) => {
+test("package behavior Blueprints render a valid relationship graph", async ({ page }) => {
   await page.goto("/catalog.html")
   await page.getByRole("button", { name: "Open package popover" }).click()
   await page.getByRole("button", { name: "More information" }).focus()

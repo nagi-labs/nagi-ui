@@ -14,7 +14,10 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 export const components = {
+  alert: { dir: "blueprints/alert", files: ["Alert.vue"] },
+  badge: { dir: "blueprints/badge", files: ["Badge.vue"] },
   button: { dir: "blueprints/button", files: ["NagiButton.vue"] },
+  card: { dir: "blueprints/card", files: ["Card.vue"] },
   combobox: { dir: "blueprints/combobox", files: ["Combobox.vue"] },
   dialog: { dir: "blueprints/dialog", files: ["NagiDialog.vue"] },
   disclosure: { dir: "blueprints/disclosure", files: ["NagiDisclosure.vue"] },
