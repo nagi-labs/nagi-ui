@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useAttrs, useId } from "vue";
 
-import { useNativeFormReset } from "@nagi-labs/nagi-ui";
+import { useNativeNumberReset } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -28,16 +28,8 @@ const model = defineModel<number>({ default: 0 });
 const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
 const generatedId = useId();
-const initialValue = model.value;
 
-useNativeFormReset(
-  input,
-  (control) => {
-    model.value = initialValue;
-    control.value = String(initialValue);
-  },
-  () => props.form,
-);
+useNativeNumberReset(input, model);
 </script>
 
 <template>
@@ -65,19 +57,19 @@ useNativeFormReset(
 .nagi-slider {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--nagi-space-item-gap, 0.55rem);
+  gap: var(--nagi-space-item-gap);
   align-items: center;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
 
   &:has(> .input:disabled) {
     > .output {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
     }
   }
 
   > .label {
-    color: var(--nagi-color-text-muted, #50676f);
-    font-size: var(--nagi-font-size-label, 0.72rem);
+    color: var(--nagi-color-text-muted);
+    font-size: var(--nagi-font-size-label);
     font-weight: 650;
   }
 
@@ -85,7 +77,7 @@ useNativeFormReset(
     grid-column: 2;
     grid-row: 1;
     min-inline-size: 3ch;
-    color: var(--nagi-color-text, #17323b);
+    color: var(--nagi-color-text);
     font-variant-numeric: tabular-nums;
     text-align: end;
   }
@@ -94,15 +86,15 @@ useNativeFormReset(
     grid-column: 1 / -1;
     grid-row: 2;
     inline-size: 100%;
-    min-block-size: var(--nagi-size-control, 2rem);
+    min-block-size: var(--nagi-size-control);
     margin: 0;
-    accent-color: var(--nagi-color-accent, #16768b);
+    accent-color: var(--nagi-color-accent);
     cursor: pointer;
 
     &:focus-visible {
       outline: none;
-      border-radius: var(--nagi-radius-control, 0.55rem);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-radius: var(--nagi-radius-control);
+      box-shadow: var(--nagi-shadow-focus);
     }
 
     &:disabled {

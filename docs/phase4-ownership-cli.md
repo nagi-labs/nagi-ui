@@ -73,8 +73,9 @@ git 履歴から取れる)。validation experiment C はこの手順で `git mer
 - `own` does not rewrite application imports; it prints the instruction. The
   owned copy keeps importing `@nagi-labs/nagi-ui` (composables) and its own
   relative files, so it compiles as copied.
-- Owned files keep their `var(--nagi-*, fallback)` references, so theme.css
-  continues to apply after ownership (design principle 5).
+- Owned files keep their fallback-free `var(--nagi-*)` references, so the
+  default theme and consumer overrides continue to apply after ownership
+  (design principle 5).
 - No three-way merge: `drifted` tells you both sides moved; resolving is a
   manual (or agent-driven) edit informed by the printed diff command.
   A breaking release must ship its version-specific migration note; v0 has no

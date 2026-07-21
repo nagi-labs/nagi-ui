@@ -58,8 +58,8 @@ const listbox = useListbox<ListboxOption>({
 
   > .text {
     margin-block: 0 0.35rem;
-    color: var(--nagi-color-text-muted, #50676f);
-    font-size: var(--nagi-font-size-label, 0.72rem);
+    color: var(--nagi-color-text-muted);
+    font-size: var(--nagi-font-size-label);
     font-weight: 750;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -67,32 +67,32 @@ const listbox = useListbox<ListboxOption>({
 
   > .list {
     margin: 0;
-    padding: var(--nagi-space-surface-inset, 0.4rem);
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-overlay, 0.65rem);
+    padding: var(--nagi-space-surface-inset);
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-overlay);
     outline: none;
-    background: var(--nagi-color-surface, #fff);
-    color: var(--nagi-color-text, #17323b);
+    background: var(--nagi-color-surface);
+    color: var(--nagi-color-text);
     list-style: none;
 
     &:focus-visible {
-      border-color: var(--nagi-color-focus-ring, #75adba);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-color: var(--nagi-color-focus-ring);
+      box-shadow: var(--nagi-shadow-focus);
     }
 
     > .item {
       display: grid;
       grid-template-columns: 1rem minmax(0, 1fr);
-      gap: var(--nagi-space-item-gap, 0.55rem);
+      gap: var(--nagi-space-item-gap);
       align-items: center;
-      min-block-size: var(--nagi-size-control, 2rem);
-      padding: var(--nagi-space-item, 0.35rem 0.55rem);
-      border-radius: var(--nagi-radius-item, 0.4rem);
+      min-block-size: var(--nagi-size-control);
+      padding: var(--nagi-space-item);
+      border-radius: var(--nagi-radius-item);
       cursor: pointer;
 
       &[data-active] {
-        background: var(--nagi-color-surface-active, #e5f1f4);
-        outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+        background: var(--nagi-color-surface-active);
+        outline: 2px solid var(--nagi-color-focus-ring);
         outline-offset: -2px;
       }
 
@@ -108,13 +108,13 @@ const listbox = useListbox<ListboxOption>({
       }
 
       &[aria-disabled="true"] {
-        color: var(--nagi-color-text-disabled, #91a1a6);
+        color: var(--nagi-color-text-disabled);
         cursor: not-allowed;
       }
 
       > .icon {
-        color: var(--nagi-color-accent, #16768b);
-        font-size: var(--nagi-font-size-icon, 0.78rem);
+        color: var(--nagi-color-accent);
+        font-size: var(--nagi-font-size-icon);
         text-align: center;
       }
     }

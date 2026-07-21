@@ -2,6 +2,10 @@
 
 Status: Coding-agent arm complete (2026-07-21). Human arm and repeated runs remain.
 
+Note: この実験時点の literal fallback 契約は2026-07-21に廃止した。実験が検証した
+「Blueprintを変更せずapp側tokenでbrand変更できる」という境界は不変で、現在の正規経路は
+`default-theme.css` + app override、または検査済みのcomplete replacement themeである。
+
 `docs/package-ownership-model.md` の「早期検証」を実行可能なプロトコルに落とす。
 検証対象は package-first / own-on-demand モデルの 3 つの境界であり、各実験は
 危険信号(同 doc)への判定材料を返す。
@@ -28,7 +32,7 @@ Status: Coding-agent arm complete (2026-07-21). Human arm and repeated runs rema
   compact にしたい。/dropdown.html と /listbox.html に反映され、既存の unit
   テストが通ること」
 - 成功: `packages/core/blueprints` に変更ゼロ。アプリ側 CSS の token 上書き
-  (または theme.css の差し替え相当)だけで達成。diff が小さい
+  (または complete theme の差し替え相当)だけで達成。diff が小さい
 - 失敗シグナル: blueprint SFC の直接編集、literal 色の総置換、token の存在に
   気づかない
 
@@ -80,10 +84,10 @@ Status: Coding-agent arm complete (2026-07-21). Human arm and repeated runs rema
 - **`packages/core` への変更ゼロ**(git diff で機械確認)。blueprint の直接編集も
   literal 総置換も発生せず
 - diff 規模: 6 ファイル、+65 / −62 行(大半は依頼範囲内のページクローム暖色化と
-  fixture のハードコード色 → fallback 付き var() 化)
-- 判断品質の特記: parity test の存在から「theme.css・blueprint を触るとテストが
+  fixture のハードコード色 → 当時の token 参照化)
+- 判断品質の特記: parity test の存在から「default theme・blueprint を触るとテストが
   壊れる。ブランド変更はアプリ側 token 上書きが設計意図」と正しく推論。
-  no-Teleport による popover への custom property 継承にも言及。theme.css 後勝ち
+  no-Teleport による popover への custom property 継承にも言及。theme override 後勝ち
   の import 順も正しく処理
 - 機械検証: `vp run test` 96/96。agent は 2 ページの本番ビルドまで行い、出力
   CSS に `#b45309` が含まれることを確認

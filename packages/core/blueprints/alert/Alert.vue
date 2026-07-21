@@ -25,10 +25,10 @@ withDefaults(
 <style scoped>
 .alert {
   padding: 0.75rem 0.85rem;
-  border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-  border-radius: var(--nagi-radius-control, 0.55rem);
-  background: var(--nagi-color-surface, #fff);
-  color: var(--nagi-color-text, #17323b);
+  border: 1px solid var(--nagi-color-border-muted);
+  border-radius: var(--nagi-radius-control);
+  background: var(--nagi-color-surface);
+  color: var(--nagi-color-text);
 
   > .title {
     margin: 0;
@@ -49,27 +49,27 @@ withDefaults(
   }
 
   &.-accent {
-    border-color: var(--nagi-color-accent, #16768b);
-    background: var(--nagi-color-surface-accent, #e5f1f4);
-    color: var(--nagi-color-accent, #16768b);
+    border-color: var(--nagi-color-accent);
+    background: var(--nagi-color-surface-accent);
+    color: var(--nagi-color-accent);
   }
 
   &.-positive {
-    border-color: var(--nagi-color-success, #18794e);
-    background: var(--nagi-color-surface-success, #e7f5ed);
-    color: var(--nagi-color-success, #18794e);
+    border-color: var(--nagi-color-success);
+    background: var(--nagi-color-surface-success);
+    color: var(--nagi-color-success);
   }
 
   &.-warning {
-    border-color: var(--nagi-color-warning, #8a5a00);
-    background: var(--nagi-color-surface-warning, #fff4d6);
-    color: var(--nagi-color-warning, #8a5a00);
+    border-color: var(--nagi-color-warning);
+    background: var(--nagi-color-surface-warning);
+    color: var(--nagi-color-warning);
   }
 
   &.-danger {
-    border-color: var(--nagi-color-danger, #aa3443);
-    background: var(--nagi-color-surface-danger, #fbeaec);
-    color: var(--nagi-color-danger, #aa3443);
+    border-color: var(--nagi-color-danger);
+    background: var(--nagi-color-surface-danger);
+    color: var(--nagi-color-danger);
   }
 }
 </style>

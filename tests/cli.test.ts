@@ -5,6 +5,7 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  checkThemeFiles,
   components,
   detectSetupDefaults,
   diffOwned,
@@ -81,6 +82,41 @@ test("every public package component has an ownership registry entry", () => {
       .toLowerCase(),
   ).sort();
   assert.deepEqual(Object.keys(components).sort(), publicComponents);
+});
+
+test("theme check reports missing and unknown replacement-theme tokens", async () => {
+  const root = tempDir();
+  const incomplete = path.join(root, "theme.css");
+  fs.writeFileSync(incomplete, `:root {
+  /* --nagi-color-focus-ring: this-comment-must-not-count; */
+  --nagi-color-accent: hotpink;
+  --nagi-color-foucs-ring: red;
+}\n`);
+
+  const result = checkThemeFiles([incomplete]);
+  assert.ok(result.missing.includes("--nagi-color-focus-ring"));
+  assert.deepEqual(result.unknown, ["--nagi-color-foucs-ring"]);
+
+  const warnings: string[] = [];
+  assert.equal(
+    await main(["theme", "check", incomplete], path.join(import.meta.dirname, ".."), {
+      log: () => undefined,
+      warn: (message: string) => warnings.push(message),
+    }),
+    1,
+  );
+  assert.ok(warnings.some((message) => message.includes("--nagi-color-focus-ring")));
+  assert.ok(warnings.some((message) => message.includes("--nagi-color-foucs-ring")));
+});
+
+test("the shipped default theme passes the replacement-theme CI gate", async () => {
+  const theme = path.join(packageRoot, "theme/default-theme.css");
+  assert.deepEqual(checkThemeFiles([theme]).missing, []);
+  assert.deepEqual(checkThemeFiles([theme]).unknown, []);
+  assert.equal(
+    await main(["theme", "check", theme], path.join(import.meta.dirname, "..")),
+    0,
+  );
 });
 
 test("Tabs ownership stamps the package source and starts clean", () => {

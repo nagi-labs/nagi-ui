@@ -20,11 +20,11 @@ defineProps<{
 <style scoped>
 .card {
   overflow: hidden;
-  border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-  border-radius: var(--nagi-radius-overlay, 0.65rem);
-  background: var(--nagi-color-surface, #fff);
-  color: var(--nagi-color-text, #17323b);
-  box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
+  border: 1px solid var(--nagi-color-border-muted);
+  border-radius: var(--nagi-radius-overlay);
+  background: var(--nagi-color-surface);
+  color: var(--nagi-color-text);
+  box-shadow: var(--nagi-shadow-overlay);
 
   > .header {
     padding: 1rem 1rem 0;
@@ -36,7 +36,7 @@ defineProps<{
 
     > .text {
       margin-block: 0.35rem 0;
-      color: var(--nagi-color-text-muted, #50676f);
+      color: var(--nagi-color-text-muted);
       font-size: 0.9rem;
     }
   }

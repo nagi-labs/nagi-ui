@@ -82,7 +82,6 @@ useNativeFormReset(
       control.value = initialInputValue;
     });
   },
-  () => props.form,
 );
 
 watchEffect(() => {
@@ -159,12 +158,12 @@ watchEffect(() => {
 .combobox {
   display: inline-grid;
   min-inline-size: 16rem;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
 
   > .label {
     margin-block-end: 0.35rem;
-    color: var(--nagi-color-text-muted, #50676f);
-    font-size: var(--nagi-font-size-label, 0.72rem);
+    color: var(--nagi-color-text-muted);
+    font-size: var(--nagi-font-size-label);
     font-weight: 750;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -177,33 +176,33 @@ watchEffect(() => {
       > .input {
         inline-size: 100%;
         box-sizing: border-box;
-        padding: var(--nagi-space-control, 0.5rem 0.75rem);
+        padding: var(--nagi-space-control);
         padding-inline-end: 2.25rem;
-        border: 1px solid var(--nagi-color-border, #b9cbd1);
-        border-radius: var(--nagi-radius-control, 0.55rem);
+        border: 1px solid var(--nagi-color-border);
+        border-radius: var(--nagi-radius-control);
         outline: none;
-        background: var(--nagi-color-surface, #fff);
+        background: var(--nagi-color-surface);
         color: inherit;
         font: inherit;
 
         &:focus-visible,
         &[aria-expanded="true"] {
-          border-color: var(--nagi-color-focus-ring, #75adba);
-          box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+          border-color: var(--nagi-color-focus-ring);
+          box-shadow: var(--nagi-shadow-focus);
         }
 
         &:disabled {
-          color: var(--nagi-color-text-disabled, #91a1a6);
-          background: var(--nagi-color-surface-accent, #e5f1f4);
+          color: var(--nagi-color-text-disabled);
+          background: var(--nagi-color-surface-accent);
         }
 
         &:read-only {
-          color: var(--nagi-color-text-muted, #50676f);
-          background: var(--nagi-color-surface-accent, #e5f1f4);
+          color: var(--nagi-color-text-muted);
+          background: var(--nagi-color-surface-accent);
         }
 
         &::placeholder {
-          color: var(--nagi-color-text-disabled, #91a1a6);
+          color: var(--nagi-color-text-disabled);
         }
       }
 
@@ -216,7 +215,7 @@ watchEffect(() => {
           padding: 0;
           border: 0;
           background: transparent;
-          color: var(--nagi-color-text-muted, #50676f);
+          color: var(--nagi-color-text-muted);
           font: inherit;
           cursor: pointer;
         }
@@ -227,14 +226,14 @@ watchEffect(() => {
       min-inline-size: 16rem;
       max-block-size: 15rem;
       margin: 0;
-      padding: var(--nagi-space-surface-inset, 0.4rem);
+      padding: var(--nagi-space-surface-inset);
       overflow-y: auto;
-      border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-      border-radius: var(--nagi-radius-overlay, 0.65rem);
+      border: 1px solid var(--nagi-color-border-muted);
+      border-radius: var(--nagi-radius-overlay);
       outline: none;
-      background: var(--nagi-color-surface, #fff);
-      box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
-      color: var(--nagi-color-text, #17323b);
+      background: var(--nagi-color-surface);
+      box-shadow: var(--nagi-shadow-overlay);
+      color: var(--nagi-color-text);
       list-style: none;
       opacity: 0;
       transform: translateY(-0.25rem) scale(0.99);
@@ -262,19 +261,19 @@ watchEffect(() => {
 
         > .item {
           box-sizing: border-box;
-          min-block-size: var(--nagi-size-control, 2rem);
-          padding: var(--nagi-space-item, 0.35rem 0.55rem);
-          border-radius: var(--nagi-radius-item, 0.4rem);
+          min-block-size: var(--nagi-size-control);
+          padding: var(--nagi-space-item);
+          border-radius: var(--nagi-radius-item);
           cursor: pointer;
 
           &[aria-selected="true"] {
-            background: var(--nagi-color-surface-active, #e5f1f4);
-            outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+            background: var(--nagi-color-surface-active);
+            outline: 2px solid var(--nagi-color-focus-ring);
             outline-offset: -2px;
           }
 
           &[aria-disabled="true"] {
-            color: var(--nagi-color-text-disabled, #91a1a6);
+            color: var(--nagi-color-text-disabled);
             cursor: not-allowed;
           }
         }
@@ -282,9 +281,9 @@ watchEffect(() => {
 
       > .status {
         box-sizing: border-box;
-        min-block-size: var(--nagi-size-control, 2rem);
-        padding: var(--nagi-space-item, 0.35rem 0.55rem);
-        color: var(--nagi-color-text-muted, #50676f);
+        min-block-size: var(--nagi-size-control);
+        padding: var(--nagi-space-item);
+        color: var(--nagi-color-text-muted);
         list-style: none;
       }
     }

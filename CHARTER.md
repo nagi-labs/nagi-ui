@@ -35,7 +35,7 @@ attribute 注入型 headless core を内部の芯とし、Nagi CSS Contract(別�
 |---|---|---|---|
 | **core** | npm パッケージ | composable 群 + ディレクティブ糖衣。ネイティブ属性 + ARIA を注入。完全に型付け | CSS を一切含まない |
 | **components / blueprints** | npm component + on-demand copy-in | Nagi CSS 準拠の同一 SFC。通常は import して使い、構造変更が必要になった component だけ利用者のリポジトリへ複製する | Nagi CSS 契約準拠の読める CSS。**Tailwind 不使用** |
-| **theme** | Nagi CSS package | 色・spacing・radius・typography・shadow・control size・state appearance の token | DOM / behavior は変更しない |
+| **theme** | `@nagi-labs/nagi-ui/default-theme.css` + Nagi CSS contract | 色・spacing・radius・typography・shadow・control size・state appearance の token | DOM / behavior は変更しない |
 | **contract preset** | npm(linter 側) | Nagi CSS linter 用の Nagi UI プリセット設定(`componentSlots` 等が必要になった場合のみ) | — |
 
 - 通常の導入体験は PrimeVue 型(package import + theme token)とし、**最初から全 SFC の copy を要求しない**。package API で足りない component だけ `nagi-ui own <component>` 相当の workflow で所有へ移る。
@@ -53,6 +53,12 @@ package component と own コマンドのコピー元を**別実装にしては�
 2. 小さな props / items schema
 3. 宣言済みの少数 slot
 4. それ以上は source ownership
+
+Blueprint の token 参照に literal fallback を書いてはならない。既定値は
+`default-theme.css` に一元化し、通常はそれを import して必要な token だけ後勝ちで
+上書きする。完全 replacement theme は `nagi-ui theme check` を CI gate とし、実 cascade
+の不足は opt-in の dev diagnostic で検出する。欠落を見た目だけ成立させる fallback は、
+theme 契約の不備を隠すため禁止する。旧 `theme.css` export は互換 alias に限る。
 
 PrimeVue 型の巨大な pass-through props / slot surface は作らない。「API で表せない要求は source を所有する」が package API を小さく保つ境界である。一方、avatar・router-link・description 程度の要求で毎回所有が必要になるなら Theme と ownership の間が崖になっている。§3.5 の優先順と実利用データで境界を調整し、投機的 API は増やさない。
 
@@ -94,9 +100,27 @@ slot は正当な機構である。§2 の compound 禁止は「**ライブラ�
 
 利用者が必要になった時点で**所有できるコード**により、最終 DOM・state selector・CSS ownership が追えること。package 利用中から全 DOM が利用側 SFC に現れることは要求しない。ownership 後は package と同じ source SFC が手元に移り、schema 版 menu でも DOM は owned `DropdownMenu.vue` から追える。
 
+### Blueprint に配線を残す基準
+
+ownership 後に利用者が変更する可能性のある **policy と markup** は Blueprint に残す。一方、native event の順序、Vue model と DOM property の同期、browser 差異の吸収など、変更対象ではない **mechanism** は小さな helper に隠す。helper の採用基準は呼び出し回数ではなく、所有後にその箇所を変更するかどうかである。
+
+- 万能な config object、control kind の分岐、変換 callback 群を持つ汎用 helper は作らない。`useNativeRadioReset(input, model)` のように一つの固定された意味へ名前を付ける
+- helper を使うために Blueprint 側で同じ写像や DOM 規則を再宣言するなら抽象化に失敗しているため、明示実装へ戻す
+- renderer の DOM 構造を変更したとき同時に直す必要がある処理（schema node から menu option への変換、DOM 順に依存する focus repair 等）は、mechanism に見えても Blueprint に残す
+- 特殊要件で既定 mechanism を変えたい利用者は、ownership 後に helper を外して局所実装へ降りる。投機的な hook や options を helper に増やさない
+
 ### styling-only blueprint
 
 behavior(core composable)を持たない blueprint(Card、Alert、Badge 等)は Nagi UI の composable 検証(§10 の phase 系列)の対象外であり、Nagi CSS 準拠の package component / ownable SFC として **phase 進行と独立に追加してよい**。一回きり・ページ固有の構造はコンポーネント化せず inline で書く選択も通常どおり有効。
+
+### component benchmark の採用基準
+
+component の機能選定は一つの catalog だけで決めない。Base UI は behavior / a11y / keyboard / focus 保証、shadcn-vue は Vue の実用 anatomy と source ownership、PrimeVue は package-first / themeable component に期待される props・slots・完成度の比較対象とする。Web platform の語彙と本 CHARTER は常にこれらより優先する。
+
+- shadcn-vue と PrimeVue の両方に同じ visible part または小さな enum がある場合、それ自体を product evidence とみなし、追加の Nagi 固有利用例がなくても review 対象へ上げる。「投機的 API」を避ける規律は、複数の代表的 product library で定着した anatomy を無視する意味ではない
+- 共通性は capability の証拠であり API 形態の指示ではない。compound parts、`asChild`、pass-through props をコピーせず、本節の owned DOM → props → items schema → 最小 slot → ownership の順へ翻訳する
+- 一方の styled library にしかない機能は実要求待ちとする。複数 library に共通していても native ownership と衝突する custom Select、gesture Drawer、portal / focus-trap runtime 等は明示的に不採用または独立 component として判定してよい
+- 出荷済み component と Base UI baseline の比較・採否台帳は `docs/base-ui-component-comparison.md` を正本とする
 
 ## 4. core の API 設計
 
@@ -357,7 +381,7 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 スライス順:
 
-1. **Package 実体化** — **完了(2026-07-18)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export、semantic token 22 個(fallback 必須 + parity test)と `theme.css` を実装。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
+1. **Package 実体化** — **完了(2026-07-18、theme契約を2026-07-21改訂)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export。semantic token はfallbackなしのBlueprint参照 + `default-theme.css` + coverage check / replacement-theme診断で管理する。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
 2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定** — **完了(2026-07-18)**。`nagi-ui own/diff/list` を package 同梱 bin として実装し、metadata を `@nagi-source <component>/<file>@<version>`(per-file 刻印)に固定。`diff` は clean / modified / drifted / unknown-source を判定し CI gate に使える。詳細は `docs/phase4-ownership-cli.md`
 3. **早期検証実験** — **coding-agent アーム完了(2026-07-21)**。Button(theme)/ Dropdown(ownership)/ Combobox(upstream 追従)の 3 境界すべてで、無文脈 agent が誘導なしに設計意図の経路(token 上書き / own + 拡張レシピ / 3-way merge + stamp 更新)を選び PASS。副産物: CLI テストのバグ修正、`diff` の gate を `drifted` / `unknown-source` に限定、「own したら即コミット」の base 確保手順。記録は `docs/phase4-validation-experiments.md`。人間アームと反復実行は今後の課題
 4. **blueprints の拡充** — **完了(2026-07-21)**。Popover / Dialog / Tooltip / Disclosure / Toast を追加して公開 behavior core との欠落を解消し、styling-only baseline を Button / Card / Alert / Badge に固定。全12 componentをpackage + ownable raw SFCで出荷し、consumer用Nagi CSS presetも同梱した。unit 103/103、SSR、ownership、verified-bindings、theme parity、owned/consumer Nagi CSS、browser + axe 37/37を検証。将来のstyling-only追加は実要求ベースでphase独立に行い、このsliceを再openしない。詳細は `docs/phase4-blueprint-catalog.md`
@@ -367,6 +391,9 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 ## 改訂履歴
 
+- **2026-07-21** component benchmark を単一の Base UI catalog 比較から、Base UI(behavior / a11y)、shadcn-vue(Vue anatomy / ownership)、PrimeVue(package-first expectations)の三角測量へ改訂。shadcn-vue と PrimeVue に共通する visible anatomy は product evidence とみなす一方、API は §3.5 の優先順へ翻訳し、native-first と衝突する common feature は不採用または独立 slice にできると固定した。全22出荷component + Base UI 37件の台帳は `docs/base-ui-component-comparison.md`。
+- **2026-07-21** Theme契約をfallback-freeへ改訂。Blueprintの`var(--nagi-*)`からliteral fallbackを除去し、28 tokenの既定値を`default-theme.css`へ一元化。manifest / default / Blueprint vocabulary parity、`nagi-ui theme check`、opt-in computed-cascade warningにより欠落を可視化し、旧`theme.css`は互換aliasだけ残した。ownership layerの次スライスは編集済みSFCのimportを書換えないrouting module方式、初期surfaceを`vue` / `all`に限定、version/path/hash sidecarを持つ設計として`docs/package-ownership-model.md`へ固定した。
+- **2026-07-21** Blueprint の配線露出基準を §3.5 に追加。所有後に変更する policy / markup は SFC に残し、native event 順・Vue model / DOM property 同期など変更しない mechanism は、再利用数に関係なく固定意味の小 helper へ隠す。万能 helper / config DSL は作らず、renderer DOM 変更と同時に修正すべき処理は可視のまま保つ。
 - **2026-07-21** Base UI alignment D1 として Tabs を完了。独立した `useTabs` に manual/automatic activation、roving tabindex、horizontal/vertical + RTL、disabled skip、controlled canonicalization、dynamic fallbackとDOM focus修復を実装。package/ownable単一SFCはflat items schema + behaviorを渡さないcontent-only `panel` slotでrich markupを扱い、compound parts・Indicator geometry runtime・lazy automatic panelは不採用。`defineModel` の親prop反映前にfallbackを再読して誤focusする実browser固有bugとcontrolled SSRの全panel hidden不整合をlocal bridgeで修正し、forced-colorsでもselectionとfocusを分離。unit 155/155、browser + axe 69/69、TypeScript 7、SSR、verified-bindings/runtime IDREF verifier、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-d-tabs.md`。
 - **2026-07-21** Base UI alignment C 完了。Toast を明示的 `createToastManager()` と単一 Blueprint に分離し、structured title/description/tone/action、polite/assertive announcement、explicit-id upsert、limit、update/close-all/promise、timer pause/resume、複数regionを巡回するF6 focus returnを追加。Provider/Portal/singleton/swipe/stack physicsは不採用。native modal外のrendererへF6を出さずlive nodeのinert境界も固定し、unit 137/137、browser + axe 59/59、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-c.md`。
 - **2026-07-21** Base UI alignment B 完了。Input / Checkbox / Radio / Switch / Select / Fieldset / Progress / Meter / single-thumb Slider をnative-first package/ownership Blueprintとして追加。Comboboxにdisabled/read-only/required、selected-key submission、clear、empty/loading、resetを追加し、popupとlistboxをARIA上分離。native reset後もDOM/Vue model/FormDataを一致させる小さなbridgeのみcoreへ置き、compound Field、`useField()`、custom Select、multi-thumb Sliderは不採用。unit 124/124、browser + axe 51/51、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-b.md`。

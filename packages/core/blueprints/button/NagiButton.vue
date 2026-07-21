@@ -41,41 +41,41 @@ function guardFocusableDisabled(event: MouseEvent) {
   gap: 0.5rem;
   align-items: center;
   justify-content: center;
-  min-block-size: var(--nagi-size-control, 2rem);
-  padding: var(--nagi-space-control, 0.5rem 0.75rem);
-  border: 1px solid var(--nagi-color-border, #b9cbd1);
-  border-radius: var(--nagi-radius-control, 0.55rem);
-  background: var(--nagi-color-surface, #fff);
-  color: var(--nagi-color-text, #17323b);
+  min-block-size: var(--nagi-size-control);
+  padding: var(--nagi-space-control);
+  border: 1px solid var(--nagi-color-border);
+  border-radius: var(--nagi-radius-control);
+  background: var(--nagi-color-surface);
+  color: var(--nagi-color-text);
   font: inherit;
   font-weight: 650;
   cursor: pointer;
 
   &:hover {
-    background: var(--nagi-color-surface-active, #e5f1f4);
+    background: var(--nagi-color-surface-active);
   }
 
   &:focus-visible {
     outline: none;
-    border-color: var(--nagi-color-focus-ring, #75adba);
-    box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+    border-color: var(--nagi-color-focus-ring);
+    box-shadow: var(--nagi-shadow-focus);
   }
 
   &:disabled,
   &[aria-disabled="true"] {
-    color: var(--nagi-color-text-disabled, #91a1a6);
-    background: var(--nagi-color-surface, #fff);
+    color: var(--nagi-color-text-disabled);
+    background: var(--nagi-color-surface);
     cursor: not-allowed;
   }
 
   &.-accent {
-    border-color: var(--nagi-color-accent, #16768b);
-    color: var(--nagi-color-accent, #16768b);
+    border-color: var(--nagi-color-accent);
+    color: var(--nagi-color-accent);
   }
 
   &.-danger {
-    border-color: var(--nagi-color-danger, #aa3443);
-    color: var(--nagi-color-danger, #aa3443);
+    border-color: var(--nagi-color-danger);
+    color: var(--nagi-color-danger);
   }
 }
 </style>

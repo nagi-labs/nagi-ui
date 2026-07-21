@@ -46,27 +46,27 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
 <style scoped>
 .nagi-tooltip {
   display: inline-block;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
 
   > .button {
-    min-block-size: var(--nagi-size-control, 2rem);
-    padding: var(--nagi-space-control, 0.5rem 0.75rem);
-    border: 1px solid var(--nagi-color-border, #b9cbd1);
-    border-radius: var(--nagi-radius-control, 0.55rem);
-    background: var(--nagi-color-surface, #fff);
+    min-block-size: var(--nagi-size-control);
+    padding: var(--nagi-space-control);
+    border: 1px solid var(--nagi-color-border);
+    border-radius: var(--nagi-radius-control);
+    background: var(--nagi-color-surface);
     color: inherit;
     font: inherit;
     cursor: help;
 
     &:disabled {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
 
     &:focus-visible {
       outline: none;
-      border-color: var(--nagi-color-focus-ring, #75adba);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-color: var(--nagi-color-focus-ring);
+      box-shadow: var(--nagi-shadow-focus);
     }
   }
 
@@ -74,12 +74,12 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
     max-inline-size: 18rem;
     margin: 0;
     padding: 0.45rem 0.65rem;
-    border: 1px solid var(--nagi-color-text, #17323b);
-    border-radius: var(--nagi-radius-item, 0.4rem);
-    background: var(--nagi-color-text, #17323b);
-    color: var(--nagi-color-surface, #fff);
-    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
-    font-size: var(--nagi-font-size-label, 0.72rem);
+    border: 1px solid var(--nagi-color-text);
+    border-radius: var(--nagi-radius-item);
+    background: var(--nagi-color-text);
+    color: var(--nagi-color-surface);
+    box-shadow: var(--nagi-shadow-overlay);
+    font-size: var(--nagi-font-size-label);
   }
 }
 </style>

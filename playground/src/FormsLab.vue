@@ -38,6 +38,7 @@ const contact = ref<string | null>("email");
 const plan = ref("standard");
 const volume = ref(40);
 const externalNote = ref("outside the form tree");
+const externalFormOwner = ref("alignment-form");
 const frameworkInput = ref("v");
 const frameworkKey = ref<string | null>("vue");
 const disabledFrameworkInput = ref("Solid");
@@ -199,8 +200,20 @@ function captureSubmission(event: SubmitEvent) {
         data-testid="external-note"
         label="External note"
         name="externalNote"
-        form="alignment-form"
+        :form="externalFormOwner"
       />
+      <div class="actions">
+        <button
+          class="button"
+          type="button"
+          @click="externalFormOwner = 'alternate-form'"
+        >
+          Move to alternate form
+        </button>
+        <form id="alternate-form" class="form">
+          <button class="button" type="reset">Reset alternate form</button>
+        </form>
+      </div>
     </section>
 
     <section class="section" aria-labelledby="status-heading">
@@ -285,7 +298,7 @@ function captureSubmission(event: SubmitEvent) {
   gap: 1rem;
   max-inline-size: 70rem;
   padding: 2rem;
-  background: var(--nagi-color-canvas, #f6fafb);
+  background: var(--playground-color-canvas, #f6fafb);
   color: var(--nagi-color-text, #17323b);
   font-family: ui-sans-serif, system-ui, sans-serif;
 

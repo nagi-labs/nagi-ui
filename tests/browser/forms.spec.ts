@@ -145,6 +145,22 @@ test("preventDefault keeps a canceled native reset from changing DOM or models",
   });
 });
 
+test("a changed external form owner rebinds reset synchronization", async ({ page }) => {
+  const external = page.getByLabel("External note");
+  await external.fill("changed outside");
+  await page.getByRole("button", { name: "Move to alternate form" }).click();
+  await expect(external).toHaveAttribute("form", "alternate-form");
+
+  await page.getByRole("button", { name: "Reset form" }).click();
+  await expect(external).toHaveValue("changed outside");
+
+  await page.getByRole("button", { name: "Reset alternate form" }).click();
+  await expect(external).toHaveValue("outside the form tree");
+  expect(await json(page.getByTestId("model-state"))).toMatchObject({
+    externalNote: "outside the form tree",
+  });
+});
+
 test("required input and committed combobox key participate in native validation", async ({
   page,
 }) => {

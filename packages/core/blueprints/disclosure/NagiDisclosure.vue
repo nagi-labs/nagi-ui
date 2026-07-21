@@ -29,31 +29,31 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 <style scoped>
 .nagi-disclosure {
   max-inline-size: 36rem;
-  border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-  border-radius: var(--nagi-radius-control, 0.55rem);
-  background: var(--nagi-color-surface, #fff);
-  color: var(--nagi-color-text, #17323b);
+  border: 1px solid var(--nagi-color-border-muted);
+  border-radius: var(--nagi-radius-control);
+  background: var(--nagi-color-surface);
+  color: var(--nagi-color-text);
 
   > .summary {
-    padding: var(--nagi-space-control, 0.5rem 0.75rem);
+    padding: var(--nagi-space-control);
     font-weight: 650;
     cursor: pointer;
 
     &[aria-disabled="true"] {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
 
     &:focus-visible {
       outline: none;
-      border-radius: var(--nagi-radius-control, 0.55rem);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-radius: var(--nagi-radius-control);
+      box-shadow: var(--nagi-shadow-focus);
     }
   }
 
   > .section {
     padding: 0 0.75rem 0.75rem;
-    color: var(--nagi-color-text-muted, #50676f);
+    color: var(--nagi-color-text-muted);
   }
 }
 </style>

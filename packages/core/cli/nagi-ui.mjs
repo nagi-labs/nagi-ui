@@ -10,6 +10,7 @@ import { createDiffCommand } from "./commands/diff.mjs"
 import { createListCommand } from "./commands/list.mjs"
 import { createOwnCommand } from "./commands/own.mjs"
 import { createSetupCommand } from "./commands/setup.mjs"
+import { createThemeCommand } from "./commands/theme.mjs"
 import { packageVersion } from "./ownership.mjs"
 
 export {
@@ -25,6 +26,7 @@ export {
   setupProject,
   validateSetupOptions,
 } from "./setup.mjs"
+export { checkThemeFiles } from "./theme.mjs"
 
 const localPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
@@ -54,6 +56,7 @@ export function createNagiCommand({
       list: createListCommand(context),
       own: createOwnCommand(context),
       diff: createDiffCommand(context),
+      theme: createThemeCommand(context),
     },
   })
 }

@@ -50,13 +50,13 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
   > .button {
     display: grid;
     grid-template-columns: 1rem minmax(0, 1fr) auto;
-    gap: var(--nagi-space-item-gap, 0.55rem);
+    gap: var(--nagi-space-item-gap);
     align-items: center;
     inline-size: 100%;
-    min-block-size: var(--nagi-size-control, 2rem);
-    padding: var(--nagi-space-item, 0.35rem 0.55rem);
+    min-block-size: var(--nagi-size-control);
+    padding: var(--nagi-space-item);
     border: 0;
-    border-radius: var(--nagi-radius-item, 0.4rem);
+    border-radius: var(--nagi-radius-item);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -65,23 +65,23 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
 
     &[data-active],
     &[aria-expanded="true"] {
-      background: var(--nagi-color-surface-active, #e5f1f4);
-      outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+      background: var(--nagi-color-surface-active);
+      outline: 2px solid var(--nagi-color-focus-ring);
       outline-offset: -2px;
     }
 
     &[aria-disabled="true"] {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
 
     > .icon {
-      color: var(--nagi-color-accent, #16768b);
-      font-size: var(--nagi-font-size-icon, 0.78rem);
+      color: var(--nagi-color-accent);
+      font-size: var(--nagi-font-size-icon);
       text-align: center;
 
       &.-submenu {
-        color: var(--nagi-color-text-muted, #50676f);
+        color: var(--nagi-color-text-muted);
         font-size: 0.75rem;
       }
     }
@@ -94,13 +94,13 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
   > .list {
     min-inline-size: 12rem;
     margin: 0;
-    padding: var(--nagi-space-surface-inset, 0.4rem);
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-overlay, 0.65rem);
+    padding: var(--nagi-space-surface-inset);
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-overlay);
     outline: none;
-    background: var(--nagi-color-surface, #fff);
-    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
-    color: var(--nagi-color-text, #17323b);
+    background: var(--nagi-color-surface);
+    box-shadow: var(--nagi-shadow-overlay);
+    color: var(--nagi-color-text);
     list-style: none;
     opacity: 0;
     transform: translateX(-0.25rem) scale(0.98);

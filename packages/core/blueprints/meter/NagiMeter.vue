@@ -48,19 +48,19 @@ const labelId = `${generatedId}-label`;
 .nagi-meter {
   display: grid;
   gap: 0.35rem;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
   font: inherit;
 
   > .label {
-    color: var(--nagi-color-text-muted, #50676f);
-    font-size: var(--nagi-font-size-label, 0.72rem);
+    color: var(--nagi-color-text-muted);
+    font-size: var(--nagi-font-size-label);
     font-weight: 650;
   }
 
   > .meter {
     inline-size: 100%;
     block-size: 0.65rem;
-    accent-color: var(--nagi-color-accent, #16768b);
+    accent-color: var(--nagi-color-accent);
   }
 }
 </style>

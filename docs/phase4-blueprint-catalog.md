@@ -51,7 +51,8 @@ they do not reopen Phase 4 or justify copying another suite's catalog.
 - no Teleport, custom focus trap, `asChild`, render prop, or pass-through prop;
 - all relationships remain native attributes emitted by the existing core;
 - package use and `own` copy the same raw SFC;
-- theme references keep literal fallbacks and pass theme parity checks;
+- theme references contain no literal fallbacks; the required manifest,
+  default theme and Blueprint vocabulary pass coverage checks;
 - each new source is registered in `/components` and the ownership CLI.
 
 ## Completion criteria

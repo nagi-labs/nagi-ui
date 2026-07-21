@@ -39,30 +39,30 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
 <style scoped>
 .nagi-popover {
   display: inline-block;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
 
   > .button {
-    min-block-size: var(--nagi-size-control, 2rem);
-    padding: var(--nagi-space-control, 0.5rem 0.75rem);
-    border: 1px solid var(--nagi-color-border, #b9cbd1);
-    border-radius: var(--nagi-radius-control, 0.55rem);
-    background: var(--nagi-color-surface, #fff);
+    min-block-size: var(--nagi-size-control);
+    padding: var(--nagi-space-control);
+    border: 1px solid var(--nagi-color-border);
+    border-radius: var(--nagi-radius-control);
+    background: var(--nagi-color-surface);
     color: inherit;
     font: inherit;
     cursor: pointer;
 
     &:hover {
-      background: var(--nagi-color-surface-active, #e5f1f4);
+      background: var(--nagi-color-surface-active);
     }
 
     &:focus-visible {
       outline: none;
-      border-color: var(--nagi-color-focus-ring, #75adba);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-color: var(--nagi-color-focus-ring);
+      box-shadow: var(--nagi-shadow-focus);
     }
 
     &:disabled {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
   }
@@ -71,11 +71,11 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
     max-inline-size: 24rem;
     margin: 0;
     padding: 0.75rem 1rem;
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-overlay, 0.65rem);
-    background: var(--nagi-color-surface, #fff);
-    color: var(--nagi-color-text, #17323b);
-    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-overlay);
+    background: var(--nagi-color-surface);
+    color: var(--nagi-color-text);
+    box-shadow: var(--nagi-shadow-overlay);
     opacity: 0;
     translate: 0 -0.35rem;
     transition:

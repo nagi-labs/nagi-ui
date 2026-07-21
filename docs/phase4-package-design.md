@@ -8,7 +8,7 @@ CHARTER §0 / §3 の package-first を実装が追い越す。完了時に次�
 
 ```ts
 import { DropdownMenu, Listbox, Combobox } from "@nagi-labs/nagi-ui/components"
-import "@nagi-labs/nagi-ui/theme.css"
+import "@nagi-labs/nagi-ui/default-theme.css"
 ```
 
 blueprints は単一ソースのまま(package build と own コピー元の分岐を作らない)。
@@ -36,7 +36,7 @@ packages/core/
   src/            ← composable 層。CSS を一切含まない(§3 の不変条件は layer 単位)
   blueprints/     ← component 層。SFC(scoped CSS 込み)
   components.ts   ← "/components" entry(SFC の named re-export のみ)
-  theme/theme.css ← token 定義
+  theme/default-theme.css ← 完全な既定 token 定義
 ```
 
 exports map:
@@ -45,7 +45,8 @@ exports map:
 {
   ".": "./src/index.ts",              // composables のみ(現状維持)
   "./components": "./components.ts",  // blueprint SFC の named re-export
-  "./theme.css": "./theme/theme.css",
+  "./default-theme.css": "./theme/default-theme.css",
+  "./theme.css": "./theme/default-theme.css", // compatibility alias
   "./blueprints/*": "./blueprints/*"  // own コマンドと direct import 用
 }
 ```
@@ -99,12 +100,13 @@ component 側に残り、色相以外のリブランドが component 編集に�
    コントラストが利用者の責任になる。妥当性の機械検証は Phase 3.5 の axe suite が
    担う(themed playground を axe に通す)。命名でも対を意識し、対にならない
    飾り色を背景役割として token 化しない。
-4. **fallback 必須 + parity test。** blueprint 側は常に
-   `var(--nagi-color-text, #17323b)` の形で参照し、`theme.css` 未 import でも現行表示と
-   同一に保つ(theme は純粋な opt-in)。fallback literal と `theme.css` の既定値の
-   drift は、両者を parse して一致を検査する unit test で機械的に防ぐ。
+4. **fallback 禁止 + coverage test。** blueprint 側は常に
+   `var(--nagi-color-text)` の形で参照する。既定値は `default-theme.css` だけに置き、
+   theme 未導入や不完全な replacement theme を見た目の fallback で隠さない。manifest・
+   default theme・Blueprint参照語彙の一致を unit test で検査し、replacement theme は
+   `nagi-ui theme check`、実 cascade は明示的な dev warning で不足を検出する。
 5. **token は ownership を生き延びる。** own した SFC も `var()` 参照を保持したまま
-   コピーされるため、**ブランド変更は ownership 後も theme.css 一枚で全 component に
+   コピーされるため、**ブランド変更は ownership 後も default theme + override 一式で全 component に
    届く**。owned component が theme から切り離されるのは利用者が var() を消した時
    だけで、それは意図的な離脱である。
 6. **token は package の public API である。** package-first の帰結として、token 名は
@@ -123,8 +125,8 @@ component 側に残り、色相以外のリブランドが component 編集に�
    (例: muted 系灰色が現在 #667d84 / #5d7279 / #50676f / #526970 の 4 種混在 →
    1〜2 役割へ正規化。これは事実上の色の棚卸しでもある)
 4. 文法(原理 2)で命名し、背景役割は文字対(原理 3)を確認する
-5. blueprint を fallback 付き `var()` へ置換、`theme.css` に既定値を定義、
-   parity test を追加する
+5. blueprint を fallback なしの `var()` へ置換、`default-theme.css` に既定値を定義し、
+   manifest / default / 参照語彙の coverage test を追加する
 
 目安は 16〜25 個。現行の反復値からは
 color(text / text-muted / text-disabled / accent / surface / surface-active /
@@ -152,7 +154,7 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 - `git mv blueprints packages/core/blueprints` + 参照更新(playground labs、tests、
   `.sandbox/nagi.config.mjs`、`eslint.nagi.config.mjs`、docs のパス)
 - `src/components.ts` 新設、`package.json` exports / files / sideEffects 更新
-- blueprint CSS の token 置換 + `theme/theme.css` 新設
+- blueprint CSS の token 置換 + `theme/default-theme.css` 新設
 - playground labs の import を相対パスから `@nagi-labs/nagi-ui/components` へ切替
   (**playground が package 消費経路の実証になる**)
 
@@ -162,7 +164,8 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 2. browser suite 28/28 が green のまま(labs は package 経由 import に切替済みの状態で)
 3. theme 実証: playground に token を数個上書きする「themed」セクションを追加し、
    **ownership なしでブランド変更が完了する**ことを axe 込みで確認(Button 実験の前哨)
-4. `theme.css` 未 import の label(既存 labs)が現行表示と同一であること(fallback 検証)
+4. default theme 未 import / 不完全 replacement theme の token 不足を CLI と明示的な
+   dev diagnostic が列挙すること
 
 ## 決定事項(2026-07-18 レビュー確定)
 
@@ -195,10 +198,10 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 - **原理 1 をそのまま適用した結果、`danger`(menu のみ)と `separator`(menu のみ)は
   token 化していない。** どちらも第 2 の使用 component(Button 実験、将来の
   ContextMenu 等)が現れた時点での昇格第一候補
-- fallback ↔ theme.css の parity は `tests/theme-parity.test.ts` が機械検証する
-  (全 token が使用されていること・fallback 欠落が無いことも含む)
+- manifest ↔ default theme ↔ Blueprint参照語彙の parity と、Blueprint fallback 不在は
+  `tests/theme-parity.test.ts` が機械検証する
 - playground は package 消費経路の実証に切替済み(labs は
-  `@nagi-labs/nagi-ui/components` を import、`/dropdown.html` は `theme.css` を読み、
+  `@nagi-labs/nagi-ui/components` を import、全 component lab は `default-theme.css` を読み、
   「Themed」セクションが token 上書きだけのブランド変更を実演。popover は
   Teleport されないため custom property が開いた menu tree へそのまま継承される)
 - 検証: unit 89/89(parity 3 件含む)、typecheck、`test:integration`、
@@ -211,6 +214,15 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 foregroundとaccent / positive / warning / danger surfaceの6 roleを追加し、現在は
 28 token。値が一致する`surface-accent`と`surface-active`も役割が異なるため統合せず、
 theme public API上で別名を維持する。詳細は`docs/phase4-blueprint-catalog.md`。
+
+### Theme contract revision (2026-07-21)
+
+初期実装の「各 `var()` に literal fallback を持たせて theme import を optional にする」
+方針は廃止した。fallback は欠落 token を視覚上だけ埋め、custom theme の不完全さを出荷前に
+発見しにくくするためである。現在は `default-theme.css` を明示 import する。完全置換を選ぶ
+場合は `nagi-ui theme check` を CI gate にし、必要なら
+`warnMissingNagiThemeTokens()` で実 cascade を開発時に検査する。旧 `/theme.css` export は
+互換 alias として同じ既定ファイルを指すが、正規名ではない。
 
 ## Release invariant
 

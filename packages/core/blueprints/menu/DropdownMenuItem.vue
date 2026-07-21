@@ -171,8 +171,8 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     > .text {
       &.-category {
         padding: 0.35rem 0.6rem 0.25rem;
-        color: var(--nagi-color-text-muted, #50676f);
-        font-size: var(--nagi-font-size-label, 0.72rem);
+        color: var(--nagi-color-text-muted);
+        font-size: var(--nagi-font-size-label);
         font-weight: 750;
         letter-spacing: 0.05em;
         text-transform: uppercase;
@@ -189,13 +189,13 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
           > .button {
             display: grid;
             grid-template-columns: 1rem minmax(0, 1fr) auto;
-            gap: var(--nagi-space-item-gap, 0.55rem);
+            gap: var(--nagi-space-item-gap);
             align-items: center;
             inline-size: 100%;
-            min-block-size: var(--nagi-size-control, 2rem);
-            padding: var(--nagi-space-item, 0.35rem 0.55rem);
+            min-block-size: var(--nagi-size-control);
+            padding: var(--nagi-space-item);
             border: 0;
-            border-radius: var(--nagi-radius-item, 0.4rem);
+            border-radius: var(--nagi-radius-item);
             background: transparent;
             color: inherit;
             font: inherit;
@@ -203,13 +203,13 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
             cursor: pointer;
 
             &[data-active] {
-              background: var(--nagi-color-surface-active, #e5f1f4);
-              outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+              background: var(--nagi-color-surface-active);
+              outline: 2px solid var(--nagi-color-focus-ring);
               outline-offset: -2px;
             }
 
             &[aria-disabled="true"] {
-              color: var(--nagi-color-text-disabled, #91a1a6);
+              color: var(--nagi-color-text-disabled);
               cursor: not-allowed;
             }
 
@@ -220,8 +220,8 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
             }
 
             > .icon {
-              color: var(--nagi-color-accent, #16768b);
-              font-size: var(--nagi-font-size-icon, 0.78rem);
+              color: var(--nagi-color-accent);
+              font-size: var(--nagi-font-size-icon);
               text-align: center;
 
               &.-dot {
@@ -238,13 +238,13 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
   > .link {
     display: grid;
     grid-template-columns: 1rem minmax(0, 1fr) auto;
-    gap: var(--nagi-space-item-gap, 0.55rem);
+    gap: var(--nagi-space-item-gap);
     align-items: center;
     inline-size: 100%;
-    min-block-size: var(--nagi-size-control, 2rem);
-    padding: var(--nagi-space-item, 0.35rem 0.55rem);
+    min-block-size: var(--nagi-size-control);
+    padding: var(--nagi-space-item);
     border: 0;
-    border-radius: var(--nagi-radius-item, 0.4rem);
+    border-radius: var(--nagi-radius-item);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -253,13 +253,13 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     cursor: pointer;
 
     &[data-active] {
-      background: var(--nagi-color-surface-active, #e5f1f4);
-      outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+      background: var(--nagi-color-surface-active);
+      outline: 2px solid var(--nagi-color-focus-ring);
       outline-offset: -2px;
     }
 
     &[aria-disabled="true"] {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
 
@@ -270,12 +270,12 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     }
 
     &.-danger {
-      color: var(--nagi-color-danger, #aa3443);
+      color: var(--nagi-color-danger);
     }
 
     > .icon {
-      color: var(--nagi-color-accent, #16768b);
-      font-size: var(--nagi-font-size-icon, 0.78rem);
+      color: var(--nagi-color-accent);
+      font-size: var(--nagi-font-size-icon);
       text-align: center;
 
       &.-dot {
@@ -285,7 +285,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
 
     > .text {
       &.-shortcut {
-        color: var(--nagi-color-text-muted, #50676f);
+        color: var(--nagi-color-text-muted);
         font-size: 0.75rem;
       }
     }

@@ -6,7 +6,8 @@
     ".": "./src/index.ts",
     "./components": "./components.ts",
     "./nagi-css-preset": "./nagi-css-preset.mjs",
-    "./theme.css": "./theme/theme.css",
+    "./default-theme.css": "./theme/default-theme.css",
+    "./theme.css": "./theme/default-theme.css",
     "./blueprints/*": "./blueprints/*",
     "./package.json": "./package.json"
   },

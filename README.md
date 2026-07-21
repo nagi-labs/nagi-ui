@@ -18,7 +18,7 @@ learning lands.
 
 - `packages/core` — `@nagi-labs/nagi-ui`. `.` exports the composable layer
   (ships no CSS); `./components` exports the Blueprint SFCs;
-  `./theme.css` supplies the semantic tokens.
+  `./default-theme.css` supplies the complete semantic-token defaults.
 - `packages/core/blueprints/` — canonical SFCs, distributed as raw source:
   the same files serve package consumption and on-demand source ownership;
   see [`docs/package-ownership-model.md`](docs/package-ownership-model.md).
@@ -70,8 +70,21 @@ import {
   Toast,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components"
-import "@nagi-labs/nagi-ui/theme.css"
+import "@nagi-labs/nagi-ui/default-theme.css"
 ```
+
+Blueprint CSS contains no token fallback. Import the default theme and override
+only the roles you need, or provide a complete replacement theme and gate it in
+CI:
+
+```sh
+vp exec nagi-ui theme check src/styles/nagi-theme.css
+```
+
+For an explicit development-time cascade check, call
+`warnMissingNagiThemeTokens(document.documentElement)`. Nagi UI does not install
+a production observer automatically. `./theme.css` remains a compatibility
+alias, but new code should use `./default-theme.css`.
 
 The component catalog runs at `/catalog.html`; native form controls and the
 strengthened Combobox run at `/forms.html`; the Alignment D Tabs matrix runs at

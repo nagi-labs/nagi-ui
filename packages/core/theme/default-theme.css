@@ -2,10 +2,9 @@
  * Nagi UI default theme — semantic tokens (CHARTER §3,
  * docs/phase4-package-design.md).
  *
- * Importing this file is optional: every shipped Blueprint carries the same
- * values as var() fallbacks, so components render identically without it.
- * Token names are public API, versioned with the components; values here must
- * stay equal to the blueprint fallbacks (enforced by tests/theme-parity.test.ts).
+ * Blueprints intentionally do not embed fallback values. Import this file for
+ * the complete default appearance, or provide every required token in a
+ * custom theme and validate it with `nagi-ui theme check`.
  */
 :root {
   --nagi-color-accent: #16768b;

@@ -45,22 +45,22 @@ const menu = useMenu<DropdownMenuEntry>({
       display: inline-flex;
       gap: 0.5rem;
       align-items: center;
-      padding: var(--nagi-space-control, 0.5rem 0.75rem);
-      border: 1px solid var(--nagi-color-border, #b9cbd1);
-      border-radius: var(--nagi-radius-control, 0.55rem);
-      background: var(--nagi-color-surface, #fff);
-      color: var(--nagi-color-text, #17323b);
+      padding: var(--nagi-space-control);
+      border: 1px solid var(--nagi-color-border);
+      border-radius: var(--nagi-radius-control);
+      background: var(--nagi-color-surface);
+      color: var(--nagi-color-text);
       font: inherit;
       font-weight: 650;
       cursor: pointer;
 
       &:hover,
       &[aria-expanded="true"] {
-        background: var(--nagi-color-surface-active, #e5f1f4);
+        background: var(--nagi-color-surface-active);
       }
 
       > .icon {
-        color: var(--nagi-color-text-muted, #50676f);
+        color: var(--nagi-color-text-muted);
         line-height: 1;
       }
     }
@@ -69,13 +69,13 @@ const menu = useMenu<DropdownMenuEntry>({
   > .list {
     min-inline-size: 16rem;
     margin: 0;
-    padding: var(--nagi-space-surface-inset, 0.4rem);
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-overlay, 0.65rem);
+    padding: var(--nagi-space-surface-inset);
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-overlay);
     outline: none;
-    background: var(--nagi-color-surface, #fff);
-    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
-    color: var(--nagi-color-text, #17323b);
+    background: var(--nagi-color-surface);
+    box-shadow: var(--nagi-shadow-overlay);
+    color: var(--nagi-color-text);
     list-style: none;
     opacity: 0;
     transform: translateY(-0.35rem) scale(0.98);

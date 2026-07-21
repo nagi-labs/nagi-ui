@@ -24,10 +24,10 @@ withDefaults(
 .nagi-fieldset {
   min-inline-size: 0;
   padding: 0.75rem;
-  border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-  border-radius: var(--nagi-radius-control, 0.55rem);
-  background: var(--nagi-color-surface, #fff);
-  color: var(--nagi-color-text, #17323b);
+  border: 1px solid var(--nagi-color-border-muted);
+  border-radius: var(--nagi-radius-control);
+  background: var(--nagi-color-surface);
+  color: var(--nagi-color-text);
 
   > .legend {
     padding-inline: 0.25rem;
@@ -36,12 +36,12 @@ withDefaults(
 
   > .zone {
     display: grid;
-    gap: var(--nagi-space-item-gap, 0.55rem);
+    gap: var(--nagi-space-item-gap);
   }
 
   &:disabled {
     > .legend {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
     }
   }
 }

@@ -11,7 +11,7 @@ Nagi UI の完成形は「PrimeVue の導入体験 + shadcn の所有権」で�
 
 ```ts
 import { DropdownMenu, Listbox } from "@nagi-labs/nagi-ui/components"
-import "@nagi-labs/nagi-ui/theme.css"
+import "@nagi-labs/nagi-ui/default-theme.css"
 ```
 
 ```sh
@@ -93,6 +93,36 @@ metadata形式は Phase 4 slice 2 の実装検証を経て次の形へ**固定�
 
 `nagi-ui own` がコピー時に刻印し、`nagi-ui diff` が clean / modified / drifted /
 unknown-source を判定して CI gate に使える exit code を返す。
+
+## 次の ownership slice: `vue` / `all`
+
+Status: **設計固定、未実装** (2026-07-21)。reset / theme 契約の変更とは分離して実装する。
+
+behavior を小さな composable に隠しても、所有者が必要な層だけを選べるようにする。ただし
+初期 surface は利用頻度が高い次の2段に絞り、`composable-only` は実需要が観測されるまで
+出荷しない。
+
+- `own <component> --layer vue`: SFC と component-local な schema / style をコピーする。
+  behavior は package 版を使い続ける
+- `own <component> --layer all`: 上記に加え、その component の behavior dependency closure
+  をコピーする
+
+owned SFC の import を昇格時に機械書換えしてはならない。`vue` ownership の時点で、SFC は
+生成された component-local routing module（例: `behavior.ts`）だけを import する。
+`behavior.ts` は最初は package composable を1行 re-exportし、`vue` → `all` の昇格時は
+owned composable を re-exportする内容へ置き換える。したがって利用者が編集済みの `.vue`
+には触れず、変更は生成ファイルだけに閉じる。
+
+canonical SFC / composable と routing module は同じ provenance 単位として扱わない。前者は
+upstream diff の対象、後者は layer から決定的に再生成できる adapter である。sidecar の
+`nagi.lock.json` に少なくとも component、layer、package version、source path、各 source の
+SHA-256を記録する。hash は「何をコピーしたか」の照合には使えるが、3-way merge の base
+本文を復元できない。exact package source の取得または base snapshot を別途設計するまで、
+既存の「`own` 直後に即コミットして git 履歴を base にする」手順は必須のままとする。
+
+この構造は `composable-only` の将来追加を妨げない。自分でDOMを書くが標準 behavior で
+よい利用者は package composable を直接 import できるため、先に3層目を出して CLI・dependency
+closure・test matrix を増やさない。
 
 ## 狙いが外れるパターン
 

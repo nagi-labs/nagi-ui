@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, useAttrs, watchEffect } from "vue";
+import { ref, useAttrs } from "vue";
 
-import { useNativeFormReset } from "@nagi-labs/nagi-ui";
+import { useNativeCheckboxControl } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -25,27 +25,8 @@ const checked = defineModel<boolean>({ default: false });
 const indeterminate = defineModel<boolean>("indeterminate", { default: false });
 const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
-const initialChecked = checked.value;
-const initialIndeterminate = indeterminate.value;
 
-watchEffect(() => {
-  if (input.value) input.value.indeterminate = indeterminate.value;
-});
-
-function handleChange() {
-  if (indeterminate.value) indeterminate.value = false;
-}
-
-useNativeFormReset(
-  input,
-  (control) => {
-    checked.value = initialChecked;
-    indeterminate.value = initialIndeterminate;
-    control.checked = initialChecked;
-    control.indeterminate = initialIndeterminate;
-  },
-  () => props.form,
-);
+useNativeCheckboxControl(input, checked, indeterminate);
 </script>
 
 <template>
@@ -61,7 +42,6 @@ useNativeFormReset(
       :value="value"
       :disabled="disabled"
       :required="required"
-      @change="handleChange"
     />
     <span class="zone">{{ label }}</span>
   </label>
@@ -70,14 +50,14 @@ useNativeFormReset(
 <style scoped>
 .nagi-checkbox {
   display: inline-flex;
-  gap: var(--nagi-space-item-gap, 0.55rem);
+  gap: var(--nagi-space-item-gap);
   align-items: flex-start;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
   cursor: pointer;
 
   &:has(> .input:disabled) {
     > .zone {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
   }
@@ -86,12 +66,12 @@ useNativeFormReset(
     inline-size: 1.1rem;
     block-size: 1.1rem;
     margin: 0.12rem 0 0;
-    accent-color: var(--nagi-color-accent, #16768b);
+    accent-color: var(--nagi-color-accent);
     cursor: pointer;
 
     &:focus-visible {
       outline: none;
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      box-shadow: var(--nagi-shadow-focus);
     }
 
     &:disabled {
@@ -100,7 +80,7 @@ useNativeFormReset(
 
     &:user-invalid,
     &[aria-invalid="true"] {
-      outline: 1px solid var(--nagi-color-danger, #aa3443);
+      outline: 1px solid var(--nagi-color-danger);
       outline-offset: 1px;
     }
 

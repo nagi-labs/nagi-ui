@@ -1,4 +1,4 @@
-import "@nagi-labs/nagi-ui/theme.css";
+import "@nagi-labs/nagi-ui/default-theme.css";
 
 import { createApp } from "vue";
 

@@ -5,6 +5,8 @@
  * root classes mirror the raw SFC sources; declared default slots are the only
  * places where consumer-owned markup can resume a styled sub-surface.
  */
+export { nagiThemeTokens as nagiUiThemeTokens } from "./theme/tokens.mjs"
+
 export const nagiUiComponentClasses = {
   Alert: "alert",
   Badge: "badge",

@@ -102,7 +102,19 @@ export {
   type UseComboboxOptions,
   type UseComboboxReturn,
 } from "./combobox.ts"
-export { useNativeFormReset } from "./native-form.ts"
+export {
+  useNativeCheckedReset,
+  useNativeCheckboxControl,
+  useNativeFormReset,
+  useNativeNumberReset,
+  useNativeRadioReset,
+  useNativeValueReset,
+} from "./native-form.ts"
+export {
+  missingNagiThemeTokens,
+  requiredNagiThemeTokens,
+  warnMissingNagiThemeTokens,
+} from "./theme.ts"
 export {
   mergeNagiProps,
   NagiPropConflictError,

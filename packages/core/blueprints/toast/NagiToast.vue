@@ -169,7 +169,7 @@ defineExpose({
 
     > .list {
       display: grid;
-      gap: var(--nagi-space-item-gap, 0.55rem);
+      gap: var(--nagi-space-item-gap);
       min-inline-size: min(22rem, calc(100vi - 2rem));
       margin: 0;
       padding: 0;
@@ -178,14 +178,14 @@ defineExpose({
       > .item {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: var(--nagi-space-item-gap, 0.55rem);
+        gap: var(--nagi-space-item-gap);
         align-items: center;
         padding: 0.65rem 0.75rem;
-        border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-        border-radius: var(--nagi-radius-overlay, 0.65rem);
-        background: var(--nagi-color-surface, #fff);
-        color: var(--nagi-color-text, #17323b);
-        box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
+        border: 1px solid var(--nagi-color-border-muted);
+        border-radius: var(--nagi-radius-overlay);
+        background: var(--nagi-color-surface);
+        color: var(--nagi-color-text);
+        box-shadow: var(--nagi-shadow-overlay);
 
         > .title {
           grid-column: 1;
@@ -198,7 +198,7 @@ defineExpose({
           grid-column: 1;
           min-inline-size: 0;
           margin: 0;
-          color: var(--nagi-color-text-muted, #50676f);
+          color: var(--nagi-color-text-muted);
           font-size: 0.875rem;
         }
 
@@ -213,7 +213,7 @@ defineExpose({
             min-block-size: 1.75rem;
             padding-inline: 0.45rem;
             border: 0;
-            border-radius: var(--nagi-radius-item, 0.4rem);
+            border-radius: var(--nagi-radius-item);
             background: transparent;
             color: inherit;
             font: inherit;
@@ -224,12 +224,12 @@ defineExpose({
             }
 
             &:focus-visible {
-              outline: 2px solid var(--nagi-color-focus-ring, #75adba);
+              outline: 2px solid var(--nagi-color-focus-ring);
               outline-offset: 1px;
             }
 
             &.-action {
-              color: var(--nagi-color-accent, #16768b);
+              color: var(--nagi-color-accent);
               font-weight: 700;
             }
 
@@ -242,23 +242,23 @@ defineExpose({
         }
 
         &.-accent {
-          border-color: var(--nagi-color-accent, #16768b);
-          background: var(--nagi-color-surface-accent, #e5f1f4);
+          border-color: var(--nagi-color-accent);
+          background: var(--nagi-color-surface-accent);
         }
 
         &.-positive {
-          border-color: var(--nagi-color-success, #18794e);
-          background: var(--nagi-color-surface-success, #e7f5ed);
+          border-color: var(--nagi-color-success);
+          background: var(--nagi-color-surface-success);
         }
 
         &.-warning {
-          border-color: var(--nagi-color-warning, #8a5a00);
-          background: var(--nagi-color-surface-warning, #fff4d6);
+          border-color: var(--nagi-color-warning);
+          background: var(--nagi-color-surface-warning);
         }
 
         &.-danger {
-          border-color: var(--nagi-color-danger, #aa3443);
-          background: var(--nagi-color-surface-danger, #fbeaec);
+          border-color: var(--nagi-color-danger);
+          background: var(--nagi-color-surface-danger);
         }
       }
     }

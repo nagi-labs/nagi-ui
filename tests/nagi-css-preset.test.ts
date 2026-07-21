@@ -6,7 +6,9 @@ import test from "node:test";
 import preset, {
   nagiUiComponentClasses,
   nagiUiComponentSlots,
+  nagiUiThemeTokens,
 } from "../packages/core/nagi-css-preset.mjs";
+import { requiredNagiThemeTokens } from "../packages/core/src/index.ts";
 
 const repo = path.join(import.meta.dirname, "..");
 
@@ -20,6 +22,7 @@ test("Nagi CSS preset covers every package component export", () => {
   assert.deepEqual(Object.keys(nagiUiComponentClasses).sort(), exportedComponents);
   assert.equal(preset.componentClasses, nagiUiComponentClasses);
   assert.equal(preset.componentSlots, nagiUiComponentSlots);
+  assert.equal(nagiUiThemeTokens, requiredNagiThemeTokens);
 });
 
 test("declared slot surfaces stay inside their component boundary prefix", () => {

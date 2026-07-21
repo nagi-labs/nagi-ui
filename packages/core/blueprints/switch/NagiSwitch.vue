@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useAttrs } from "vue";
 
-import { useNativeFormReset } from "@nagi-labs/nagi-ui";
+import { useNativeCheckedReset } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -24,16 +24,8 @@ const props = withDefaults(
 const checked = defineModel<boolean>({ default: false });
 const attrs = useAttrs();
 const input = ref<HTMLInputElement | null>(null);
-const initialChecked = checked.value;
 
-useNativeFormReset(
-  input,
-  (control) => {
-    checked.value = initialChecked;
-    control.checked = initialChecked;
-  },
-  () => props.form,
-);
+useNativeCheckedReset(input, checked);
 </script>
 
 <template>
@@ -58,14 +50,14 @@ useNativeFormReset(
 <style scoped>
 .nagi-switch {
   display: inline-flex;
-  gap: var(--nagi-space-item-gap, 0.55rem);
+  gap: var(--nagi-space-item-gap);
   align-items: center;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
   cursor: pointer;
 
   &:has(> .input:disabled) {
     > .zone {
-      color: var(--nagi-color-text-disabled, #91a1a6);
+      color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
   }
@@ -76,41 +68,41 @@ useNativeFormReset(
     inline-size: 2.5rem;
     block-size: 1.4rem;
     margin: 0;
-    border: 1px solid var(--nagi-color-border, #b9cbd1);
+    border: 1px solid var(--nagi-color-border);
     border-radius: 999px;
-    background-color: var(--nagi-color-border, #b9cbd1);
+    background-color: var(--nagi-color-border);
     background-image: radial-gradient(
       circle at 0.65rem 50%,
-      var(--nagi-color-surface, #fff) 0 0.45rem,
+      var(--nagi-color-surface) 0 0.45rem,
       transparent 0.48rem
     );
     cursor: pointer;
     transition: border-color 120ms ease, background-color 120ms ease;
 
     &:checked {
-      border-color: var(--nagi-color-accent, #16768b);
-      background-color: var(--nagi-color-accent, #16768b);
+      border-color: var(--nagi-color-accent);
+      background-color: var(--nagi-color-accent);
       background-image: radial-gradient(
         circle at calc(100% - 0.65rem) 50%,
-        var(--nagi-color-surface, #fff) 0 0.45rem,
+        var(--nagi-color-surface) 0 0.45rem,
         transparent 0.48rem
       );
     }
 
     &:focus-visible {
       outline: none;
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      box-shadow: var(--nagi-shadow-focus);
     }
 
     &:disabled {
-      border-color: var(--nagi-color-border-muted, #c8d8dd);
-      background-color: var(--nagi-color-text-disabled, #91a1a6);
+      border-color: var(--nagi-color-border-muted);
+      background-color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
 
     &:user-invalid,
     &[aria-invalid="true"] {
-      border-color: var(--nagi-color-danger, #aa3443);
+      border-color: var(--nagi-color-danger);
     }
 
   }

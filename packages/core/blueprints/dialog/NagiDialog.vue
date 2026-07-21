@@ -68,37 +68,37 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 <style scoped>
 .nagi-dialog {
   display: inline-block;
-  color: var(--nagi-color-text, #17323b);
+  color: var(--nagi-color-text);
 
   > .button {
-    min-block-size: var(--nagi-size-control, 2rem);
-    padding: var(--nagi-space-control, 0.5rem 0.75rem);
-    border: 1px solid var(--nagi-color-border, #b9cbd1);
-    border-radius: var(--nagi-radius-control, 0.55rem);
-    background: var(--nagi-color-surface, #fff);
+    min-block-size: var(--nagi-size-control);
+    padding: var(--nagi-space-control);
+    border: 1px solid var(--nagi-color-border);
+    border-radius: var(--nagi-radius-control);
+    background: var(--nagi-color-surface);
     color: inherit;
     font: inherit;
     cursor: pointer;
 
     &:hover {
-      background: var(--nagi-color-surface-active, #e5f1f4);
+      background: var(--nagi-color-surface-active);
     }
 
     &:focus-visible {
       outline: none;
-      border-color: var(--nagi-color-focus-ring, #75adba);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-color: var(--nagi-color-focus-ring);
+      box-shadow: var(--nagi-shadow-focus);
     }
   }
 
   > .dialog {
     inline-size: min(30rem, calc(100vi - 2rem));
     padding: 0;
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-overlay, 0.65rem);
-    background: var(--nagi-color-surface, #fff);
-    color: var(--nagi-color-text, #17323b);
-    box-shadow: var(--nagi-shadow-overlay, 0 14px 36px rgb(22 48 60 / 0.2));
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-overlay);
+    background: var(--nagi-color-surface);
+    color: var(--nagi-color-text);
+    box-shadow: var(--nagi-shadow-overlay);
 
     &::backdrop {
       background: rgb(22 48 60 / 0.45);
@@ -114,7 +114,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 
       > .text {
         margin-block: 0.35rem 0;
-        color: var(--nagi-color-text-muted, #50676f);
+        color: var(--nagi-color-text-muted);
         font-size: 0.9rem;
       }
     }
@@ -130,23 +130,23 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
       padding: 0 1rem 1rem;
 
       > .button {
-        min-block-size: var(--nagi-size-control, 2rem);
-        padding: var(--nagi-space-control, 0.5rem 0.75rem);
-        border: 1px solid var(--nagi-color-border, #b9cbd1);
-        border-radius: var(--nagi-radius-control, 0.55rem);
-        background: var(--nagi-color-surface, #fff);
+        min-block-size: var(--nagi-size-control);
+        padding: var(--nagi-space-control);
+        border: 1px solid var(--nagi-color-border);
+        border-radius: var(--nagi-radius-control);
+        background: var(--nagi-color-surface);
         color: inherit;
         font: inherit;
         cursor: pointer;
 
         &:hover {
-          background: var(--nagi-color-surface-active, #e5f1f4);
+          background: var(--nagi-color-surface-active);
         }
 
         &:focus-visible {
           outline: none;
-          border-color: var(--nagi-color-focus-ring, #75adba);
-          box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+          border-color: var(--nagi-color-focus-ring);
+          box-shadow: var(--nagi-shadow-focus);
         }
       }
     }

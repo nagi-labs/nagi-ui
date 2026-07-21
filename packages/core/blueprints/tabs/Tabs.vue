@@ -99,8 +99,8 @@ const tabs = useTabs<TabsItem>({
 <style scoped>
 .tabs {
   display: grid;
-  gap: var(--nagi-space-item-gap, 0.55rem);
-  color: var(--nagi-color-text, #17323b);
+  gap: var(--nagi-space-item-gap);
+  color: var(--nagi-color-text);
 
   &:has(> .list[aria-orientation="vertical"]) {
     grid-template-columns: minmax(9rem, max-content) minmax(0, 1fr);
@@ -111,19 +111,19 @@ const tabs = useTabs<TabsItem>({
     display: flex;
     gap: 0.25rem;
     padding: 0.25rem;
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-control, 0.55rem);
-    background: var(--nagi-color-surface, #fff);
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-control);
+    background: var(--nagi-color-surface);
 
     &[aria-orientation="vertical"] {
       flex-direction: column;
     }
 
     > .button {
-      min-block-size: var(--nagi-size-control, 2rem);
-      padding: var(--nagi-space-control, 0.5rem 0.75rem);
+      min-block-size: var(--nagi-size-control);
+      padding: var(--nagi-space-control);
       border: 1px solid transparent;
-      border-radius: var(--nagi-radius-item, 0.4rem);
+      border-radius: var(--nagi-radius-item);
       background: transparent;
       color: inherit;
       font: inherit;
@@ -132,23 +132,23 @@ const tabs = useTabs<TabsItem>({
       cursor: pointer;
 
       &:hover:not(:disabled) {
-        background: var(--nagi-color-surface-active, #e5f1f4);
+        background: var(--nagi-color-surface-active);
       }
 
       &[aria-selected="true"] {
-        border-color: var(--nagi-color-accent, #16768b);
-        background: var(--nagi-color-surface-accent, #e5f1f4);
-        color: var(--nagi-color-accent, #16768b);
+        border-color: var(--nagi-color-accent);
+        background: var(--nagi-color-surface-accent);
+        color: var(--nagi-color-accent);
       }
 
       &:focus-visible {
         outline: none;
-        border-color: var(--nagi-color-focus-ring, #75adba);
-        box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+        border-color: var(--nagi-color-focus-ring);
+        box-shadow: var(--nagi-shadow-focus);
       }
 
       &:disabled {
-        color: var(--nagi-color-text-disabled, #91a1a6);
+        color: var(--nagi-color-text-disabled);
         cursor: not-allowed;
       }
     }
@@ -156,21 +156,21 @@ const tabs = useTabs<TabsItem>({
 
   > .section {
     min-block-size: 7rem;
-    padding: var(--nagi-space-surface-inset, 0.4rem);
-    border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
-    border-radius: var(--nagi-radius-overlay, 0.65rem);
+    padding: var(--nagi-space-surface-inset);
+    border: 1px solid var(--nagi-color-border-muted);
+    border-radius: var(--nagi-radius-overlay);
     outline: none;
-    background: var(--nagi-color-surface, #fff);
+    background: var(--nagi-color-surface);
 
     &:focus-visible {
-      border-color: var(--nagi-color-focus-ring, #75adba);
-      box-shadow: var(--nagi-shadow-focus, 0 0 0 2px rgb(117 173 186 / 0.35));
+      border-color: var(--nagi-color-focus-ring);
+      box-shadow: var(--nagi-shadow-focus);
     }
 
     > .text {
       margin: 0;
       padding: 0.6rem;
-      color: var(--nagi-color-text-muted, #50676f);
+      color: var(--nagi-color-text-muted);
     }
   }
 }
