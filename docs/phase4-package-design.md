@@ -202,5 +202,11 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
   「Themed」セクションが token 上書きだけのブランド変更を実演。popover は
   Teleport されないため custom property が開いた menu tree へそのまま継承される)
 - 検証: unit 89/89(parity 3 件含む)、typecheck、`test:integration`、
-  `nagi-css check` clean、labs 3 種の SSR 実行 OK。browser suite(29 spec:
-  themed axe 検査を追加)はローカル実行待ち
+  `nagi-css check` clean、labs 3 種の SSR 実行 OK。browser suite は themed
+  axe 検査を含め 29/29 green(2026-07-21 実行)
+
+## Release invariant
+
+`packages/core/package.json` の version を変更した直後、tag / publish より前に
+`vp run test` を必ず実行する。CLI marker が installed version を読むため、version
+bump 下でのみ露見する fixture の直書きや ownership status の退行をここで捕捉する。

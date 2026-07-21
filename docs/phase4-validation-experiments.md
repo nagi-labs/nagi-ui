@@ -1,6 +1,6 @@
 # Phase 4 slice 3 — Package-first モデルの早期検証実験
 
-Status: In progress (2026-07-21). 実験プロトコルの定義と coding-agent アームの実行。
+Status: Coding-agent arm complete (2026-07-21). Human arm and repeated runs remain.
 
 `docs/package-ownership-model.md` の「早期検証」を実行可能なプロトコルに落とす。
 検証対象は package-first / own-on-demand モデルの 3 つの境界であり、各実験は

@@ -11,6 +11,10 @@ nagi-ui own dropdown-menu [--dir src/components/nagi] [--force]
 nagi-ui diff [--dir src/components/nagi]
 ```
 
+Available component names are `button`, `combobox`, `dialog`, `disclosure`,
+`dropdown-menu`, `listbox`, `popover`, `toast`, and `tooltip`. `nagi-ui list`
+is the machine-readable source of truth for the installed version.
+
 The binary ships with `@nagi-labs/nagi-ui` (`packages/core/cli/nagi-ui.mjs`,
 plain Node, no dependencies). Because the package distributes raw SFC source,
 `own` copies **the exact files the package itself consumes** — there is no

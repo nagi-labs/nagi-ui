@@ -57,7 +57,7 @@ PrimeVue 型の巨大な pass-through props / slot surface は作らない。「
 
 ### ownership 後の保守契約
 
-「所有可能」は「fork して取り残される」の言い換えであってはならない。owned source にはコピー元 component と version を機械可読な形で記録し、upstream diff / migration、Nagi UI lint、integration test により a11y・browser 修正を追えるようにする。`own` / `diff` の具体的 CLI と metadata 形式は Phase 4 で固定する。
+「所有可能」は「fork して取り残される」の言い換えであってはならない。owned source にはコピー元 component と version を機械可読な形で記録し、upstream diff / migration、Nagi UI lint、integration test により a11y・browser 修正を追えるようにする。`own` / `diff` と metadata 形式は Phase 4 で固定済み(`docs/phase4-ownership-cli.md`)。
 
 このモデルの成功条件・失敗パターン・検証実験は `docs/package-ownership-model.md` を正本とする。
 
@@ -351,17 +351,18 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 スライス順:
 
-1. **Package 実体化** — **完了(2026-07-18)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export、semantic token 17 個(fallback 必須 + parity test)と `theme.css` を実装。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
+1. **Package 実体化** — **完了(2026-07-18)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export、semantic token 22 個(fallback 必須 + parity test)と `theme.css` を実装。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
 2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定** — **完了(2026-07-18)**。`nagi-ui own/diff/list` を package 同梱 bin として実装し、metadata を `@nagi-source <component>/<file>@<version>`(per-file 刻印)に固定。`diff` は clean / modified / drifted / unknown-source を判定し CI gate に使える。詳細は `docs/phase4-ownership-cli.md`
 3. **早期検証実験** — **coding-agent アーム完了(2026-07-21)**。Button(theme)/ Dropdown(ownership)/ Combobox(upstream 追従)の 3 境界すべてで、無文脈 agent が誘導なしに設計意図の経路(token 上書き / own + 拡張レシピ / 3-way merge + stamp 更新)を選び PASS。副産物: CLI テストのバグ修正、`diff` の gate を `drifted` / `unknown-source` に限定、「own したら即コミット」の base 確保手順。記録は `docs/phase4-validation-experiments.md`。人間アームと反復実行は今後の課題
-4. **blueprints の拡充**(styling-only 含む全コンポーネントの Nagi CSS 準拠 SFC)、Nagi CSS linter プリセット同梱
+4. **blueprints の拡充** — **behavior-catalog sub-slice 完了(2026-07-21)**。Popover / Dialog / Tooltip / Disclosure / Toast を package component + ownable raw SFC として追加し、公開 behavior core との欠落を解消。SSR / ownership / verified-bindings / Nagi CSS / browser + axe 36/36 を検証。consumer 用 Nagi CSS preset も同梱した。styling-only catalog の実要求ベース拡充は継続。詳細は `docs/phase4-blueprint-catalog.md`
 5. §8 の制約を「Nagi UI が向かないケース」としてドキュメント化(dismiss 細粒度・ジェスチャーシート・Motion 級アニメが要件なら他ライブラリ併用を案内)、テストレシピ(Vitest browser mode / Playwright)同梱
 
 ---
 
 ## 改訂履歴
 
-- **2026-07-18** Phase 4 slice 1–2 完了。package 実体化(raw SFC 配布、`/components` + `theme.css` exports、semantic token 17 個 + parity test)と ownership CLI(`nagi-ui own/diff/list`)を実装し、`@nagi-source <component>/<file>@<version>` を §3 保守契約の確定 metadata 形式とした。
+- **2026-07-21** Phase 4 slice 4 の behavior catalog を完了。Popover / Dialog / Tooltip / Disclosure / Toast の package/ownable SFCを追加し、公開 behavior core と component catalog の欠落を解消。package component boundary と slot sub-surface を定義する Nagi CSS presetを同梱し、owned-source検査とconsumer検査を分離した。unit 102/102、browser + axe 36/36、TypeScript 7、verified-bindings、theme parity、Nagi CSSを確認。
+- **2026-07-18** Phase 4 slice 1–2 完了。package 実体化(raw SFC 配布、`/components` + `theme.css` exports、semantic token 22 個 + parity test)と ownership CLI(`nagi-ui own/diff/list`)を実装し、`@nagi-source <component>/<file>@<version>` を §3 保守契約の確定 metadata 形式とした。
 - **2026-07-18** Phase 4 を package-first の宿題に合わせて再定義。スライス順(package 実体化 → own/diff CLI → 早期検証実験 → blueprint 拡充 → 向かないケース文書化)と検証仮説を明記し、slice 1 の設計正本を `docs/phase4-package-design.md` に置いた。
 - **2026-07-18** package-first 改訂(§3)の残存整理。§3.5 等の copy-in 前提の文言を own-on-demand 用語へ更新し、items schema が package 利用中は component の最小 props API(component version に紐づく)として公開される帰結と、その下での「DSL を育てない」規律の強化を明文化。混在可能性(§8.2)の根拠を copy-in 配布から「囲いタグ・provider・グローバル状態の不在」へ訂正。package 利用中の consumer styling 境界は `docs/package-ownership-model.md` に追記。
 - **2026-07-18** Phase 3.5 完了。最終 DOM の IDREF / active descendant / native popover 関係を検査する `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` と、開いた全主要 Blueprint 状態の axe-core 検査を追加。axe が発見した Dropdown / Listbox / Combobox の secondary text contrast を rule 除外せず修正し、browser 28/28 を確認した。
