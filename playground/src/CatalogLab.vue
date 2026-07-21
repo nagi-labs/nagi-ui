@@ -121,17 +121,35 @@ function runPromiseToast() {
         title="Package-first surface"
         description="Theme by default; own only when the structure must change."
       >
+        <template #title="{ title }">
+          <span class="card-title">
+            <span>{{ title }}</span>
+            <Badge label="Rich content" tone="accent" />
+          </span>
+        </template>
+        <template #description="{ description }">
+          <span class="card-description">
+            {{ description }} <strong>Markup stays local.</strong>
+          </span>
+        </template>
         <div class="card-content">
           <p class="text">The consumer owns and styles this declared slot sub-surface.</p>
           <div class="list" aria-label="Package status badges">
             <Badge label="Neutral" />
             <Badge label="Accent" tone="accent" />
-            <Badge label="Ready" tone="success" />
+            <Badge label="Ready" tone="success">
+              <template #label="{ label }">
+                <span class="badge-label"><span aria-hidden="true">✓</span> {{ label }}</span>
+              </template>
+            </Badge>
             <Badge label="Review" tone="warning" />
             <Badge label="Blocked" tone="danger" />
           </div>
           <Alert title="Catalog ready" tone="success">
             <template #icon><span class="alert-icon" aria-hidden="true">✓</span></template>
+            <template #title="{ title }">
+              <span class="alert-title">{{ title }} <Badge label="Verified" /></span>
+            </template>
             <p class="text">Card, Alert, and Badge complete the initial styling-only baseline.</p>
           </Alert>
           <Alert title="Destructive action" tone="danger" role="alert">
@@ -181,6 +199,12 @@ function runPromiseToast() {
         title="Package dialog"
         description="Confirm the package-level action before continuing."
       >
+        <template #title="{ title }">
+          <span class="nagi-dialog-title">{{ title }} <span aria-hidden="true">✓</span></span>
+        </template>
+        <template #description="{ description }">
+          <span class="nagi-dialog-description"><strong>{{ description }}</strong></span>
+        </template>
         <p class="text">The browser owns modality, focus trapping, and Escape.</p>
         <template #actions>
           <Button
@@ -214,6 +238,11 @@ function runPromiseToast() {
     <section class="section" aria-labelledby="disclosure-heading">
       <h2 id="disclosure-heading" class="title">Disclosure</h2>
       <Disclosure v-model:open="disclosureOpen" summary="What does native mean?">
+        <template #summary="{ summary }">
+          <span class="nagi-disclosure-summary">
+            <span aria-hidden="true">◆</span> {{ summary }}
+          </span>
+        </template>
         <p class="text">The details element owns disclosure state and keyboard behavior.</p>
       </Disclosure>
       <Disclosure summary="Unavailable disclosure" disabled>
@@ -307,6 +336,17 @@ function runPromiseToast() {
           gap: 0.4rem;
           align-items: center;
         }
+      }
+
+      .card-title {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .card-description {
+        display: inline;
       }
 
       .card-footer {

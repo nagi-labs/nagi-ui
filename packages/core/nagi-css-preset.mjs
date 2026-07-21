@@ -33,14 +33,25 @@ export const nagiUiComponentClasses = {
 }
 
 export const nagiUiComponentSlots = {
-  Alert: { default: "alert-content", icon: "alert-icon" },
+  Alert: { default: "alert-content", icon: "alert-icon", title: "alert-title" },
+  Badge: { label: "badge-label" },
   Button: { default: "nagi-button-content" },
-  Card: { default: "card-content", footer: "card-footer" },
+  Card: {
+    default: "card-content",
+    title: "card-title",
+    description: "card-description",
+    footer: "card-footer",
+  },
   Dialog: {
     default: "nagi-dialog-content",
+    title: "nagi-dialog-title",
+    description: "nagi-dialog-description",
     actions: "nagi-dialog-actions",
   },
-  Disclosure: { default: "nagi-disclosure-content" },
+  Disclosure: {
+    default: "nagi-disclosure-content",
+    summary: "nagi-disclosure-summary",
+  },
   Fieldset: { default: "nagi-fieldset-content" },
   Popover: { default: "nagi-popover-content" },
   Tabs: { panel: "tabs-panel" },

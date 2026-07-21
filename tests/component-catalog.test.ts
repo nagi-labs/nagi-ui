@@ -6,7 +6,7 @@ import test from "node:test";
 
 import vue from "@vitejs/plugin-vue";
 import { createServer } from "vite";
-import { createSSRApp, h, type Component } from "vue";
+import { createSSRApp, h, type Component, type VNodeChild } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 import { createToastManager } from "../packages/core/src/toast.ts";
@@ -58,6 +58,18 @@ function renderSlots(
           Object.entries(slots).map(([name, content]) => [name, () => h("span", content)]),
         ),
       ),
+    }),
+  );
+}
+
+function renderSlotFunctions(
+  component: Component,
+  props: Record<string, unknown>,
+  slots: Readonly<Record<string, (props: Record<string, unknown>) => VNodeChild>>,
+) {
+  return renderToString(
+    createSSRApp({
+      render: () => h(component, props, slots),
     }),
   );
 }
@@ -231,6 +243,38 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.ok(descriptionTarget);
     assert.ok(describedDialog.includes(`id="${descriptionTarget}"`));
 
+    const richDialog = await renderSlotFunctions(
+      components.Dialog as Component,
+      {
+        triggerLabel: "Open rich dialog",
+        title: "Confirm",
+        description: "Review this action",
+      },
+      {
+        title: (slotProps) => h("span", `${String(slotProps.title)} now`),
+        description: (slotProps) => h("strong", String(slotProps.description)),
+      },
+    );
+    assert.match(richDialog, /<h2[^>]*class="title"/);
+    assert.match(richDialog, /<span>Confirm now<\/span>/);
+    assert.match(richDialog, /<p[^>]*class="text"/);
+    assert.match(richDialog, /<strong>Review this action<\/strong>/);
+    const richDescriptionTarget = richDialog.match(/aria-describedby="([^"]+)"/)?.[1];
+    assert.ok(richDescriptionTarget);
+    assert.ok(richDialog.includes(`id="${richDescriptionTarget}"`));
+
+    const slotOnlyDialogDescription = await renderSlots(
+      components.Dialog as Component,
+      { triggerLabel: "Open slot description", title: "Confirm" },
+      { description: "Slot-only description" },
+    );
+    const slotOnlyDescriptionTarget = slotOnlyDialogDescription.match(
+      /aria-describedby="([^"]+)"/,
+    )?.[1];
+    assert.ok(slotOnlyDescriptionTarget);
+    assert.ok(slotOnlyDialogDescription.includes(`id="${slotOnlyDescriptionTarget}"`));
+    assert.match(slotOnlyDialogDescription, /Slot-only description/);
+
     const tooltip = await render(components.Tooltip as Component, {
       triggerLabel: "Help",
       text: "Hint text",
@@ -247,7 +291,16 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
       "Answer",
     );
     assert.match(disclosure, /<details[^>]*\sopen(?:="")?[\s>]/);
-    assert.match(disclosure, /<summary[^>]*>Question<\/summary>/);
+    assert.match(disclosure, /<summary[^>]*class="summary"/);
+    assert.match(disclosure, /Question/);
+
+    const richDisclosure = await renderSlotFunctions(
+      components.Disclosure as Component,
+      { summary: "Question", open: true },
+      { summary: (slotProps) => h("span", `${String(slotProps.summary)} with icon`) },
+    );
+    assert.match(richDisclosure, /<summary[^>]*class="summary"/);
+    assert.match(richDisclosure, /<span>Question with icon<\/span>/);
 
     const toastManager = createToastManager({ duration: 0 });
     toastManager.add({
@@ -340,7 +393,8 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       "Card body",
     );
     assert.match(card, /<div[^>]*class="card"/);
-    assert.match(card, /<div[^>]*class="title"[^>]*>Profile<\/div>/);
+    assert.match(card, /<div[^>]*class="title"/);
+    assert.match(card, /Profile/);
     assert.match(card, /Owned when needed/);
     assert.match(card, /Card body/);
 
@@ -351,6 +405,28 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     );
     assert.match(cardWithFooter, /<div[^>]*class="zone -secondary"/);
     assert.match(cardWithFooter, /Manage subscription/);
+
+    const cardWithRichHeader = await renderSlotFunctions(
+      components.Card as Component,
+      { title: "Base title", description: "Base description" },
+      {
+        title: (slotProps) => h("span", `Rich ${String(slotProps.title)}`),
+        description: (slotProps) => h("span", `Rich ${String(slotProps.description)}`),
+      },
+    );
+    assert.match(cardWithRichHeader, /<div[^>]*class="title"/);
+    assert.match(cardWithRichHeader, /<span>Rich Base title<\/span>/);
+    assert.match(cardWithRichHeader, /<div[^>]*class="text"/);
+    assert.match(cardWithRichHeader, /<span>Rich Base description<\/span>/);
+
+    const cardWithSlotOnlyHeader = await renderSlots(
+      components.Card as Component,
+      {},
+      { title: "Slot-only title", description: "Slot-only description" },
+    );
+    assert.match(cardWithSlotOnlyHeader, /<header/);
+    assert.match(cardWithSlotOnlyHeader, /Slot-only title/);
+    assert.match(cardWithSlotOnlyHeader, /Slot-only description/);
 
     const untitledCard = await render(components.Card as Component, {}, "Untitled card body");
     assert.match(untitledCard, /<div[^>]*class="card"/);
@@ -374,6 +450,14 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(alertWithIcon, /class="icon"/);
     assert.match(alertWithIcon, /Success icon/);
 
+    const alertWithRichTitle = await renderSlotFunctions(
+      components.Alert as Component,
+      { title: "Saved" },
+      { title: (slotProps) => h("span", `${String(slotProps.title)} status`) },
+    );
+    assert.match(alertWithRichTitle, /<h2[^>]*class="title"[^>]*>/);
+    assert.match(alertWithRichTitle, /<span>Saved status<\/span>/);
+
     const smallButton = await render(components.Button as Component, { size: "small" }, "Small");
     const defaultButton = await render(components.Button as Component, {}, "Default");
     const largeButton = await render(components.Button as Component, { size: "large" }, "Large");
@@ -386,6 +470,14 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       tone: "success",
     });
     assert.match(badge, /class="badge -positive"/);
-    assert.match(badge, />\s*Ready\s*<\/span>/);
+    assert.match(badge, /Ready/);
+
+    const badgeWithRichLabel = await renderSlotFunctions(
+      components.Badge as Component,
+      { label: "Ready", tone: "success" },
+      { label: (slotProps) => h("span", `Icon ${String(slotProps.label)}`) },
+    );
+    assert.match(badgeWithRichLabel, /class="badge -positive"/);
+    assert.match(badgeWithRichLabel, /<span>Icon Ready<\/span>/);
   });
 });

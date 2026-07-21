@@ -19,7 +19,9 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 
 <template>
   <details class="nagi-disclosure" v-bind="disclosure.detailsProps">
-    <summary class="summary" v-bind="disclosure.summaryProps">{{ summary }}</summary>
+    <summary class="summary" v-bind="disclosure.summaryProps">
+      <slot name="summary" :summary="summary">{{ summary }}</slot>
+    </summary>
     <section class="section">
       <slot />
     </section>

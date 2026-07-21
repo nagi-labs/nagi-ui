@@ -20,24 +20,25 @@ still existed only as playground fixtures. This slice ships the missing five:
 | Component | Platform/core source | Public customization boundary |
 |---|---|---|
 | `Popover` | Popover API + `usePopover` | trigger label, `area`/`offset` props + content slot |
-| `Dialog` | native `<dialog>` + `useDialog` | title/description props + body/action slots |
+| `Dialog` | native `<dialog>` + `useDialog` | title/description props with same-name rich-content slots + body/action slots |
 | `Tooltip` | hint popover + `useTooltip` | trigger/text, disabled, `area`/`offset` props |
-| `Disclosure` | native `<details>` + `useDisclosure` | summary/disabled props + body slot |
+| `Disclosure` | native `<details>` + `useDisclosure` | summary prop with same-name rich-content slot + disabled prop + body slot |
 | `Toast` | manual popover + `useToast` + explicit `createToastManager()` | manager prop; structured add/update/close/promise API and F6 notification region |
 
 The slot choices follow CHARTER §3.5: Popover, Dialog, and Disclosure exist to
 contain free application markup. Behavior wiring never crosses a slot. Trigger,
-close, summary, tooltip, and toast anatomy remain owned by the SFC; requests to
-replace them structurally use `nagi-ui own`.
+close, tooltip, and toast anatomy remain owned by the SFC; Disclosure exposes
+only the content inside its owned native `summary`. Requests to replace those
+elements structurally use `nagi-ui own`.
 
 The styling-only baseline is intentionally small:
 
 | Component | Shape choice | Public customization boundary |
 |---|---|---|
 | `Button` | fixed native button | label slot + variant/size/focusable-disabled props |
-| `Card` | semantically neutral frame | optional title/description props + body/footer slots |
-| `Alert` | fixed status frame | title/tone/role props + icon/body slots |
-| `Badge` | fixed inline label | label/tone props |
+| `Card` | semantically neutral frame | optional title/description props with same-name rich-content slots + body/footer slots |
+| `Alert` | fixed status frame | title prop with same-name rich-content slot + tone/role props + icon/body slots |
+| `Badge` | fixed inline label | label prop with same-name rich-content slot + tone prop |
 
 Card, Alert, and Badge are the concrete styling-only examples named in CHARTER
 §3.5. This is the v0 completion boundary, not a claim that future needs such
@@ -138,7 +139,12 @@ are recorded in [`base-ui-alignment-d-tabs.md`](base-ui-alignment-d-tabs.md).
 The first cross-library strengthening slice keeps the catalog at 22 while
 adding the product anatomy independently established by shadcn-vue and
 PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
-content. All remain one-SFC package/ownership surfaces; no compound family,
-icon-name DSL, or expanded pass-through API was introduced. The complete
+content. A follow-up applies the same rule to the stable title/description
+parts of Card and Dialog, the title part of Alert, Disclosure summary and Badge
+label: same-name content-only slots preserve their string props as fallbacks
+and receive those values as slot props. The SFCs continue to own the wrappers,
+ARIA relationships, native summary behavior, typography and tone. All remain
+one-SFC package/ownership surfaces; no compound family, whole-header slot,
+behavior-bearing slot, icon-name DSL, or expanded pass-through API was introduced. The complete
 decision ledger and 59.5% component-creation metric are in
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md).

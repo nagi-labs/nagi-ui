@@ -7,9 +7,13 @@ defineProps<{
 
 <template>
   <div class="card">
-    <header v-if="title || description" class="header">
-      <div v-if="title" class="title">{{ title }}</div>
-      <p v-if="description" class="text">{{ description }}</p>
+    <header v-if="title || description || $slots.title || $slots.description" class="header">
+      <div v-if="title || $slots.title" class="title">
+        <slot name="title" :title="title">{{ title }}</slot>
+      </div>
+      <div v-if="description || $slots.description" class="text">
+        <slot name="description" :description="description">{{ description }}</slot>
+      </div>
     </header>
     <div class="zone">
       <slot />

@@ -18,7 +18,9 @@ withDefaults(
     <span v-if="$slots.icon" class="icon">
       <slot name="icon" />
     </span>
-    <h2 class="title">{{ title }}</h2>
+    <h2 class="title">
+      <slot name="title" :title="title">{{ title }}</slot>
+    </h2>
     <div class="zone">
       <slot />
     </div>

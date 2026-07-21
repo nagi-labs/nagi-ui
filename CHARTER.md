@@ -75,9 +75,9 @@ Blueprint の各部分をどの機構で利用者へ開くかは、次の優先�
 | 中身の性質 | 機構 | 例 |
 |---|---|---|
 | 構造が固定 | owned DOM(template 直書き) | menu の list 骨格、card の frame |
-| 文字列・真偽・列挙で表せる | props | title、image src、`variant` |
+| 文字列・真偽・列挙で表せる | props | plain title、image src、`variant` |
 | 同型項目の繰り返し | items schema(blueprint-local) | menu items、select options、toast |
-| 本当に自由な markup | slot(宣言済み sub-surface) | card の本文、dialog の本文 |
+| 本当に自由な markup | slot(宣言済み sub-surface) | card の本文、rich title content、dialog の本文 |
 
 ### items schema の位置づけ
 
@@ -89,11 +89,11 @@ Blueprint の各部分をどの機構で利用者へ開くかは、次の優先�
 
 ### slot の位置づけ
 
-slot は正当な機構である。§2 の compound 禁止は「**ライブラリが behavior の状態機械を複数タグへ分散して出荷する**」形態の禁止であり、利用者が所有する(own した)SFC が slot を持つことは対象外。Nagi CSS は slot sub-surface として境界を価格付けしており(宣言 + descendant step)、宣言して払えば契約違反ではない。条件:
+slot は正当な機構である。§2 の compound 禁止は「**ライブラリが behavior の状態機械を複数タグへ分散して出荷する**」形態の禁止であり、package / ownership の単一ソース SFC が slot を持つことは対象外。Nagi CSS は slot sub-surface として境界を価格付けしており(宣言 + descendant step)、宣言して払えば契約違反ではない。条件:
 
 - **境界は最小に保つ。** タグ族への分割(`CardHeader` / `CardContent` / `CardFooter` 等)は禁止。frame の anatomy は owned DOM で持ち、穴は default slot(必要なら named slot)で開ける。
 - **slot を behavior 配線の通り道にしない。** slot 内容と親の状態を provide/inject で結合し始めたら、それは compound の再実装である。behavior は composable / props 経由のみ。menu の item 用 slot(`#item` に `itemProps` を渡して bind させる形)はこの違反例であり、item のカスタマイズは owned renderer の union 拡張で行う。
-- データ形で表せる部分(title、image 等)を slot にしない(上表の優先順)。props に寄せるほど利用側が境界越しにスタイルを当てる頻度が下がる。
+- データ形で表せる部分(title、image 等)の**基本経路を slot だけにしない**(上表の優先順)。plain text は props に寄せる。一方、複数の product reference で rich content が定着した安定 visible part は、owned wrapper を維持した content-only の同名 slot を prop fallback 付きで追加してよい。slot 指定時は slot を優先するが、header 全体や behavior 配線までは渡さない(Card の `title` / `description`、Alert の `title`、Dialog の `title` / `description`、Disclosure の `summary`、Badge の `label` が正規例)。slot content は wrapper の HTML content model に従い、`h2` / `p` / Badge の `span` 内では phrasing content、`summary` 内では phrasing content または heading content に限定する。summary 内へ別の interactive control は置かない。accessible name や基準テキストの保証に使う required prop は optional に落とさず slot prop として同じ文字列を渡す。
 - **投機的な named slot を出荷しない。** slot は後から利用者が自分のコピーへ足すのは安いが、一度配ると利用箇所が依存して消せない。出荷形は「存在理由そのものの slot(Card / Dialog の本文等)」に限り、`#header-extra` のような予備枠は実際の要求が出てから追加する。
 
 ### 「User owns the DOM」の解釈
@@ -391,6 +391,7 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 ## 改訂履歴
 
+- **2026-07-21** Card の `title` / `description`、Alert の `title`、Dialog の `title` / `description`、Disclosure の `summary`、Badge の `label` を、plain text props をfallbackとして保つ同名content-only slotへ拡張。propかslotかを排他的に決めず、安定visible partのrich content需要が確立している場合だけ、owned wrapperを維持した最小slotを併設できると§3.5へ明文化した。required text props、ARIA IDREF、native summary behavior、header anatomy、既定typography/toneはSFCが保持し、header全体のslot化・behavior propsの受け渡し・compound partsは引き続き不採用。
 - **2026-07-21** cross-library benchmarkの最初のstrengthening sliceを完了。Alertは自由markupの`icon` slot、Buttonは`small | default | large` enum、Cardはneutral wrapperを保つ`footer` slotを追加し、compound parts・icon-name DSL・loading・header action・media APIは増やさなかった。公開`small`はNagi CSSのHTML語彙衝突を避けCSS identity `-compact`へ翻訳し、Card内部もnative landmarkを捏造せずSTN wrapperを維持。component作成進捗は採用37 slice中22出荷の59.5%とし、Native/recipeとDeclineは分母から除外する。
 - **2026-07-21** component benchmark を単一の Base UI catalog 比較から、Base UI(behavior / a11y)、shadcn-vue(Vue anatomy / ownership)、PrimeVue(package-first expectations)の三角測量へ改訂。shadcn-vue と PrimeVue に共通する visible anatomy は product evidence とみなす一方、API は §3.5 の優先順へ翻訳し、native-first と衝突する common feature は不採用または独立 slice にできると固定した。全22出荷component + Base UI 37件の台帳は `docs/base-ui-component-comparison.md`。
 - **2026-07-21** Theme契約をfallback-freeへ改訂。Blueprintの`var(--nagi-*)`からliteral fallbackを除去し、28 tokenの既定値を`default-theme.css`へ一元化。manifest / default / Blueprint vocabulary parity、`nagi-ui theme check`、opt-in computed-cascade warningにより欠落を可視化し、旧`theme.css`は互換aliasだけ残した。ownership layerの次スライスは編集済みSFCのimportを書換えないrouting module方式、初期surfaceを`vue` / `all`に限定、version/path/hash sidecarを持つ設計として`docs/package-ownership-model.md`へ固定した。

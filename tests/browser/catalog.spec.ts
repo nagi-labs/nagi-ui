@@ -9,16 +9,23 @@ test("styling-only package components expose semantic content and tone variants"
 }) => {
   const card = page.locator("div.card", { hasText: "Package-first surface" });
   await expect(card.getByText("Package-first surface", { exact: true })).toBeVisible();
+  await expect(card.getByText("Rich content", { exact: true })).toBeVisible();
+  await expect(card.locator(".card-description")).toContainText(
+    "own only when the structure must change.",
+  );
+  await expect(card.getByText("Markup stays local.", { exact: true })).toBeVisible();
   await expect(card.getByText("The consumer owns and styles this declared slot sub-surface.")).toBeVisible();
   await expect(card.getByText("Package component with an owned footer surface.")).toBeVisible();
   await expect(card.getByRole("button", { name: "Manage package" })).toBeVisible();
 
-  for (const label of ["Neutral", "Accent", "Ready", "Review", "Blocked"]) {
+  for (const label of ["Neutral", "Accent", "Review", "Blocked"]) {
     await expect(card.getByText(label, { exact: true })).toBeVisible();
   }
+  await expect(card.locator(".badge-label", { hasText: "Ready" })).toBeVisible();
 
   await expect(card.locator('[role="status"]', { hasText: "Catalog ready" })).toBeVisible();
   await expect(card.locator(".alert-icon", { hasText: "✓" })).toBeVisible();
+  await expect(card.locator(".alert-title", { hasText: "Verified" })).toBeVisible();
   await expect(card.getByRole("alert")).toContainText("Destructive action");
 
   const smallHeight = await page.getByTestId("button-small").evaluate((button) => button.clientHeight);
@@ -53,6 +60,8 @@ test("package Dialog mirrors open state and closes through its owned button", as
   await page.getByRole("button", { name: "Open package dialog" }).click();
   const dialog = page.getByRole("dialog", { name: "Package dialog" });
   await expect(dialog).toBeVisible();
+  await expect(dialog.locator(".nagi-dialog-title")).toContainText("Package dialog");
+  await expect(dialog.locator(".nagi-dialog-description strong")).toBeVisible();
   await expect(dialog).toHaveAccessibleDescription(
     "Confirm the package-level action before continuing.",
   );
@@ -75,6 +84,17 @@ test("disabled Tooltip and Disclosure suppress activation", async ({ page }) => 
   await expect(disclosure).not.toHaveAttribute("open", "");
 });
 
+test("rich Disclosure summary keeps native details behavior", async ({ page }) => {
+  const summary = page.locator(".nagi-disclosure-summary", { hasText: "What does native mean?" });
+  const disclosure = page.locator("details", { has: summary });
+
+  await expect(disclosure).not.toHaveAttribute("open", "");
+  await summary.click();
+  await expect(disclosure).toHaveAttribute("open", "");
+  await summary.click();
+  await expect(disclosure).not.toHaveAttribute("open", "");
+});
+
 test("package Tooltip follows focus and keeps the ARIA relationship", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "More information" });
   await trigger.focus();
@@ -88,7 +108,7 @@ test("package Tooltip follows focus and keeps the ARIA relationship", async ({ p
 
 test("package Disclosure uses native details state", async ({ page }) => {
   const disclosure = page.locator("details", { hasText: "What does native mean?" });
-  await page.getByText("What does native mean?", { exact: true }).click();
+  await disclosure.locator("summary").click();
   await expect(disclosure).toHaveAttribute("open", "");
   await expect(page.getByText("The details element owns disclosure state")).toBeVisible();
 });

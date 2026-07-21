@@ -91,7 +91,7 @@ test("package Blueprint catalog is axe-clean in opened states", async ({ page })
   await expectAxeClean(page)
   await page.getByRole("button", { name: "More information" }).blur()
 
-  await page.getByText("What does native mean?", { exact: true }).click()
+  await page.locator("summary", { hasText: "What does native mean?" }).click()
   await page.getByRole("button", { name: "Show toast" }).click()
   await expect(page.getByText("Catalog notification 1", { exact: true })).toBeVisible()
   await page.getByRole("button", { name: "Show undo toast" }).click()

@@ -41,12 +41,16 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
     <dialog
       class="dialog"
       :aria-labelledby="titleId"
-      :aria-describedby="description ? descriptionId : undefined"
+      :aria-describedby="description || $slots.description ? descriptionId : undefined"
       v-bind="dialog.dialogProps"
     >
       <header class="header">
-        <h2 :id="titleId" class="title">{{ title }}</h2>
-        <p v-if="description" :id="descriptionId" class="text">{{ description }}</p>
+        <h2 :id="titleId" class="title">
+          <slot name="title" :title="title">{{ title }}</slot>
+        </h2>
+        <p v-if="description || $slots.description" :id="descriptionId" class="text">
+          <slot name="description" :description="description">{{ description }}</slot>
+        </p>
       </header>
       <section class="section">
         <slot />

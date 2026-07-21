@@ -13,7 +13,7 @@ withDefaults(
     class="badge"
     :class="tone === 'neutral' ? undefined : tone === 'success' ? '-positive' : `-${tone}`"
   >
-    {{ label }}
+    <slot name="label" :label="label">{{ label }}</slot>
   </span>
 </template>
 
