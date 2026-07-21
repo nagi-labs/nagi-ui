@@ -353,7 +353,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 1. **Package 実体化** — **完了(2026-07-18)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export、semantic token 17 個(fallback 必須 + parity test)と `theme.css` を実装。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
 2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定** — **完了(2026-07-18)**。`nagi-ui own/diff/list` を package 同梱 bin として実装し、metadata を `@nagi-source <component>/<file>@<version>`(per-file 刻印)に固定。`diff` は clean / modified / drifted / unknown-source を判定し CI gate に使える。詳細は `docs/phase4-ownership-cli.md`
-3. **早期検証実験** — `docs/package-ownership-model.md` の Button / Dropdown / Combobox 3 境界を人間 + coding agent で計測し、モデルの成否を判定する
+3. **早期検証実験** — **coding-agent アーム完了(2026-07-21)**。Button(theme)/ Dropdown(ownership)/ Combobox(upstream 追従)の 3 境界すべてで、無文脈 agent が誘導なしに設計意図の経路(token 上書き / own + 拡張レシピ / 3-way merge + stamp 更新)を選び PASS。副産物: CLI テストのバグ修正、`diff` の gate を `drifted` / `unknown-source` に限定、「own したら即コミット」の base 確保手順。記録は `docs/phase4-validation-experiments.md`。人間アームと反復実行は今後の課題
 4. **blueprints の拡充**(styling-only 含む全コンポーネントの Nagi CSS 準拠 SFC)、Nagi CSS linter プリセット同梱
 5. §8 の制約を「Nagi UI が向かないケース」としてドキュメント化(dismiss 細粒度・ジェスチャーシート・Motion 級アニメが要件なら他ライブラリ併用を案内)、テストレシピ(Vitest browser mode / Playwright)同梱
 
