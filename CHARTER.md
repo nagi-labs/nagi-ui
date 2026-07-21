@@ -391,6 +391,7 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 ## 改訂履歴
 
+- **2026-07-21** cross-library benchmarkの最初のstrengthening sliceを完了。Alertは自由markupの`icon` slot、Buttonは`small | default | large` enum、Cardはneutral wrapperを保つ`footer` slotを追加し、compound parts・icon-name DSL・loading・header action・media APIは増やさなかった。公開`small`はNagi CSSのHTML語彙衝突を避けCSS identity `-compact`へ翻訳し、Card内部もnative landmarkを捏造せずSTN wrapperを維持。component作成進捗は採用37 slice中22出荷の59.5%とし、Native/recipeとDeclineは分母から除外する。
 - **2026-07-21** component benchmark を単一の Base UI catalog 比較から、Base UI(behavior / a11y)、shadcn-vue(Vue anatomy / ownership)、PrimeVue(package-first expectations)の三角測量へ改訂。shadcn-vue と PrimeVue に共通する visible anatomy は product evidence とみなす一方、API は §3.5 の優先順へ翻訳し、native-first と衝突する common feature は不採用または独立 slice にできると固定した。全22出荷component + Base UI 37件の台帳は `docs/base-ui-component-comparison.md`。
 - **2026-07-21** Theme契約をfallback-freeへ改訂。Blueprintの`var(--nagi-*)`からliteral fallbackを除去し、28 tokenの既定値を`default-theme.css`へ一元化。manifest / default / Blueprint vocabulary parity、`nagi-ui theme check`、opt-in computed-cascade warningにより欠落を可視化し、旧`theme.css`は互換aliasだけ残した。ownership layerの次スライスは編集済みSFCのimportを書換えないrouting module方式、初期surfaceを`vue` / `all`に限定、version/path/hash sidecarを持つ設計として`docs/package-ownership-model.md`へ固定した。
 - **2026-07-21** Blueprint の配線露出基準を §3.5 に追加。所有後に変更する policy / markup は SFC に残し、native event 順・Vue model / DOM property 同期など変更しない mechanism は、再利用数に関係なく固定意味の小 helper へ隠す。万能 helper / config DSL は作らず、renderer DOM 変更と同時に修正すべき処理は可視のまま保つ。

@@ -33,9 +33,9 @@ export const nagiUiComponentClasses = {
 }
 
 export const nagiUiComponentSlots = {
-  Alert: { default: "alert-content" },
+  Alert: { default: "alert-content", icon: "alert-icon" },
   Button: { default: "nagi-button-content" },
-  Card: { default: "card-content" },
+  Card: { default: "card-content", footer: "card-footer" },
   Dialog: {
     default: "nagi-dialog-content",
     actions: "nagi-dialog-actions",

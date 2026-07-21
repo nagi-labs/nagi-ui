@@ -131,6 +131,7 @@ function runPromiseToast() {
             <Badge label="Blocked" tone="danger" />
           </div>
           <Alert title="Catalog ready" tone="success">
+            <template #icon><span class="alert-icon" aria-hidden="true">✓</span></template>
             <p class="text">Card, Alert, and Badge complete the initial styling-only baseline.</p>
           </Alert>
           <Alert title="Destructive action" tone="danger" role="alert">
@@ -149,7 +150,18 @@ function runPromiseToast() {
               activations: {{ focusableDisabledClicks }}
             </output>
           </div>
+          <div class="list" aria-label="Button size examples">
+            <Button data-testid="button-small" size="small">Small</Button>
+            <Button data-testid="button-default">Default</Button>
+            <Button data-testid="button-large" size="large">Large</Button>
+          </div>
         </div>
+        <template #footer>
+          <div class="card-footer">
+            <span>Package component with an owned footer surface.</span>
+            <Button size="small" variant="accent">Manage package</Button>
+          </div>
+        </template>
       </Card>
     </section>
 
@@ -293,7 +305,16 @@ function runPromiseToast() {
           display: flex;
           flex-wrap: wrap;
           gap: 0.4rem;
+          align-items: center;
         }
+      }
+
+      .card-footer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: space-between;
       }
     }
   }

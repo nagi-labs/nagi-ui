@@ -29,6 +29,13 @@ PrimeVue's 90+ catalog and every shadcn-vue block are not automatic Nagi scope.
 Data grids, calendars and other product domains should receive their own
 benchmark slice when Nagi chooses to enter that domain.
 
+For component-creation progress, the adopted implementation set is currently
+37 slices: 22 shipped components plus 15 unbuilt component slices (eight
+`Candidate`, six `Defer`, and the separate multi-thumb Slider). This is
+**22 / 37 = 59.5%**. `Native/recipe` and `Decline` rows are deliberately not
+counted as components to build. This metric tracks Nagi's chosen product, not
+API parity with any reference catalog.
+
 ## Benchmark rule
 
 ### Behavior and accessibility
@@ -94,10 +101,10 @@ This table applies the same four-axis review to every package/ownable component.
 
 | Nagi component | Platform / Base UI guarantee | shadcn-vue product signal | PrimeVue product signal | Nagi decision |
 |---|---|---|---|---|
-| `Alert` | Native `status`/`alert`; Base UI has Alert Dialog, not a visual callout | [Alert](https://www.shadcn-vue.com/docs/components/alert): icon, title, description, destructive variant | [Message](https://primevue.dev/message/): severity, icon and optional close behavior | **Strengthen**: title/body/tone/role are shipped. A free-markup `icon` part is common and may become one named slot; dismiss remains non-common. |
+| `Alert` | Native `status`/`alert`; Base UI has Alert Dialog, not a visual callout | [Alert](https://www.shadcn-vue.com/docs/components/alert): icon, title, description, destructive variant | [Message](https://primevue.dev/message/): severity, icon and optional close behavior | **Shipped**: title/body/tone/role plus one free-markup `icon` slot cover the common anatomy. Dismiss remains non-common. |
 | `Badge` | No behavior primitive required | [Badge](https://www.shadcn-vue.com/docs/components/badge): compact variant label | [Tag](https://primevue.dev/tag/): value, severity, icon and rounded presentation | **Shipped**: label + tone cover the common status-label core. Icon/size additions need a more precise common contract. |
-| `Button` | [Button](https://base-ui.com/react/components/button): native semantics and focusable-disabled behavior | [Button](https://www.shadcn-vue.com/docs/components/button): variants, small/default/large and icon sizes, icon/spinner composition | [Button](https://primevue.dev/button/): severity/variants, sizes, icons and loading | **Strengthen**: native button, variants, arbitrary label/icon content and focusable-disabled are shipped. `size` is a common small enum and should be reviewed now; loading remains composable content plus explicit busy semantics until its contract is fixed. |
-| `Card` | No direct Base UI Card; semantics should remain caller-owned | [Card](https://www.shadcn-vue.com/docs/components/card): header/title/description/action/content/footer, size and image composition | [Card](https://primevue.dev/card/): header media, title/subtitle, content and footer | **Strengthen**: title/description/body are shipped. Footer is established in both styled references, so it should no longer be called speculative. Translate it into the existing SFC with one minimal named slot, never a `CardFooter` compound part. Header action is shadcn-specific; image/media is common in capability but still needs a prop/integration decision. |
+| `Button` | [Button](https://base-ui.com/react/components/button): native semantics and focusable-disabled behavior | [Button](https://www.shadcn-vue.com/docs/components/button): variants, small/default/large and icon sizes, icon/spinner composition | [Button](https://primevue.dev/button/): severity/variants, sizes, icons and loading | **Shipped**: native button, variants, arbitrary label/icon content, focusable-disabled and the small/default/large enum cover the common contract. Loading remains composable content plus explicit busy semantics until its contract is fixed. |
+| `Card` | No direct Base UI Card; semantics should remain caller-owned | [Card](https://www.shadcn-vue.com/docs/components/card): header/title/description/action/content/footer, size and image composition | [Card](https://primevue.dev/card/): header media, title/subtitle, content and footer | **Shipped**: title/description/body plus one minimal footer slot cover the common frame without a `CardFooter` compound part. The footer wrapper stays a neutral `div`, preserving caller-owned semantics. Header action is shadcn-specific; image/media is common in capability but still needs a prop/integration decision. |
 | `Checkbox` | [Checkbox](https://base-ui.com/react/components/checkbox): checked, indeterminate, form and validation behavior | [Checkbox](https://www.shadcn-vue.com/docs/components/checkbox): control composed with caller-owned label | [Checkbox](https://primevue.dev/checkbox/): binary/multiple use, indeterminate and form integration | **Shipped**: real checkbox, label, indeterminate, form/reset and validation. Group state is evaluated separately, not hidden in this component. |
 | `Combobox` | [Combobox](https://base-ui.com/react/components/combobox): filtering, keyboard, selection and form guarantees | [Combobox](https://www.shadcn-vue.com/docs/components/combobox): Popover/Command composition and customizable rows | [AutoComplete](https://primevue.dev/autocomplete/): suggestions, templates, multiple mode and virtual scrolling | **Shipped** for restricted single selection, clear/loading/empty/form/reset. Rich rows use ownership; multiple, creatable and virtualization are independent components/slices rather than mode growth. |
 | `Dialog` | [Dialog](https://base-ui.com/react/components/dialog): modal/non-modal, controlled state, title/description/close and nested behavior | [Dialog](https://www.shadcn-vue.com/docs/components/dialog): trigger/content/header/title/description/footer/close | [Dialog](https://primevue.dev/dialog/): header/content/footer, modal/close plus draggable, resizable and maximize options | **Shipped**: native dialog, description, body, actions/footer and close are complete common anatomy. Add nested and scroll-layout tests; PrimeVue-only window-management features are not baseline. |
@@ -151,21 +158,17 @@ Base UI catalog result: **37 / 37 represented** (18 direct shipped mappings +
 19 unshipped decisions). Nagi's four additional shipped products are Alert,
 Badge, Card and standalone Listbox.
 
-## Immediate consequences of the new benchmark
+## First strengthening result
 
-The cross-library rule changes three previous conclusions without changing the
-implementation in this documentation-only revision:
+The first cross-library strengthening slice implemented the three immediate
+consequences without expanding the component count:
 
-1. **Card footer is no longer evidence-gated.** Both styled Vue references
-   treat it as core anatomy. The implementation should translate it into one
-   minimal named slot in the existing SFC. A dedicated header action remains a
-   one-source signal and is not promoted by this rule alone.
-2. **Button size deserves a small strengthening review.** Both styled Vue
-   references expose size as a first-class product choice; Nagi can represent
-   it as a small enum without adopting their variant surface.
-3. **Alert icon deserves a strengthening review.** Both styled references
-   expose an icon region. Because icon markup is genuinely free, one declared
-   slot is more honest than an icon-name DSL.
+1. **Card footer:** one `footer` named slot in the existing neutral SFC. No
+   compound part or header-action API was added.
+2. **Button size:** one `small | default | large` prop. Public `small` maps to
+   CSS identity `-compact` so Nagi CSS element vocabulary remains unambiguous.
+3. **Alert icon:** one free-markup `icon` slot. No icon-name DSL or dismiss API
+   was added.
 
 The same rule also confirms deliberate non-parity:
 

@@ -44,6 +44,24 @@ function render(component: Component, props: Record<string, unknown> = {}, body?
   );
 }
 
+function renderSlots(
+  component: Component,
+  props: Record<string, unknown>,
+  slots: Readonly<Record<string, string>>,
+) {
+  return renderToString(
+    createSSRApp({
+      render: () => h(
+        component,
+        props,
+        Object.fromEntries(
+          Object.entries(slots).map(([name, content]) => [name, () => h("span", content)]),
+        ),
+      ),
+    }),
+  );
+}
+
 test("components entry exposes every thin behavior Blueprint", async () => {
   await withComponents(async (components) => {
     for (const name of ["Popover", "Dialog", "Tooltip", "Disclosure", "Toast"]) {
@@ -326,6 +344,14 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(card, /Owned when needed/);
     assert.match(card, /Card body/);
 
+    const cardWithFooter = await renderSlots(
+      components.Card as Component,
+      { title: "Billing" },
+      { default: "Plan details", footer: "Manage subscription" },
+    );
+    assert.match(cardWithFooter, /<div[^>]*class="zone -secondary"/);
+    assert.match(cardWithFooter, /Manage subscription/);
+
     const untitledCard = await render(components.Card as Component, {}, "Untitled card body");
     assert.match(untitledCard, /<div[^>]*class="card"/);
     assert.doesNotMatch(untitledCard, /<header/);
@@ -339,6 +365,21 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(alert, /role="alert"/);
     assert.match(alert, /class="alert -danger"/);
     assert.match(alert, /Action required/);
+
+    const alertWithIcon = await renderSlots(
+      components.Alert as Component,
+      { title: "Saved" },
+      { icon: "Success icon", default: "The record is current" },
+    );
+    assert.match(alertWithIcon, /class="icon"/);
+    assert.match(alertWithIcon, /Success icon/);
+
+    const smallButton = await render(components.Button as Component, { size: "small" }, "Small");
+    const defaultButton = await render(components.Button as Component, {}, "Default");
+    const largeButton = await render(components.Button as Component, { size: "large" }, "Large");
+    assert.match(smallButton, /class="nagi-button -compact"/);
+    assert.match(defaultButton, /class="nagi-button"/);
+    assert.match(largeButton, /class="nagi-button -large"/);
 
     const badge = await render(components.Badge as Component, {
       label: "Ready",

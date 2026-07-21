@@ -2,6 +2,7 @@
 const props = withDefaults(
   defineProps<{
     variant?: "default" | "accent" | "danger";
+    size?: "small" | "default" | "large";
     type?: "button" | "submit" | "reset";
     disabled?: boolean;
     /** Keep the button in the tab order while suppressing activation. */
@@ -9,11 +10,18 @@ const props = withDefaults(
   }>(),
   {
     variant: "default",
+    size: "default",
     type: "button",
     disabled: false,
     focusableWhenDisabled: false,
   },
 );
+
+const sizeClass = {
+  small: "-compact",
+  default: undefined,
+  large: "-large",
+} as const;
 
 function guardFocusableDisabled(event: MouseEvent) {
   if (!props.disabled || !props.focusableWhenDisabled) return;
@@ -25,7 +33,10 @@ function guardFocusableDisabled(event: MouseEvent) {
 <template>
   <button
     class="nagi-button"
-    :class="variant === 'default' ? undefined : `-${variant}`"
+    :class="[
+      variant === 'default' ? undefined : `-${variant}`,
+      sizeClass[size],
+    ]"
     :type="type"
     :disabled="disabled && !focusableWhenDisabled"
     :aria-disabled="disabled && focusableWhenDisabled ? 'true' : undefined"
@@ -76,6 +87,18 @@ function guardFocusableDisabled(event: MouseEvent) {
   &.-danger {
     border-color: var(--nagi-color-danger);
     color: var(--nagi-color-danger);
+  }
+
+  &.-compact {
+    min-block-size: 1.75rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.875rem;
+  }
+
+  &.-large {
+    min-block-size: 2.5rem;
+    padding: 0.65rem 1rem;
+    font-size: 1.125rem;
   }
 }
 </style>

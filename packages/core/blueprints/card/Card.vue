@@ -14,6 +14,9 @@ defineProps<{
     <div class="zone">
       <slot />
     </div>
+    <div v-if="$slots.footer" class="zone -secondary">
+      <slot name="footer" />
+    </div>
   </div>
 </template>
 
@@ -43,6 +46,10 @@ defineProps<{
 
   > .zone {
     padding: 1rem;
+  }
+
+  > .zone.-secondary {
+    padding: 0 1rem 1rem;
   }
 }
 </style>

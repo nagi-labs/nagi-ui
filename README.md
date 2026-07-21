@@ -43,6 +43,11 @@ product needs custom dismiss/stack state, gesture sheets, or Motion-level
 orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
+The cross-library component benchmark currently places creation progress at
+**22 / 37 (59.5%)**: 22 shipped components and 15 adopted component slices not
+yet built. Native recipes and explicit declines are not counted as components;
+see [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
+
 Package components are available without copying source:
 
 ```ts

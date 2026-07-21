@@ -10,13 +10,22 @@ test("styling-only package components expose semantic content and tone variants"
   const card = page.locator("div.card", { hasText: "Package-first surface" });
   await expect(card.getByText("Package-first surface", { exact: true })).toBeVisible();
   await expect(card.getByText("The consumer owns and styles this declared slot sub-surface.")).toBeVisible();
+  await expect(card.getByText("Package component with an owned footer surface.")).toBeVisible();
+  await expect(card.getByRole("button", { name: "Manage package" })).toBeVisible();
 
   for (const label of ["Neutral", "Accent", "Ready", "Review", "Blocked"]) {
     await expect(card.getByText(label, { exact: true })).toBeVisible();
   }
 
   await expect(card.locator('[role="status"]', { hasText: "Catalog ready" })).toBeVisible();
+  await expect(card.locator(".alert-icon", { hasText: "✓" })).toBeVisible();
   await expect(card.getByRole("alert")).toContainText("Destructive action");
+
+  const smallHeight = await page.getByTestId("button-small").evaluate((button) => button.clientHeight);
+  const defaultHeight = await page.getByTestId("button-default").evaluate((button) => button.clientHeight);
+  const largeHeight = await page.getByTestId("button-large").evaluate((button) => button.clientHeight);
+  expect(smallHeight).toBeLessThan(defaultHeight);
+  expect(defaultHeight).toBeLessThan(largeHeight);
 });
 
 test("focusable disabled Button stays focusable without activating", async ({ page }) => {

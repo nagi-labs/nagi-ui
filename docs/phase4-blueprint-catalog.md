@@ -34,9 +34,9 @@ The styling-only baseline is intentionally small:
 
 | Component | Shape choice | Public customization boundary |
 |---|---|---|
-| `Button` | fixed native button | label slot + variant/focusable-disabled props |
-| `Card` | semantically neutral frame | optional title/description props + body slot |
-| `Alert` | fixed status frame | title/tone/role props + body slot |
+| `Button` | fixed native button | label slot + variant/size/focusable-disabled props |
+| `Card` | semantically neutral frame | optional title/description props + body/footer slots |
+| `Alert` | fixed status frame | title/tone/role props + icon/body slots |
 | `Badge` | fixed inline label | label/tone props |
 
 Card, Alert, and Badge are the concrete styling-only examples named in CHARTER
@@ -134,3 +134,11 @@ focus and deliberate modal boundary are recorded in
 Post-v0 Alignment D1 adds Tabs as the 22nd package/ownable component. Its
 independent roving-focus core, content-only panel slot and deliberate omissions
 are recorded in [`base-ui-alignment-d-tabs.md`](base-ui-alignment-d-tabs.md).
+
+The first cross-library strengthening slice keeps the catalog at 22 while
+adding the product anatomy independently established by shadcn-vue and
+PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
+content. All remain one-SFC package/ownership surfaces; no compound family,
+icon-name DSL, or expanded pass-through API was introduced. The complete
+decision ledger and 59.5% component-creation metric are in
+[`base-ui-component-comparison.md`](base-ui-component-comparison.md).

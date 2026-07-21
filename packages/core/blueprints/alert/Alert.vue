@@ -15,6 +15,9 @@ withDefaults(
     :class="tone === 'neutral' ? undefined : tone === 'success' ? '-positive' : `-${tone}`"
     :role="role"
   >
+    <span v-if="$slots.icon" class="icon">
+      <slot name="icon" />
+    </span>
     <h2 class="title">{{ title }}</h2>
     <div class="zone">
       <slot />
@@ -29,6 +32,23 @@ withDefaults(
   border-radius: var(--nagi-radius-control);
   background: var(--nagi-color-surface);
   color: var(--nagi-color-text);
+
+  &:has(> .icon) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--nagi-space-item-gap);
+
+    > .icon {
+      grid-row: 1 / span 2;
+      align-self: start;
+      display: inline-flex;
+    }
+
+    > .title,
+    > .zone {
+      grid-column: 2;
+    }
+  }
 
   > .title {
     margin: 0;
