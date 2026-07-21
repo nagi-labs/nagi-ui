@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { DropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
+import { Button, DropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
 import DropdownFixture, { type DropdownSort } from "./DropdownFixture.vue";
 
 const lastAction = ref("none");
@@ -146,6 +146,16 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
     </section>
 
     <section class="section">
+      <h2 class="title">Buttons</h2>
+      <div class="row -buttons">
+        <Button>Cancel</Button>
+        <Button variant="accent">Save</Button>
+        <Button variant="danger">Delete</Button>
+        <Button disabled>Disabled</Button>
+      </div>
+    </section>
+
+    <section class="section">
       <h2 class="title">Explicit DOM fixture</h2>
       <DropdownFixture
         v-model:show-toolbar="showToolbar"
@@ -210,6 +220,14 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
     > .title {
       margin-block: 0 0.75rem;
       font-size: 0.85rem;
+    }
+
+    > .row {
+      &.-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
     }
 
     /* Brand change through semantic tokens only — no ownership, no component

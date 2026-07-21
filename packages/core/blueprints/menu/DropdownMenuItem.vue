@@ -227,7 +227,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
     }
 
     &.-danger {
-      color: #aa3443;
+      color: var(--nagi-color-danger, #aa3443);
     }
 
     > .icon {

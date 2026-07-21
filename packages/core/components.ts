@@ -5,6 +5,7 @@
  * loadable by plain Node and ships no CSS. The re-exported SFCs are the same
  * files the `own` workflow copies (single-source principle, CHARTER §3).
  */
+export { default as Button } from "./blueprints/button/NagiButton.vue";
 export { default as Combobox } from "./blueprints/combobox/Combobox.vue";
 export type { ComboboxOption } from "./blueprints/combobox/Combobox.vue";
 export { default as DropdownMenu } from "./blueprints/menu/DropdownMenu.vue";

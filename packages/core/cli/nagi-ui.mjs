@@ -14,6 +14,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 export const components = {
+  button: { dir: "blueprints/button", files: ["NagiButton.vue"] },
   combobox: { dir: "blueprints/combobox", files: ["Combobox.vue"] },
   "dropdown-menu": {
     dir: "blueprints/menu",
