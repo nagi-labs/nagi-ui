@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./components.ts",
+    "./nagi-css-preset": "./nagi-css-preset.mjs",
     "./theme.css": "./theme/theme.css",
     "./blueprints/*": "./blueprints/*",
     "./package.json": "./package.json"
@@ -17,6 +18,7 @@
     "blueprints",
     "cli",
     "components.ts",
+    "nagi-css-preset.mjs",
     "theme"
   ],
   "sideEffects": [
