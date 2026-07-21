@@ -22,6 +22,11 @@ export interface UseDisclosureOptions {
   disabled?: MaybeRefOrGetter<boolean>
 }
 
+interface DisclosureControlProps {
+  readonly name?: string
+  readonly disabled?: boolean
+}
+
 export interface DisclosureProps {
   id: string
   /** Present only when open at render time, so SSR emits `<details open>`. */
@@ -124,4 +129,16 @@ export function useDisclosure(options: UseDisclosureOptions = {}): UseDisclosure
       },
     },
   }
+}
+
+/** Connects package Disclosure props without exposing a pass-through option object. */
+export function useDisclosureControl(
+  props: DisclosureControlProps,
+  open: Ref<boolean>,
+): UseDisclosureReturn {
+  return useDisclosure({
+    open,
+    ...(props.name ? { name: props.name } : {}),
+    disabled: () => props.disabled ?? false,
+  })
 }

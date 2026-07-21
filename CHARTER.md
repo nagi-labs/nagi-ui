@@ -110,6 +110,8 @@ ownership 後に利用者へ修正してほしい **policy と markup** は Blue
 
 - 万能な config object、control kind の分岐、変換 callback 群を持つ汎用 helper は作らない。`useNativeRadioReset(input, model)` のように一つの固定された意味へ名前を付ける
 - helper を使うために Blueprint 側で同じ写像や DOM 規則を再宣言するなら抽象化に失敗しているため、明示実装へ戻す
+- composable の option object も自動的にpolicyとはみなさない。`openDelay: props.openDelay`、`disabled: () => props.disabled`、`area` / `offset` を `anchor` へ包むだけの一対一転送・reactive getter化・API形状変換は、利用者の編集箇所ではないためcomponent-specificなpackage adapterへ隠す。adapterは`@nagi-labs/nagi-ui/component-controls`へ隔離し、custom renderer向けのheadless root APIへ混ぜない。propsの定義とdefaultはSFCに残す
+- Blueprint-local schemaの`getKey` / `getTextValue` / `isDisabled`、loading時のitems分岐、公開eventへの変換など、rendererのデータ解釈を決めるoption mappingはSFCに残す。schema解釈を含む一つのcallを、転送だけ隠す目的で複数helperへ分断しない
 - 出荷SFC内の `watch` / `watchEffect` は禁止ではなく**要レビューのシグナル**とする。まず derived state で消せないか、次に固定意味の component-specific helper / composable へ移せないかを確認し、利用者が変更する policy の監視だけをSFCへ残す
 - renderer の DOM 構造を変更したとき同時に直す必要がある処理（schema node から menu option への変換等）は、mechanism に見えても Blueprint に残す。ただし変更不能なa11y invariantとして固定するfocus repairは、DOM契約をbrowser testで拘束したcomponent-specific composableへ隠してよい
 - 特殊要件で既定 mechanism を変えたい利用者は、ownership 後に helper を外して局所実装へ降りる。投機的な hook や options を helper に増やさない
@@ -396,6 +398,7 @@ source ownership、upstream追従、v0 catalog、制約の自己選択、consume
 
 ## 改訂履歴
 
+- **2026-07-22** Blueprint内のcomposable option objectを再分類。一対一のprop転送・getter化・core API用のnestingはpolicyではなく固定adapterとして`@nagi-labs/nagi-ui/component-controls`へ隠し、headless root APIと分離した。Avatar / Button / Dialog / Disclosure / Popover / Tooltip / Toggle / ToastとCombobox form channelを短いcomponent adapterへ統一する一方、Menu / Listbox / Combobox / Tabsのschema解釈・items分岐・公開event変換は所有後の編集箇所として可視のまま維持する。判断表は`docs/blueprint-wiring-audit.md`。
 - **2026-07-22** 全出荷Blueprintを「ユーザーに修正してほしい場所か」で配線監査。Toast lifecycle/focus repair、Avatar image race、Combobox native form channel、Tabs model bridge、Button disabled activationをpackage composableへ隠し、Dropdown node option変換は編集対象renderer moduleへ移した。Input/Checkbox/Switch/Sliderは`useAttrs()`をtemplateの`$attrs`へ簡約、Comboboxも追加属性をbehavior propsと安全にmergeしてnative inputへ固定した。通常`own`はcomposableをコピーせず、schema/rendererの相対dependency closureだけをunit testで保証する。SFC内`watch`等を禁止ではなくmechanism漏出のreview signalとする基準を§3.5へ追加し、現時点の出荷SFCはwatch/lifecycle/direct DOM global/useAttrs 0件。正本は`docs/blueprint-wiring-audit.md`。
 - **2026-07-22** Base UI alignment D2として Avatar / Separator / Toggleを追加し、component作成進捗を採用37 slice中25出荷の67.6%へ更新。Avatarはnative image + deterministic fallback + error/src recovery、Separatorはhorizontal `<hr>` / vertical ARIA / decorative、Toggleはnative `<button aria-pressed>` + controlled modelに限定し、compound/asChild/custom state語彙を導入しなかった。同時に全SFC filenameから`Nagi` prefixを除去し、全Blueprint surfaceをNagi CSSの厳密な`n-` + filename契約へ統一した。
 - **2026-07-22** composableをDLするownership layer (`vue` / `all`) は設計だけを保持し、component catalog拡充を優先して実装延期とした。package内部でmechanismをcomposableへ隠す方針とは分離し、composable ownershipの実需要が観測されるまで再開しない。

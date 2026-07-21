@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./component-controls": "./src/component-controls.ts",
     "./components": "./components.ts",
     "./nagi-css-preset": "./nagi-css-preset.mjs",
     "./default-theme.css": "./theme/default-theme.css",

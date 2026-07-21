@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useFocusableDisabled } from "@nagi-labs/nagi-ui";
+import { useButtonControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -24,9 +24,7 @@ const sizeClass = {
   default: undefined,
   large: "-large",
 } as const;
-const focusableDisabled = useFocusableDisabled(
-  () => props.disabled && props.focusableWhenDisabled,
-);
+const button = useButtonControl(props);
 </script>
 
 <template>
@@ -37,9 +35,9 @@ const focusableDisabled = useFocusableDisabled(
       sizeClass[size],
     ]"
     :type="type"
-    :disabled="disabled && !focusableWhenDisabled"
-    :aria-disabled="disabled && focusableWhenDisabled ? 'true' : undefined"
-    @click.capture="focusableDisabled.onClick"
+    :disabled="button.disabled"
+    :aria-disabled="button.ariaDisabled"
+    @click.capture="button.onClick"
   >
     <slot />
   </button>

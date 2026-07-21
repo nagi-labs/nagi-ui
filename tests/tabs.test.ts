@@ -3,7 +3,8 @@ import test from "node:test";
 
 import { customRef, effectScope, nextTick, ref } from "vue";
 
-import { useTabs, useTabsModelBridge } from "@nagi-labs/nagi-ui";
+import { useTabs } from "@nagi-labs/nagi-ui";
+import { useTabsModelBridge } from "@nagi-labs/nagi-ui/component-controls";
 
 interface TabItem {
   key: string;

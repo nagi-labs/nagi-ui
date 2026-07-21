@@ -11,11 +11,11 @@ export interface TabsItem {
 <script setup lang="ts">
 import {
   useTabs,
-  useTabsModelBridge,
   type MenuDirection,
   type TabsActivationMode,
   type TabsOrientation,
 } from "@nagi-labs/nagi-ui";
+import { useTabsModelBridge } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
-  useDialog,
   vDialogClose,
   type DialogClosedBy,
 } from "@nagi-labs/nagi-ui";
+import { useDialogControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -22,11 +22,7 @@ const props = withDefaults(
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const dialog = useDialog({
-  open,
-  modal: props.modal,
-  closedby: props.closedby,
-});
+const dialog = useDialogControl(props, open);
 const titleId = `${dialog.id}-title`;
 const descriptionId = `${dialog.id}-description`;
 

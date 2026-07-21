@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAvatar } from "@nagi-labs/nagi-ui";
+import { useAvatarControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = defineProps<{
   src?: string;
@@ -11,11 +11,7 @@ defineSlots<{
   fallback(props: { fallback: string }): unknown;
 }>();
 
-const { fallbackText, hasImage, image, onImageError } = useAvatar({
-  src: () => props.src,
-  alt: () => props.alt,
-  fallback: () => props.fallback,
-});
+const { fallbackText, hasImage, image, onImageError } = useAvatarControl(props);
 </script>
 
 <template>

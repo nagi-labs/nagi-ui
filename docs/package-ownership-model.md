@@ -104,6 +104,12 @@ composable ownershipの具体的需要が観測されるまで次スライスと
 componentの必須source dependencyとして一緒にコピーする。CLI testはVue/TSを問わず
 相対importの推移closureを検査し、registry漏れを禁止する。
 
+現在のcanonical SFCは、propsとheadless composable間の一対一転送やnative同期のような
+固定mechanismを`@nagi-labs/nagi-ui/component-controls`からimportする。このsubpathは
+package component / owned SFC用の実装境界であり、custom renderer向けのheadless root API
+とは分離する。通常の`own`ではこれをコピーせず、props・schema・markup・CSSなど利用者に
+変更してほしいpolicyだけをlocal sourceへ移す。
+
 behavior を小さな composable に隠しても、所有者が必要な層だけを選べるようにする。ただし
 初期 surface は利用頻度が高い次の2段に絞り、`composable-only` は実需要が観測されるまで
 出荷しない。

@@ -108,48 +108,41 @@ export interface UseComboboxReturn<Item, Key extends string = string> {
   optionProps: (item: Item) => ComboboxOptionProps;
 }
 
-interface ComboboxControlBehavior {
-  clear: () => void;
-  hide: () => void;
-}
-
-export interface UseComboboxControlOptions<Key extends string> {
-  input: Readonly<Ref<HTMLInputElement | null>>;
-  inputValue: Ref<string>;
-  selected: Ref<Key | null>;
-  behavior: ComboboxControlBehavior;
-  required: () => boolean;
-  validationMessage: () => string;
+interface ComboboxControlProps {
+  readonly required: boolean;
+  readonly validationMessage: string;
 }
 
 /** Binds one editable combobox model to its native form-control channels. */
-export function useComboboxControl<Key extends string>(
-  options: UseComboboxControlOptions<Key>,
+export function useComboboxControl<Item, Key extends string>(
+  props: ComboboxControlProps,
+  input: Readonly<Ref<HTMLInputElement | null>>,
+  behavior: UseComboboxReturn<Item, Key>,
 ) {
-  const initialInputValue = options.inputValue.value;
-  const initialSelected = options.selected.value;
+  const initialInputValue = behavior.inputValue.value;
+  const initialSelected = behavior.selectedKey.value;
 
-  useNativeFormReset(options.input, (control) => {
-    options.selected.value = initialSelected;
-    options.behavior.hide();
+  useNativeFormReset(input, (control) => {
+    behavior.selectedKey.value = initialSelected;
+    behavior.hide();
     // Selection watchers canonicalize text to the option label. Reset owns
     // both initial models, so restore deliberately non-canonical initial text
     // after those watchers settle.
     void nextTick(() => {
-      options.inputValue.value = initialInputValue;
+      behavior.inputValue.value = initialInputValue;
       control.value = initialInputValue;
     });
   });
 
-  useNativeCustomValidity(options.input, () =>
-    options.required() && options.selected.value === null
-      ? options.validationMessage()
+  useNativeCustomValidity(input, () =>
+    props.required && behavior.selectedKey.value === null
+      ? props.validationMessage
       : "",
   );
 
   function clear() {
-    options.behavior.clear();
-    options.input.value?.focus();
+    behavior.clear();
+    input.value?.focus();
   }
 
   return { clear };

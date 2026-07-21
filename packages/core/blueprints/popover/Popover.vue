@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { usePopover, type AnchorArea } from "@nagi-labs/nagi-ui";
+import type { AnchorArea } from "@nagi-labs/nagi-ui";
+import { usePopoverControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -12,10 +13,7 @@ const props = withDefaults(
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const popover = usePopover({
-  open,
-  anchor: { area: props.area, offset: props.offset },
-});
+const popover = usePopoverControl(props, open);
 
 defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle });
 </script>

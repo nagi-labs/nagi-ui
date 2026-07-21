@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDisclosure } from "@nagi-labs/nagi-ui";
+import { useDisclosureControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = defineProps<{
   summary: string;
@@ -8,11 +8,7 @@ const props = defineProps<{
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
-const disclosure = useDisclosure({
-  open,
-  ...(props.name ? { name: props.name } : {}),
-  disabled: () => props.disabled ?? false,
-});
+const disclosure = useDisclosureControl(props, open);
 
 defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.toggle });
 </script>

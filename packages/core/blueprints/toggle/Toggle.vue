@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useToggle } from "@nagi-labs/nagi-ui";
+import { useToggleControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -9,10 +9,7 @@ const props = withDefaults(
 );
 
 const pressed = defineModel<boolean>({ default: false });
-const toggle = useToggle({
-  pressed,
-  disabled: () => props.disabled,
-});
+const toggle = useToggleControl(props, pressed);
 </script>
 
 <template>

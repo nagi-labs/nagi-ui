@@ -32,6 +32,11 @@ export interface UseDialogOptions {
   closedby?: DialogClosedBy
 }
 
+interface DialogControlProps {
+  readonly modal: boolean
+  readonly closedby: DialogClosedBy
+}
+
 export interface DialogTriggerProps {
   /** Invoker Commands wiring for modal dialogs. */
   commandfor?: string
@@ -151,6 +156,18 @@ export function useDialog(options: UseDialogOptions = {}): UseDialogReturn {
       onToggle: (event: ToggleEvent) => mirror(event, event.newState === "open"),
     },
   }
+}
+
+/** Connects package Dialog props without exposing a pass-through option object. */
+export function useDialogControl(
+  props: DialogControlProps,
+  open: Ref<boolean>,
+): UseDialogReturn {
+  return useDialog({
+    open,
+    modal: props.modal,
+    closedby: props.closedby,
+  })
 }
 
 /**

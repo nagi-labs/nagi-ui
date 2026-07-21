@@ -14,6 +14,12 @@ export interface UseAvatarOptions {
   fallback: MaybeRefOrGetter<string | undefined>;
 }
 
+interface AvatarControlProps {
+  readonly src?: string;
+  readonly alt: string;
+  readonly fallback?: string;
+}
+
 function initials(value: string): string {
   const words = value.trim().split(/\s+/u).filter(Boolean);
   if (words.length === 0) return "?";
@@ -57,4 +63,13 @@ export function useAvatar(options: UseAvatarOptions) {
   onMounted(detectMissedError);
 
   return { fallbackText, hasImage, image, onImageError };
+}
+
+/** Connects the package Avatar props without exposing pass-through wiring. */
+export function useAvatarControl(props: AvatarControlProps) {
+  return useAvatar({
+    src: () => props.src,
+    alt: () => props.alt,
+    fallback: () => props.fallback,
+  });
 }

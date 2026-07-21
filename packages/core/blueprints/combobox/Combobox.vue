@@ -12,8 +12,8 @@ import { useId, useTemplateRef } from "vue";
 import {
   mergeNagiProps,
   useCombobox,
-  useComboboxControl,
 } from "@nagi-labs/nagi-ui";
+import { useComboboxControl } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -66,14 +66,7 @@ const combobox = useCombobox<ComboboxOption>({
   openWhenEmpty: true,
 });
 const { visibleItems } = combobox;
-const control = useComboboxControl({
-  input: inputElement,
-  inputValue,
-  selected,
-  behavior: combobox,
-  required: () => props.required,
-  validationMessage: () => props.validationMessage,
-});
+const control = useComboboxControl(props, inputElement, combobox);
 </script>
 
 <template>

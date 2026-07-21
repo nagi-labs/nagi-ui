@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useTooltip, type AnchorArea } from "@nagi-labs/nagi-ui";
+import type { AnchorArea } from "@nagi-labs/nagi-ui";
+import { useTooltipControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -21,13 +22,7 @@ const props = withDefaults(
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const tooltip = useTooltip({
-  open,
-  openDelay: props.openDelay,
-  closeDelay: props.closeDelay,
-  disabled: () => props.disabled,
-  anchor: { area: props.area, offset: props.offset },
-});
+const tooltip = useTooltipControl(props, open);
 
 defineExpose({ show: tooltip.show, hide: tooltip.hide });
 </script>

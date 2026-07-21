@@ -11,7 +11,7 @@ import {
   type Ref,
 } from "vue"
 
-import { createAnchorPair, type AnchorOptions } from "./anchor.ts"
+import { createAnchorPair, type AnchorArea, type AnchorOptions } from "./anchor.ts"
 
 export interface UseTooltipOptions {
   /** External source of truth (controlled mode). */
@@ -26,6 +26,14 @@ export interface UseTooltipOptions {
   anchor?: AnchorOptions | true
   /** Suppress hover/focus/programmatic opening. */
   disabled?: MaybeRefOrGetter<boolean>
+}
+
+interface TooltipControlProps {
+  readonly openDelay: number
+  readonly closeDelay: number
+  readonly disabled: boolean
+  readonly area: AnchorArea
+  readonly offset: number
 }
 
 export interface TooltipTriggerProps {
@@ -238,4 +246,18 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
       },
     },
   }
+}
+
+/** Connects package Tooltip props while keeping the headless options API independent. */
+export function useTooltipControl(
+  props: TooltipControlProps,
+  open: Ref<boolean>,
+): UseTooltipReturn {
+  return useTooltip({
+    open,
+    openDelay: props.openDelay,
+    closeDelay: props.closeDelay,
+    disabled: () => props.disabled,
+    anchor: { area: props.area, offset: props.offset },
+  })
 }

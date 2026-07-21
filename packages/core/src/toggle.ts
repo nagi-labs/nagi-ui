@@ -9,6 +9,10 @@ export interface UseToggleOptions {
   disabled?: MaybeRefOrGetter<boolean>
 }
 
+interface ToggleControlProps {
+  readonly disabled: boolean
+}
+
 export interface ToggleButtonProps {
   readonly type: "button"
   readonly "aria-pressed": "true" | "false"
@@ -57,4 +61,15 @@ export function useToggle(options: UseToggleOptions = {}): UseToggleReturn {
       },
     },
   }
+}
+
+/** Connects package Toggle props without exposing a pass-through option object. */
+export function useToggleControl(
+  props: ToggleControlProps,
+  pressed: Ref<boolean>,
+): UseToggleReturn {
+  return useToggle({
+    pressed,
+    disabled: () => props.disabled,
+  })
 }

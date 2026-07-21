@@ -15,7 +15,6 @@ export {
 export {
   createToastManager,
   useToast,
-  useToastRenderer,
   type CreateToastManagerOptions,
   type ToastAction,
   type ToastAddOptions,
@@ -93,7 +92,6 @@ export {
   type UseListboxReturn,
 } from "./listbox.ts"
 export {
-  useTabsModelBridge,
   useTabs,
   type TabsAccessibleName,
   type TabsActivationMode,
@@ -112,13 +110,11 @@ export {
 } from "./toggle.ts"
 export {
   useCombobox,
-  useComboboxControl,
   type ComboboxInputProps,
   type ComboboxListboxProps,
   type ComboboxOptionProps,
   type ComboboxPopupProps,
   type UseComboboxOptions,
-  type UseComboboxControlOptions,
   type UseComboboxReturn,
 } from "./combobox.ts"
 export {

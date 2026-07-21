@@ -4,8 +4,8 @@ import { computed } from "vue";
 import {
   type ToastItem,
   type ToastManager,
-  useToastRenderer,
 } from "@nagi-labs/nagi-ui";
+import { useToastRenderer } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -23,12 +23,7 @@ const props = withDefaults(
   },
 );
 
-const notifier = useToastRenderer({
-  manager: props.manager,
-  duration: props.duration,
-  limit: props.limit,
-  label: props.label,
-});
+const notifier = useToastRenderer(props);
 const visibleToasts = computed(() => [...notifier.toasts.value].reverse());
 
 function toneClass(item: ToastItem) {

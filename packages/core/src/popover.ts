@@ -10,7 +10,7 @@ import {
   type Ref,
 } from "vue"
 
-import { createAnchorPair, type AnchorOptions } from "./anchor.ts"
+import { createAnchorPair, type AnchorArea, type AnchorOptions } from "./anchor.ts"
 
 export interface UsePopoverOptions {
   /**
@@ -28,6 +28,11 @@ export interface UsePopoverOptions {
    * where supported, Floating UI fallback otherwise (CHARTER §5).
    */
   anchor?: AnchorOptions | true
+}
+
+interface PopoverControlProps {
+  readonly area: AnchorArea
+  readonly offset: number
 }
 
 export interface PopoverTriggerProps {
@@ -132,6 +137,17 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
       ? { id, style: anchor.positionedStyle, onToggle }
       : { id, onToggle },
   }
+}
+
+/** Connects package Popover props without exposing a pass-through option object. */
+export function usePopoverControl(
+  props: PopoverControlProps,
+  open: Ref<boolean>,
+): UsePopoverReturn {
+  return usePopover({
+    open,
+    anchor: { area: props.area, offset: props.offset },
+  })
 }
 
 let popoverCount = 0
