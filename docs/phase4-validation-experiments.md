@@ -73,4 +73,22 @@ Status: In progress (2026-07-21). 実験プロトコルの定義と coding-agent
 
 ## 結果記録
 
-(実行ごとに追記)
+### 実験 A — 2026-07-21 実行(coding-agent アーム): **PASS**
+
+- 経路: agent は自力で semantic token に到達し、`playground/src/brand.css`
+  (新規、`:root` の token 上書き 13 個)+ 両エントリへの import で達成した
+- **`packages/core` への変更ゼロ**(git diff で機械確認)。blueprint の直接編集も
+  literal 総置換も発生せず
+- diff 規模: 6 ファイル、+65 / −62 行(大半は依頼範囲内のページクローム暖色化と
+  fixture のハードコード色 → fallback 付き var() 化)
+- 判断品質の特記: parity test の存在から「theme.css・blueprint を触るとテストが
+  壊れる。ブランド変更はアプリ側 token 上書きが設計意図」と正しく推論。
+  no-Teleport による popover への custom property 継承にも言及。theme.css 後勝ち
+  の import 順も正しく処理
+- 機械検証: `vp run test` 96/96。agent は 2 ページの本番ビルドまで行い、出力
+  CSS に `#b45309` が含まれることを確認
+- 参照ファイル(自己申告): 約 12
+- 危険信号への含意: 「theme と ownership の間の崖」はこの標準的ブランド変更
+  タスクでは**観測されず**。「AI に扱いやすいは差別化にならない」に対しては、
+  同梱ドキュメント + parity test だけで無文脈 agent が正しい経路を選んだ、
+  という 1 標本の反証
