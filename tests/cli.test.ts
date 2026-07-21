@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   components,
   diffOwned,
+  main,
   markerLine,
   ownComponent,
   parseMarker,
@@ -84,12 +85,37 @@ test("diff reports clean, modified, and drifted owned sources", () => {
   entries = diffOwned(targetRoot, { packageRoot });
   assert.equal(entries.find((entry) => entry.file === owned)?.status, "modified");
 
+  const stampedVersion = parseMarker(
+    fs.readFileSync(owned, "utf8").split("\n", 1)[0] as string,
+  )?.version;
+  assert.ok(stampedVersion, "owned file is stamped with the installed version");
   const drifted = fs
     .readFileSync(owned, "utf8")
-    .replace("@0.0.0", "@0.0.0-old");
+    .replace(`@${stampedVersion}`, `@${stampedVersion}-old`);
   fs.writeFileSync(owned, drifted);
   entries = diffOwned(targetRoot, { packageRoot });
   assert.equal(entries.find((entry) => entry.file === owned)?.status, "drifted");
+});
+
+test("diff gates only on drifted and unknown-source, not on local modification", () => {
+  const repo = path.join(import.meta.dirname, "..");
+  const targetRoot = tempDir();
+  ownComponent("listbox", { packageRoot, targetRoot });
+
+  assert.equal(main(["diff", "--dir", targetRoot], repo), 0);
+
+  const owned = path.join(targetRoot, "listbox/Listbox.vue");
+  fs.appendFileSync(owned, "\n<!-- local edit -->\n");
+  assert.equal(main(["diff", "--dir", targetRoot], repo), 0, "modified stays green");
+
+  const stampedVersion = parseMarker(
+    fs.readFileSync(owned, "utf8").split("\n", 1)[0] as string,
+  )?.version;
+  fs.writeFileSync(
+    owned,
+    fs.readFileSync(owned, "utf8").replace(`@${stampedVersion}`, `@${stampedVersion}-old`),
+  );
+  assert.equal(main(["diff", "--dir", targetRoot], repo), 1, "drifted fails the gate");
 });
 
 test("diff flags markers that no longer match a shipped source", () => {

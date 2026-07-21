@@ -39,9 +39,21 @@ adjacent to the content it describes and survives file moves.
 | `drifted` | bodies differ and the installed version moved past the stamp — local and upstream changes may both be present |
 | `unknown-source` | the marker names a component/file the installed version does not ship |
 
-`diff` exits non-zero when anything is not `clean`, so it can run in CI as a
-"owned sources reviewed after upgrade?" gate. For content comparison it prints
-a ready-made `git diff --no-index` command against the installed source.
+`diff` exits non-zero only for `drifted` and `unknown-source`, so it can run
+in CI as an "owned sources reconciled after upgrade?" gate — `modified` is the
+normal steady state of a customized owned file and does not fail the gate
+(learned in validation experiment C). For content comparison it prints a
+ready-made `git diff --no-index` command against the installed source.
+
+## Own したら即コミットする(3-way merge の base 確保)
+
+`drifted` の解消は 3-way merge(base = own 時点の upstream、ours = owned、
+theirs = 現在の upstream)が最も安全だが、**base の内容は marker の version
+番号からは復元できない**。消費プロジェクトで base を確保する唯一の一般的手段は
+「`own` 直後に owned ファイルをそのままコミットする」ことである(以後 base は
+git 履歴から取れる)。validation experiment C はこの手順で `git merge-file` に
+よる正確な取り込みに成功した。base を CLI 側で保存する仕組みは、必要が観測
+されてから検討する。
 
 ## Deliberate limits of this slice
 

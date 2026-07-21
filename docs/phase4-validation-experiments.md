@@ -116,3 +116,36 @@ Status: In progress (2026-07-21). 実験プロトコルの定義と coding-agent
 - 危険信号への含意: 「own した瞬間に保証が消える」に対し、own 直後の lint /
   diff / test が全て機能。「owned Blueprint が読みにくい」に対し、変更は
   schema + renderer の 2 ファイルに収まった
+
+### 実験 C — 2026-07-21 実行(coding-agent アーム): **PASS**(実益 2 件つき)
+
+- 仕込み: combobox を own(@0.0.0)→ ローカル変更 2 点(`spellcheck="false"`、
+  input の `font-weight: 650`)→ upstream に `autocapitalize="none"` 修正 +
+  version 0.0.1 → `diff` が `drifted`。**ローカル変更と upstream 修正は同一
+  `<input>` 要素上で衝突**するよう設計
+- 経路: agent は stamp(@0.0.0)と installed(0.0.1)から状況を正しく解釈し、
+  base を確保して `git merge-file` による **3-way merge** を実施。衝突 1 箇所を
+  両採用で解消し、stamp を `@0.0.1` に更新。最終状態は `modified`(ローカル
+  差分のみ)で upstream 修正・ローカル変更とも保全。`vp run test` 96/96
+- **実益 1(agent がバグを発見)**: CLI テストがバージョン `@0.0.0` を
+  ハードコードしており、version bump 下で drifted を作れず fail。agent が
+  version 非依存の形へ修正 → 本体に採用済み
+- **実益 2(設計課題の露見)**: `diff` が `modified` でも exit 1 だったが、
+  `modified` はカスタマイズ済み owned file の**定常状態**であり CI gate を
+  恒久的に赤にしてしまう。gate 対象を `drifted` / `unknown-source` のみに修正
+  し、exit 規約のテストを追加した
+- **限界の明文化**: 3-way merge の base は marker からは復元できない。今回
+  agent は「version bump が未コミットだったため HEAD = 0.0.0」という状況に
+  救われた。消費プロジェクトでの一般解は「**own したら即コミット**」で、
+  `docs/phase4-ownership-cli.md` に手順として明記した(base を CLI が保存する
+  仕組みは需要観測後)
+
+## 総括(coding-agent アーム、各 1 標本)
+
+3 実験とも PASS。無文脈 agent が theme 境界 / ownership 境界 / upstream 追従
+境界のそれぞれで、誘導なしに設計意図どおりの経路(token 上書き / own +
+拡張レシピ / 3-way merge + stamp 更新)を選び、防波堤文書(§3.5、speculative
+API 禁止)と機械検証(parity / nagi-css / verified-bindings / diff)がすべて
+意図した向きに働いた。ownership model の危険信号 2・3・4・6 について、現時点で
+モデルを覆す観測はない。標本数は各 1 であり、人間アームと反復実行は今後の
+課題として残る。

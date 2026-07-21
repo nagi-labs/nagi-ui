@@ -122,7 +122,8 @@ function usage() {
   nagi-ui diff [--dir <target>]
 
 The default target directory is src/components/nagi. "diff" exits non-zero
-when any owned file differs from the installed upstream source.`
+only for drifted or unknown-source files — local customization ("modified")
+is the normal steady state of an owned file and does not fail the gate.`
 }
 
 export function main(argv = process.argv.slice(2), cwd = process.cwd()) {
@@ -168,18 +169,16 @@ export function main(argv = process.argv.slice(2), cwd = process.cwd()) {
       console.log(`no @nagi-source files under ${dir}`)
       return 0
     }
-    let dirty = 0
+    let gating = 0
     for (const entry of entries) {
       const stamp = `${entry.marker.component}/${entry.marker.file}@${entry.marker.version}`
       console.log(`${entry.status.padEnd(14)} ${path.relative(cwd, entry.file)}  (${stamp})`)
-      if (entry.status !== "clean") {
-        dirty += 1
-        if (entry.upstream) {
-          console.log(`  compare: git diff --no-index ${entry.upstream} ${entry.file}`)
-        }
+      if (entry.status !== "clean" && entry.upstream) {
+        console.log(`  compare: git diff --no-index ${entry.upstream} ${entry.file}`)
       }
+      if (entry.status === "drifted" || entry.status === "unknown-source") gating += 1
     }
-    return dirty === 0 ? 0 : 1
+    return gating === 0 ? 0 : 1
   }
   console.error(usage())
   return command === undefined || command === "--help" || command === "-h" ? 0 : 1
