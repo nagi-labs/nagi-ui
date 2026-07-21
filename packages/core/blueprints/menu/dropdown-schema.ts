@@ -28,6 +28,10 @@ export interface DropdownMenuLinkNode {
   key: string;
   label: string;
   href: string;
+  /** Optional SPA-router activation. The renderer still owns a real `<a href>`. */
+  navigate?: () => void | Promise<unknown>;
+  /** Optional intent prefetch, called on pointer entry. */
+  prefetch?: () => void | Promise<unknown>;
   shortcut?: string;
   disabled?: boolean;
   /** Defaults to true: following a link closes the whole tree. */

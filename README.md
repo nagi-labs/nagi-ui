@@ -64,6 +64,17 @@ import "@nagi-labs/nagi-ui/theme.css"
 The component catalog runs at `/catalog.html`; package/ownership details
 are in [`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md).
 
+Framework integration is selected once through the setup wizard:
+
+```sh
+vp exec nagi-ui setup
+```
+
+It offers native / Vue Router / Nuxt Link navigation and native / Nuxt Image
+image URLs without creating framework-specific Blueprint copies. The generated
+adapter, non-interactive flags, and exact boundary are documented in
+[`docs/setup-integrations.md`](docs/setup-integrations.md).
+
 ### Phase 0 — vertical slice
 
 - [x] `usePopover` — uncontrolled and controlled (`v-model:open`) via

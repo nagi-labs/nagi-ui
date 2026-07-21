@@ -39,6 +39,7 @@ attribute 注入型 headless core を内部の芯とし、Nagi CSS Contract(別�
 | **contract preset** | npm(linter 側) | Nagi CSS linter 用の Nagi UI プリセット設定(`componentSlots` 等が必要になった場合のみ) | — |
 
 - 通常の導入体験は PrimeVue 型(package import + theme token)とし、**最初から全 SFC の copy を要求しない**。package API で足りない component だけ `nagi-ui own <component>` 相当の workflow で所有へ移る。
+- framework integration は `nagi-ui setup` で選択する。Vue Router / Nuxt Link は実 `<a href>` を保ったまま `navigate` / `prefetch` callback へ変換し、Nuxt Image は標準 `<img>` 用 URL へ変換する。framework component 自体やその props DSL を Blueprint schema へ流入させず、package / own の単一 SFC を維持する。詳細は `docs/setup-integrations.md`。
 - shadcn から継承するのは **必要時に source ownership を移譲できること**。Tailwind・ユーティリティクラスは採らない。コピーされたコードは契約により決定的な命名を持つため、利用者の linter を最初から通る。
 - 本当の商品は契約であり、Nagi UI はその実演装置(reference implementation)である。差別化は「契約 + linter + ライブラリ」の三位一体にあり、ライブラリ単体の機能差ではない(機能差は既存勢に 2〜3 年で吸収される)。
 
@@ -312,7 +313,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 - schema は blueprint-local(§3.5)。node は `action` / `link` / `checkbox` / `radio-group` / `group` / `separator` / `submenu` の 7 種類。`link` は URL を受け取って実際の `<a href>` を出す Web 標準の基本項目であり、framework component を受け取る escape hatch ではない。`label` は独立 node にせず `group`(`role="group"` + `aria-labelledby` と一致)へ統合。`action` に `variant?: "danger"`。`checked` は `MaybeRefOrGetter` ではなく plain 値とし、親が items 全体を computed で再生成する(core は `getKey` 同定 + `toValue(items)` のため状態は壊れない)
 - submenu の再帰描画は blueprint 内部の自己参照 component で行う(`useSubmenu` が setup 文脈を要するため)。core は動的 register/unregister 済みで改修不要
-- avatar / Vue Router の `<RouterLink>` / Nuxt の `<NuxtLink>` / description / permission 制御は schema に**入れない**。表示制御は computed での filter、それ以外は拡張レシピの題材とする。標準 URL navigation は `link`、router 固有の `to` object・prefetch・custom link component は ownership で拡張する
+- avatar / Vue Router の `<RouterLink>` / Nuxt の `<NuxtLink>` component 自体 / description / permission 制御は schema に**入れない**。表示制御は computed での filter、構造変更は拡張レシピの題材とする。標準 URL navigation は常に実 `<a href>` の `link` node。`nagi-ui setup` の local adapter は router 固有の `to` object を `href` + framework-neutral な `navigate` / `prefetch` callback に境界変換してから node へ渡す。custom link component や active-class rendering が必要なら ownership で拡張する
 - 現行の hardcoded `DropdownMenu.vue` は playground の全機能 fixture へ降格し、明示 DOM 版の書き方は composable への離脱パスの実例として docs に残す
 - 完了条件:
   1. 再帰 renderer が `nagi-css check` を通る(通らなければ案自体を見直す)
@@ -361,6 +362,7 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ## 改訂履歴
 
+- **2026-07-21** framework integration setup を追加。`nagi-ui setup` が Vue / Nuxt、native / Vue Router / Nuxt Link、native image / Nuxt Image を選び local adapter を生成する。Dropdown schema は router DSL や framework component を受けず、実 `<a href>` に optional `navigate` / `prefetch` callback のみを足す。Nuxt Image も `useImage` の安定 URL 生成を標準 `<img>` 属性へ落とし、package / own の単一 SFC を維持する。
 - **2026-07-21** Base UI alignment A1。Dropdown schema に標準の `<a href>` を所有する `link` node を追加し、framework 固有の router-link/component escape hatch とは境界を分離。Button focusable-disabled、Disclosure/Tooltip disabled、Popover/Tooltip positioning props、Dialog description/actions、neutral Card anatomy も既存の native-first / small API 規律内で追加し、unit 108/108、browser + axe 40/40、TypeScript 7、verified-bindings、owned/consumer Nagi CSSを確認。
 - **2026-07-21** Phase 4 slice 4 完了。styling-only baseline をCHARTER §3.5の具体例どおりButton / Card / Alert / Badgeに固定し、behavior-backed 8 componentと合わせたv0 catalog 12種をpackage/ownership/presetの全経路へ登録。Alert + Badgeで2 component反復したpositive/warning tone 6 tokenを昇格し、Nagi CSSで公開prop `success` とCSS identity `-positive`を分離。unit 103/103、browser + axe 37/37を確認。
 - **2026-07-21** Phase 4 slice 4 の behavior catalog を完了。Popover / Dialog / Tooltip / Disclosure / Toast の package/ownable SFCを追加し、公開 behavior core と component catalog の欠落を解消。package component boundary と slot sub-surface を定義する Nagi CSS presetを同梱し、owned-source検査とconsumer検査を分離した。unit 102/102、browser + axe 36/36、TypeScript 7、verified-bindings、theme parity、Nagi CSSを確認。

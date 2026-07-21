@@ -41,16 +41,20 @@ safe (`packages/core/src/menu.ts`).
 ## Node vocabulary (seven kinds)
 
 `action` (`variant?: "danger"`, `shortcut?`, `closeOnSelect?`), `link`
-(a real `<a href>` with keyboard navigation under `aria-activedescendant`), `checkbox`
+(a real `<a href>` with keyboard navigation under `aria-activedescendant` and
+optional framework-neutral `navigate` / `prefetch` callbacks), `checkbox`
 (plain `checked: boolean | "mixed"`), `radio-group` (expands to one selectable
 entry per radio item), `group` (owns its label; groups do not nest),
 `separator`, `submenu` (recursive `items`).
 
-Deliberately excluded: avatar / Vue Router `<RouterLink>` / Nuxt `<NuxtLink>` /
-description / permission visibility. Visibility is caller-side array
-filtering; the rest belong to the extension recipe below. The shipped `link`
-node covers standard URL navigation only and does not accept `to` objects,
-prefetch options, a component, or another router-specific DSL.
+Deliberately excluded: avatar / the Vue Router `<RouterLink>` or Nuxt
+`<NuxtLink>` component itself / description / permission visibility.
+Visibility is caller-side array filtering; structural changes belong to the
+extension recipe below. The shipped `link` node does not accept `to` objects,
+router props, or a component escape hatch. `nagi-ui setup` instead translates a
+router location at the application boundary into the node's real `href` and
+framework-neutral `navigate` / `prefetch` callbacks; see
+`docs/setup-integrations.md`.
 
 ## Why the renderer recurses through components
 
@@ -118,10 +122,11 @@ local diff in code you own:
 3. **CSS block** under `.dropdown-menu-item` in the same file.
 4. **Run `nagi-css check`**, `vp run test`, `vp run typecheck`.
 
-Native URL links ship as the `link` node. Vue Router `<RouterLink>` and Nuxt
-`<NuxtLink>` integration are still ownership recipes: extend the renderer
-locally while preserving real anchor semantics and the `menu.itemProps()`
-wiring.
+Native URL links ship as the `link` node. Vue Router and Nuxt client navigation
+normally use the setup-generated callback adapter while preserving real anchor
+semantics and the `menu.itemProps()` wiring. Rendering the actual
+`<RouterLink>` / `<NuxtLink>` component (custom slot, active-state markup, or a
+router-specific link policy) remains an ownership recipe.
 
 Do **not** add an `#item` slot instead: passing `itemProps` through a slot for
 callers to bind is behavior wiring through a slot boundary — the violation

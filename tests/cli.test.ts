@@ -6,11 +6,13 @@ import test from "node:test";
 
 import {
   components,
+  detectSetupDefaults,
   diffOwned,
   main,
   markerLine,
   ownComponent,
   parseMarker,
+  setupProject,
 } from "../packages/core/cli/nagi-ui.mjs";
 
 const packageRoot = path.join(import.meta.dirname, "../packages/core");
@@ -109,16 +111,16 @@ test("diff reports clean, modified, and drifted owned sources", () => {
   assert.equal(entries.find((entry) => entry.file === owned)?.status, "drifted");
 });
 
-test("diff gates only on drifted and unknown-source, not on local modification", () => {
+test("diff gates only on drifted and unknown-source, not on local modification", async () => {
   const repo = path.join(import.meta.dirname, "..");
   const targetRoot = tempDir();
   ownComponent("listbox", { packageRoot, targetRoot });
 
-  assert.equal(main(["diff", "--dir", targetRoot], repo), 0);
+  assert.equal(await main(["diff", "--dir", targetRoot], repo), 0);
 
   const owned = path.join(targetRoot, "listbox/Listbox.vue");
   fs.appendFileSync(owned, "\n<!-- local edit -->\n");
-  assert.equal(main(["diff", "--dir", targetRoot], repo), 0, "modified stays green");
+  assert.equal(await main(["diff", "--dir", targetRoot], repo), 0, "modified stays green");
 
   const stampedVersion = parseMarker(
     fs.readFileSync(owned, "utf8").split("\n", 1)[0] as string,
@@ -127,7 +129,7 @@ test("diff gates only on drifted and unknown-source, not on local modification",
     owned,
     fs.readFileSync(owned, "utf8").replace(`@${stampedVersion}`, `@${stampedVersion}-old`),
   );
-  assert.equal(main(["diff", "--dir", targetRoot], repo), 1, "drifted fails the gate");
+  assert.equal(await main(["diff", "--dir", targetRoot], repo), 1, "drifted fails the gate");
 });
 
 test("diff flags markers that no longer match a shipped source", () => {
@@ -148,4 +150,110 @@ test("diff ignores files without markers and missing roots", () => {
   fs.writeFileSync(path.join(targetRoot, "App.vue"), "<template><div /></template>\n");
   assert.deepEqual(diffOwned(targetRoot, { packageRoot }), []);
   assert.deepEqual(diffOwned(path.join(targetRoot, "nope"), { packageRoot }), []);
+});
+
+test("setup detects Nuxt integrations from the consumer manifest", () => {
+  const cwd = tempDir();
+  fs.writeFileSync(
+    path.join(cwd, "package.json"),
+    JSON.stringify({ dependencies: { nuxt: "^4.0.0", "@nuxt/image": "^2.0.0" } }),
+  );
+  assert.deepEqual(detectSetupDefaults(cwd), {
+    framework: "nuxt",
+    link: "nuxt-link",
+    image: "nuxt-image",
+  });
+});
+
+test("setup writes a Nuxt adapter without copying framework-specific Blueprints", () => {
+  const cwd = tempDir();
+  const result = setupProject({
+    cwd,
+    framework: "nuxt",
+    link: "nuxt-link",
+    image: "nuxt-image",
+  });
+  assert.deepEqual(JSON.parse(fs.readFileSync(result.configPath, "utf8")), {
+    framework: "nuxt",
+    link: "nuxt-link",
+    image: "nuxt-image",
+    integrationsDir: "src/nagi",
+  });
+  const integration = fs.readFileSync(result.integrationPath, "utf8");
+  assert.match(integration, /from "#imports"/);
+  assert.match(integration, /href: router\.resolve\(to\)\.href/);
+  assert.match(integration, /navigate: \(\) => navigateTo\(to\)/);
+  assert.match(integration, /prefetch: \(\) => preloadRouteComponents\(to\)/);
+  assert.match(integration, /src: image\(src, modifiers\)/);
+});
+
+test("setup validates framework choices and protects existing user files", () => {
+  const cwd = tempDir();
+  assert.throws(
+    () =>
+      setupProject({
+        cwd,
+        framework: "vue",
+        link: "nuxt-link",
+        image: "native",
+      }),
+    /requires framework "nuxt"/,
+  );
+
+  const integrationDir = path.join(cwd, "src/nagi");
+  fs.mkdirSync(integrationDir, { recursive: true });
+  fs.writeFileSync(path.join(integrationDir, "integrations.ts"), "// user owned\n");
+  assert.throws(
+    () =>
+      setupProject({
+        cwd,
+        framework: "vue",
+        link: "native",
+        image: "native",
+      }),
+    /--force/,
+  );
+});
+
+test("setup accepts complete flags for non-interactive agents and CI", async () => {
+  const cwd = tempDir();
+  assert.equal(
+    await main(
+      [
+        "setup",
+        "--framework",
+        "vue",
+        "--link",
+        "native",
+        "--image",
+        "native",
+        "--dir",
+        "app/nagi",
+      ],
+      cwd,
+    ),
+    0,
+  );
+  assert.ok(fs.existsSync(path.join(cwd, "app/nagi/integrations.ts")));
+});
+
+test("citty command routing preserves multi-component ownership and enum validation", async () => {
+  const targetRoot = tempDir();
+  const repo = path.join(import.meta.dirname, "..");
+  const io = { log() {}, warn() {} };
+  assert.equal(
+    await main(["own", "listbox", "combobox", "--dir", targetRoot], repo, io),
+    0,
+  );
+  assert.ok(fs.existsSync(path.join(targetRoot, "listbox/Listbox.vue")));
+  assert.ok(fs.existsSync(path.join(targetRoot, "combobox/Combobox.vue")));
+
+  await assert.rejects(
+    main(
+      ["setup", "--framework", "react", "--link", "native", "--image", "native"],
+      repo,
+      io,
+    ),
+    /Invalid value for argument:.*--framework/,
+  );
 });

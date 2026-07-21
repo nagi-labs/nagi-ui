@@ -64,6 +64,39 @@ test("native link items follow href with pointer and aria-activedescendant keybo
   await expect(page).toHaveURL(/#documentation$/);
 });
 
+test("setup-style link adapters keep href while handling navigation and intent prefetch", async ({
+  page,
+}) => {
+  const ltr = dropdown(page, "LTR");
+
+  await ltr.trigger.click();
+  await ltr.section.getByRole("menuitem", { name: "Share" }).click();
+  const link = ltr.submenu.getByRole("menuitem", { name: "Router adapter" });
+  await expect(link).toHaveAttribute("href", "#router-adapter");
+  await link.hover();
+  await expect(page.getByTestId("link-prefetch-state")).toHaveText("1");
+  await link.click();
+  await expect(page).toHaveURL(/#router-adapter$/);
+  await expect(page.getByTestId("router-navigation-state")).toHaveText("1");
+  await expect(ltr.root).toBeHidden();
+
+  await page.goto("/dropdown.html");
+  const keyboard = dropdown(page, "LTR");
+  await keyboard.trigger.press("ArrowDown");
+  await keyboard.root.press("End");
+  await keyboard.root.press("ArrowUp");
+  await keyboard.root.press("ArrowRight");
+  await keyboard.submenu.press("ArrowDown");
+  await keyboard.submenu.press("ArrowDown");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Router adapter" })).toHaveAttribute(
+    "data-active",
+    "",
+  );
+  await keyboard.submenu.press("Enter");
+  await expect(page).toHaveURL(/#router-adapter$/);
+  await expect(page.getByTestId("router-navigation-state")).toHaveText("1");
+});
+
 test("keyboard enters a submenu, returns one level, and nested action closes the tree", async ({
   page,
 }) => {

@@ -6,9 +6,9 @@ fixed by this implementation (CHARTER §3 保守契約).
 ## Commands
 
 ```sh
-nagi-ui list
-nagi-ui own dropdown-menu [--dir src/components/nagi] [--force]
-nagi-ui diff [--dir src/components/nagi]
+vp exec nagi-ui list
+vp exec nagi-ui own dropdown-menu [--dir src/components/nagi] [--force]
+vp exec nagi-ui diff [--dir src/components/nagi]
 ```
 
 Available component names are `alert`, `badge`, `button`, `card`, `combobox`,
@@ -16,10 +16,13 @@ Available component names are `alert`, `badge`, `button`, `card`, `combobox`,
 `tooltip`. `nagi-ui list` is the machine-readable source of truth for the
 installed version.
 
-The binary ships with `@nagi-labs/nagi-ui` (`packages/core/cli/nagi-ui.mjs`,
-plain Node, no dependencies). Because the package distributes raw SFC source,
-`own` copies **the exact files the package itself consumes** — there is no
-separate build artifact to drift from (single-source principle).
+The binary ships with `@nagi-labs/nagi-ui`. `packages/core/cli/nagi-ui.mjs`
+defines the `setup` / `list` / `own` / `diff` subcommands through `citty`;
+ownership and setup logic live in focused sibling modules. Because the package
+distributes raw SFC source, `own` copies **the exact files the package itself
+consumes** — there is no separate build artifact to drift from (single-source
+principle). Framework setup is documented separately in
+`docs/setup-integrations.md`.
 
 ## Fixed metadata format
 
@@ -76,6 +79,8 @@ git 履歴から取れる)。validation experiment C はこの手順で `git mer
 
 - `tests/cli.test.ts`: marker round-trip, own copies byte-identical bodies
   with stamps, non-empty target refusal, unknown component error, and the
-  full clean → modified → drifted → unknown-source status matrix on temp dirs.
+  full clean → modified → drifted → unknown-source status matrix on temp dirs;
+  citty subcommand routing also covers multi-component ownership and enum
+  validation.
 - Manual end-to-end in-repo: `own dropdown-menu` into a temp dir followed by
   `diff` reports 4 × `clean`, exit 0.

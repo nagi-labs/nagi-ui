@@ -9,6 +9,8 @@ const showToolbar = ref(true);
 const showAdvanced = ref(false);
 const verbose = ref(false);
 const sortBy = ref<DropdownSort>("name");
+const routerNavigations = ref(0);
+const linkPrefetches = ref(0);
 
 const items = computed<readonly DropdownMenuNode[]>(() => [
   {
@@ -83,6 +85,19 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
         key: "documentation",
         label: "Documentation",
         href: "#documentation",
+      },
+      {
+        type: "link",
+        key: "router-adapter",
+        label: "Router adapter",
+        href: "#router-adapter",
+        navigate: () => {
+          routerNavigations.value += 1;
+          if (typeof window !== "undefined") window.history.pushState({}, "", "#router-adapter");
+        },
+        prefetch: () => {
+          linkPrefetches.value += 1;
+        },
       },
     ],
   },
@@ -181,6 +196,14 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
       <div class="item">
         <dt class="term">last action</dt>
         <dd class="definition" data-testid="action-state">{{ lastAction }}</dd>
+      </div>
+      <div class="item">
+        <dt class="term">router navigations</dt>
+        <dd class="definition" data-testid="router-navigation-state">{{ routerNavigations }}</dd>
+      </div>
+      <div class="item">
+        <dt class="term">link prefetches</dt>
+        <dd class="definition" data-testid="link-prefetch-state">{{ linkPrefetches }}</dd>
       </div>
     </dl>
 

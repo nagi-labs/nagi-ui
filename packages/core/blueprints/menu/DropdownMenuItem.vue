@@ -45,13 +45,25 @@ function linkOptions(node: DropdownMenuLinkNode) {
     onSelect: (_entry: DropdownMenuEntry, event?: Event) => {
       // DOM focus stays on the menu container (aria-activedescendant), so a
       // keyboard activation has no native anchor default action to follow.
-      // Pointer activation remains an ordinary anchor click.
-      if (event?.type === "keydown" && typeof window !== "undefined") {
+      // A configured router adapter takes over ordinary activation while the
+      // real href remains available to SSR, no-JS, modified clicks, and copy.
+      const pointerEvent = typeof MouseEvent !== "undefined" && event instanceof MouseEvent;
+      const modifiedPointer =
+        pointerEvent &&
+        (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
+      if (node.navigate && !modifiedPointer) {
+        event?.preventDefault();
+        void node.navigate();
+      } else if (!node.navigate && event?.type === "keydown" && typeof window !== "undefined") {
         window.location.assign(node.href);
       }
     },
     ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),
   };
+}
+
+function prefetchLink(node: DropdownMenuLinkNode) {
+  if (!node.disabled) void node.prefetch?.();
 }
 
 function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadioItem) {
@@ -123,6 +135,7 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
       class="link"
       :href="node.href"
       v-bind="menu.itemProps(linkEntry(node), linkOptions(node))"
+      @pointerenter="prefetchLink(node)"
     >
       <span class="icon" aria-hidden="true"></span>
       <span class="text">{{ node.label }}</span>
