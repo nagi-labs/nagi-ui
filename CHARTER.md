@@ -348,6 +348,10 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 
 ### Phase 4 — 製品化
 
+**Status: Complete (2026-07-21)** — package-first / own-on-demand の通常利用、
+source ownership、upstream追従、v0 catalog、制約の自己選択、consumer側の実browser
+回帰契約までを一続きの製品経路として出荷した。各sliceの正本は下記リンクに置く。
+
 **検証仮説**: package-first / own-on-demand(§3)が実装として成立する — 通常利用は package import + theme token で完結し、所有しても保守可能である。§0 の一言定義を実装が追い越すまで製品とは呼ばない。
 
 スライス順:
@@ -356,12 +360,13 @@ Base UI 等の全 JS 実装との比較で判明している制約。**これら
 2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定** — **完了(2026-07-18)**。`nagi-ui own/diff/list` を package 同梱 bin として実装し、metadata を `@nagi-source <component>/<file>@<version>`(per-file 刻印)に固定。`diff` は clean / modified / drifted / unknown-source を判定し CI gate に使える。詳細は `docs/phase4-ownership-cli.md`
 3. **早期検証実験** — **coding-agent アーム完了(2026-07-21)**。Button(theme)/ Dropdown(ownership)/ Combobox(upstream 追従)の 3 境界すべてで、無文脈 agent が誘導なしに設計意図の経路(token 上書き / own + 拡張レシピ / 3-way merge + stamp 更新)を選び PASS。副産物: CLI テストのバグ修正、`diff` の gate を `drifted` / `unknown-source` に限定、「own したら即コミット」の base 確保手順。記録は `docs/phase4-validation-experiments.md`。人間アームと反復実行は今後の課題
 4. **blueprints の拡充** — **完了(2026-07-21)**。Popover / Dialog / Tooltip / Disclosure / Toast を追加して公開 behavior core との欠落を解消し、styling-only baseline を Button / Card / Alert / Badge に固定。全12 componentをpackage + ownable raw SFCで出荷し、consumer用Nagi CSS presetも同梱した。unit 103/103、SSR、ownership、verified-bindings、theme parity、owned/consumer Nagi CSS、browser + axe 37/37を検証。将来のstyling-only追加は実要求ベースでphase独立に行い、このsliceを再openしない。詳細は `docs/phase4-blueprint-catalog.md`
-5. §8 の制約を「Nagi UI が向かないケース」としてドキュメント化(dismiss 細粒度・ジェスチャーシート・Motion 級アニメが要件なら他ライブラリ併用を案内)、テストレシピ(Vitest browser mode / Playwright)同梱
+5. **consumer guidance / test recipe** — **完了(2026-07-21)**。§8 を利用者向けの[`docs/when-not-to-use-nagi-ui.md`](docs/when-not-to-use-nagi-ui.md)へ翻訳し、dismiss細粒度・任意stack・interactive backdrop・gesture sheet・Motion級animation・custom Select等はcomponent単位で別ライブラリへ任せる境界を明文化。Vitest Browser Mode / Playwrightのcopyable contractを`packages/core/recipes/testing/`としてnpm packageへ同梱し、keyboard / focus / dismiss / form / `assertNagiDom` / axe / SSR・zero-JS選択条件と、`own`即commit → `diff` → merge → real-browser testの更新loopを固定。unit 116/116、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、browser + axe 41/41、package tarballへのrecipe 6 files収録を確認した
 
 ---
 
 ## 改訂履歴
 
+- **2026-07-21** Phase 4 完了。Web標準への委譲が合わないproduct要件とcomponent単位の混在判断を利用者向けに公開し、package/owned双方で使えるVitest Browser Mode / Playwright recipeをnpm packageへ同梱。`own`完了時にも即commit・test recipe・`diff` gateを案内し、「所有しても取り残されない」をconsumer側の実行可能な契約まで接続。unit 116/116、browser + axe 41/41と実tarball収録を確認した。
 - **2026-07-21** framework integration setup を追加。`nagi-ui setup` が Vue / Nuxt、native / Vue Router / Nuxt Link、native image / Nuxt Image を選び local adapter を生成する。Dropdown schema は router DSL や framework component を受けず、実 `<a href>` に optional `navigate` / `prefetch` callback のみを足す。Nuxt Image も `useImage` の安定 URL 生成を標準 `<img>` 属性へ落とし、package / own の単一 SFC を維持する。
 - **2026-07-21** Base UI alignment A1。Dropdown schema に標準の `<a href>` を所有する `link` node を追加し、framework 固有の router-link/component escape hatch とは境界を分離。Button focusable-disabled、Disclosure/Tooltip disabled、Popover/Tooltip positioning props、Dialog description/actions、neutral Card anatomy も既存の native-first / small API 規律内で追加し、unit 108/108、browser + axe 40/40、TypeScript 7、verified-bindings、owned/consumer Nagi CSSを確認。
 - **2026-07-21** Phase 4 slice 4 完了。styling-only baseline をCHARTER §3.5の具体例どおりButton / Card / Alert / Badgeに固定し、behavior-backed 8 componentと合わせたv0 catalog 12種をpackage/ownership/presetの全経路へ登録。Alert + Badgeで2 component反復したpositive/warning tone 6 tokenを昇格し、Nagi CSSで公開prop `success` とCSS identity `-positive`を分離。unit 103/103、browser + axe 37/37を確認。

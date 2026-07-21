@@ -240,13 +240,23 @@ test("setup accepts complete flags for non-interactive agents and CI", async () 
 test("citty command routing preserves multi-component ownership and enum validation", async () => {
   const targetRoot = tempDir();
   const repo = path.join(import.meta.dirname, "..");
-  const io = { log() {}, warn() {} };
+  const logs: string[] = [];
+  const io = {
+    log(value: unknown) {
+      logs.push(String(value));
+    },
+    warn() {},
+  };
   assert.equal(
     await main(["own", "listbox", "combobox", "--dir", targetRoot], repo, io),
     0,
   );
   assert.ok(fs.existsSync(path.join(targetRoot, "listbox/Listbox.vue")));
   assert.ok(fs.existsSync(path.join(targetRoot, "combobox/Combobox.vue")));
+  const output = logs.join("\n");
+  assert.match(output, /Commit the untouched owned files now/);
+  assert.match(output, /recipes\/testing\/README\.md/);
+  assert.ok(output.includes(`nagi-ui diff --dir ${targetRoot}`));
 
   await assert.rejects(
     main(

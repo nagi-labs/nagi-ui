@@ -22,6 +22,8 @@ learning lands.
 - `packages/core/blueprints/` — canonical SFCs, distributed as raw source:
   the same files serve package consumption and on-demand source ownership;
   see [`docs/package-ownership-model.md`](docs/package-ownership-model.md).
+- `packages/core/recipes/testing/` — package-shipped Vitest Browser Mode and
+  Playwright consumer contracts for package and owned components.
 - `playground/` — Vite labs for the phase slices (`vp exec vite playground`;
   `?autotest=stacking` runs the Demo B self-test).
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app
@@ -31,15 +33,14 @@ learning lands.
 
 ## Status
 
-Phases 0–3.5 complete — see CHARTER §10. The customizable-select decision is recorded in
+Phases 0–4 are complete — see CHARTER §10. Phase 4 ships the package-first /
+own-on-demand model, fixed ownership metadata and CLI, validated ownership
+boundaries, a 12-component v0 catalog, the consumer Nagi CSS preset, and
+real-browser consumer test recipes. Start with
+[`docs/when-not-to-use-nagi-ui.md`](docs/when-not-to-use-nagi-ui.md) when the
+product needs custom dismiss/stack state, gesture sheets, or Motion-level
+orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
-Phase 4 is in progress: slice 1 (package materialization: `/components`,
-`theme.css`, now 28 semantic tokens — [`docs/phase4-package-design.md`](docs/phase4-package-design.md))
-and slice 2 (`nagi-ui own` / `diff` with the fixed `@nagi-source` metadata —
-[`docs/phase4-ownership-cli.md`](docs/phase4-ownership-cli.md)) have landed.
-Slice 3's coding-agent validation arm passed all three boundary experiments;
-slice 4 is complete with a 12-component v0 catalog and the consumer Nagi CSS
-preset. Productization guidance remains.
 
 Package components are available without copying source:
 
@@ -161,3 +162,25 @@ Verified integration is complete: `mergeNagiProps`, template-only
 and axe checks for opened Blueprint states now protect the stabilized
 Menu/Listbox/Combobox contracts before Phase 4 productization; see
 [`docs/phase3.5-verified-integration.md`](docs/phase3.5-verified-integration.md).
+
+### Phase 4 — package-first productization (complete)
+
+- [x] package components, raw ownership sources, theme tokens, and Nagi CSS
+  consumer preset share one Blueprint source
+- [x] `nagi-ui own` / `diff` and per-file `@nagi-source` metadata preserve an
+  auditable upstream-update path
+- [x] package-first boundaries passed Button / Dropdown / Combobox coding-agent
+  experiments; see
+  [`docs/phase4-validation-experiments.md`](docs/phase4-validation-experiments.md)
+- [x] the v0 catalog exposes 12 package and ownable components; see
+  [`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md)
+- [x] constraints and component-level mixing guidance are explicit in
+  [`docs/when-not-to-use-nagi-ui.md`](docs/when-not-to-use-nagi-ui.md)
+- [x] copyable Vitest Browser Mode / Playwright contracts ship in
+  [`packages/core/recipes/testing/`](packages/core/recipes/testing/README.md)
+
+The recipe keeps keyboard, focus, dismiss, form, DOM wiring, and opened-state
+accessibility behavior executable after ownership. `nagi-ui diff` tells the
+consumer when upstream changed; the browser contract tells them whether their
+local version still works. Both signals are required for safe owned-source
+upgrades.

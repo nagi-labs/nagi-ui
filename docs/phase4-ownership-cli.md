@@ -63,6 +63,11 @@ git 履歴から取れる)。validation experiment C はこの手順で `git mer
 よる正確な取り込みに成功した。base を CLI 側で保存する仕組みは、必要が観測
 されてから検討する。
 
+`own` の完了表示も、importの切り替えだけでなく、無変更sourceの即時commit、package
+同梱の[`recipes/testing`](../packages/core/recipes/testing/README.md)適用、CIでの
+`nagi-ui diff` gateまでを次の手順として表示する。ownershipはcopy command単体ではなく、
+この保守loopまで含む機能である。
+
 ## Deliberate limits of this slice
 
 - `own` does not rewrite application imports; it prints the instruction. The
@@ -72,8 +77,9 @@ git 履歴から取れる)。validation experiment C はこの手順で `git mer
   continues to apply after ownership (design principle 5).
 - No three-way merge: `drifted` tells you both sides moved; resolving is a
   manual (or agent-driven) edit informed by the printed diff command.
-  Migration notes per breaking release belong to a later slice, as does
-  richer upgrade tooling.
+  A breaking release must ship its version-specific migration note; v0 has no
+  prior breaking release to migrate from. A generic migration engine and
+  richer merge tooling remain demand-driven follow-up work.
 
 ## Verification
 

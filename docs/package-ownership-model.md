@@ -75,9 +75,14 @@ ownershipされやすい点で危険になる。
 
 - source fileにコピー元componentとversionを記録するmetadata
 - installed/upstream sourceとの差分を確認する`diff` workflow
-- breaking contractを案内するmigration情報
+- breaking releaseごとに、そのversionで必要な手順を案内するmigration note
 - Nagi CSS lintとNagi UI behavior lint
 - keyboard/focus/form/a11y integration test recipe
+
+一般的なmigration engineを先に作るのではなく、breaking changeを出すreleaseが必要な
+migration noteを同梱する。v0には移行対象となる過去のbreaking releaseはない。日常の
+upstream追従は`diff`とconsumer testで検出し、version固有の手順が発生した時点でrelease
+noteを保守契約へ追加する。
 
 metadata形式は Phase 4 slice 2 の実装検証を経て次の形へ**固定済み**
 (詳細は `docs/phase4-ownership-cli.md`):

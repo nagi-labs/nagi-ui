@@ -19,6 +19,7 @@
     "cli",
     "components.ts",
     "nagi-css-preset.mjs",
+    "recipes",
     "theme"
   ],
   "sideEffects": [
