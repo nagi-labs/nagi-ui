@@ -92,3 +92,27 @@ Status: In progress (2026-07-21). 実験プロトコルの定義と coding-agent
   タスクでは**観測されず**。「AI に扱いやすいは差別化にならない」に対しては、
   同梱ドキュメント + parity test だけで無文脈 agent が正しい経路を選んだ、
   という 1 標本の反証
+
+### 実験 B — 2026-07-21 実行(coding-agent アーム): **PASS**
+
+- 経路: agent は自力で `nagi-ui own dropdown-menu` に到達し、owned schema を
+  拡張レシピ通りに拡張した(union member `DropdownMenuAccountNode` + `accountEntry()`
+  + `menuEntries()` の case + template 分岐 + `.-account` CSS)
+- **代替案の棄却理由まで正確**: package 側 schema の直接拡張は「speculative node
+  kinds are not added to the package API」に反する、`#item` slot は CHARTER §3.5
+  名指しの違反、として自ら却下。防波堤の文書が意図通り機能した
+- **局所性**: `packages/core` への変更ゼロ。app 側 diff は DropdownLab +18/−2 と
+  owned 4 ファイル(うち編集は schema + Item の 2 つ、残り 2 つは clean)。
+  owned 版への import 切替は File actions のみで、RTL / Themed は package 版のまま
+- **配線の保全**: ARIA / focus 配線は `menu.itemProps(accountEntry(node), …)` で
+  renderer 内に留まった。`nagi-ui/verified-bindings` lint と `nagi-ui diff`
+  (2 ファイル modified、他 clean)も agent 自身が実行
+- **契約による教育の再現**: 初回 `nagi-css check` で `.avatar` が語彙外として
+  fail → agent は CONTRACT に従い `text -avatar` variant へ自己修正。named error
+  → 収束のループが第三者 agent でも機能することの実証
+- 機械検証: `vp run test` 96/96、SSR スモークで account 行の描画・role・separator
+  を確認。browser suite は sandbox 制約で未実行(人間アーム側で確認する)
+- 参照ファイル(自己申告): 約 15
+- 危険信号への含意: 「own した瞬間に保証が消える」に対し、own 直後の lint /
+  diff / test が全て機能。「owned Blueprint が読みにくい」に対し、変更は
+  schema + renderer の 2 ファイルに収まった
