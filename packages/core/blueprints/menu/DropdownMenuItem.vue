@@ -148,11 +148,11 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
           > .button {
             display: grid;
             grid-template-columns: 1rem minmax(0, 1fr) auto;
-            gap: 0.55rem;
+            gap: var(--nagi-space-item-gap, 0.55rem);
             align-items: center;
             inline-size: 100%;
             min-block-size: var(--nagi-size-control, 2rem);
-            padding: 0.35rem 0.55rem;
+            padding: var(--nagi-space-item, 0.35rem 0.55rem);
             border: 0;
             border-radius: var(--nagi-radius-item, 0.4rem);
             background: transparent;
@@ -196,11 +196,11 @@ function radioOptions(group: DropdownMenuRadioGroupNode, item: DropdownMenuRadio
   > .button {
     display: grid;
     grid-template-columns: 1rem minmax(0, 1fr) auto;
-    gap: 0.55rem;
+    gap: var(--nagi-space-item-gap, 0.55rem);
     align-items: center;
     inline-size: 100%;
     min-block-size: var(--nagi-size-control, 2rem);
-    padding: 0.35rem 0.55rem;
+    padding: var(--nagi-space-item, 0.35rem 0.55rem);
     border: 0;
     border-radius: var(--nagi-radius-item, 0.4rem);
     background: transparent;

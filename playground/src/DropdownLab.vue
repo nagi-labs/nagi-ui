@@ -214,13 +214,17 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
 
     /* Brand change through semantic tokens only — no ownership, no component
        edit. Popovers stay in place in the DOM (no Teleport), so the custom
-       properties inherit into the open menu tree as well. */
+       properties inherit into the open menu tree as well. The space/size
+       overrides double as the compact-density demonstration. */
     &.-themed {
       --nagi-color-accent: #6d28d9;
       --nagi-color-border: #c4b5fd;
       --nagi-color-focus-ring: #8b5cf6;
       --nagi-color-surface-active: #ede9fe;
       --nagi-radius-item: 0.8rem;
+      --nagi-size-control: 1.7rem;
+      --nagi-space-item: 0.2rem 0.45rem;
+      --nagi-space-surface-inset: 0.25rem;
     }
   }
 

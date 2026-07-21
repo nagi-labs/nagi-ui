@@ -78,7 +78,7 @@ const { visibleItems } = combobox;
   > .input {
     inline-size: 100%;
     box-sizing: border-box;
-    padding: 0.55rem 0.7rem;
+    padding: var(--nagi-space-control, 0.5rem 0.75rem);
     border: 1px solid var(--nagi-color-border, #b9cbd1);
     border-radius: var(--nagi-radius-control, 0.55rem);
     outline: none;
@@ -101,7 +101,7 @@ const { visibleItems } = combobox;
     min-inline-size: 16rem;
     max-block-size: 15rem;
     margin: 0;
-    padding: 0.4rem;
+    padding: var(--nagi-space-surface-inset, 0.4rem);
     overflow-y: auto;
     border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
     border-radius: var(--nagi-radius-overlay, 0.65rem);
@@ -131,7 +131,7 @@ const { visibleItems } = combobox;
 
     > .item {
       min-block-size: var(--nagi-size-control, 2rem);
-      padding: 0.4rem 0.6rem;
+      padding: var(--nagi-space-item, 0.35rem 0.55rem);
       border-radius: var(--nagi-radius-item, 0.4rem);
       cursor: pointer;
 

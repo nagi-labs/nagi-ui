@@ -90,8 +90,10 @@ component 側に残り、色相以外のリブランドが component 編集に�
    反復**して初めて token になる。1 blueprint 固有の値はその SFC の意匠として literal
    のまま置く — それを変えたい要求は ownership の領分。
 2. **語彙文法を固定する。** `--nagi-<tier>-<role>[-<state>]`。tier は
-   `color / radius / shadow / size / font` の 5 つで閉じる。role は閉じた小集合、
-   state 接尾辞は `active / disabled / muted` 程度。tier 内アルファベット順。
+   `color / font / radius / shadow / size / space` の 6 つで閉じる(space は
+   2026-07-18 に density 需要の言明を受けて追加 — tier 集合の変更はこのように
+   意図的な改訂としてのみ行う)。role は閉じた小集合、state 接尾辞は
+   `active / disabled / muted` 程度。tier 内アルファベット順。
 3. **背景役割の token は文字色との対で考える。** 背景に使う token
    (`surface` / `surface-active` 等)を差し替えるとき、その上に乗る文字 token との
    コントラストが利用者の責任になる。妥当性の機械検証は Phase 3.5 の axe suite が
@@ -173,10 +175,17 @@ metadata 形式と CLI は slice 2 で実装検証とともに固定する(owner
 - 出荷 component は `DropdownMenu` / `Listbox` / `Combobox` の 3 つ
   (+ schema 型)。`ActionMenu` と phase 0 の popover Dropdown は phase 検証用の
   歴史的 blueprint として残置し、`/components` から export せず token 化もしない
-- token は導出手順の結果 **17 個**で確定(color 9 / radius 3 / shadow 2 / size 1 /
-  font 2)。棚卸しで muted 系文字色 3 値(#50676f / #526970 / #61777e)を
+- token は導出手順の結果 **21 個**で確定(color 9 / font 2 / radius 3 / shadow 2 /
+  size 1 / space 4)。棚卸しで muted 系文字色 3 値(#50676f / #526970 / #61777e)を
   `--nagi-color-text-muted` に、hover/active 背景 2 値(#e5f1f4 / #edf5f7)を
   `--nagi-color-surface-active` に統合した
+- **space tier(density)**: `surface-inset` / `item` / `item-gap` / `control` の
+  4 role。control 余白 2 値(trigger 0.5/0.8rem、input 0.55/0.7rem)と combobox
+  item 余白(0.4/0.6rem)を正規化した。**density は乗数 token ではなく、
+  space/size token 群を一括上書きする theme preset として表現する** —
+  `calc()` の全面導入は可読 CSS の契約に反し、単一乗数では余白と tap target を
+  独立に調整できないため。menu 専用の余白(category label、separator)は
+  原理 1 どおり literal のまま
 - **原理 1 をそのまま適用した結果、`danger`(menu のみ)と `separator`(menu のみ)は
   token 化していない。** どちらも第 2 の使用 component(Button 実験、将来の
   ContextMenu 等)が現れた時点での昇格第一候補

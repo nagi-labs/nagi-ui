@@ -50,11 +50,11 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
   > .button {
     display: grid;
     grid-template-columns: 1rem minmax(0, 1fr) auto;
-    gap: 0.55rem;
+    gap: var(--nagi-space-item-gap, 0.55rem);
     align-items: center;
     inline-size: 100%;
     min-block-size: var(--nagi-size-control, 2rem);
-    padding: 0.35rem 0.55rem;
+    padding: var(--nagi-space-item, 0.35rem 0.55rem);
     border: 0;
     border-radius: var(--nagi-radius-item, 0.4rem);
     background: transparent;
@@ -94,7 +94,7 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
   > .list {
     min-inline-size: 12rem;
     margin: 0;
-    padding: 0.4rem;
+    padding: var(--nagi-space-surface-inset, 0.4rem);
     border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
     border-radius: var(--nagi-radius-overlay, 0.65rem);
     outline: none;

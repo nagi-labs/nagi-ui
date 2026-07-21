@@ -45,7 +45,7 @@ const menu = useMenu<DropdownMenuEntry>({
       display: inline-flex;
       gap: 0.5rem;
       align-items: center;
-      padding: 0.5rem 0.8rem;
+      padding: var(--nagi-space-control, 0.5rem 0.75rem);
       border: 1px solid var(--nagi-color-border, #b9cbd1);
       border-radius: var(--nagi-radius-control, 0.55rem);
       background: var(--nagi-color-surface, #fff);
@@ -69,7 +69,7 @@ const menu = useMenu<DropdownMenuEntry>({
   > .list {
     min-inline-size: 16rem;
     margin: 0;
-    padding: 0.4rem;
+    padding: var(--nagi-space-surface-inset, 0.4rem);
     border: 1px solid var(--nagi-color-border-muted, #c8d8dd);
     border-radius: var(--nagi-radius-overlay, 0.65rem);
     outline: none;

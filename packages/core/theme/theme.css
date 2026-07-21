@@ -25,4 +25,8 @@
   --nagi-shadow-focus: 0 0 0 2px rgb(117 173 186 / 0.35);
   --nagi-shadow-overlay: 0 14px 36px rgb(22 48 60 / 0.2);
   --nagi-size-control: 2rem;
+  --nagi-space-control: 0.5rem 0.75rem;
+  --nagi-space-item: 0.35rem 0.55rem;
+  --nagi-space-item-gap: 0.55rem;
+  --nagi-space-surface-inset: 0.4rem;
 }
