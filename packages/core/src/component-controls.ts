@@ -1,16 +1,15 @@
 /**
- * Fixed adapters used by the shipped package components and owned SFCs.
- * Custom renderers should use the headless composables from the package root.
+ * Fixed component bindings used by shipped and owned SFCs: native reset,
+ * model/DOM synchronization, focus repair, and renderer lifecycle. Adaptable
+ * behavior uses the public `useX` overloads from the package root instead.
  */
-export { useAccordionControl } from "./accordion.ts";
-export { useAvatarControl } from "./avatar.ts";
-export { useButtonControl } from "./button.ts";
-export { useComboboxControl } from "./combobox.ts";
-export { useAlertDialogControl, useDialogControl } from "./dialog.ts";
-export { useDisclosureControl } from "./disclosure.ts";
-export { useNumberFieldControl, type NumberFieldControl } from "./number-field.ts";
-export { usePopoverControl } from "./popover.ts";
+export { useAccordion } from "./accordion.ts";
+export { useAvatar } from "./avatar.ts";
+export { useButton } from "./button.ts";
+export { useNativeCombobox } from "./combobox.ts";
+export { useAlertDialog } from "./dialog.ts";
+export { useNumberField, type NumberFieldBinding } from "./number-field.ts";
+export { useSelect, type SelectBinding } from "./select.ts";
+export { useSlider } from "./slider.ts";
 export { useTabsModelBridge } from "./tabs.ts";
 export { useToastRenderer } from "./toast.ts";
-export { useToggleControl } from "./toggle.ts";
-export { useTooltipControl } from "./tooltip.ts";

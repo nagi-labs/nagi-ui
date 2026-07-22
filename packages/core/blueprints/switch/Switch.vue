@@ -117,6 +117,11 @@ useNativeCheckedReset(input, checked);
       appearance: auto;
       inline-size: auto;
       block-size: auto;
+
+      &:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+      }
     }
   }
 }

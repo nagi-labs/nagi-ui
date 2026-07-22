@@ -119,7 +119,7 @@ export {
 } from "./combobox.ts"
 export {
   useNativeCheckedReset,
-  useNativeCheckboxControl,
+  useNativeCheckbox,
   useNativeCustomValidity,
   useNativeFormReset,
   useNativeNumberReset,

@@ -73,6 +73,20 @@ export interface UseListboxReturn<Item, Key extends string = string> {
   optionProps: (item: Item) => ListboxOptionProps;
 }
 
+interface ListboxComponentItem {
+  readonly key: string;
+  readonly label: string;
+  readonly disabled?: boolean;
+}
+
+interface ListboxComponentProps<Item extends ListboxComponentItem> {
+  readonly items: readonly Item[];
+  readonly mode: ListboxSelectionMode;
+  readonly orientation: ListboxOrientation;
+  readonly dir: MenuDirection;
+  readonly loop: boolean;
+}
+
 let listboxCount = 0;
 
 /**
@@ -84,7 +98,7 @@ let listboxCount = 0;
  * single-select list); multiple mode moves focus independently, Space/click
  * toggles, Shift+Arrow extends, Ctrl/Cmd+A toggles all enabled options.
  */
-export function useListbox<Item, Key extends string = string>(
+function createListbox<Item, Key extends string = string>(
   options: UseListboxOptions<Item, Key>,
 ): UseListboxReturn<Item, Key> {
   const instance = getCurrentInstance();
@@ -360,4 +374,38 @@ export function useListbox<Item, Key extends string = string>(
     listboxProps,
     optionProps,
   };
+}
+
+export function useListbox<Item, Key extends string = string>(
+  options: UseListboxOptions<Item, Key>,
+): UseListboxReturn<Item, Key>;
+export function useListbox<Item extends ListboxComponentItem>(
+  props: ListboxComponentProps<Item>,
+  selected: Ref<readonly string[]>,
+): UseListboxReturn<Item>;
+/**
+ * Uses either complete headless options, or the shipped flat-item contract.
+ * Stable product options stay on component props; custom item mappings use
+ * the complete one-argument form.
+ */
+export function useListbox(
+  optionsOrProps: UseListboxOptions<unknown> | ListboxComponentProps<ListboxComponentItem>,
+  selected?: Ref<readonly string[]>,
+): unknown {
+  if (selected === undefined) {
+    return createListbox(optionsOrProps as UseListboxOptions<unknown>);
+  }
+
+  const props = optionsOrProps as ListboxComponentProps<ListboxComponentItem>;
+  return createListbox<ListboxComponentItem>({
+    getKey: (item) => item.key,
+    getTextValue: (item) => item.label,
+    isDisabled: (item) => item.disabled ?? false,
+    mode: props.mode,
+    orientation: props.orientation,
+    dir: props.dir,
+    loop: props.loop,
+    items: () => props.items,
+    selected,
+  });
 }

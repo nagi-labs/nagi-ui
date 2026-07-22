@@ -9,29 +9,35 @@ export interface ListboxOption {
 <script setup lang="ts">
 import { useId } from "vue";
 
-import { useListbox, type ListboxSelectionMode } from "@nagi-labs/nagi-ui";
+import {
+  useListbox,
+  type ListboxOrientation,
+  type ListboxSelectionMode,
+  type MenuDirection,
+} from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
     label: string;
     items: readonly ListboxOption[];
     mode?: ListboxSelectionMode;
+    orientation?: ListboxOrientation;
+    dir?: MenuDirection;
+    loop?: boolean;
   }>(),
-  { mode: "single" },
+  {
+    mode: "single",
+    orientation: "vertical",
+    dir: "ltr",
+    loop: true,
+  },
 );
 
 const selected = defineModel<readonly string[]>("selected", { default: () => [] });
 
 const labelId = useId();
 
-const listbox = useListbox<ListboxOption>({
-  items: () => props.items,
-  getKey: (item) => item.key,
-  getTextValue: (item) => item.label,
-  isDisabled: (item) => item.disabled ?? false,
-  mode: props.mode,
-  selected,
-});
+const listbox = useListbox(props, selected);
 </script>
 
 <template>

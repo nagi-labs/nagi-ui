@@ -28,7 +28,7 @@ export interface UseTooltipOptions {
   disabled?: MaybeRefOrGetter<boolean>
 }
 
-interface TooltipControlProps {
+interface TooltipComponentProps {
   readonly openDelay: number
   readonly closeDelay: number
   readonly disabled: boolean
@@ -73,7 +73,27 @@ interface HintElement extends HTMLElement {
 
 let tooltipCount = 0
 
-export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
+export function useTooltip(options?: UseTooltipOptions): UseTooltipReturn
+export function useTooltip(
+  props: TooltipComponentProps,
+  open: Ref<boolean>,
+): UseTooltipReturn
+export function useTooltip(
+  optionsOrProps: UseTooltipOptions | TooltipComponentProps = {},
+  componentOpen?: Ref<boolean>,
+): UseTooltipReturn {
+  const options: UseTooltipOptions = componentOpen
+    ? {
+        openDelay: (optionsOrProps as TooltipComponentProps).openDelay,
+        closeDelay: (optionsOrProps as TooltipComponentProps).closeDelay,
+        disabled: () => (optionsOrProps as TooltipComponentProps).disabled,
+        anchor: {
+          area: (optionsOrProps as TooltipComponentProps).area,
+          offset: (optionsOrProps as TooltipComponentProps).offset,
+        },
+        open: componentOpen,
+      }
+    : optionsOrProps as UseTooltipOptions
   const instance = getCurrentInstance()
   const id = options.id ?? (instance ? useId() : `nagi-tooltip-${tooltipCount++}`)
   const open = options.open ?? ref(false)
@@ -246,18 +266,4 @@ export function useTooltip(options: UseTooltipOptions = {}): UseTooltipReturn {
       },
     },
   }
-}
-
-/** Connects package Tooltip props while keeping the headless options API independent. */
-export function useTooltipControl(
-  props: TooltipControlProps,
-  open: Ref<boolean>,
-): UseTooltipReturn {
-  return useTooltip({
-    open,
-    openDelay: props.openDelay,
-    closeDelay: props.closeDelay,
-    disabled: () => props.disabled,
-    anchor: { area: props.area, offset: props.offset },
-  })
 }

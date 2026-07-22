@@ -148,7 +148,7 @@ export function useNativeRadioGroupReset<Value extends string | number | null>(
 }
 
 /** Keeps the checkbox-only indeterminate channel and native reset in sync. */
-export function useNativeCheckboxControl(
+export function useNativeCheckbox(
   control: ReadonlyControlRef<HTMLInputElement>,
   checked: WritableModel<boolean>,
   indeterminate: WritableModel<boolean>,

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {
+  useDialog,
   vDialogClose,
   type DialogClosedBy,
 } from "@nagi-labs/nagi-ui";
-import { useDialogControl } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -22,7 +22,7 @@ const props = withDefaults(
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const dialog = useDialogControl(props, open);
+const dialog = useDialog(props, open);
 const titleId = `${dialog.id}-title`;
 const descriptionId = `${dialog.id}-description`;
 
@@ -150,6 +150,14 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         }
       }
     }
+  }
+}
+
+@media (forced-colors: active) {
+  .n-dialog > .button:focus-visible,
+  .n-dialog > .dialog > .footer > .button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

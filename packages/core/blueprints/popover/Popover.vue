@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { AnchorArea } from "@nagi-labs/nagi-ui";
-import { usePopoverControl } from "@nagi-labs/nagi-ui/component-controls";
+import { usePopover, type AnchorArea } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -13,7 +12,7 @@ const props = withDefaults(
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const popover = usePopoverControl(props, open);
+const popover = usePopover(props, open);
 
 defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle });
 </script>
@@ -91,6 +90,13 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
         translate: 0 -0.35rem;
       }
     }
+  }
+}
+
+@media (forced-colors: active) {
+  .n-popover > .button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

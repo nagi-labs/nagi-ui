@@ -10,17 +10,17 @@ type WritableNullableNumber = {
   value: number | null;
 };
 
-export interface NumberFieldControl {
+export interface NumberFieldBinding {
   value: WritableComputedRef<number | "">;
   decrement: () => void;
   increment: () => void;
 }
 
 /** Keeps the nullable model aligned with native number stepping and reset. */
-export function useNumberFieldControl(
+export function useNumberField(
   input: ReadonlyInputRef,
   model: WritableNullableNumber,
-): NumberFieldControl {
+): NumberFieldBinding {
   const initialValue = model.value;
 
   const value = computed<number | "">({

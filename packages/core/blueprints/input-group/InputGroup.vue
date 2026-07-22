@@ -40,14 +40,13 @@ defineProps<{
     box-shadow: var(--nagi-shadow-focus);
   }
 
-  &:has(> .unit > .n-input-group-control:user-invalid),
-  &:has(> .unit > .n-input-group-control[aria-invalid="true"]) {
+  &:has(> .unit > :deep(.n-input-group-control:user-invalid)),
+  &:has(> .unit > :deep(.n-input-group-control[aria-invalid="true"])) {
     border-color: var(--nagi-color-danger);
   }
 
   > .unit {
     display: inline-flex;
-    flex: none;
     align-items: center;
     padding: var(--nagi-space-control);
     background: var(--nagi-color-surface-accent);
@@ -55,17 +54,25 @@ defineProps<{
     white-space: nowrap;
 
     &.-prefix {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+      overflow: hidden;
       border-inline-end: 1px solid var(--nagi-color-border);
+      text-overflow: ellipsis;
     }
 
     &.-suffix {
+      flex: 0 1 auto;
+      min-inline-size: 0;
+      overflow: hidden;
       border-inline-start: 1px solid var(--nagi-color-border);
+      text-overflow: ellipsis;
     }
 
     &.-control {
       display: flex;
       flex: 1 1 auto;
-      min-inline-size: 0;
+      min-inline-size: 4ch;
       padding: 0;
       background: transparent;
 
@@ -90,6 +97,7 @@ defineProps<{
     }
 
     &.-action {
+      flex: none;
       padding: 0;
       border-inline-start: 1px solid var(--nagi-color-border);
       background: transparent;
@@ -98,7 +106,12 @@ defineProps<{
         min-block-size: 100%;
         border: 0;
         border-radius: 0;
-        box-shadow: none;
+      }
+
+      > :slotted(.n-input-group-action:focus-visible) {
+        z-index: 1;
+        outline: 2px solid var(--nagi-color-focus-ring);
+        outline-offset: -2px;
       }
     }
   }
@@ -108,6 +121,10 @@ defineProps<{
   .n-input-group:focus-within {
     outline: 2px solid Highlight;
     outline-offset: 2px;
+  }
+
+  .n-input-group > .unit > :slotted(.n-input-group-action:focus-visible) {
+    outline-color: Highlight;
   }
 }
 </style>

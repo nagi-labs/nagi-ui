@@ -5,7 +5,7 @@ Status: Shipped (2026-07-22).
 This slice adds InputGroup, NumberField, and ToggleGroup as components 38–40.
 They were selected together because each looks small in a catalog but forces a
 different API-boundary decision: caller-owned native markup, a native control
-with a small mechanism adapter, and a repeated controlled schema.
+with a small mechanism binding, and a repeated controlled schema.
 
 ## Product contracts
 
@@ -40,18 +40,18 @@ styling explicit and lintable instead of styling every slotted `input` or
 `button` by tag name. Prefix/suffix wrappers remain owned by the SFC, so their
 slots replace only content and retain default spacing and borders.
 
-## NumberField: one fixed mechanism adapter
+## NumberField: one fixed mechanism binding
 
 The SFC visibly contains its label, native number input, and two step buttons.
 Props, defaults, disabled-limit policy, DOM, and CSS stay in the Blueprint.
-`useNumberFieldControl(input, model)` hides only three operations users should
+`useNumberField(input, model)` hides only three operations users should
 not normally edit with that DOM:
 
 - normalize the native empty value to `null`;
 - call `stepDown()` / `stepUp()` and mirror `valueAsNumber` to the Vue model;
 - restore the initial native value and model after the browser's form reset.
 
-The adapter takes two positional arguments and exposes no option object or
+The binding takes two positional arguments and exposes no option object or
 general numeric-field DSL. It is available only from the package's
 `component-controls` boundary, not the public headless root.
 
@@ -71,7 +71,7 @@ button group.
 - `@nagi-labs/nagi-ui/components`, the ownership registry, and the Nagi CSS
   consumer preset contain all three names.
 - InputGroup's four declared slots are the only new package CSS sub-surfaces.
-- NumberField's adapter remains a package dependency after ordinary ownership;
+- NumberField's binding remains a package dependency after ordinary ownership;
   deferred composable ownership is not reopened by this slice.
 - No component adds `watch`, lifecycle hooks, global DOM access, Teleport,
   literal color values, token fallbacks, or retired `.zone` anatomy.
@@ -98,7 +98,7 @@ vp node ../nagi-css/packages/cli/src/cli.mjs check --config .sandbox/nagi.consum
 Final verification passed 221 unit/SSR tests, 80 Chromium browser/axe tests,
 TypeScript 7 type checking, integration lint, both Nagi CSS boundary checks,
 and package tarball inspection. The tarball contains all three raw SFCs and the
-NumberField adapter.
+NumberField binding.
 
 After this slice, expanded catalog progress is **40 / 54 (74.1%)**. Because
 NumberField and ToggleGroup also close Base UI baseline rows, the independent

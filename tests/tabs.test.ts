@@ -33,6 +33,25 @@ test("Tabs model bridge synchronizes both channels without exposing watchers", (
   scope.stop();
 });
 
+test("shipped Tabs overload maps its schema and named behavior props", () => {
+  const model = ref<string | null>("overview");
+  const scope = effectScope();
+  const result = scope.run(() => useTabs({
+    label: "Account sections",
+    items: tabs,
+    activationMode: "automatic",
+    orientation: "vertical",
+    dir: "ltr",
+    loop: true,
+  }, model));
+  assert.ok(result);
+
+  assert.equal(result.tablistProps["aria-label"], "Account sections");
+  assert.equal(result.tablistProps["aria-orientation"], "vertical");
+  assert.equal(result.tabProps(tabs[1] as TabItem).disabled, true);
+  scope.stop();
+});
+
 function createTabs(overrides: Partial<Parameters<typeof useTabs<TabItem>>[0]> = {}) {
   return useTabs<TabItem>({
     items: tabs,

@@ -54,16 +54,16 @@ line, not whether the line was short.
 
 | Concern | Location | Reason |
 |---|---|---|
-| generated Accordion group name | package adapter | collision avoidance is fixed mechanism |
-| exclusive/multiple toggle ordering and model writes | package adapter | UA event ordering is not product policy |
-| disabled summary click/key suppression | package adapter | fixed native interaction invariant |
-| AlertDialog modal/dismiss options | package adapter | component semantics are fixed, not an option mapping exercise |
+| generated Accordion group name | package binding | collision avoidance is fixed mechanism |
+| exclusive/multiple toggle ordering and model writes | package binding | UA event ordering is not product policy |
+| disabled summary click/key suppression | package binding | fixed native interaction invariant |
+| AlertDialog modal/dismiss options | package binding | component semantics are fixed, not an option mapping exercise |
 | item key/disabled mapping and text fallbacks | SFC | owners extend the local schema and renderer together |
 | action tone and action/cancel events | SFC | public component contract and visible policy |
 | title/description IDREFs | SFC | visible markup relationships edited with the anatomy |
 | DOM, slots and CSS | SFC | intended ownership surface |
 
-The fixed adapters live in `@nagi-labs/nagi-ui/component-controls` and are not
+The fixed bindings live in `@nagi-labs/nagi-ui/component-controls` and are not
 copied by ordinary `own`. No new theme token was necessary; both components use
 the existing 28-token contract without literal fallbacks.
 

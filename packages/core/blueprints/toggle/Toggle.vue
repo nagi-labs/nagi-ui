@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useToggleControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useToggle } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -9,7 +9,7 @@ const props = withDefaults(
 );
 
 const pressed = defineModel<boolean>({ default: false });
-const toggle = useToggleControl(props, pressed);
+const toggle = useToggle(props, pressed);
 </script>
 
 <template>
@@ -55,6 +55,17 @@ const toggle = useToggleControl(props, pressed);
     background: var(--nagi-color-surface);
     color: var(--nagi-color-text-disabled);
     cursor: not-allowed;
+  }
+}
+
+@media (forced-colors: active) {
+  .n-toggle[aria-pressed="true"] {
+    border-width: 3px;
+  }
+
+  .n-toggle:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

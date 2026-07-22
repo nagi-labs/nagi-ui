@@ -15,7 +15,6 @@ import {
   type TabsActivationMode,
   type TabsOrientation,
 } from "@nagi-labs/nagi-ui";
-import { useTabsModelBridge } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -35,19 +34,7 @@ const props = withDefaults(
 );
 
 const selectedModel = defineModel<string | null>("selected", { default: null });
-const selected = useTabsModelBridge(selectedModel);
-
-const tabs = useTabs<TabsItem>({
-  items: () => props.items,
-  getKey: (item) => item.key,
-  isDisabled: (item) => item.disabled ?? false,
-  selected,
-  label: props.label,
-  activationMode: props.activationMode,
-  orientation: props.orientation,
-  dir: props.dir,
-  loop: props.loop,
-});
+const tabs = useTabs(props, selectedModel);
 </script>
 
 <template>

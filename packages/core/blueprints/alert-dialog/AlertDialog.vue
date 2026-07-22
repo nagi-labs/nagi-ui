@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { vDialogClose } from "@nagi-labs/nagi-ui";
-import { useAlertDialogControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useAlertDialog } from "@nagi-labs/nagi-ui/component-controls";
 
 withDefaults(
   defineProps<{
@@ -23,7 +23,7 @@ defineEmits<{
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
-const dialog = useAlertDialogControl(open);
+const dialog = useAlertDialog(open);
 const titleId = `${dialog.id}-title`;
 const descriptionId = `${dialog.id}-description`;
 
@@ -167,6 +167,14 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         }
       }
     }
+  }
+}
+
+@media (forced-colors: active) {
+  .n-alert-dialog > .button:focus-visible,
+  .n-alert-dialog > .dialog > .footer > .button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

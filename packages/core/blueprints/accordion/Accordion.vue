@@ -11,7 +11,7 @@ export interface AccordionItem {
 </script>
 
 <script setup lang="ts">
-import { useAccordionControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useAccordion } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -28,7 +28,7 @@ const props = withDefaults(
 );
 
 const openKeys = defineModel<readonly string[]>("openKeys");
-const accordion = useAccordionControl(props, openKeys);
+const accordion = useAccordion(props, openKeys);
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useId } from "vue";
 
-import { useNativeNumberReset } from "@nagi-labs/nagi-ui";
+import { useSlider } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -28,7 +28,7 @@ const model = defineModel<number>({ default: 0 });
 const input = ref<HTMLInputElement | null>(null);
 const generatedId = useId();
 
-useNativeNumberReset(input, model);
+useSlider(input, model);
 </script>
 
 <template>
@@ -99,7 +99,13 @@ useNativeNumberReset(input, model);
     &:disabled {
       cursor: not-allowed;
     }
+  }
+}
 
+@media (forced-colors: active) {
+  .n-slider > .input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

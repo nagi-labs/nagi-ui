@@ -43,6 +43,9 @@ performed `form.reset()`, then restores both the component's initial model and
 the real control property. The explicit property write is required even when
 the model was already at its initial value and Vue has no reason to render.
 The bridge does not create dirty/touched state or replace a form library.
+Checkbox additionally uses `useNativeCheckbox()` for its fixed DOM-only
+`indeterminate` channel and native reset synchronization; it does not expose a
+component-style configuration object.
 
 ## Combobox contract
 

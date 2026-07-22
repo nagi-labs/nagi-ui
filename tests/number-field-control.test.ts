@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { effectScope, nextTick, ref } from "vue";
 
-import { useNumberFieldControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useNumberField } from "@nagi-labs/nagi-ui/component-controls";
 
 test("NumberField control normalizes empty values and follows native stepping", () => {
   let nativeValue = 2;
@@ -25,7 +25,7 @@ test("NumberField control normalizes empty values and follows native stepping", 
   const input = ref<HTMLInputElement | null>(control);
   const model = ref<number | null>(2);
   const scope = effectScope();
-  const numberField = scope.run(() => useNumberFieldControl(input, model));
+  const numberField = scope.run(() => useNumberField(input, model));
 
   assert.ok(numberField);
   numberField.value.value = "";
@@ -55,7 +55,7 @@ test("NumberField control restores its initial nullable model after native reset
   const model = ref<number | null>(null);
   const scope = effectScope();
 
-  scope.run(() => useNumberFieldControl(input, model));
+  scope.run(() => useNumberField(input, model));
   await nextTick();
 
   model.value = 7;

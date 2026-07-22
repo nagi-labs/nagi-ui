@@ -108,14 +108,24 @@ export interface UseComboboxReturn<Item, Key extends string = string> {
   optionProps: (item: Item) => ComboboxOptionProps;
 }
 
-interface ComboboxControlProps {
+interface ComboboxComponentItem {
+  readonly key: string;
+  readonly label: string;
+  readonly disabled?: boolean;
+}
+
+interface ComboboxComponentProps<Item extends ComboboxComponentItem> {
+  readonly items: readonly Item[];
+  readonly loading: boolean;
+  readonly disabled: boolean;
+  readonly readOnly: boolean;
   readonly required: boolean;
   readonly validationMessage: string;
 }
 
-/** Binds one editable combobox model to its native form-control channels. */
-export function useComboboxControl<Item, Key extends string>(
-  props: ComboboxControlProps,
+/** Keeps form/reset/validity/focus mechanics intact around custom Combobox behavior. */
+export function useNativeCombobox<Item, Key extends string>(
+  props: Pick<ComboboxComponentProps<ComboboxComponentItem>, "required" | "validationMessage">,
   input: Readonly<Ref<HTMLInputElement | null>>,
   behavior: UseComboboxReturn<Item, Key>,
 ) {
@@ -153,7 +163,7 @@ export function useComboboxControl<Item, Key extends string>(
  * input while aria-activedescendant points into the popover listbox.
  * Navigation is provisional: only Enter/click commits selectedKey.
  */
-export function useCombobox<Item, Key extends string = string>(
+function createCombobox<Item, Key extends string = string>(
   options: UseComboboxOptions<Item, Key>,
 ): UseComboboxReturn<Item, Key> {
   const instance = getCurrentInstance();
@@ -494,6 +504,49 @@ export function useCombobox<Item, Key extends string = string>(
     popupProps,
     listboxProps,
     optionProps,
+  };
+}
+
+export function useCombobox<Item, Key extends string = string>(
+  options: UseComboboxOptions<Item, Key>,
+): UseComboboxReturn<Item, Key>;
+export function useCombobox<Item extends ComboboxComponentItem>(
+  props: ComboboxComponentProps<Item>,
+  input: Readonly<Ref<HTMLInputElement | null>>,
+  inputValue: Ref<string>,
+  selected: Ref<string | null>,
+): UseComboboxReturn<Item>;
+/**
+ * Uses either complete headless options, or the shipped flat-item contract.
+ */
+export function useCombobox(
+  optionsOrProps: UseComboboxOptions<unknown> | ComboboxComponentProps<ComboboxComponentItem>,
+  input?: Readonly<Ref<HTMLInputElement | null>>,
+  inputValue?: Ref<string>,
+  selected?: Ref<string | null>,
+): unknown {
+  if (input === undefined || inputValue === undefined || selected === undefined) {
+    return createCombobox(optionsOrProps as UseComboboxOptions<unknown>);
+  }
+
+  const props = optionsOrProps as ComboboxComponentProps<ComboboxComponentItem>;
+  const behavior = createCombobox<ComboboxComponentItem>({
+    getKey: (item) => item.key,
+    getTextValue: (item) => item.label,
+    isDisabled: (item) => item.disabled ?? false,
+    disabled: () => props.disabled,
+    readOnly: () => props.readOnly,
+    required: () => props.required,
+    openWhenEmpty: true,
+    items: () => (props.loading ? [] : props.items),
+    inputValue,
+    selected,
+  });
+  const nativeBinding = useNativeCombobox(props, input, behavior);
+
+  return {
+    ...behavior,
+    clear: nativeBinding.clear,
   };
 }
 

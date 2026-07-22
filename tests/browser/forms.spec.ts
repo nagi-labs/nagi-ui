@@ -16,8 +16,10 @@ test("native controls expose initial state and submit browser FormData", async (
   await expect(page.getByRole("checkbox", { name: "Accept the agreement" })).not.toBeChecked();
   await expect(page.getByRole("switch", { name: "Product updates" })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Email" })).toBeChecked();
-  await expect(page.getByRole("combobox", { name: "Plan" })).toHaveValue("standard");
-  await expect(page.getByRole("slider", { name: "Volume" })).toHaveValue("40");
+  await expect(page.getByRole("combobox", { name: "Plan", exact: true })).toHaveValue(
+    "standard",
+  );
+  await expect(page.getByRole("slider", { name: "Volume", exact: true })).toHaveValue("40");
   await expect(page.getByRole("combobox", { name: "Framework", exact: true })).toHaveValue("v");
   await expect(page.getByTestId("framework-key")).toHaveText("vue");
   await expect(page.getByRole("combobox", { name: "Disabled framework" })).toBeDisabled();
@@ -49,12 +51,12 @@ test("native checkbox, radio, select, and slider keep platform behavior", async 
   await expect(page.getByRole("radio", { name: "SMS" })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Email" })).not.toBeChecked();
 
-  const plan = page.getByRole("combobox", { name: "Plan" });
+  const plan = page.getByRole("combobox", { name: "Plan", exact: true });
   await expect(plan.locator('option[value="legacy"]')).toBeDisabled();
   await plan.selectOption("pro");
   await expect(plan).toHaveValue("pro");
 
-  const slider = page.getByRole("slider", { name: "Volume" });
+  const slider = page.getByRole("slider", { name: "Volume", exact: true });
   await slider.focus();
   await slider.press("ArrowRight");
   await expect(slider).toHaveValue("50");
@@ -122,6 +124,34 @@ test("Rating keeps the native selected control visible in forced colors", async 
   await expect(page.locator(".n-rating .icon").first()).toBeHidden();
 });
 
+test("native form controls retain visible focus outlines in forced colors", async ({
+  page,
+}) => {
+  await page.emulateMedia({ forcedColors: "active" });
+
+  const controls = [
+    page.getByLabel("Full name"),
+    page.getByLabel("External note"),
+    page.getByRole("checkbox", { name: "Accept the agreement" }),
+    page.getByRole("combobox", { name: "Plan", exact: true }),
+    page.getByRole("combobox", { name: "Framework", exact: true }),
+    page.getByRole("radio", { name: "Email" }),
+    page.getByRole("slider", { name: "Volume", exact: true }),
+    page.getByTestId("release-file"),
+    page.getByRole("switch", { name: "Product updates" }),
+  ];
+
+  for (const control of controls) {
+    await control.focus();
+    expect(
+      await control.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { style: style.outlineStyle, width: style.outlineWidth };
+      }),
+    ).toEqual({ style: "solid", width: "2px" });
+  }
+});
+
 test("FileInput presents one native chooser button instead of a split field", async ({
   page,
 }) => {
@@ -169,13 +199,108 @@ test("NumberField and InputGroup preserve native step, form, and reset behavior"
   await expect(projectUrl).toHaveValue("nagi-ui");
 });
 
+test("Select and Slider adopt native initial sanitization and reset their canonical models", async ({
+  page,
+}) => {
+  const form = page.locator("#interactive-form");
+  const plan = page.getByRole("combobox", { name: "Native default plan" });
+  const slider = page.getByRole("slider", { name: "Constrained volume" });
+
+  await expect(plan).toHaveValue("standard");
+  await expect(page.getByTestId("native-default-plan-value")).toHaveText(
+    "native plan: standard",
+  );
+  await expect(slider).toHaveValue("19");
+  await expect(page.getByTestId("constrained-volume-value")).toHaveText(
+    "constrained volume: 19",
+  );
+
+  await page.getByRole("button", { name: "Remove initial plan option" }).click();
+  await expect(plan).toHaveValue("pro");
+  await expect(page.getByTestId("native-default-plan-value")).toHaveText("native plan: pro");
+  await form.getByRole("button", { name: "Reset interactive controls" }).click();
+  await expect(plan).toHaveValue("pro");
+  await expect(page.getByTestId("native-default-plan-value")).toHaveText("native plan: pro");
+
+  await page.reload();
+  const reloadedForm = page.locator("#interactive-form");
+  const reloadedPlan = page.getByRole("combobox", { name: "Native default plan" });
+  const reloadedSlider = page.getByRole("slider", { name: "Constrained volume" });
+  await reloadedPlan.selectOption("pro");
+  await reloadedSlider.fill("13");
+  await expect(page.getByTestId("native-default-plan-value")).toHaveText("native plan: pro");
+  await expect(page.getByTestId("constrained-volume-value")).toHaveText(
+    "constrained volume: 13",
+  );
+
+  await reloadedForm.getByRole("button", { name: "Reset interactive controls" }).click();
+  await expect(reloadedPlan).toHaveValue("standard");
+  await expect(page.getByTestId("native-default-plan-value")).toHaveText(
+    "native plan: standard",
+  );
+  await expect(reloadedSlider).toHaveValue("19");
+  await expect(page.getByTestId("constrained-volume-value")).toHaveText(
+    "constrained volume: 19",
+  );
+});
+
+test("InputGroup distinguishes action focus, forwards invalid state, and preserves narrow controls", async ({
+  page,
+}) => {
+  const input = page.getByRole("textbox", { name: "Project URL" });
+  const action = page.getByRole("button", { name: "Open" });
+  const inputGroup = page.locator(".n-input-group");
+  const numberField = page.locator(".n-number-field > .unit");
+  const seats = page.getByRole("spinbutton", { name: "Seats" });
+
+  await action.focus();
+  await expect(action).toBeFocused();
+  expect(
+    await action.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { style: style.outlineStyle, width: style.outlineWidth };
+    }),
+  ).toEqual({ style: "solid", width: "2px" });
+
+  await input.evaluate((element) => element.setAttribute("aria-invalid", "true"));
+  expect(
+    await inputGroup.evaluate((element) => {
+      const probe = document.createElement("span");
+      probe.style.color = "var(--nagi-color-danger)";
+      element.append(probe);
+      const matches =
+        getComputedStyle(element).borderTopColor === getComputedStyle(probe).color;
+      probe.remove();
+      return matches;
+    }),
+  ).toBe(true);
+
+  await inputGroup.evaluate((element: HTMLElement) => {
+    element.style.inlineSize = "120px";
+  });
+  await numberField.evaluate((element: HTMLElement) => {
+    element.style.inlineSize = "120px";
+  });
+
+  expect(
+    await input.evaluate((element) => element.getBoundingClientRect().width),
+  ).toBeGreaterThanOrEqual(30);
+  expect(
+    await seats.evaluate((element) => element.getBoundingClientRect().width),
+  ).toBeGreaterThanOrEqual(30);
+  const stepWidths = await numberField.locator("button").evaluateAll((buttons) =>
+    buttons.map((button) => button.getBoundingClientRect().width),
+  );
+  expect(stepWidths).toEqual([32, 32]);
+});
+
 test("form reset restores native DOM and every controlled Vue model", async ({ page }) => {
   await page.getByLabel("Full name").fill("Grace Hopper");
   await page.getByRole("checkbox", { name: "Accept the agreement" }).click();
   await page.getByRole("switch", { name: "Product updates" }).click();
   await page.getByRole("radio", { name: "SMS" }).check();
-  await page.getByRole("combobox", { name: "Plan" }).selectOption("pro");
-  await page.getByRole("slider", { name: "Volume" }).fill("80");
+  await page.getByRole("combobox", { name: "Plan", exact: true }).selectOption("pro");
+  await page.getByRole("slider", { name: "Volume", exact: true }).fill("80");
   await page.getByLabel("External note").fill("changed outside");
 
   const framework = page.getByRole("combobox", { name: "Framework", exact: true });
@@ -192,8 +317,10 @@ test("form reset restores native DOM and every controlled Vue model", async ({ p
   await expect(page.getByRole("switch", { name: "Product updates" })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Email" })).toBeChecked();
   await expect(page.getByRole("radio", { name: "SMS" })).not.toBeChecked();
-  await expect(page.getByRole("combobox", { name: "Plan" })).toHaveValue("standard");
-  await expect(page.getByRole("slider", { name: "Volume" })).toHaveValue("40");
+  await expect(page.getByRole("combobox", { name: "Plan", exact: true })).toHaveValue(
+    "standard",
+  );
+  await expect(page.getByRole("slider", { name: "Volume", exact: true })).toHaveValue("40");
   await expect(page.getByLabel("External note")).toHaveValue("outside the form tree");
   await expect(framework).toHaveValue("v");
   await expect(page.getByTestId("framework-key")).toHaveText("vue");
@@ -221,8 +348,10 @@ test("reset keeps pristine control DOM aligned when models are already initial",
   await expect(page.getByRole("checkbox", { name: "Accept the agreement" })).not.toBeChecked();
   await expect(page.getByRole("switch", { name: "Product updates" })).toBeChecked();
   await expect(page.getByRole("radio", { name: "Email" })).toBeChecked();
-  await expect(page.getByRole("combobox", { name: "Plan" })).toHaveValue("standard");
-  await expect(page.getByRole("slider", { name: "Volume" })).toHaveValue("40");
+  await expect(page.getByRole("combobox", { name: "Plan", exact: true })).toHaveValue(
+    "standard",
+  );
+  await expect(page.getByRole("slider", { name: "Volume", exact: true })).toHaveValue("40");
   await expect(page.getByRole("combobox", { name: "Framework", exact: true })).toHaveValue(
     "v",
   );

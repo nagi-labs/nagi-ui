@@ -84,6 +84,20 @@ export interface UseTabsReturn<Item, Key extends string = string> {
   panelProps: (item: Item) => TabsPanelProps;
 }
 
+interface TabsComponentItem {
+  readonly key: string;
+  readonly disabled?: boolean;
+}
+
+interface TabsComponentProps<Item extends TabsComponentItem> {
+  readonly label: string;
+  readonly items: readonly Item[];
+  readonly activationMode: TabsActivationMode;
+  readonly orientation: TabsOrientation;
+  readonly dir: MenuDirection;
+  readonly loop: boolean;
+}
+
 /**
  * Buffers a Vue component model so behavior code can write synchronously even
  * while a controlled parent still exposes the previous prop snapshot.
@@ -115,7 +129,7 @@ let tabsCount = 0;
  * DOM focus lives on caller-owned native buttons; selection and panel
  * visibility stay distinct so manual activation remains possible.
  */
-export function useTabs<Item, Key extends string = string>(
+function createTabs<Item, Key extends string = string>(
   options: UseTabsOptions<Item, Key>,
 ): UseTabsReturn<Item, Key> {
   const instance = getCurrentInstance();
@@ -388,4 +402,37 @@ export function useTabs<Item, Key extends string = string>(
     tabProps,
     panelProps,
   };
+}
+
+export function useTabs<Item, Key extends string = string>(
+  options: UseTabsOptions<Item, Key>,
+): UseTabsReturn<Item, Key>;
+export function useTabs<Item extends TabsComponentItem>(
+  props: TabsComponentProps<Item>,
+  model: Ref<string | null>,
+): UseTabsReturn<Item>;
+/**
+ * Uses either complete headless options, or the shipped flat-item contract.
+ */
+export function useTabs(
+  optionsOrProps: UseTabsOptions<unknown> | TabsComponentProps<TabsComponentItem>,
+  model?: Ref<string | null>,
+): unknown {
+  if (model === undefined) {
+    return createTabs(optionsOrProps as UseTabsOptions<unknown>);
+  }
+
+  const props = optionsOrProps as TabsComponentProps<TabsComponentItem>;
+  const selected = useTabsModelBridge(model);
+  return createTabs<TabsComponentItem>({
+    getKey: (item) => item.key,
+    isDisabled: (item) => item.disabled ?? false,
+    activationMode: props.activationMode,
+    orientation: props.orientation,
+    dir: props.dir,
+    loop: props.loop,
+    items: () => props.items,
+    selected,
+    label: props.label,
+  });
 }

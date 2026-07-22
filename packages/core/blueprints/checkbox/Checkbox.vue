@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { useNativeCheckboxControl } from "@nagi-labs/nagi-ui";
+import { useNativeCheckbox } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -25,7 +25,7 @@ const checked = defineModel<boolean>({ default: false });
 const indeterminate = defineModel<boolean>("indeterminate", { default: false });
 const input = ref<HTMLInputElement | null>(null);
 
-useNativeCheckboxControl(input, checked, indeterminate);
+useNativeCheckbox(input, checked, indeterminate);
 </script>
 
 <template>
@@ -87,6 +87,13 @@ useNativeCheckboxControl(input, checked, indeterminate);
 
   > .unit {
     line-height: 1.35;
+  }
+}
+
+@media (forced-colors: active) {
+  .n-checkbox > .input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

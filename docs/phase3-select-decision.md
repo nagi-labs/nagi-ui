@@ -10,9 +10,10 @@ Nagi UI delegates Select behavior to the native `<select>` element.
 - The stable path is ordinary `<select>` / `<option>` markup. The browser owns
   keyboard interaction, focus, screen-reader semantics, form submission,
   validation, and `input` / `change` events.
-- Nagi UI does not add `useSelect` and does not derive Select from
-  `useCombobox`. Reimplementing native Select for visual parity would duplicate
-  the exact state machine this project is designed to delegate.
+- Nagi UI does not expose a headless Select state machine and does not derive
+  Select from `useCombobox`. The component-only `useSelect` binding merely
+  mirrors the browser-selected option into Vue state and preserves native reset;
+  it does not reimplement keyboard, focus, selection, or form behavior.
 - `appearance: base-select` may be used as progressive enhancement. A browser
   that does not support it must retain a functional native Select.
 - `<selectedcontent>`, a first-child `<button>`, and rich descendants inside

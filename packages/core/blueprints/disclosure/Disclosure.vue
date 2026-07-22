@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDisclosureControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useDisclosure } from "@nagi-labs/nagi-ui";
 
 const props = defineProps<{
   summary: string;
@@ -8,7 +8,7 @@ const props = defineProps<{
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
-const disclosure = useDisclosureControl(props, open);
+const disclosure = useDisclosure(props, open);
 
 defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.toggle });
 </script>
@@ -52,6 +52,13 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
   > .section {
     padding: 0 0.75rem 0.75rem;
     color: var(--nagi-color-text-muted);
+  }
+}
+
+@media (forced-colors: active) {
+  .n-disclosure > .summary:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

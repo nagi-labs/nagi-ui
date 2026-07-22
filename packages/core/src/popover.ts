@@ -30,7 +30,7 @@ export interface UsePopoverOptions {
   anchor?: AnchorOptions | true
 }
 
-interface PopoverControlProps {
+interface PopoverComponentProps {
   readonly area: AnchorArea
   readonly offset: number
 }
@@ -59,7 +59,24 @@ export interface UsePopoverReturn {
   popoverProps: PopoverProps
 }
 
-export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
+export function usePopover(options?: UsePopoverOptions): UsePopoverReturn
+export function usePopover(
+  props: PopoverComponentProps,
+  open: Ref<boolean>,
+): UsePopoverReturn
+export function usePopover(
+  optionsOrProps: UsePopoverOptions | PopoverComponentProps = {},
+  componentOpen?: Ref<boolean>,
+): UsePopoverReturn {
+  const options: UsePopoverOptions = componentOpen
+    ? {
+        anchor: {
+          area: (optionsOrProps as PopoverComponentProps).area,
+          offset: (optionsOrProps as PopoverComponentProps).offset,
+        },
+        open: componentOpen,
+      }
+    : optionsOrProps as UsePopoverOptions
   const instance = getCurrentInstance()
   const id = options.id ?? (instance ? useId() : `nagi-popover-${popoverCount++}`)
   const open = options.open ?? ref(options.defaultOpen ?? false)
@@ -137,17 +154,6 @@ export function usePopover(options: UsePopoverOptions = {}): UsePopoverReturn {
       ? { id, style: anchor.positionedStyle, onToggle }
       : { id, onToggle },
   }
-}
-
-/** Connects package Popover props without exposing a pass-through option object. */
-export function usePopoverControl(
-  props: PopoverControlProps,
-  open: Ref<boolean>,
-): UsePopoverReturn {
-  return usePopover({
-    open,
-    anchor: { area: props.area, offset: props.offset },
-  })
 }
 
 let popoverCount = 0

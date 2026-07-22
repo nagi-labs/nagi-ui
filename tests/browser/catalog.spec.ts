@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/catalog.html");
@@ -46,6 +46,45 @@ test("focusable disabled Button stays focusable without activating", async ({ pa
   await expect(page.getByTestId("focusable-disabled-clicks")).toHaveText("activations: 0");
 });
 
+test("package triggers and links retain visible focus in forced colors", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+
+  const expectSystemOutline = async (locator: Locator) => {
+    await locator.focus();
+    await expect(locator).toBeFocused();
+    expect(
+      await locator.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return { style: style.outlineStyle, width: style.outlineWidth };
+      }),
+    ).toEqual({ style: "solid", width: "2px" });
+  };
+
+  await expectSystemOutline(page.getByTestId("button-default"));
+  await expectSystemOutline(
+    page.getByRole("navigation", { name: "Package path" }).getByRole("link", { name: "Home" }),
+  );
+  await expectSystemOutline(page.getByRole("button", { name: "Pin release" }));
+  await expectSystemOutline(page.getByRole("button", { name: "Open package popover" }));
+  await expectSystemOutline(page.getByRole("button", { name: "More information" }));
+  await expectSystemOutline(page.locator("summary", { hasText: "What does native mean?" }));
+
+  const dialogTrigger = page.getByRole("button", { name: "Open package dialog" });
+  await expectSystemOutline(dialogTrigger);
+  await dialogTrigger.click();
+  const close = page.getByRole("dialog").getByRole("button", { name: "Close" });
+  await expectSystemOutline(close);
+  await close.click();
+
+  const alertTrigger = page.getByRole("button", { name: "Delete package", exact: true });
+  await expectSystemOutline(alertTrigger);
+  await alertTrigger.click();
+  const alertDialog = page.getByRole("alertdialog");
+  await expectSystemOutline(alertDialog.getByRole("button", { name: "Delete package" }));
+  await expectSystemOutline(alertDialog.getByRole("button", { name: "Cancel" }));
+  await alertDialog.getByRole("button", { name: "Cancel" }).click();
+});
+
 test("Avatar recovers after an image error and Toggle exposes native pressed state", async ({
   page,
 }) => {
@@ -66,9 +105,17 @@ test("Avatar recovers after an image error and Toggle exposes native pressed sta
   await expect(avatar).toContainText("AL");
 
   const toggle = page.getByRole("button", { name: "Pin release" });
+  await page.emulateMedia({ forcedColors: "active" });
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  const unpressedBorder = await toggle.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).borderTopWidth),
+  );
   await toggle.click();
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  const pressedBorder = await toggle.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).borderTopWidth),
+  );
+  expect(pressedBorder).toBeGreaterThan(unpressedBorder);
   await expect(page.getByTestId("toggle-state")).toHaveText("pressed: true");
   await toggle.press("Space");
   await expect(toggle).toHaveAttribute("aria-pressed", "false");

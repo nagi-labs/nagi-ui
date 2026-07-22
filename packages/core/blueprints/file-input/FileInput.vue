@@ -101,4 +101,11 @@ const props = withDefaults(
     }
   }
 }
+
+@media (forced-colors: active) {
+  .n-file-input > .input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 </style>

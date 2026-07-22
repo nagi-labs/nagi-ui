@@ -32,7 +32,7 @@ export interface UseDialogOptions {
   closedby?: DialogClosedBy
 }
 
-interface DialogControlProps {
+interface DialogComponentProps {
   readonly modal: boolean
   readonly closedby: DialogClosedBy
 }
@@ -90,7 +90,22 @@ export function supportsDialogClosedBy(): boolean {
   )
 }
 
-export function useDialog(options: UseDialogOptions = {}): UseDialogReturn {
+export function useDialog(options?: UseDialogOptions): UseDialogReturn
+export function useDialog(
+  props: DialogComponentProps,
+  open: Ref<boolean>,
+): UseDialogReturn
+export function useDialog(
+  optionsOrProps: UseDialogOptions | DialogComponentProps = {},
+  componentOpen?: Ref<boolean>,
+): UseDialogReturn {
+  const options: UseDialogOptions = componentOpen
+    ? {
+        modal: (optionsOrProps as DialogComponentProps).modal,
+        closedby: (optionsOrProps as DialogComponentProps).closedby,
+        open: componentOpen,
+      }
+    : optionsOrProps as UseDialogOptions
   const instance = getCurrentInstance()
   const id = options.id ?? (instance ? useId() : `nagi-dialog-${dialogCount++}`)
   const open = options.open ?? ref(options.defaultOpen ?? false)
@@ -158,20 +173,8 @@ export function useDialog(options: UseDialogOptions = {}): UseDialogReturn {
   }
 }
 
-/** Connects package Dialog props without exposing a pass-through option object. */
-export function useDialogControl(
-  props: DialogControlProps,
-  open: Ref<boolean>,
-): UseDialogReturn {
-  return useDialog({
-    open,
-    modal: props.modal,
-    closedby: props.closedby,
-  })
-}
-
 /** Fixed modal and dismiss policy for the package AlertDialog. */
-export function useAlertDialogControl(open: Ref<boolean>): UseDialogReturn {
+export function useAlertDialog(open: Ref<boolean>): UseDialogReturn {
   return useDialog({ open, modal: true, closedby: "closerequest" })
 }
 

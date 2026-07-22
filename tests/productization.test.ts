@@ -19,9 +19,14 @@ const recipeFiles = [
 test("the npm package includes copyable consumer browser-test recipes", () => {
   const manifest = JSON.parse(
     fs.readFileSync(path.join(packageRoot, "package.json"), "utf8"),
-  ) as { files?: string[] };
+  ) as { files?: string[]; exports?: Record<string, string> };
 
   assert.ok(manifest.files?.includes("recipes"), "package files include recipes");
+  assert.equal(
+    manifest.exports?.["./recipes/control-expansion.md"],
+    "./recipes/control-expansion.md",
+  );
+  assert.ok(fs.existsSync(path.join(packageRoot, "recipes/control-expansion.md")));
   for (const file of recipeFiles) {
     assert.ok(fs.existsSync(path.join(recipeRoot, file)), `testing recipe ships ${file}`);
   }
@@ -69,5 +74,6 @@ test("Phase 4 consumer guidance is discoverable from the repository entrypoint",
 
   assert.match(readme, /docs\/when-not-to-use-nagi-ui\.md/);
   assert.match(readme, /packages\/core\/recipes\/testing\/README\.md/);
+  assert.match(readme, /packages\/core\/recipes\/control-expansion\.md/);
   assert.match(charter, /Status: Complete \(2026-07-21\)/);
 });

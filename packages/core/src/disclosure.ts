@@ -22,7 +22,7 @@ export interface UseDisclosureOptions {
   disabled?: MaybeRefOrGetter<boolean>
 }
 
-interface DisclosureControlProps {
+interface DisclosureComponentProps {
   readonly name?: string
   readonly disabled?: boolean
 }
@@ -63,7 +63,24 @@ interface DetailsElement extends HTMLElement {
 
 let disclosureCount = 0
 
-export function useDisclosure(options: UseDisclosureOptions = {}): UseDisclosureReturn {
+export function useDisclosure(options?: UseDisclosureOptions): UseDisclosureReturn
+export function useDisclosure(
+  props: DisclosureComponentProps,
+  open: Ref<boolean>,
+): UseDisclosureReturn
+export function useDisclosure(
+  optionsOrProps: UseDisclosureOptions | DisclosureComponentProps = {},
+  componentOpen?: Ref<boolean>,
+): UseDisclosureReturn {
+  const options: UseDisclosureOptions = componentOpen
+    ? {
+        ...((optionsOrProps as DisclosureComponentProps).name
+          ? { name: (optionsOrProps as DisclosureComponentProps).name }
+          : {}),
+        disabled: () => (optionsOrProps as DisclosureComponentProps).disabled ?? false,
+        open: componentOpen,
+      }
+    : optionsOrProps as UseDisclosureOptions
   const instance = getCurrentInstance()
   const id = options.id ?? (instance ? useId() : `nagi-disclosure-${disclosureCount++}`)
   const open = options.open ?? ref(options.defaultOpen ?? false)
@@ -129,16 +146,4 @@ export function useDisclosure(options: UseDisclosureOptions = {}): UseDisclosure
       },
     },
   }
-}
-
-/** Connects package Disclosure props without exposing a pass-through option object. */
-export function useDisclosureControl(
-  props: DisclosureControlProps,
-  open: Ref<boolean>,
-): UseDisclosureReturn {
-  return useDisclosure({
-    open,
-    ...(props.name ? { name: props.name } : {}),
-    disabled: () => props.disabled ?? false,
-  })
 }

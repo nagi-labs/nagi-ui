@@ -110,7 +110,7 @@ test("Accordion source keeps behavior native and uses token-only themed values",
   );
 
   assert.match(source, /<details/);
-  assert.match(source, /useAccordionControl\(props, openKeys\)/);
+  assert.match(source, /useAccordion\(props, openKeys\)/);
   assert.doesNotMatch(source, /useId|preventDefault|stopPropagation/);
   assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|onBeforeUnmount|useAttrs|document|window)\b/);
   assert.doesNotMatch(source, /Teleport|provide\(|inject\(|data-state/);

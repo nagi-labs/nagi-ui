@@ -9,7 +9,7 @@ export interface NagiSelectOption {
 <script setup lang="ts">
 import { ref, useId } from "vue";
 
-import { useNativeValueReset } from "@nagi-labs/nagi-ui";
+import { useSelect } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -32,8 +32,7 @@ const props = withDefaults(
 const model = defineModel<string>();
 const generatedId = useId();
 const select = ref<HTMLSelectElement | null>(null);
-
-useNativeValueReset(select, model);
+const selectBinding = useSelect(select, model);
 </script>
 
 <template>
@@ -41,7 +40,6 @@ useNativeValueReset(select, model);
     <label class="label" :for="id ?? generatedId">{{ label }}</label>
     <select
       ref="select"
-      v-model="model"
       v-bind="$attrs"
       class="select"
       :id="id ?? generatedId"
@@ -49,12 +47,14 @@ useNativeValueReset(select, model);
       :disabled="disabled"
       :required="required"
       :form="form"
+      @change="selectBinding.onChange"
     >
       <option
         v-for="option in options"
         :key="option.value"
         :value="option.value"
         :disabled="option.disabled"
+        v-bind="selectBinding.selectedProps(option.value)"
       >
         {{ option.label }}
       </option>
@@ -100,6 +100,13 @@ useNativeValueReset(select, model);
     &[aria-invalid="true"] {
       border-color: var(--nagi-color-danger);
     }
+  }
+}
+
+@media (forced-colors: active) {
+  .n-select > .select:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

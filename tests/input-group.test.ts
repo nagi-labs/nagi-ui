@@ -136,6 +136,17 @@ test("InputGroup remains a styling-only anatomy with a bounded slot surface", ()
   assert.match(source, /<slot name="action" \/>/);
   assert.match(source, /:slotted\(\.n-input-group-control\)/);
   assert.match(source, /:slotted\(\.n-input-group-action\)/);
+  assert.match(
+    source,
+    /:has\([^\n]+:deep\(\.n-input-group-control:user-invalid\)\)/,
+  );
+  assert.match(source, /:slotted\(\.n-input-group-action:focus-visible\)/);
+  assert.doesNotMatch(
+    source,
+    /:slotted\(\.n-input-group-action\)[^{]*\{[^}]*box-shadow:\s*none/su,
+  );
+  assert.match(source, /&\.-control\s*\{[^}]*min-inline-size:\s*4ch/su);
+  assert.match(source, /&\.-prefix\s*\{[^}]*flex:\s*0 1 auto/su);
   assert.doesNotMatch(source, /:slotted\((?:input|select|textarea|button)\b/);
   assert.doesNotMatch(source, /defineModel|\b(?:name|form|type|disabled|required|readOnly)\?:/);
   assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|onUnmounted|useAttrs)\s*\(/);

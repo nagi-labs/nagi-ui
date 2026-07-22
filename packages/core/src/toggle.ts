@@ -9,7 +9,7 @@ export interface UseToggleOptions {
   disabled?: MaybeRefOrGetter<boolean>
 }
 
-interface ToggleControlProps {
+interface ToggleComponentProps {
   readonly disabled: boolean
 }
 
@@ -34,7 +34,21 @@ export interface UseToggleReturn {
  * custom state vocabulary. The browser keeps button activation and disabled
  * behavior; this composable owns only the `aria-pressed` model.
  */
-export function useToggle(options: UseToggleOptions = {}): UseToggleReturn {
+export function useToggle(options?: UseToggleOptions): UseToggleReturn
+export function useToggle(
+  props: ToggleComponentProps,
+  pressed: Ref<boolean>,
+): UseToggleReturn
+export function useToggle(
+  optionsOrProps: UseToggleOptions | ToggleComponentProps = {},
+  componentPressed?: Ref<boolean>,
+): UseToggleReturn {
+  const options: UseToggleOptions = componentPressed
+    ? {
+        disabled: () => (optionsOrProps as ToggleComponentProps).disabled,
+        pressed: componentPressed,
+      }
+    : optionsOrProps as UseToggleOptions
   const pressed = options.pressed ?? ref(options.defaultPressed ?? false)
   const disabled = () => toValue(options.disabled) ?? false
 
@@ -61,15 +75,4 @@ export function useToggle(options: UseToggleOptions = {}): UseToggleReturn {
       },
     },
   }
-}
-
-/** Connects package Toggle props without exposing a pass-through option object. */
-export function useToggleControl(
-  props: ToggleControlProps,
-  pressed: Ref<boolean>,
-): UseToggleReturn {
-  return useToggle({
-    pressed,
-    disabled: () => props.disabled,
-  })
 }

@@ -13,7 +13,6 @@ import {
   mergeNagiProps,
   useCombobox,
 } from "@nagi-labs/nagi-ui";
-import { useComboboxControl } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -53,20 +52,8 @@ const inputValue = defineModel<string>({ default: "" });
 const selected = defineModel<string | null>("selected", { default: null });
 const labelId = useId();
 const inputElement = useTemplateRef<HTMLInputElement>("input");
-const combobox = useCombobox<ComboboxOption>({
-  items: () => (props.loading ? [] : props.items),
-  getKey: (item) => item.key,
-  getTextValue: (item) => item.label,
-  isDisabled: (item) => item.disabled ?? false,
-  inputValue,
-  selected,
-  disabled: () => props.disabled,
-  readOnly: () => props.readOnly,
-  required: () => props.required,
-  openWhenEmpty: true,
-});
+const combobox = useCombobox(props, inputElement, inputValue, selected);
 const { visibleItems } = combobox;
-const control = useComboboxControl(props, inputElement, combobox);
 </script>
 
 <template>
@@ -88,7 +75,7 @@ const control = useComboboxControl(props, inputElement, combobox);
         class="button -clear"
         type="button"
         :aria-label="clearLabel"
-        @click="control.clear"
+        @click="combobox.clear"
       >
         <span aria-hidden="true">×</span>
       </button>
@@ -263,6 +250,13 @@ const control = useComboboxControl(props, inputElement, combobox);
         list-style: none;
       }
     }
+  }
+}
+
+@media (forced-colors: active) {
+  .n-combobox > .unit.-control > .input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

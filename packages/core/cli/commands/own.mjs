@@ -42,8 +42,9 @@ export function createOwnCommand({ cwd, log, onExit }) {
           "\nNext:",
           "  1. Commit the untouched owned files now (this preserves the 3-way merge base).",
           "  2. Switch imports from @nagi-labs/nagi-ui/components to the owned files.",
-          `  3. Apply ${path.relative(cwd, path.join(packageRoot, "recipes/testing/README.md"))} to the consumer contract.`,
-          `  4. Gate upgrades with nagi-ui diff --dir ${args.dir}.`,
+          `  3. For behavior changes, use ${path.relative(cwd, path.join(packageRoot, "recipes/control-expansion.md"))}.`,
+          `  4. Apply ${path.relative(cwd, path.join(packageRoot, "recipes/testing/README.md"))} to the consumer contract.`,
+          `  5. Gate upgrades with nagi-ui diff --dir ${args.dir}.`,
         ].join("\n"),
       )
       onExit(0)

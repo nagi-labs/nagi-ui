@@ -1,6 +1,6 @@
 import { ref, useId, type Ref } from "vue"
 
-interface AccordionControlProps {
+interface AccordionComponentProps {
   readonly multiple: boolean
   readonly defaultOpenKeys: readonly string[]
 }
@@ -22,8 +22,8 @@ function unique(keys: readonly string[]): readonly string[] {
 }
 
 /** Fixed native grouping, model synchronization, and disabled-summary behavior. */
-export function useAccordionControl(
-  props: AccordionControlProps,
+export function useAccordion(
+  props: AccordionComponentProps,
   openKeysModel: Ref<readonly string[] | undefined>,
 ) {
   const groupName = `nagi-accordion-${useId()}`

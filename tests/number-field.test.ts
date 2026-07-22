@@ -127,11 +127,16 @@ test("NumberField disables both step actions when the native input is readonly",
   }
 });
 
-test("NumberField keeps browser-owned behavior behind one fixed adapter", () => {
+test("NumberField keeps browser-owned behavior behind one fixed binding", () => {
   const source = fs.readFileSync(sourcePath, "utf8");
 
   assert.match(source, /defineModel<number \| null>\(\{ default: null \}\)/u);
-  assert.match(source, /useNumberFieldControl\(input, model\)/u);
+  assert.match(source, /useNumberField\(input, model\)/u);
+  assert.match(
+    source,
+    /> \.button\s*\{[^}]*inline-size:\s*var\(--nagi-size-control\)/su,
+  );
+  assert.match(source, /> \.input\s*\{[^}]*min-inline-size:\s*4ch/su);
   assert.match(source, /<input[\s\S]*v-bind="\$attrs"[\s\S]*type="number"/u);
   assert.match(source, /:name="name"[\s\S]*:form="form"/u);
   assert.match(source, /:min="min"[\s\S]*:max="max"[\s\S]*:step="step"/u);

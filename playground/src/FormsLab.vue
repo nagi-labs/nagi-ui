@@ -52,6 +52,9 @@ const contact = ref<string | null>("email");
 const plan = ref("standard");
 const rating = ref<number | null>(3);
 const seats = ref<number | null>(2);
+const nativeDefaultPlan = ref<string>();
+const nativePlans = ref<readonly NagiSelectOption[]>(plans);
+const constrainedVolume = ref(999);
 const volume = ref(40);
 const externalNote = ref("outside the form tree");
 const externalFormOwner = ref("alignment-form");
@@ -84,6 +87,10 @@ function captureSubmission(event: SubmitEvent) {
   const form = event.currentTarget;
   if (!(form instanceof HTMLFormElement)) return;
   submission.value = JSON.stringify(Object.fromEntries(new FormData(form)));
+}
+
+function removeInitialPlanOption() {
+  nativePlans.value = plans.filter((option) => option.value === "pro");
 }
 </script>
 
@@ -231,6 +238,20 @@ function captureSubmission(event: SubmitEvent) {
             decrement-label="Decrease seats"
             increment-label="Increase seats"
           />
+          <NagiSelect
+            v-model="nativeDefaultPlan"
+            label="Native default plan"
+            name="nativeDefaultPlan"
+            :options="nativePlans"
+          />
+          <Slider
+            v-model="constrainedVolume"
+            label="Constrained volume"
+            name="constrainedVolume"
+            :min="10"
+            :max="20"
+            :step="3"
+          />
           <InputGroup prefix="https://" suffix=".dev">
             <input
               class="n-input-group-control"
@@ -246,11 +267,20 @@ function captureSubmission(event: SubmitEvent) {
           </InputGroup>
         </div>
         <div class="actions">
+          <button class="button" type="button" @click="removeInitialPlanOption">
+            Remove initial plan option
+          </button>
           <button class="button" type="reset">Reset interactive controls</button>
         </div>
       </form>
       <output data-testid="rating-value">rating: {{ rating ?? "none" }}</output>
       <output data-testid="seats-value">seats: {{ seats ?? "none" }}</output>
+      <output data-testid="native-default-plan-value">
+        native plan: {{ nativeDefaultPlan ?? "none" }}
+      </output>
+      <output data-testid="constrained-volume-value">
+        constrained volume: {{ constrainedVolume }}
+      </output>
     </section>
 
     <section class="section" aria-labelledby="external-heading">

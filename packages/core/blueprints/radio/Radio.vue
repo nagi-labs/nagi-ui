@@ -87,4 +87,11 @@ useNativeRadioReset(input, model);
     }
   }
 }
+
+@media (forced-colors: active) {
+  .n-radio > .input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 </style>

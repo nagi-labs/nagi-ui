@@ -3,9 +3,10 @@ import test from "node:test";
 
 import { effectScope, nextTick, ref } from "vue";
 
+import * as nagiUi from "@nagi-labs/nagi-ui";
 import {
   useNativeCheckedReset,
-  useNativeCheckboxControl,
+  useNativeCheckbox,
   useNativeCustomValidity,
   useNativeFormReset,
   useNativeNumberReset,
@@ -13,6 +14,11 @@ import {
   useNativeRadioReset,
   useNativeValueReset,
 } from "@nagi-labs/nagi-ui";
+
+test("native checkbox helper ships without the legacy Control alias", () => {
+  assert.equal(nagiUi.useNativeCheckbox, useNativeCheckbox);
+  assert.equal("useNativeCheckboxControl" in nagiUi, false);
+});
 
 test("native custom validity follows reactive message and control changes", async () => {
   const messages: string[] = [];
@@ -101,7 +107,7 @@ test("small native reset helpers restore their fixed model and DOM channels", as
     useNativeNumberReset(numberControl, number);
     useNativeCheckedReset(checkedControl, checked);
     useNativeRadioReset(radioControl, radio);
-    useNativeCheckboxControl(
+    useNativeCheckbox(
       checkboxControl,
       checkboxChecked,
       checkboxIndeterminate,

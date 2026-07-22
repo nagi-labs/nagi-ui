@@ -111,7 +111,7 @@ test("AlertDialog source delegates modal focus and dismiss behavior to the platf
 
   assert.match(source, /<dialog/);
   assert.doesNotMatch(source, /<form|method="dialog"/);
-  assert.match(source, /useAlertDialogControl\(open\)/);
+  assert.match(source, /useAlertDialog\(open\)/);
   assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|onBeforeUnmount|useAttrs|document|window)\b/);
   assert.doesNotMatch(source, /Teleport|focusTrap|data-state/);
   assert.doesNotMatch(source, /var\(--[^,)]+,/);

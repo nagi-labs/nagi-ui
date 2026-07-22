@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { nextTick, ref } from "vue";
+import { effectScope, nextTick, ref } from "vue";
 
 import { useCombobox } from "@nagi-labs/nagi-ui";
 
@@ -48,6 +48,31 @@ function keydown(key: string, modifiers: Partial<KeyboardEvent> = {}) {
   } as KeyboardEvent;
   return { event, prevented: () => prevented, stopped: () => stopped };
 }
+
+test("shipped Combobox overload applies its fixed flat-schema defaults", () => {
+  const inputValue = ref("");
+  const selected = ref<string | null>(null);
+  const inputElement = ref<HTMLInputElement | null>(null);
+  const props = {
+    items: fruits,
+    loading: false,
+    disabled: false,
+    readOnly: false,
+    required: false,
+    validationMessage: "Select an option.",
+  };
+  const scope = effectScope();
+  const combobox = scope.run(() =>
+    useCombobox(props, inputElement, inputValue, selected),
+  );
+  assert.ok(combobox);
+
+  assert.deepEqual(combobox.visibleItems.value, fruits);
+  assert.equal(combobox.optionProps(fruits[1] as Fruit)["aria-disabled"], "true");
+  combobox.inputProps.onInput(input("cher"));
+  assert.deepEqual(combobox.visibleItems.value.map((item) => item.key), ["cherry"]);
+  scope.stop();
+});
 
 test("emits the editable combobox/listbox relationship as standard attributes", () => {
   const combobox = createCombobox();

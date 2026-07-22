@@ -351,6 +351,7 @@ test("citty command routing preserves multi-component ownership and enum validat
   assert.ok(fs.existsSync(path.join(targetRoot, "combobox/Combobox.vue")));
   const output = logs.join("\n");
   assert.match(output, /Commit the untouched owned files now/);
+  assert.match(output, /recipes\/control-expansion\.md/);
   assert.match(output, /recipes\/testing\/README\.md/);
   assert.ok(output.includes(`nagi-ui diff --dir ${targetRoot}`));
 

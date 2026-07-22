@@ -15,7 +15,6 @@ const props = withDefaults(
       | "search"
       | "tel"
       | "url"
-      | "number"
       | "date"
       | "datetime-local"
       | "month"
@@ -105,6 +104,13 @@ useNativeValueReset(input, model);
     &[aria-invalid="true"] {
       border-color: var(--nagi-color-danger);
     }
+  }
+}
+
+@media (forced-colors: active) {
+  .n-input > .input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

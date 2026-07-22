@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, useId } from "vue";
 
-import { useNumberFieldControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useNumberField } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -37,7 +37,7 @@ const {
   value: inputValue,
   decrement,
   increment,
-} = useNumberFieldControl(input, model);
+} = useNumberField(input, model);
 
 const decrementDisabled = computed(
   () =>
@@ -112,8 +112,10 @@ const incrementDisabled = computed(
     grid-template-columns: auto minmax(0, 1fr) auto;
 
     > .button {
+      box-sizing: border-box;
+      inline-size: var(--nagi-size-control);
       min-block-size: var(--nagi-size-control);
-      padding: var(--nagi-space-control);
+      padding: 0;
       border: 1px solid var(--nagi-color-border);
       background: var(--nagi-color-surface-accent);
       color: var(--nagi-color-text);
@@ -148,7 +150,8 @@ const incrementDisabled = computed(
     }
 
     > .input {
-      min-inline-size: 0;
+      box-sizing: border-box;
+      min-inline-size: 4ch;
       min-block-size: var(--nagi-size-control);
       padding: var(--nagi-space-control);
       border: 1px solid var(--nagi-color-border);

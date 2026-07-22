@@ -102,4 +102,11 @@ const currentIndex = computed(() => {
     }
   }
 }
+
+@media (forced-colors: active) {
+  .n-breadcrumb > .list > .item > .link:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 </style>

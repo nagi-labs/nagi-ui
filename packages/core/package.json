@@ -10,6 +10,7 @@
     "./default-theme.css": "./theme/default-theme.css",
     "./theme.css": "./theme/default-theme.css",
     "./blueprints/*": "./blueprints/*",
+    "./recipes/control-expansion.md": "./recipes/control-expansion.md",
     "./package.json": "./package.json"
   },
   "bin": {

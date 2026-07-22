@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { AnchorArea } from "@nagi-labs/nagi-ui";
-import { useTooltipControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useTooltip, type AnchorArea } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -22,7 +21,7 @@ const props = withDefaults(
 );
 
 const open = defineModel<boolean>("open", { default: false });
-const tooltip = useTooltipControl(props, open);
+const tooltip = useTooltip(props, open);
 
 defineExpose({ show: tooltip.show, hide: tooltip.hide });
 </script>
@@ -75,6 +74,13 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
     color: var(--nagi-color-surface);
     box-shadow: var(--nagi-shadow-overlay);
     font-size: var(--nagi-font-size-label);
+  }
+}
+
+@media (forced-colors: active) {
+  .n-tooltip > .button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

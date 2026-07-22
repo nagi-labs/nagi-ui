@@ -49,6 +49,23 @@ function focusSelf(): FocusEvent {
   return { target, currentTarget: target } as FocusEvent;
 }
 
+test("shipped Listbox overload maps its schema and named behavior props", () => {
+  const selected = ref<readonly string[]>([]);
+  const listbox = useListbox({
+    items: fruits,
+    mode: "multiple",
+    orientation: "horizontal",
+    dir: "rtl",
+    loop: true,
+  }, selected);
+
+  assert.equal(listbox.listboxProps["aria-multiselectable"], "true");
+  assert.equal(listbox.listboxProps["aria-orientation"], "horizontal");
+  assert.equal(listbox.optionProps(fruits[1] as Fruit)["aria-disabled"], "true");
+  listbox.optionProps(fruits[0] as Fruit).onClick({ preventDefault() {} } as MouseEvent);
+  assert.deepEqual(selected.value, ["apple"]);
+});
+
 test("single mode: focus lands on the first enabled option and arrows keep selection on focus", () => {
   const listbox = createListbox();
   listbox.listboxProps.onFocus(focusSelf());

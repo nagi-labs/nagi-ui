@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useButtonControl } from "@nagi-labs/nagi-ui/component-controls";
+import { useButton } from "@nagi-labs/nagi-ui/component-controls";
 
 const props = withDefaults(
   defineProps<{
@@ -24,7 +24,7 @@ const sizeClass = {
   default: undefined,
   large: "-large",
 } as const;
-const button = useButtonControl(props);
+const button = useButton(props);
 </script>
 
 <template>
@@ -35,9 +35,7 @@ const button = useButtonControl(props);
       sizeClass[size],
     ]"
     :type="type"
-    :disabled="button.disabled"
-    :aria-disabled="button.ariaDisabled"
-    @click.capture="button.onClick"
+    v-bind="button.buttonProps"
   >
     <slot />
   </button>
@@ -96,6 +94,13 @@ const button = useButtonControl(props);
     min-block-size: 2.5rem;
     padding: 0.65rem 1rem;
     font-size: 1.125rem;
+  }
+}
+
+@media (forced-colors: active) {
+  .n-button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
   }
 }
 </style>

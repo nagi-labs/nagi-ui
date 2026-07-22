@@ -150,7 +150,7 @@ and moves every Blueprint surface to the exact `.n-<filename-kebab>` namespace.
 
 Post-v0 Alignment D3 adds Accordion and AlertDialog as components 26–27.
 Accordion keeps repeated disclosure behavior in native `<details name>` while a
-fixed adapter owns generated grouping, controlled `openKeys` synchronization
+fixed `useAccordion` binding owns generated grouping, controlled `openKeys` synchronization
 and disabled activation suppression. AlertDialog reuses native modal Dialog
 behavior with `role="alertdialog"`, required description, explicit owned
 Cancel/Action buttons and no nested form. Decisions and browser contracts are
@@ -182,7 +182,7 @@ NumberField and ToggleGroup. InputGroup owns only a visual frame and requires
 explicit `n-input-group-control` / `n-input-group-action` slot surfaces, leaving
 native control attributes and semantics with caller markup. NumberField keeps a
 visible native number input, uses native `stepUp()` / `stepDown()` and hides only
-step/reset synchronization in one fixed adapter. ToggleGroup renders a flat
+step/reset synchronization in one fixed `useNumberField` binding. ToggleGroup renders a flat
 schema as real `button[aria-pressed]` controls and leaves every enabled button in
 the native tab order instead of adding roving focus. The catalog is now 40 / 54
 (74.1%), and shipping the two matching Base UI rows moves that independent

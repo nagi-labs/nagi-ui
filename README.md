@@ -24,6 +24,8 @@ learning lands.
   see [`docs/package-ownership-model.md`](docs/package-ownership-model.md).
 - `packages/core/recipes/testing/` — package-shipped Vitest Browser Mode and
   Playwright consumer contracts for package and owned components.
+- `packages/core/recipes/control-expansion.md` — copyable examples for replacing
+  a package component mapping with the complete public `useX({...})` form.
 - `playground/` — Vite labs for the phase slices (`vp exec vite playground`;
   `?autotest=stacking` runs the Demo B self-test).
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app

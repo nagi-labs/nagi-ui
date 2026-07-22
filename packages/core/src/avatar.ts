@@ -9,15 +9,9 @@ import {
 } from "vue";
 
 export interface UseAvatarOptions {
-  src: MaybeRefOrGetter<string | undefined>;
+  src?: MaybeRefOrGetter<string | undefined>;
   alt: MaybeRefOrGetter<string>;
-  fallback: MaybeRefOrGetter<string | undefined>;
-}
-
-interface AvatarControlProps {
-  readonly src?: string;
-  readonly alt: string;
-  readonly fallback?: string;
+  fallback?: MaybeRefOrGetter<string | undefined>;
 }
 
 function initials(value: string): string {
@@ -63,13 +57,4 @@ export function useAvatar(options: UseAvatarOptions) {
   onMounted(detectMissedError);
 
   return { fallbackText, hasImage, image, onImageError };
-}
-
-/** Connects the package Avatar props without exposing pass-through wiring. */
-export function useAvatarControl(props: AvatarControlProps) {
-  return useAvatar({
-    src: () => props.src,
-    alt: () => props.alt,
-    fallback: () => props.fallback,
-  });
 }
