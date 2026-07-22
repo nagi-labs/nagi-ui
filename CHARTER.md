@@ -1,152 +1,154 @@
 # Nagi UI — Concept & Architecture Charter
 
-> **この文書の位置づけ**: Nagi UI の設計判断を固定するための憲章。実装エージェントは、この文書に反する構造(compound component 化、Teleport 導入、独自状態機械の複製など)を「改善」として提案・実装してはならない。判断に迷ったら本文書の「決定原理」に立ち返ること。
+> **Purpose of this document**: This charter fixes Nagi UI's design decisions. Implementation agents must not propose or implement structures that contradict it—such as compound components, Teleport, or duplicated custom state machines—as "improvements." When uncertain, return to the Decision Principles in this document.
 >
-> **正本はこのリポジトリの `CHARTER.md`**。設計判断が実装の学びで変わったときは、該当節を改訂し、末尾の「改訂履歴」に理由つきで追記する。リポジトリ外の複製(初稿の `NAGI_UI_CONCEPT.md` 等)は参照しない。
+> **The canonical source is this repository's `CHARTER.md`.** When implementation findings change a design decision, revise the affected section and add a reasoned entry to the Revision History at the end. Do not consult copies outside the repository, such as the original `NAGI_UI_CONCEPT.md` draft.
 
 ---
 
-## 0. 一言定義
+## 0. One-sentence definition
 
-**Nagi UI は、振る舞いを JS で再演せずブラウザ標準へ委譲し、通常は themeable package、必要時は所有可能な SFC として使える Vue UI システムである。**
-attribute 注入型 headless core を内部の芯とし、Nagi CSS Contract(別文書 `CONTRACT.md`)を styling の基礎、その reference implementation を package component / Blueprint の単一ソースとして提供する。
+**Nagi UI is a Vue UI system that delegates behavior to browser standards instead of reenacting it in JavaScript, normally consumed as a themeable package and available as ownable SFCs when needed.**
+An attribute-injection headless core is its internal foundation. The Nagi CSS Contract (the separate `CONTRACT.md`) is its styling foundation, and the system provides its reference implementation as the single source for package components and Blueprints.
 
-## 1. 決定原理(すべての設計判断の根拠)
+## 1. Decision Principles (the basis for every design decision)
 
-優先順に並ぶ 4 原則。下位の原則は上位に反しない範囲でのみ適用する。
+These four principles are ordered by priority. A lower principle applies only when it does not conflict with a higher one.
 
-1. **Platform vocabulary first** — ライブラリの出力は可能な限り「HTML 標準の語彙」(`popovertarget`, `commandfor`, `aria-*`, `<dialog>`)であること。ARIA パターンを JS で再演する装置(Radix / Base UI / Reka の方式)ではなく、標準属性へ委譲する層である。
-2. **User owns the DOM** — テンプレートに残るのは利用者の素の HTML 要素のみ。ライブラリはタグを増やさない。囲いタグ(`Root` / `Trigger` / `Popup`)は禁止。
-3. **Nagi CSS Contract 準拠が構造を決める** — 契約の owned DOM + `>` 必須ルールの下でペナルティゼロになる形態(attribute 注入)を採る。これはスタイル上の好みではなく、契約が課す構造的制約である。
-4. **非対称投資** — ネイティブが肩代わりする部分(Dialog/Popover/Tooltip)は徹底的に薄く、ネイティブに代替がない部分(Combobox/Menu/Listbox)にだけ JS を厚く積む。
+1. **Platform vocabulary first** — Library output should use the vocabulary of HTML standards (`popovertarget`, `commandfor`, `aria-*`, `<dialog>`) wherever possible. Nagi is not machinery that reenacts ARIA patterns in JavaScript, as Radix, Base UI, and Reka do; it is a layer that delegates to standard attributes.
+2. **User owns the DOM** — Only the user's plain HTML elements remain in the template. The library adds no tags. Wrapper tags (`Root` / `Trigger` / `Popup`) are forbidden.
+3. **Conformance to the Nagi CSS Contract determines structure** — Use the form—attribute injection—that incurs no penalty under the contract's owned-DOM and mandatory-`>` rules. This is not a styling preference; it is a structural constraint imposed by the contract.
+4. **Asymmetric investment** — Keep areas already handled by native behavior (Dialog/Popover/Tooltip) extremely thin, and invest substantial JavaScript only where there is no native substitute (Combobox/Menu/Listbox).
 
-## 2. なぜ compound component を採らないか(背景の要約)
+## 2. Why we do not use compound components (background summary)
 
-実装エージェントが「Radix 風の方が一般的」と判断して構造を戻さないよう、根拠を明記する。
+The rationale is explicit so that implementation agents do not revert the structure after deciding that a Radix-style design is more conventional.
 
-- **Root が不要な理由**: Radix 系の `Root` は open 状態・フォーカス返却先・id を保持する状態機械のホストであり、React に `document` 相当のグローバル状態ホストがないことの代償。Popover API では状態機械を**ブラウザ自身**が持つ(`:popover-open`、top layer 管理、light dismiss、focus 処理は UA 実装)。よって状態を保持するための囲いタグは不要。
-- **囲いタグが React 固有の制約である理由**: JSX には属性レベルの拡張機構がなく、要素に振る舞いを注入する手段が「コンポーネントで包む」しかない。Vue には `v-bind` オブジェクトスプレッド・ディレクティブ・`getSSRProps` があり、包まずに注入できる。React の設計制約を Vue に輸入しない。
-- **Nagi CSS 契約上のペナルティ差**: compound 形式ではライブラリコンポーネントが boundary class となり、自分のダイアログ内部が slot sub-surface 宣言 + descendant step を要求される。Teleport 実装なら `detachedSlotSurfaces` 宣言まで必要。attribute 注入なら全域が owned DOM となり、Element Class Table と `>` チェーンがそのまま通る。
-- **Teleport が不要な理由(重要)**: ネイティブ popover の top layer は**レンダリング概念であって DOM 移動ではない**。popover 要素は DOM ツリー上その場に留まる。よって契約の `>` チェーンが壊れず、`overflow: hidden` / `z-index` / `transform` の祖先にも切り取られない。**Teleport / portal を実装に導入した時点で本プロジェクトの存在理由が消える。使用禁止。**
+- **Why Root is unnecessary**: A Radix-style `Root` hosts a state machine that stores open state, the focus-return target, and ids. It compensates for React's lack of a `document`-like global state host. With the Popover API, **the browser itself** owns the state machine (`:popover-open`, top-layer management, light dismiss, and focus handling are UA implementations). No wrapper tag is therefore needed to hold state.
+- **Why wrapper tags are a React-specific constraint**: JSX has no attribute-level extension mechanism, so the only way to inject behavior into an element is to wrap it in a component. Vue can inject without wrapping through `v-bind` object spread, directives, and `getSSRProps`. Do not import React's design constraints into Vue.
+- **Difference in penalty under the Nagi CSS Contract**: In compound form, library components become boundary classes, and styling the library's own dialog internals requires a slot sub-surface declaration plus a descendant step. A Teleport implementation additionally requires a `detachedSlotSurfaces` declaration. With attribute injection, the entire region remains owned DOM, so the Element Class Table and `>` chain work directly.
+- **Why Teleport is unnecessary (important)**: A native popover's top layer is **a rendering concept, not a DOM move**. The popover element stays in place in the DOM tree. The contract's `>` chain therefore remains intact, and the popover is not clipped by ancestors with `overflow: hidden`, `z-index`, or `transform`. **Introducing Teleport or a portal into the implementation removes the reason this project exists. It is forbidden.**
 
-## 3. プロダクト構成(package-first / own-on-demand)
+## 3. Product structure (package-first / own-on-demand)
 
-| 層 | 配布 | 中身 | スタイル |
+| Layer | Distribution | Contents | Styling |
 |---|---|---|---|
-| **core** | npm パッケージ | composable 群 + ディレクティブ糖衣。ネイティブ属性 + ARIA を注入。完全に型付け | CSS を一切含まない |
-| **components / blueprints** | npm component + on-demand copy-in | Nagi CSS 準拠の同一 SFC。通常は import して使い、構造変更が必要になった component だけ利用者のリポジトリへ複製する | Nagi CSS 契約準拠の読める CSS。**Tailwind 不使用** |
-| **theme** | `@nagi-labs/nagi-ui/default-theme.css` + Nagi CSS contract | 色・spacing・radius・typography・shadow・control size・state appearance の token | DOM / behavior は変更しない |
-| **contract preset** | npm(linter 側) | Nagi CSS linter 用の Nagi UI プリセット設定(`componentSlots` 等が必要になった場合のみ) | — |
+| **core** | npm package | Composables plus directive sugar. Injects native attributes and ARIA. Fully typed | Contains no CSS |
+| **components / blueprints** | npm components + on-demand copy-in | The same Nagi CSS-conformant SFCs. Normally imported directly; only components that require structural changes are copied into the consumer's repository | Readable CSS conforming to the Nagi CSS Contract. **No Tailwind** |
+| **theme** | `@nagi-labs/nagi-ui/default-theme.css` + Nagi CSS Contract | Tokens for color, spacing, radius, typography, shadow, control size, and state appearance | Does not change DOM or behavior |
+| **contract preset** | npm (linter side) | Nagi UI preset configuration for the Nagi CSS linter (only where settings such as `componentSlots` are needed) | — |
 
-- 通常の導入体験は PrimeVue 型(package import + theme token)とし、**最初から全 SFC の copy を要求しない**。package API で足りない component だけ `nagi-ui own <component>` 相当の workflow で所有へ移る。
-- framework integration は `nagi-ui setup` で選択する。Vue Router / Nuxt Link は実 `<a href>` を保ったまま `navigate` / `prefetch` callback へ変換し、Nuxt Image は標準 `<img>` 用 URL へ変換する。framework component 自体やその props DSL を Blueprint schema へ流入させず、package / own の単一 SFC を維持する。詳細は `docs/setup-integrations.md`。
-- shadcn から継承するのは **必要時に source ownership を移譲できること**。Tailwind・ユーティリティクラスは採らない。コピーされたコードは契約により決定的な命名を持つため、利用者の linter を最初から通る。
-- component名とSFC filenameはlibrary名を付けず `Button` / `Button.vue` とする。
-  Nagi CSS surfaceだけを厳密なnamespaceへ置き、`surfaceRootPrefixes: ["n-"]`
-  とfilename kebabから `.n-button` を導出する。prefix欠落やfilename不一致の
-  `.n-control`はlint errorであり、prefixの`startsWith`だけでは許可しない。
-- 本当の商品は契約であり、Nagi UI はその実演装置(reference implementation)である。差別化は「契約 + linter + ライブラリ」の三位一体にあり、ライブラリ単体の機能差ではない(機能差は既存勢に 2〜3 年で吸収される)。
+- The normal adoption experience follows the PrimeVue model (package import + theme tokens) and **does not require copying every SFC up front**. Only components that exceed the package API move to ownership through a workflow equivalent to `nagi-ui own <component>`.
+- Framework integration is selected through `nagi-ui setup`. Vue Router and Nuxt Link are converted to `navigate` / `prefetch` callbacks while preserving a real `<a href>`, and Nuxt Image is converted to a URL for a standard `<img>`. Framework components and their prop DSLs never enter Blueprint schemas, preserving one SFC for both package and owned use. See `docs/setup-integrations.md`.
+- What Nagi inherits from shadcn is **the ability to transfer source ownership when needed**. It does not adopt Tailwind or utility classes. Copied code has deterministic names under the contract, so it passes the consumer's linter from the start.
+- Component names and SFC filenames omit the library name: `Button` / `Button.vue`.
+  Only Nagi CSS surfaces live in a strict namespace. `.n-button` is derived from
+  `surfaceRootPrefixes: ["n-"]` and the kebab-cased filename. A missing prefix or
+  a filename mismatch such as `.n-control` is a lint error; merely matching the
+  prefix with `startsWith` is not sufficient.
+- The real product is the contract, and Nagi UI is its demonstration—the reference implementation. Differentiation comes from the integrated "contract + linter + library," not from the library's feature set alone (established competitors can absorb feature differences within two or three years).
 
-### 単一ソース原則(必須)
+### Single-source principle (required)
 
-package component と own コマンドのコピー元を**別実装にしてはならない**。`blueprints/<component>/*.vue` の同じ SFC を package build と source ownership の双方へ使う。package だけ修正され copy 元が古い、または逆の状態は出荷不具合である。
+The package component and the source copied by the `own` command **must not be separate implementations**. Use the same `blueprints/<component>/*.vue` SFC for both the package build and source ownership. A package fix that leaves the copy source stale—or the reverse—is a shipping defect.
 
-### カスタマイズの段階
+### Customization ladder
 
 1. Theme token
-2. 小さな props / items schema
-3. 宣言済みの少数 slot
-4. それ以上は source ownership
+2. Small props / items schema
+3. A small number of declared slots
+4. Source ownership for anything beyond that
 
-Blueprint の token 参照に literal fallback を書いてはならない。既定値は
-`default-theme.css` に一元化し、通常はそれを import して必要な token だけ後勝ちで
-上書きする。完全 replacement theme は `nagi-ui theme check` を CI gate とし、実 cascade
-の不足は opt-in の dev diagnostic で検出する。欠落を見た目だけ成立させる fallback は、
-theme 契約の不備を隠すため禁止する。旧 `theme.css` export は互換 alias に限る。
+Do not write literal fallbacks in Blueprint token references. Centralize defaults in
+`default-theme.css`; normally import it and override only the needed tokens later in
+the cascade. A complete replacement theme must use `nagi-ui theme check` as a CI gate,
+and missing values in the actual cascade are detected by an opt-in development diagnostic.
+Fallbacks that merely make a missing value look acceptable are forbidden because they hide
+defects in the theme contract. The old `theme.css` export is a compatibility alias only.
 
-PrimeVue 型の巨大な pass-through props / slot surface は作らない。「API で表せない要求は source を所有する」が package API を小さく保つ境界である。一方、avatar・router-link・description 程度の要求で毎回所有が必要になるなら Theme と ownership の間が崖になっている。§3.5 の優先順と実利用データで境界を調整し、投機的 API は増やさない。
+Do not create a PrimeVue-style, enormous pass-through-prop or slot surface. "Own the source when the API cannot express the requirement" is the boundary that keeps the package API small. Conversely, if needs as modest as an avatar, router-link, or description always require ownership, there is a cliff between Theme and ownership. Adjust the boundary using §3.5's priority order and real usage data; do not add speculative APIs.
 
-### ownership 後の保守契約
+### Maintenance contract after ownership
 
-「所有可能」は「fork して取り残される」の言い換えであってはならない。owned source にはコピー元 component と version を機械可読な形で記録し、upstream diff / migration、Nagi UI lint、integration test により a11y・browser 修正を追えるようにする。`own` / `diff` と metadata 形式は Phase 4 で固定済み(`docs/phase4-ownership-cli.md`)。
+"Ownable" must not be another way to say "forked and abandoned." Owned source records its source component and version in machine-readable form, so upstream diffs and migrations, Nagi UI lint, and integration tests can track accessibility and browser fixes. The `own` / `diff` commands and metadata format were fixed in Phase 4 (`docs/phase4-ownership-cli.md`).
 
-このモデルの成功条件・失敗パターン・検証実験は `docs/package-ownership-model.md` を正本とする。
+`docs/package-ownership-model.md` is the canonical source for this model's success criteria, failure modes, and validation experiments.
 
-## 3.5 Blueprint の形態選択(owned DOM / props / items schema / slot)
+## 3.5 Choosing a Blueprint form (owned DOM / props / items schema / slot)
 
-Blueprint の各部分をどの機構で利用者へ開くかは、次の優先順で判定する。上の行で表せるものを下の行の機構にしてはならない。
+Choose the mechanism that exposes each part of a Blueprint using the following priority order. Do not use a mechanism from a lower row when a higher row can express the requirement.
 
-| 中身の性質 | 機構 | 例 |
+| Nature of content | Mechanism | Examples |
 |---|---|---|
-| 構造が固定 | owned DOM(template 直書き) | menu の list 骨格、card の frame |
-| 文字列・真偽・列挙で表せる | props | plain title、image src、`variant` |
-| 同型項目の繰り返し | items schema(blueprint-local) | menu items、select options、toast |
-| 本当に自由な markup | slot(宣言済み sub-surface) | card の本文、rich title content、dialog の本文 |
+| Fixed structure | owned DOM (written directly in the template) | menu list skeleton, card frame |
+| Expressible as a string, boolean, or enum | props | plain title, image src, `variant` |
+| Repeated homogeneous items | items schema (Blueprint-local) | menu items, select options, toast |
+| Truly unrestricted markup | slot (declared sub-surface) | card body, rich title content, dialog body |
 
-### items schema の位置づけ
+### Role of items schemas
 
-- Blueprint 内部の**編集可能な型**として提供する。core 公開 API へ昇格させない(core の商品は composable。schema を core に入れた瞬間、安定 DSL としての互換性負債が発生する)。
-- package-first 化(§3)の帰結として、package 利用中はこの union が **component の props API** として公開される。したがって node 種は component version に紐づく最小の安定 API であり、「DSL を育てない」規律は copy-first 時代より**強く**適用する。union に表せない要求への答えは property 追加ではなく source ownership である。
-- menu 系(Dropdown / ContextMenu / Menubar)が該当する。menu item は icon+label+shortcut の同型行であり、プラットフォーム(NSMenu、Electron、VS Code)が一貫してデータとして定義してきた UI である。**この判断は menu の性質に依存する例外であり、既定方針ではない。**
-- schema の拡張手順(union member 追加 → template 分岐追加 → CSS 追加 → `nagi-css check`)を Blueprint に文書として同梱する。**この拡張レシピの同梱が採用の成功条件である**(欠けると利用者が slot 化へ逃げて CSS ownership が崩れる)。
-- escape hatch(slot 差し込み・`component` field)は設けない。離脱路は①source を所有(own)した renderer の編集、②owned union の拡張、③`useMenu` / `useSubmenu` への降下、の 3 つで足りる。
+- Provide them as **editable types** inside a Blueprint. Do not promote them into the public core API (the core product is its composables; putting schemas in core immediately creates compatibility debt for a stable DSL).
+- As a consequence of package-first distribution (§3), the union is exposed as the **component's props API** while the package component is in use. Node kinds are therefore a minimal stable API tied to the component version, so the discipline of "do not grow a DSL" applies **more strongly** than it did under copy-first distribution. The answer to a requirement the union cannot express is source ownership, not another property.
+- This applies to menu families (Dropdown / ContextMenu / Menubar). Menu items are homogeneous icon + label + shortcut rows, and platforms such as NSMenu, Electron, and VS Code have consistently defined this UI as data. **This decision is an exception based on the nature of menus, not the default policy.**
+- Ship documentation for the schema extension procedure with the Blueprint (add union member → add template branch → add CSS → run `nagi-css check`). **Shipping this extension recipe is a success criterion for adoption**; without it, users escape to slots and break CSS ownership.
+- Do not provide escape hatches such as injected slots or a `component` field. Three exits are sufficient: (1) edit the renderer after owning its source, (2) extend the owned union, or (3) drop down to `useMenu` / `useSubmenu`.
 
-### slot の位置づけ
+### Role of slots
 
-slot は正当な機構である。§2 の compound 禁止は「**ライブラリが behavior の状態機械を複数タグへ分散して出荷する**」形態の禁止であり、package / ownership の単一ソース SFC が slot を持つことは対象外。Nagi CSS は slot sub-surface として境界を価格付けしており(宣言 + descendant step)、宣言して払えば契約違反ではない。条件:
+Slots are a legitimate mechanism. The compound prohibition in §2 prohibits **shipping a behavior state machine distributed across multiple library tags**; it does not prohibit slots in a single-source SFC used for both package and owned distribution. Nagi CSS prices the boundary as a slot sub-surface (declaration + descendant step), so declaring and paying that cost does not violate the contract. Conditions:
 
-- **境界は最小に保つ。** タグ族への分割(`CardHeader` / `CardContent` / `CardFooter` 等)は禁止。frame の anatomy は owned DOM で持ち、穴は default slot(必要なら named slot)で開ける。
-- **slot を behavior 配線の通り道にしない。** slot 内容と親の状態を provide/inject で結合し始めたら、それは compound の再実装である。behavior は composable / props 経由のみ。menu の item 用 slot(`#item` に `itemProps` を渡して bind させる形)はこの違反例であり、item のカスタマイズは owned renderer の union 拡張で行う。
-- データ形で表せる部分(title、image 等)の**基本経路を slot だけにしない**(上表の優先順)。plain text は props に寄せる。一方、複数の product reference で rich content が定着した安定 visible part は、owned wrapper を維持した content-only の同名 slot を prop fallback 付きで追加してよい。slot 指定時は slot を優先するが、header 全体や behavior 配線までは渡さない(Card の `title` / `description`、Alert の `title`、Dialog の `title` / `description`、Disclosure の `summary`、Badge の `label` が正規例)。slot content は wrapper の HTML content model に従い、`h2` / `p` / Badge の `span` 内では phrasing content、`summary` 内では phrasing content または heading content に限定する。summary 内へ別の interactive control は置かない。accessible name や基準テキストの保証に使う required prop は optional に落とさず slot prop として同じ文字列を渡す。
-- **投機的な named slot を出荷しない。** slot は後から利用者が自分のコピーへ足すのは安いが、一度配ると利用箇所が依存して消せない。出荷形は「存在理由そのものの slot(Card / Dialog の本文等)」に限り、`#header-extra` のような予備枠は実際の要求が出てから追加する。
+- **Keep boundaries minimal.** Splitting into a family of tags such as `CardHeader` / `CardContent` / `CardFooter` is forbidden. Keep the frame anatomy in owned DOM and open holes with the default slot, adding named slots only when needed.
+- **Do not use slots as behavior-wiring conduits.** Coupling slot content to parent state through provide/inject reimplements compound components. Behavior flows only through composables and props. A menu item slot that passes `itemProps` into `#item` for consumers to bind is a violation; customize items by extending the owned renderer's union.
+- **Do not make slots the only primary path** for parts expressible as data, such as titles or images (follow the table's priority order). Use props for plain text. However, when multiple product references establish a stable visible part as needing rich content, a content-only slot of the same name may be added with a prop fallback while preserving the owned wrapper. The slot takes precedence when provided, but does not receive the whole header or behavior wiring. Canonical examples are Card `title` / `description`, Alert `title`, Dialog `title` / `description`, Disclosure `summary`, and Badge `label`. Slot content follows the wrapper's HTML content model: phrasing content only inside `h2`, `p`, or Badge's `span`; phrasing or heading content inside `summary`. Do not place another interactive control inside `summary`. A required prop that guarantees an accessible name or baseline text remains required and is passed to the slot as the same string rather than becoming optional.
+- **Do not ship speculative named slots.** Users can cheaply add a slot to an owned copy later, but once shipped, consumers depend on it and it cannot be removed. Ship only slots that are part of the component's reason to exist, such as Card or Dialog body content. Add reserve openings like `#header-extra` only after a real requirement appears.
 
-### 「User owns the DOM」の解釈
+### Meaning of "User owns the DOM"
 
-利用者が必要になった時点で**所有できるコード**により、最終 DOM・state selector・CSS ownership が追えること。package 利用中から全 DOM が利用側 SFC に現れることは要求しない。ownership 後は package と同じ source SFC が手元に移り、schema 版 menu でも DOM は owned `DropdownMenu.vue` から追える。
+The final DOM, state selectors, and CSS ownership must be traceable through **code the user can own** when needed. The entire DOM does not need to appear in the consumer's SFC while using the package. After ownership, the same source SFC as the package moves into the consumer's hands, and even a schema-based menu has traceable DOM in the owned `DropdownMenu.vue`.
 
-### Blueprint に配線を残す基準
+### Criteria for leaving wiring in a Blueprint
 
-ownership 後に利用者へ修正してほしい **policy と markup** は Blueprint に残す。一方、native event の順序、Vue model と DOM property の同期、browser 差異の吸収など、利用者へ修正してほしくない **mechanism** は小さな helper に隠す。判断は「変更できるか」ではなく「通常ここを変更してほしいか」で行い、helper の採用基準を呼び出し回数に置かない。全件監査の台帳は `docs/blueprint-wiring-audit.md`。
+Leave **policy and markup** that users are expected to modify after ownership in the Blueprint. Hide **mechanisms** users should not normally modify—such as native-event ordering, synchronization between a Vue model and DOM properties, and browser-difference handling—behind small helpers. Decide based not on whether something can be changed, but on whether users should normally change it. Do not base helper adoption on call count. `docs/blueprint-wiring-audit.md` is the canonical audit ledger.
 
-- 万能な config object、control kind の分岐、変換 callback 群を持つ汎用 helper は作らない。`useNativeRadioReset(input, model)` のように一つの固定された意味へ名前を付ける
-- helper を使うために Blueprint 側で同じ写像や DOM 規則を再宣言するなら抽象化に失敗しているため、明示実装へ戻す
-- composable の option object も自動的にpolicyとはみなさない。`openDelay: props.openDelay`、`disabled: () => props.disabled`、`area` / `offset` を `anchor` へ包むだけの一対一転送・reactive getter化・API形状変換は、利用者の編集箇所ではないため同じpublic `useX`のcomponent overloadへ隠す。native reset・focus repair・DOM/model同期など拡張対象でない固定mechanismだけを`@nagi-labs/nagi-ui/component-controls`へ隔離する。propsの定義とdefaultはSFCに残す
-- package component が約束する安定した標準schema（例: `{ key, label, disabled }`）からheadless APIへの既定写像は、同じpublic `useX`のcomponent overloadへ隠してよい。canonical SFCは`useX(props, model)`を使い、一般的で意味が安定した設定は名前付きpropsへ置く。schemaやinteraction algorithm自体を所有する場合だけ1引数の完全な`useX({...})`へ降りる。component overloadに第三引数や汎用`:options` propを設けない。model・form・ARIA・rendererで異なる設定経路が生まれ、SFCを見ても最終挙動が決まらなくなるためである
-- union nodeの分岐、再帰flatten、DOMと同時に変わるschema-to-renderer変換、公開eventへの変換など、実際のrenderer policyはSFCまたは一緒にownされるrenderer moduleへ残す。component overloadへrenderer callbackや再帰変換を渡してDOMから遠ざけるなら隠蔽に失敗しているため、明示実装へ戻す
-- 出荷SFC内の `watch` / `watchEffect` は禁止ではなく**要レビューのシグナル**とする。まず derived state で消せないか、次に固定意味の component-specific helper / composable へ移せないかを確認し、利用者が変更する policy の監視だけをSFCへ残す
-- renderer の DOM 構造を変更したとき同時に直す必要がある処理（schema node から menu option への変換等）は、mechanism に見えても Blueprint に残す。ただし変更不能なa11y invariantとして固定するfocus repairは、DOM契約をbrowser testで拘束したcomponent-specific composableへ隠してよい
-- component overloadとfixed mechanismを区別する。前者は同じpublic `useX`のfull optionsへ展開できる。後者(native reset順序、focus repair、DOM/model同期等)は完全展開後も狭いhelperとして残す。特殊要件でfixed mechanism自体を外すのはcomponent identityやnative契約を変える場合に限り、投機的なhookやoptionsをhelperへ増やさない
+- Do not create generic helpers with universal config objects, control-kind branches, or collections of transformation callbacks. Name one fixed meaning, as in `useNativeRadioReset(input, model)`.
+- If using a helper requires redeclaring the same mapping or DOM rules in the Blueprint, the abstraction has failed; return to the explicit implementation.
+- A composable options object is not automatically policy. One-to-one forwarding such as `openDelay: props.openDelay`, getter conversion such as `disabled: () => props.disabled`, and API-shape conversions that merely wrap `area` / `offset` in `anchor` are not user editing points, so hide them in a component overload of the same public `useX`. Isolate only fixed, non-extensible mechanisms—native reset, focus repair, DOM/model synchronization, and similar behavior—in `@nagi-labs/nagi-ui/component-controls`. Keep prop definitions and defaults in the SFC.
+- A default mapping from the package component's stable standard schema, such as `{ key, label, disabled }`, to the headless API may be hidden in a component overload of the same public `useX`. The canonical SFC uses `useX(props, model)`, and broadly useful settings with stable meanings become named props. Drop down to the complete single-argument `useX({...})` only when owning the schema or interaction algorithm itself. Do not add a third argument to the component overload or a generic `:options` prop: those create different configuration paths for model, form, ARIA, and renderer, so reading the SFC no longer determines final behavior.
+- Keep actual renderer policy—union-node branching, recursive flattening, schema-to-renderer transformations that change with the DOM, and conversion to public events—in the SFC or a renderer module owned with it. If renderer callbacks or recursive transformations are passed into the component overload and moved away from the DOM, hiding has failed; return to the explicit implementation.
+- Treat `watch` / `watchEffect` in a shipped SFC not as forbidden, but as **a review signal**. First ask whether derived state can eliminate it, then whether a component-specific helper or composable with a fixed meaning can absorb it. Leave only observation of user-editable policy in the SFC.
+- Keep processing that must change alongside the renderer's DOM structure—such as converting schema nodes to menu options—in the Blueprint even when it resembles mechanism. Focus repair fixed as an immutable accessibility invariant may instead be hidden in a component-specific composable whose DOM contract is locked by browser tests.
+- Distinguish component overloads from fixed mechanisms. The former can be expanded into the same public `useX` full options. The latter—native reset ordering, focus repair, DOM/model synchronization, and similar concerns—remain narrow helpers even after full expansion. Remove a fixed mechanism for a special requirement only when changing the component identity or native contract; do not add speculative hooks or options to helpers.
 
-### styling-only blueprint
+### Styling-only Blueprints
 
-behavior(core composable)を持たない blueprint(Card、Alert、Badge 等)は Nagi UI の composable 検証(§10 の phase 系列)の対象外であり、Nagi CSS 準拠の package component / ownable SFC として **phase 進行と独立に追加してよい**。一回きり・ページ固有の構造はコンポーネント化せず inline で書く選択も通常どおり有効。
+Blueprints without behavior (a core composable), such as Card, Alert, and Badge, are outside Nagi UI's composable validation sequence (the phases in §10). They **may be added independently of phase progress** as Nagi CSS-conformant package components and ownable SFCs. As usual, one-off or page-specific structures may also be written inline rather than turned into components.
 
-### component benchmark の採用基準
+### Component benchmark adoption criteria
 
-component の機能選定は一つの catalog だけで決めない。Base UI は behavior / a11y / keyboard / focus 保証、shadcn-vue は Vue の実用 anatomy と source ownership、PrimeVue は package-first / themeable component に期待される props・slots・完成度の比較対象とする。Web platform の語彙と本 CHARTER は常にこれらより優先する。
+Do not select component capabilities from a single catalog. Use Base UI as the comparison for behavior, accessibility, keyboard, and focus guarantees; shadcn-vue for practical Vue anatomy and source ownership; and PrimeVue for props, slots, and polish expected of package-first, themeable components. Web-platform vocabulary and this CHARTER always take precedence.
 
-- shadcn-vue と PrimeVue の両方に同じ visible part または小さな enum がある場合、それ自体を product evidence とみなし、追加の Nagi 固有利用例がなくても review 対象へ上げる。「投機的 API」を避ける規律は、複数の代表的 product library で定着した anatomy を無視する意味ではない
-- 共通性は capability の証拠であり API 形態の指示ではない。compound parts、`asChild`、pass-through props をコピーせず、本節の owned DOM → props → items schema → 最小 slot → ownership の順へ翻訳する
-- 一方の styled library にしかない機能は実要求待ちとする。複数 library に共通していても native ownership と衝突する custom Select、gesture Drawer、portal / focus-trap runtime 等は明示的に不採用または独立 component として判定してよい
-- 出荷済み component と Base UI baseline の比較・採否台帳は `docs/base-ui-component-comparison.md` を正本とする
+- When both shadcn-vue and PrimeVue expose the same visible part or small enum, treat that agreement itself as product evidence and promote the capability to review even without an additional Nagi-specific use case. The discipline against speculative APIs does not mean ignoring anatomy established across multiple representative product libraries.
+- Commonality is evidence for a capability, not a mandate for an API shape. Do not copy compound parts, `asChild`, or pass-through props; translate the capability into this section's sequence of owned DOM → props → items schema → minimal slots → ownership.
+- Wait for a real requirement before adopting a feature found in only one styled library. Even when several libraries share a feature, explicitly decline it or assess it as a separate component when it conflicts with native ownership—for example custom Select, gesture Drawer, or a portal/focus-trap runtime.
+- `docs/base-ui-component-comparison.md` is the canonical ledger comparing shipped components with the Base UI baseline and recording adoption decisions.
 
-## 4. core の API 設計
+## 4. Core API design
 
-### 4.1 三層 API: composable が芯、ディレクティブは糖衣
+### 4.1 Three-layer API: composables are the core; directives are sugar
 
 ```
-composable (usePopover / useDialog / ...)   ← 設計の芯。完全な型、テスト対象
-    ↓ 糖衣
-directive (v-popover-trigger / ...)          ← 簡潔さ優先の表層。getSSRProps で SSR 対応
-    ↓ 出力
-native attributes (popovertarget, aria-*, id) ← 最終出力は常に標準語彙
+composable (usePopover / useDialog / ...)    ← Design core. Fully typed and tested
+    ↓ sugar
+directive (v-popover-trigger / ...)          ← Concise surface. SSR via getSSRProps
+    ↓ output
+native attributes (popovertarget, aria-*, id) ← Final output always uses standard vocabulary
 ```
 
-理由: ディレクティブはテンプレート型検査(vue-tsc)が効かず、修飾子に型表現がない。型が欲しい利用者は composable、簡潔さが欲しい利用者はディレクティブを選べるようにする。**ディレクティブ単体でしか使えない機能を作ってはならない**(必ず composable に同等物があること)。
+Rationale: Directives are not checked by template type checking (`vue-tsc`), and modifiers have no type representation. Users who want types can choose composables; users who want concision can choose directives. **Never create a capability available only through a directive**; an equivalent composable must always exist.
 
-composable 形態の実証状況: 薄い側(属性オブジェクトを返すだけ)はリスクなし。厚い側(Combobox 等)も React Aria hooks が composable 形式での WAI-ARIA 準拠実装の存在証明になっている。`v-for` 項目群への属性配布(`itemProps(item)` 型 API)の Vue テンプレートでの書き味は §10 Phase 2 の `useMenu` + ActionMenu blueprint で検証済み。結果と比較は `docs/phase2-menu.md` を正本とする。
+Evidence for the composable form: the thin side, which only returns attribute objects, poses no risk. On the thick side, such as Combobox, React Aria hooks prove that a WAI-ARIA-conformant implementation can exist in composable form. The Vue-template ergonomics of distributing attributes to `v-for` items through an `itemProps(item)`-style API were validated with `useMenu` + the ActionMenu Blueprint in §10 Phase 2. `docs/phase2-menu.md` is the canonical source for results and comparisons.
 
-### 4.2 正規形(Dialog/Popover の場合)
+### 4.2 Canonical form (Dialog/Popover example)
 
 ```vue
 <script setup>
@@ -155,9 +157,9 @@ const { triggerProps, popoverProps } = usePopover()
 
 <template>
   <div class="confirm-dialog">
-    <button class="button -trigger" v-bind="triggerProps">削除</button>
+    <button class="button -trigger" v-bind="triggerProps">Delete</button>
     <div class="panel" popover v-bind="popoverProps">
-      <header class="header"><h2 class="title">確認</h2></header>
+      <header class="header"><h2 class="title">Confirm</h2></header>
       <footer class="footer -actions">…</footer>
     </div>
   </div>
@@ -172,270 +174,274 @@ const { triggerProps, popoverProps } = usePopover()
 </style>
 ```
 
-チェックポイント:
-- テンプレートにライブラリ由来のタグが **1 つもない**
-- `triggerProps` の中身は実際に `popovertarget="<useId>"` 等の**標準属性そのもの**
-- 状態セレクタは `:popover-open`(native)であり `data-state` ではない
+Checklist:
+- There is **not a single library-defined tag** in the template.
+- `triggerProps` contains **standard attributes themselves**, such as `popovertarget="<useId>"`.
+- The state selector is the native `:popover-open`, not `data-state`.
 
-### 4.3 配線のトポロジー
+### 4.3 Wiring topology
 
-- 関係は **id 参照**(`popovertarget` / `commandfor` / `aria-controls`)で張る。ネストスコープ(provide/inject)を配線の主手段にしない。
-- id は `useId()` で生成し衝突を防ぐ。id はグローバル名前空間である(Shadow DOM 境界を越えられない既知の制約は文書化し、v1 では対応しない)。
-- composable 間で状態共有が必要な場合(Combobox 内部など)のみ provide/inject を**内部実装として**使ってよい。公開 API に Root 相当を出さないこと。
+- Wire relationships through **id references** (`popovertarget` / `commandfor` / `aria-controls`). Do not use nested scope (provide/inject) as the primary wiring mechanism.
+- Generate ids with `useId()` to prevent collisions. Ids occupy a global namespace. Document the known constraint that they cannot cross Shadow DOM boundaries; v1 does not support that case.
+- Use provide/inject **as an internal implementation detail** only when composables must share state, such as inside Combobox. Do not expose a Root equivalent in the public API.
 
-### 4.4 Controlled mode(必須・先送り禁止)
+### 4.4 Controlled mode (required; must not be deferred)
 
-open 状態の所有者はブラウザ(UA)だが、アプリ側 store を単一の真実として扱う controlled mode(`v-model:open`)は**製品成立の必須条件**である。「非同期処理の完了でダイアログを閉じる」「store の状態で popover を開く」は利用シーンの過半に絡むため、これがぎこちないライブラリは思想以前に採用されない。
+Although the browser (UA) owns open state, a controlled mode (`v-model:open`) that treats an application store as the single source of truth is **required for the product to be viable**. Closing a dialog after asynchronous work or opening a popover from store state appears in most real use cases; a library that makes these awkward will not be adopted regardless of its philosophy.
 
-- 実装方式: **双方向ミラー同期** — UA 発の遷移は `toggle` イベントでモデルへミラーし、モデルへの書き込みは命令的 `showPopover()` / `hidePopover()` / `showModal()` / `close()` で UA に適用する。適用関数は冪等(現在状態と一致なら no-op)にしてエコーループを断つ。同期は sync flush で行う(post flush は同一 tick の true→false 往復を「変化なし」に合体させ、UA と desync する)。
-  - 初稿は「`beforetoggle` の `preventDefault` + 命令的同期」を指定していたが、Popover API 仕様では **hide 方向の `beforetoggle` は cancel 不能**(ポップオーバーが閉じられなくなる事故の防止)のため文字通りには実装できない。§4.4 の目的(`v-model:open` が素直に動く・非同期完了で閉じられる・二重管理は内部に封じ込め)はミラー同期で満たす。(2026-07-15 改訂)
-- **二重管理の面倒さ(light dismiss との競合、イベント順序のエッジケース)は composable 内部に封じ込め、利用者からは `v-model:open` が素直に動くように見えること。** 「面倒」の支払い主はライブラリ実装者であり、利用者に漏らしてはならない。
-- uncontrolled(デフォルト)と controlled の両モードを最初から設計する。後付けは API 破壊を招く。
+- Implementation: **bidirectional mirror synchronization** — mirror UA-originated transitions into the model through the `toggle` event, and apply model writes to the UA imperatively with `showPopover()` / `hidePopover()` / `showModal()` / `close()`. Make the apply function idempotent (a no-op when the current state already matches) to break echo loops. Synchronize with a sync flush; a post flush collapses a true→false round trip in the same tick into "no change" and desynchronizes the UA.
+  - The original draft specified "`beforetoggle` `preventDefault` + imperative synchronization," but the Popover API makes **the hide-direction `beforetoggle` non-cancelable** to prevent popovers from becoming impossible to close, so that design cannot be implemented literally. Mirror synchronization fulfills §4.4's goals: intuitive `v-model:open`, closing after asynchronous completion, and containing dual-state management internally. (Revised 2026-07-15.)
+- **Contain all complexity of dual state—conflicts with light dismiss and event-order edge cases—inside the composable so users experience straightforward `v-model:open`.** The library implementer pays this complexity cost; it must not leak to users.
+- Design both uncontrolled (default) and controlled modes from the start. Adding controlled mode later breaks the API.
 
-### 4.5 SSR / zero-hydration(構造的差別化点)
+### 4.5 SSR / zero hydration (a structural differentiator)
 
-- 属性はサーバー出力 HTML に**そのまま書かれる**こと。ディレクティブは `getSSRProps` を必ず実装する。
-- 結果として `popovertarget` ベースの UI は **hydration 前・JS 到達前から動作する**。これは context(=JS ランタイム)前提の既存 headless には構造的に不可能な性質であり、Nuxt の遅延 hydration / islands 構成での動作をファーストクラスの要件とする。
-- **受け入れ基準**: JS を無効化したブラウザで、Popover ベースの Dropdown が開閉すること。
+- Attributes must be **written directly** into server-rendered HTML. Directives must implement `getSSRProps`.
+- Consequently, `popovertarget`-based UI **works before hydration and before JavaScript arrives**. Existing headless libraries built around context (a JavaScript runtime) cannot provide this structurally. Operation under Nuxt delayed hydration and islands architectures is a first-class requirement.
+- **Acceptance criterion**: a Popover-based Dropdown opens and closes in a browser with JavaScript disabled.
 
-## 5. 依存するネイティブ機能と方針
+## 5. Native dependencies and policy
 
-| 機能 | 用途 | 方針 |
+| Feature | Purpose | Policy |
 |---|---|---|
-| Popover API (`popover`, `popovertarget`, `:popover-open`) | Popover/Tooltip/Menu 表層 | 全主要ブラウザ対応済み。基盤として全面採用 |
-| `<dialog>` (`showModal`, `[open]`, `::backdrop`) | モーダル。フォーカストラップは UA に委譲 | 全面採用。独自フォーカストラップを実装しない |
-| Invoker Commands (`command` / `commandfor`) | 宣言的トリガー配線 | Chrome 135+/Firefox 138+。feature detect し、未対応環境では composable が同等のイベント配線にフォールバック |
-| CSS `@starting-style` / `transition-behavior: allow-discrete` / `overlay` | 開閉アニメーション | blueprints 側の CSS で使用。JS アニメーションライブラリを core に入れない。未対応環境は即時開閉に劣化(progressive enhancement) |
-| CSS Anchor Positioning | Popover/Tooltip の位置決め | Chromium 実装済み・Safari/Firefox 追従中。**対応環境ではネイティブ、未対応では Floating UI にフォールバック**する二段構え。Floating UI 依存は位置決めモジュールに隔離し、Anchor Positioning 普及後に削除できる構造にする |
+| Popover API (`popover`, `popovertarget`, `:popover-open`) | Popover/Tooltip/Menu surface | Supported by all major browsers. Fully adopted as the foundation |
+| `<dialog>` (`showModal`, `[open]`, `::backdrop`) | Modals; focus trapping delegated to the UA | Fully adopted. Do not implement a custom focus trap |
+| Invoker Commands (`command` / `commandfor`) | Declarative trigger wiring | Chrome 135+ / Firefox 138+. Feature-detect support; in unsupported environments, the composable falls back to equivalent event wiring |
+| CSS `@starting-style` / `transition-behavior: allow-discrete` / `overlay` | Open/close animation | Used in Blueprint CSS. Do not add a JavaScript animation library to core. Unsupported environments degrade to immediate opening and closing (progressive enhancement) |
+| CSS Anchor Positioning | Popover/Tooltip positioning | Implemented in Chromium; Safari and Firefox are following. Use a two-stage strategy: **native in supported environments, Floating UI fallback otherwise**. Isolate the Floating UI dependency in the positioning module so it can be removed after Anchor Positioning becomes ubiquitous |
 
-アニメーションの補足: フェード/スライド/スケール程度は CSS で完結させる。スプリング物理・ジェスチャー連動・exit オーケストレーションは**スコープ外**(利用者が必要なら自前で JS を足す)。`data-starting-style` 等の Radix 風属性フックは提供しない — ネイティブの `@starting-style` がそのモデルである。
+Animation note: implement fades, slides, and scales entirely in CSS. Spring physics, gesture coupling, and exit orchestration are **out of scope**; consumers may add their own JavaScript when needed. Do not provide Radix-style attribute hooks such as `data-starting-style`; native `@starting-style` is the model.
 
-## 6. 状態表現ルール(Nagi CSS State Rule に完全準拠)
+## 6. State representation rules (fully conforming to the Nagi CSS State Rule)
 
-優先順を厳守する。**上位で表現できる状態を下位で二重表現してはならない。**
+Strictly follow this priority order. **Never duplicate at a lower level a state that can be expressed at a higher one.**
 
 1. **Native**: `:popover-open`, `[open]`, `:disabled`, `:checked`
-2. **ARIA**(ライブラリが注入): `aria-expanded`, `aria-selected`, `aria-invalid`, `aria-activedescendant`
-3. **`data-*`**: native/ARIA に対応物がない状態のみ。例: Menu / Listbox の選択とは独立した視覚的フォーカス `data-active`。Combobox popup は APG の selection-follows-focus に従い active option を `aria-selected` で表せるため `data-active` を重ねない。使用する各 `data-*` は**公開 styling contract としてドキュメントに列挙**する
+2. **ARIA** (injected by the library): `aria-expanded`, `aria-selected`, `aria-invalid`, `aria-activedescendant`
+3. **`data-*`**: only for states with no native or ARIA equivalent. Example: `data-active` for visual focus independent of selection in Menu / Listbox. A Combobox popup follows the APG selection-follows-focus model and can represent its active option with `aria-selected`, so do not layer `data-active` on top. List every used `data-*` **in documentation as part of the public styling contract**.
 
-禁止例: popover の開閉に `data-state="open"` を付与すること(`:popover-open` と重複する)。
+Forbidden example: adding `data-state="open"` for popover state, which duplicates `:popover-open`.
 
-## 7. コンポーネント別投資マップ
+## 7. Investment map by component
 
-| コンポーネント | 実装の厚さ | 中身 |
+| Component | Implementation weight | Contents |
 |---|---|---|
-| Popover / Tooltip / Dialog | **薄い**(属性注入 + 位置決めのみ) | popovertarget 配線、anchor positioning、`<dialog>` 委譲 |
-| Toast | 中(見た目より罠が多い) | queue/timer は明示的 `createToastManager()`、DOM/top-layer/F6 配線は `useToast` に分離し、Provider・singleton は持たない。popover の重なり順は open 順で `z-index` 無効、さらに `showModal()` は open popover を強制 close するため、**生きている toast model を条件に再 show**する。title/description だけを top-layer 外の polite/assertive live node で通知し、hover/focus/document hidden 中はtimerを停止する。詳細は `docs/base-ui-alignment-c.md`。 |
-| Disclosure / Accordion | 薄い | `<details>` ベース + アニメーション CSS |
-| Tabs | 中 | `useTabs` が roving tabindex、manual/automatic activation、orientation/RTL、disabled/dynamic fallbackを所有する(ネイティブ代替なし)。Blueprintはnative button + owned tabpanel、flat items schema + content-only `panel` slotとし、compound partsやIndicator geometry runtimeを持たない。詳細は `docs/base-ui-alignment-d-tabs.md`。 |
-| Menu / Listbox / Combobox | **厚い**(本プロジェクトの JS 工数の本丸) | タイプアヘッド、focus 管理、選択モデル。Menu は `aria-activedescendant` 方式を採用し、roving tabindex と混在させない。表層(浮遊部)は popover に委譲しつつ、対話モデルだけを自前実装 |
-| Select | **薄い**(native stable path) | 通常の `<select>` / `<option>` に behavior・form・validation・a11y を委譲する。`appearance: base-select` は progressive enhancement としてのみ使用可。`<selectedcontent>` は Vue と3エンジンの出荷条件を満たすまで stable Blueprint に含めない |
+| Popover / Tooltip / Dialog | **Thin** (attribute injection + positioning only) | `popovertarget` wiring, anchor positioning, delegation to `<dialog>` |
+| Toast | Medium (more traps than its appearance suggests) | Explicit `createToastManager()` owns queues/timers; `useToast` separately owns DOM/top-layer/F6 wiring. No Provider or singleton. Popovers stack in open order and ignore `z-index`; furthermore, `showModal()` force-closes open popovers, so **re-show based on the presence of live toast models**. Announce only title/description through polite/assertive live nodes outside the top layer, and pause timers during hover, focus, or `document.hidden`. See `docs/base-ui-alignment-c.md`. |
+| Disclosure / Accordion | Thin | `<details>` base + animation CSS |
+| Tabs | Medium | `useTabs` owns roving tabindex, manual/automatic activation, orientation/RTL, disabled handling, and dynamic fallback because there is no native substitute. The Blueprint uses native buttons and owned tabpanels, a flat items schema, and a content-only `panel` slot; it has no compound parts or Indicator geometry runtime. See `docs/base-ui-alignment-d-tabs.md`. |
+| Menu / Listbox / Combobox | **Thick** (the main JavaScript investment of this project) | Typeahead, focus management, and selection models. Menu uses `aria-activedescendant` and never mixes it with roving tabindex. Delegate the floating surface to popover while implementing only the interaction model ourselves. |
+| Select | **Thin** (native stable path) | Delegate behavior, form integration, validation, and accessibility to ordinary `<select>` / `<option>`. `appearance: base-select` may be used only as progressive enhancement. Do not include `<selectedcontent>` in a stable Blueprint until Vue and all three engines meet the shipping criteria. |
 
-a11y 実装工数の 7 割はここ(Menu/Listbox/Combobox 系)に集中する想定。「ネイティブで全部薄くなる」という誤解に基づく設計をしないこと。
+Expect 70% of accessibility implementation effort to concentrate in the Menu/Listbox/Combobox family. Do not design under the misconception that native delegation makes everything thin.
 
-## 8. 既知の制約と致命度トリアージ
+## 8. Known constraints and severity triage
 
-Base UI 等の全 JS 実装との比較で判明している制約。**これらは実装エージェントが「解決」しようとしてはならないものと、必ず解くものに分かれる。** UA に主権を渡したことの直接の帰結である制約は、バグではなく契約条件として扱う。
+These constraints were identified by comparison with all-JavaScript implementations such as Base UI. **Some must not be "solved" by implementation agents, while others must be solved.** Treat constraints that follow directly from giving authority to the UA as contract conditions, not bugs.
 
-### 8.1 本質的にできない(委譲の対価。実装で解決を試みない)
+### 8.1 Fundamentally impossible (the cost of delegation; do not solve in implementation)
 
-| 制約 | 内容 | 扱い |
+| Constraint | Description | Treatment |
 |---|---|---|
-| dismiss ポリシーの細粒度カスタム | light dismiss は UA の状態機械内。選べる粒度は `popover="auto/manual/hint"` のみ。「外側クリックで閉じるが ESC では閉じない」等は不可 | `manual` に落として自前実装するのは Base UI の再実装であり**禁止**。`<dialog>` の `closedby` 属性など、プラットフォーム側の拡張を feature detect で取り込む方針。ドキュメントに「向かないケース」として明記 |
-| top layer のスタッキング制御 | 重なり順は開いた順で固定、`z-index` 無効 | Toast のみ §7 の再昇格ロジックで内部対処。それ以外の任意順序制御は提供しない |
-| modal 外 Toast の操作・通知 | native modal は dialog 外を inert にする。外側の Toast を再昇格して視認できても action / focus は modal 外へ出せず、外側 live node も accessibility tree から外れ得る | `F6` は active modal 外へ focus を移さない。modal 中に操作または AT 通知が必要なら同じ明示 manager の renderer を dialog 内へ置く。Teleport / inert 解除はしない |
-| `::backdrop` に実 DOM を置けない | 擬似要素のためインタラクティブな overlay 不可 | 制約として文書化のみ(要件として稀) |
-| UA 挙動差・UA バグの自前修正 | 振る舞いの実装が UA 側にあるため、ライブラリパッチで統一できない | evergreen ブラウザ前提と明記。対応下限はプラットフォームに従属 |
-| Shadow DOM 越えの idref 配線 | `popovertarget` / `aria-controls` は shadow root を越えない | v1 非対応。Reference Target 仕様の標準化を監視 |
+| Fine-grained dismiss policy customization | Light dismiss lives inside the UA state machine. The only available granularity is `popover="auto/manual/hint"`; policies such as "close on outside click but not Escape" are impossible | Dropping to `manual` and reimplementing behavior recreates Base UI and is **forbidden**. Feature-detect platform extensions such as `<dialog>`'s `closedby` attribute. Document this explicitly as a "when not to use Nagi" case |
+| Top-layer stacking control | Order is fixed by opening order; `z-index` has no effect | Handle only Toast internally with the re-promotion logic in §7. Provide no arbitrary ordering for anything else |
+| Interaction and announcements for Toast outside a modal | Native modals make everything outside the dialog inert. Even if an outside Toast is re-promoted and visible, actions and focus cannot leave the modal, and an outside live node may leave the accessibility tree | `F6` must not move focus outside the active modal. If interaction or AT announcements are required during a modal, place another renderer for the same explicit manager inside the dialog. Do not use Teleport or remove inertness |
+| Real DOM inside `::backdrop` | A pseudo-element cannot host an interactive overlay | Document only as a constraint; it is a rare requirement |
+| Patching UA differences or UA bugs ourselves | Behavior is implemented by the UA, so a library patch cannot make implementations identical | State the evergreen-browser prerequisite. Minimum support follows the platform |
+| Idref wiring across Shadow DOM | `popovertarget` / `aria-controls` cannot cross a shadow root | Unsupported in v1. Monitor standardization of Reference Target |
 
-### 8.2 可能だが面倒(支払い主を明確にして対処)
+### 8.2 Possible but difficult (assign the cost explicitly)
 
-| 制約 | 致命度 | 対処 |
+| Constraint | Severity | Treatment |
 |---|---|---|
-| controlled mode | **高 — 未解決なら製品不成立** | §4.4 の通り composable 内部に封じ込め。§10 の vertical slice 成立条件に含める |
-| Toast × Dialog の重なり順 | **高 — デモで 30 秒で露見する** | `useToast` に再昇格ロジック内蔵。共存デモで先回りして証明する(§10) |
-| JS アニメーションとの統合 | 中 | popover/dialog は閉じてもアンマウントされない(display 切替)ため、`v-if` 前提の Motion 系・exit オーケストレーションと相性が悪い。CSS で足りる範囲(§5)を正とし、超える要件は「向かないケース」に明記 |
-| ジェスチャー駆動の中断可能クローズ(vaul 的ボトムシート) | 中 | スコープ外と明記。囲いタグ・provider・グローバル状態がなく component 単位で導入できるため、該当コンポーネントだけ他ライブラリと混在可能なことをドキュメントで案内 |
-| テスト環境(jsdom の dialog/popover サポート不完全) | 中 | Vitest browser mode / Playwright 前提のテストレシピを blueprints に同梱 |
-| Invoker Commands フォールバック維持 | 低 | feature detect の二重経路を普及完了まで保守(§5 既定) |
+| Controlled mode | **High — the product is nonviable if unresolved** | Contain it within the composable as specified in §4.4. Include it in §10's vertical-slice acceptance criteria |
+| Toast × Dialog stacking order | **High — visible within 30 seconds of a demo** | Build re-promotion logic into `useToast`. Prove coexistence proactively in the demo (§10) |
+| JavaScript animation integration | Medium | Popovers and dialogs are not unmounted when closed; their display changes. This does not integrate well with Motion-style systems or exit orchestration built around `v-if`. Treat the CSS-capable range in §5 as correct and document requirements beyond it as "when not to use Nagi" |
+| Gesture-driven, interruptible closing (a Vaul-style bottom sheet) | Medium | Explicitly out of scope. Because there are no wrapper tags, providers, or global state, individual components can coexist with another library; document that recommendation |
+| Test environments (incomplete dialog/popover support in jsdom) | Medium | Ship a Vitest Browser Mode / Playwright-based test recipe with the Blueprints |
+| Maintaining the Invoker Commands fallback | Low | Maintain feature-detected dual paths until adoption is complete, as defined in §5 |
 
-### 8.3 ダメージを吸収する構造(エージェントへの補足)
+### 8.3 Structures that absorb the damage (notes for agents)
 
-- **自己選択**: Nagi CSS に共感する層と、spring 物理・ジェスチャー UI を最重要視する層はほぼ互いに素。全方位で勝つ必要はない。
-- **混在可能性**: 囲いタグ・provider・グローバル状態がないため、コンポーネント単位で Reka 等と共存できる。all-or-nothing ではない。
-- **AI との語彙共有**: Blueprint は Web 標準の HTML / CSS / ARIA と Vue SFC という事前学習済み語彙に全振りし、Nagi 独自の抽象語彙を増やさない。新規語彙は Nagi CSS 契約だけに限定し、そこだけを `nagi-css check` で機械検査することで、エージェントが追加知識を最小化したまま DOM と表示を対応づけて編集できる構造にする。
-- **時間はこちらの味方**: `closedby`、anchor positioning、Invoker Commands と、プラットフォームがギャップを埋め続けている。委譲層はギャップが埋まった瞬間コードを書かずに機能が増える。全 JS 実装は逆にネイティブ化の度に自前実装が負債化する。機能差を静的な欠陥として埋めにいかないこと。
+- **Self-selection**: Users aligned with Nagi CSS and users who prioritize spring physics and gesture UI are nearly disjoint groups. Nagi need not win in every direction.
+- **Mixing is possible**: With no wrapper tags, providers, or global state, Nagi can coexist with Reka and similar libraries component by component. Adoption is not all-or-nothing.
+- **Shared vocabulary with AI**: Blueprints commit fully to pre-trained vocabulary—standards-based HTML, CSS, ARIA, and Vue SFCs—and avoid adding Nagi-specific abstractions. Restrict new vocabulary to the Nagi CSS Contract, and mechanically inspect only that vocabulary with `nagi-css check`. This lets agents map DOM to rendering and edit it with minimal additional knowledge.
+- **Boundary with specialist libraries**: Use established libraries directly, component by component, for specialist domains such as charts. Unovis is the recommended chart library. Nagi provides only Card, surrounding controls, mode-independent series tokens, and a recipe that bridges CSS custom properties. Do not create a `Chart.vue` that proxies data, scale, axis, or datum-tooltip APIs through Nagi props. Treat generated DOM as a Nagi CSS library boundary.
+- **Time is on our side**: `closedby`, anchor positioning, and Invoker Commands show the platform continuing to close gaps. A delegation layer gains capability without new code as soon as a gap closes. In an all-JavaScript implementation, native adoption instead turns custom implementations into debt. Do not treat feature differences as static defects that must be filled.
 
-## 9. アンチゴール(実装してはならないもの)
+## 9. Anti-goals (must not be implemented)
 
-- ❌ compound component 公開 API(`<NagiRoot>` / `<NagiTrigger>` 等)。禁止対象はライブラリ出荷の behavior 分散タグ族であり、利用者が所有する SFC の slot は対象外(§3.5)
-- ❌ `asChild` / `render` prop 方式(包む前提の発想ごと不要)
-- ❌ Teleport / portal(top layer が代替。§2 参照)
-- ❌ 独自フォーカストラップ(`<dialog>.showModal()` に委譲)
-- ❌ `popover="manual"` に落として light dismiss / dismiss ポリシーを自前実装すること(§8.1)
-- ❌ native/ARIA と重複する `data-state`
-- ❌ core パッケージへの CSS 同梱、ユーティリティクラス、Tailwind 依存
-- ❌ JS アニメーションランタイム(スプリング等)の core 組み込み
-- ❌ ディレクティブ内での `document.createElement` による要素生成(矢印等は blueprints 側のマークアップ / CSS で解決)
+- ❌ A public compound-component API such as `<NagiRoot>` / `<NagiTrigger>`. The prohibition covers library-shipped families of tags that distribute behavior; slots in an SFC owned by the user are outside it (§3.5).
+- ❌ `asChild` / `render` prop patterns; the assumption that wrapping is required is itself unnecessary.
+- ❌ Teleport / portals; the top layer replaces them. See §2.
+- ❌ Custom focus traps; delegate to `<dialog>.showModal()`.
+- ❌ Dropping to `popover="manual"` and implementing light dismiss or dismiss policy ourselves (§8.1).
+- ❌ `data-state` that duplicates native or ARIA state.
+- ❌ Bundling CSS into the core package, utility classes, or Tailwind dependencies.
+- ❌ Embedding a JavaScript animation runtime such as spring physics in core.
+- ❌ Creating elements with `document.createElement` inside directives; arrows and similar elements belong in Blueprint markup/CSS.
 
-## 10. 検証ロードマップ(この順で進める)
+## 10. Validation roadmap (follow this order)
 
-各フェーズには「何の仮説を検証するか」が割り当てられている。**フェーズの完了条件を満たすまで次へ進まない。** 順番を入れ替えないこと — 特に Phase 2 を後回しにして薄いコンポーネントを量産することを禁じる(composable 形態の最後の未検証点が Phase 2 にあるため)。
+Each phase has an assigned hypothesis. **Do not advance until the phase's completion criteria are satisfied.** Do not reorder the phases. In particular, do not defer Phase 2 and mass-produce thin components, because Phase 2 contains the final unvalidated aspect of the composable form.
 
-### Phase 0 — vertical slice(最小証明)
+### Phase 0 — vertical slice (minimum proof)
 
-**検証仮説**: 契約が形態を選び、ネイティブ委譲がそれを可能にする。かつ 2 つの急所(controlled mode / Toast 重なり順)が解ける。
+**Hypothesis**: The contract selects the form, native delegation makes that form possible, and the two critical issues—controlled mode and Toast stacking order—can be solved.
 
-**4 点すべての同時成立が完了条件**であり、1 つでも欠けたまま次へ進んではならない。
+**All four points must hold simultaneously for completion.** Do not proceed while any point is missing.
 
-1. `usePopover` + `v-popover-trigger`(getSSRProps 込み)— **uncontrolled / controlled(`v-model:open`)両対応**。非同期処理の完了で閉じるシナリオが `v-model` 経由で素直に書けること(§4.4)
-2. Dropdown blueprint(Nagi CSS 準拠 SFC、`:popover-open` + `@starting-style` アニメーション、Anchor Positioning + Floating UI フォールバック)
-3. デモ A: Nuxt 遅延 hydration 下で **JS 到達前に開閉が動く**こと、および同 SFC が Nagi CSS linter を通ること
-4. デモ B: **Dialog + Toast 共存デモ** — modal dialog が開いている状態でトーストを発火し、トーストが backdrop の下に潜らず最上位に表示されること(§7 の再昇格ロジックの実証)
+1. `usePopover` + `v-popover-trigger`, including `getSSRProps` — supports **both uncontrolled and controlled (`v-model:open`) modes**. Closing after asynchronous work must be straightforward through `v-model` (§4.4).
+2. Dropdown Blueprint: a Nagi CSS-conformant SFC with `:popover-open` + `@starting-style` animation and Anchor Positioning + Floating UI fallback.
+3. Demo A: under Nuxt delayed hydration, opening and closing work **before JavaScript arrives**, and the same SFC passes the Nagi CSS linter.
+4. Demo B: **Dialog + Toast coexistence demo** — fire a toast while a modal dialog is open, and show the toast at the top rather than beneath the backdrop, proving §7's re-promotion logic.
 
-1 と 4 は「面倒だが必須」の急所。ここで設計が破綻する場合は実装を進めず本文書の見直しに戻る。
+Points 1 and 4 are difficult but mandatory pressure points. If the design fails here, stop implementation and return to revising this document.
 
-### Phase 1 — 薄い側の横展開
+### Phase 1 — extending the thin side
 
 **Status: Complete (2026-07-16)**
 
-**検証仮説**: Phase 0 の型(属性注入 + native state)が他の薄いコンポーネントにそのまま複製できる。
+**Hypothesis**: The Phase 0 pattern—attribute injection + native state—can be copied directly to other thin components.
 
-- `useDialog`(`<dialog>` / `showModal` 委譲、controlled 両対応、`closedby` の feature detect)
-- `useTooltip`(hover/focus 遅延、`popover="hint"`、anchor positioning)
-- `useDisclosure`(`<details>` ベース)
+- `useDialog` (delegates to `<dialog>` / `showModal`, supports both controlled modes, feature-detects `closedby`)
+- `useTooltip` (hover/focus delay, `popover="hint"`, anchor positioning)
+- `useDisclosure` (`<details>` based)
 
-ここは工数検証であって設計検証ではない。新しい設計判断が発生したら、それは Phase 0 の型の欠陥なので core に戻す。
+This phase validates implementation effort, not design. Any new design decision exposes a defect in the Phase 0 pattern and must be moved back into core.
 
-### Phase 2 — リスト系 composable の DX 検証(形態の最後の未検証点)
-
-**Status: Complete (2026-07-17)**
-
-**検証仮説**: `v-for` で回る項目群への属性配布(`itemProps(item)` 型 API)が、囲いタグ方式より苦痛にならない。
-
-- `useMenu` を対象とする(typeahead、disabled skip、keyboard selection、focus restoration)。表層の浮遊は Phase 0 の popover に委譲し、対話モデルだけを新規実装する
-- focus 戦略は WAI-ARIA APG が示す代替案のうち `aria-activedescendant` を採用した。DOM focus は `role="menu"` container に置き、items は `tabindex="-1"` とする。roving tabindex とは混在させない
-- composable 形式で thick component が成立すること自体は React Aria hooks が存在証明済み。**ここで検証するのは可否ではなく Vue テンプレートでの書き味**である
-- 完了条件: Menu blueprint のテンプレートを Reka UI の同等品と並べ、行数・可読性・linter 適合で劣後しないこと。劣後する場合はディレクティブ糖衣(`v-menu-item`)で吸収できるかを判定してから次へ進む
-
-### Phase 2.5 — Dropdown の完成形検証
+### Phase 2 — DX validation for list composables (the final unvalidated aspect of the form)
 
 **Status: Complete (2026-07-17)**
 
-**検証仮説**: action item だけで成立した Phase 2 の明示的な DOM + 属性注入形式が、Dropdown Menu の全機能を載せても compound components より理解しやすいまま保てる。
+**Hypothesis**: Distributing attributes to `v-for` items through an `itemProps(item)`-style API is no more painful than wrapper tags.
 
-- 表示専用 parts: group、label、separator、shortcut。専用 component を増やさず、semantic HTML と Blueprint の anatomy として表現する
-- stateful items: checkbox item、radio group / radio item、indeterminate state、選択後に menu を閉じるか維持するかの policy
-- submenu: 独立した `useMenu` の入れ子ではなく、open path、active item、focus owner、close depth、RTL、pointer grace を共有する menu tree model を設計する
-- nested Popover と Anchor Positioning を利用し、overlay の top-layer / collision 処理は可能な限り platform へ委譲する
-- keyboard: Enter / Space、ArrowRight / ArrowLeft、Escape、Tab、typeahead を階層単位で処理し、子 menu の event が親 menu で二重処理されないこと
-- Blueprint は「完成した Dropdown Menu SFC」と「それを利用する側の SFC」の両方を提示する。最終 DOM、state selector、CSS ownership が一つの SFC から追えることを優先する
-- 完了条件: Reka UI / shadcn-vue の Dropdown Menu suite と同じ機能境界で比較し、submenu・checkbox・radio を含めても Nagi の SFC が局所変更しやすく、browser / keyboard / focus tests が通ること
+- Target `useMenu`: typeahead, disabled skipping, keyboard selection, and focus restoration. Delegate the floating surface to the Phase 0 popover and implement only the interaction model anew.
+- Among the alternatives in the WAI-ARIA APG, the chosen focus strategy is `aria-activedescendant`. DOM focus remains on the `role="menu"` container and items use `tabindex="-1"`. Do not mix this with roving tabindex.
+- React Aria hooks already prove that a thick component can exist in composable form. **This phase validates Vue-template ergonomics, not possibility.**
+- Completion criterion: compare the Menu Blueprint template side by side with its Reka UI equivalent. It must not be worse in line count, readability, or linter conformance. If it is worse, assess whether directive sugar (`v-menu-item`) can absorb the difference before proceeding.
 
-この Phase は機能 parity 自体を目的にしない。**Dropdown を最後まで複雑化した時にも「behavior は core に隠し、structure と integration は見せる」という設計が維持できるか**を判定する最終形の検証である。
+### Phase 2.5 — validating the complete Dropdown form
 
-**判定: 維持できる。** `useSubmenu(parent, triggerItem, options)` が menu tree の open path / focus owner / close depth / RTL / pointer grace を core に閉じ込め、SFC は native な group / label / separator / shortcut と各 item への props 適用をそのまま表示する。action / checkbox / radio の close policy も props 単位で明示できる。完成形と利用側 SFC、比較、invariant、検証結果は `docs/phase2.5-dropdown.md` に記録した。
+**Status: Complete (2026-07-17)**
 
-### Phase 2.6 — Dropdown items schema blueprint
+**Hypothesis**: The explicit DOM + attribute-injection form established with action items in Phase 2 remains easier to understand than compound components after adding the full Dropdown Menu feature set.
 
-**Status: Complete (2026-07-17)** — unit / type / SSR / `nagi-css check` / browser(Playwright 10 件 pass、items 再計算・動的 submenu 含む)をすべて検証済み。学び(内部 SFC は設定namespace + filename由来の surface root class を持ち element class を置き換える、surface は自分の margin を持たない)は `docs/phase2.6-dropdown-schema.md` に記録。
+- Display-only parts: group, label, separator, and shortcut. Express them as semantic HTML and Blueprint anatomy rather than more dedicated components.
+- Stateful items: checkbox item, radio group / radio item, indeterminate state, and policy for closing or retaining the menu after selection.
+- Submenus: design a menu-tree model that shares open path, active item, focus owner, close depth, RTL, and pointer grace instead of nesting independent `useMenu` instances.
+- Use nested Popover and Anchor Positioning, delegating overlay top-layer and collision handling to the platform wherever possible.
+- Keyboard: handle Enter / Space, ArrowRight / ArrowLeft, Escape, Tab, and typeahead per hierarchy level; child-menu events must not be processed twice by their parent.
+- Present both the complete Dropdown Menu SFC and a consuming SFC. Prioritize traceability of final DOM, state selectors, and CSS ownership from a single SFC.
+- Completion criterion: compare against the same capability boundary as the Reka UI / shadcn-vue Dropdown Menu suite. Nagi's SFC must remain locally editable with submenu, checkbox, and radio included, and browser, keyboard, and focus tests must pass.
 
-**検証仮説**: blueprint-local の recursive items schema(§3.5)が、明示 DOM 版と同じ behavior 保証・Nagi CSS 適合を保ったまま、利用側の認知負荷と配線ミスを減らす。
+This phase does not pursue feature parity itself. It is the complete-form validation of whether the design—**hide behavior in core while exposing structure and integration**—survives a fully complex Dropdown.
 
-この Phase は blueprint の**配布形態**の検証であり、core composable の検証系列とは独立。Phase 3 と並行してよい。
+**Verdict: it survives.** `useSubmenu(parent, triggerItem, options)` contains the menu tree's open path, focus owner, close depth, RTL, and pointer grace in core. The SFC directly shows native group, label, separator, shortcut, and prop application to each item. Close policy for action, checkbox, and radio items is also explicit per prop. The complete form, consuming SFC, comparisons, invariants, and validation results are recorded in `docs/phase2.5-dropdown.md`.
 
-- schema は blueprint-local(§3.5)。node は `action` / `link` / `checkbox` / `radio-group` / `group` / `separator` / `submenu` の 7 種類。`link` は URL を受け取って実際の `<a href>` を出す Web 標準の基本項目であり、framework component を受け取る escape hatch ではない。`label` は独立 node にせず `group`(`role="group"` + `aria-labelledby` と一致)へ統合。`action` に `variant?: "danger"`。`checked` は `MaybeRefOrGetter` ではなく plain 値とし、親が items 全体を computed で再生成する(core は `getKey` 同定 + `toValue(items)` のため状態は壊れない)
-- submenu の再帰描画は blueprint 内部の自己参照 component で行う(`useSubmenu` が setup 文脈を要するため)。core は動的 register/unregister 済みで改修不要
-- avatar / Vue Router の `<RouterLink>` / Nuxt の `<NuxtLink>` component 自体 / description / permission 制御は schema に**入れない**。表示制御は computed での filter、構造変更は拡張レシピの題材とする。標準 URL navigation は常に実 `<a href>` の `link` node。`nagi-ui setup` の local adapter は router 固有の `to` object を `href` + framework-neutral な `navigate` / `prefetch` callback に境界変換してから node へ渡す。custom link component や active-class rendering が必要なら ownership で拡張する
-- 現行の hardcoded `DropdownMenu.vue` は playground の全機能 fixture へ降格し、明示 DOM 版の書き方は composable への離脱パスの実例として docs に残す
-- 完了条件:
-  1. 再帰 renderer が `nagi-css check` を通る(通らなければ案自体を見直す)
-  2. menu open 中に items が再計算されても open path / active item / focus owner が維持されることを browser test で固定化する
-  3. submenu node の動的追加・削除で register/unregister が leak しない
-  4. schema を故意に壊した際の TS エラーが変更箇所を指す(AI agent 前提の指標)
-  5. 拡張レシピ文書を同梱し、schema 外の要求(avatar / router-link)をレシピ通りの局所 diff で追加できることを実証する
+### Phase 2.6 — Dropdown items-schema Blueprint
 
-### Phase 3 — 厚い側の本丸
+**Status: Complete (2026-07-17)** — unit, type, SSR, `nagi-css check`, and browser tests all passed, including 10 Playwright tests for item recomputation and dynamic submenus. Findings—a nested SFC uses a surface-root class derived from the configured namespace + filename instead of an element class, and a surface does not own its margin—are recorded in `docs/phase2.6-dropdown-schema.md`.
 
-**検証仮説**: Phase 2 の項目配布パターンが選択モデル・入力連動(filtering)と組み合わさっても崩れない。
+**Hypothesis**: A Blueprint-local recursive items schema (§3.5) reduces consumer cognitive load and wiring mistakes while preserving the explicit-DOM version's behavior guarantees and Nagi CSS conformance.
 
-**Status: Complete (2026-07-18)** — `useListbox` の no-prune selection を土台に、`useCombobox` では入力値・確定選択・候補内 active option を分離。DOM focus を input に保った `aria-activedescendant`、filtering、disabled skip、Enter/click commit、lossless Escape、native Popover + Anchor Positioning を unit / type / SSR / `nagi-css check` / browser で検証した。Select は native `<select>` への委譲を stable path とし、自前の `useSelect` や Combobox 派生 fallback は作らないと決定した。詳細は `docs/phase3-listbox.md`、`docs/phase3-combobox.md`、`docs/phase3-select-decision.md`。
+This phase validates a Blueprint **distribution form** and is independent of the core-composable validation sequence. It may proceed in parallel with Phase 3.
 
-- `useListbox`(単一/複数選択)→ `useCombobox`(入力 + filtering + activedescendant)の順
-- Select の stable surface は通常の `<select>` / `<option>`。`appearance: base-select` は非対応環境が native rendering に戻る progressive enhancement とし、rich option DOM や `<selectedcontent>` を前提にしない
-- `<selectedcontent>` は HTML Standard に存在しても、Vue compiler の native tag / nesting 対応、Blink・WebKit・Gecko の stable 実装、SSR/hydration と keyboard/form の相互運用検証が揃うまで採用保留。見た目の同一性のために Combobox から Select を再実装しない
+- The schema is Blueprint-local (§3.5). Its seven node kinds are `action` / `link` / `checkbox` / `radio-group` / `group` / `separator` / `submenu`. `link` accepts a URL and emits a real `<a href>` as a basic web-standard item; it is not an escape hatch that accepts framework components. `label` is not an independent node; it is integrated into `group`, matching `role="group"` + `aria-labelledby`. `action` has `variant?: "danger"`. `checked` is a plain value, not `MaybeRefOrGetter`; the parent regenerates the complete items array as a computed value, and state remains intact because core identifies items with `getKey` and reads `toValue(items)`.
+- Render submenus recursively with a self-referencing component inside the Blueprint because `useSubmenu` requires setup context. Core already supports dynamic registration/unregistration and needs no change.
+- Do **not** put avatars, the Vue Router `<RouterLink>` component, the Nuxt `<NuxtLink>` component, descriptions, or permission control in the schema. Filter with a computed value for visibility control, and treat structural changes as extension-recipe subjects. Standard URL navigation always uses a `link` node with a real `<a href>`. A local adapter generated by `nagi-ui setup` converts a router-specific `to` object at the boundary into `href` plus framework-neutral `navigate` / `prefetch` callbacks before passing the node. Extend through ownership when a custom link component or active-class rendering is required.
+- Demote the current hardcoded `DropdownMenu.vue` to a full-feature playground fixture. Keep the explicit-DOM style in documentation as an example escape path to composables.
+- Completion criteria:
+  1. The recursive renderer passes `nagi-css check`; otherwise reconsider the proposal itself.
+  2. Browser tests lock in preservation of open path, active item, and focus owner when items are recomputed while the menu is open.
+  3. Dynamic insertion and removal of submenu nodes do not leak registration/unregistration.
+  4. Deliberately breaking the schema produces a TypeScript error at the changed location, an AI-agent-oriented metric.
+  5. Ship an extension-recipe document and prove that requirements outside the schema, such as avatar or router-link, can be added as a local diff by following the recipe.
+
+### Phase 3 — the core of the thick side
+
+**Hypothesis**: The Phase 2 item-distribution pattern remains sound when combined with a selection model and input-driven filtering.
+
+**Status: Complete (2026-07-18)** — Building on `useListbox`'s no-prune selection, `useCombobox` separates input value, committed selection, and the active option among candidates. Unit, type, SSR, `nagi-css check`, and browser tests validated `aria-activedescendant` with DOM focus retained on the input, filtering, disabled skipping, Enter/click commit, lossless Escape, and native Popover + Anchor Positioning. The stable path for Select delegates to native `<select>`; Nagi will not create its own `useSelect` or a Combobox-derived fallback. See `docs/phase3-listbox.md`, `docs/phase3-combobox.md`, and `docs/phase3-select-decision.md`.
+
+- Implement `useListbox` (single/multiple selection) before `useCombobox` (input + filtering + activedescendant).
+- Select's stable surface is ordinary `<select>` / `<option>`. Treat `appearance: base-select` as progressive enhancement that falls back to native rendering in unsupported environments; do not assume rich option DOM or `<selectedcontent>`.
+- Although `<selectedcontent>` exists in the HTML Standard, defer adoption until the Vue compiler supports its native tag and nesting, Blink, WebKit, and Gecko ship stable implementations, and SSR/hydration plus keyboard/form interoperability are validated. Do not reimplement Select from Combobox merely for visual uniformity.
 
 ### Phase 3.5 — Verified integration
 
-**Status: Complete (2026-07-18)** — `mergeNagiProps()`、template-only `eslint-plugin-nagi-ui/verified-bindings`、最終 DOM の relationship verifier、開いた Blueprint 状態の axe-core 検査を実装。valid/corrupted DOM graph と keyboard/focus contract を含む browser suite 28/28 を検証した。詳細は `docs/phase3.5-verified-integration.md`。
+**Status: Complete (2026-07-18)** — Implemented `mergeNagiProps()`, template-only `eslint-plugin-nagi-ui/verified-bindings`, a final-DOM relationship verifier, and axe-core checks of open Blueprint states. The browser suite passed 28/28, including valid and corrupted DOM graphs and keyboard/focus contracts. See `docs/phase3.5-verified-integration.md`.
 
-出荷済み core の挙動テストとは別に、利用者や coding agent が Blueprint を変更した後の integration contract を機械的に守る。
+Mechanically protect the integration contract after a user or coding agent modifies a Blueprint, separately from behavior tests of the shipped core.
 
-- `mergeNagiProps()` — event / class / style と token-list ARIA 属性を結合し、それ以外の重複値が異なれば semantic conflict として例外にする。reactive getter は freeze しない
-- `eslint-plugin-nagi-ui` — `triggerProps` / `menuProps` / `itemProps(item)` 等の適用先、必要な native 属性、直接上書き、複数 object binding、`v-for` key を Vue template AST から検証する。TypeScript 7 対応 parser がない間は公式の `parser: false` による template-only pass とし、script data-flow / component 境界をまたぐ親子関係は runtime 側で検証する
-- runtime DOM verification — `verifyNagiDom()` / `assertNagiDom()` と明示的に dev で有効化する `observeNagiDom()` により、動的 ID reference、active descendant、重複 ID、native popover target、実 DOM 上の trigger / popup 関係を検査する。production observer は暗黙に導入しない
-- rendered accessibility checks — Action Menu、完全な Dropdown + submenu、Listbox、Combobox、Dialog、Tooltip を開いた状態で axe-core WCAG 2.1 AA 検査を行い、Playwright の keyboard / focus contract tests と併用する。rule 除外は行わない
-- Nagi CSS は owned DOM / selector contract、Nagi UI lint は behavior wiring を担当し、責務を混在させない
+- `mergeNagiProps()` — Merge events, classes, styles, and token-list ARIA attributes. Throw a semantic-conflict exception when any other duplicated values differ. Do not freeze reactive getters.
+- `eslint-plugin-nagi-ui` — Validate from the Vue template AST where `triggerProps`, `menuProps`, `itemProps(item)`, and similar objects are applied, required native attributes, direct overrides, multiple object bindings, and `v-for` keys. Until a parser supports TypeScript 7, use the official `parser: false` template-only pass, and validate script data flow and parent-child relationships across component boundaries at runtime.
+- Runtime DOM verification — `verifyNagiDom()` / `assertNagiDom()` and explicitly development-enabled `observeNagiDom()` inspect dynamic ID references, active descendants, duplicate ids, native popover targets, and trigger/popup relationships in the real DOM. Do not introduce an implicit production observer.
+- Rendered accessibility checks — Run axe-core WCAG 2.1 AA checks with Action Menu, complete Dropdown + submenu, Listbox, Combobox, Dialog, and Tooltip open, alongside Playwright keyboard/focus contract tests. Do not exclude rules.
+- Nagi CSS owns the owned-DOM/selector contract; Nagi UI lint owns behavior wiring. Do not mix their responsibilities.
 
-この Phase を後段に置く理由は、Menu / Listbox / Combobox の props contract が固まる前に lint 規則を固定して二重改修することを避けるためである。
+This phase comes later to avoid fixing lint rules before the Menu/Listbox/Combobox prop contracts stabilize and then paying for duplicate revisions.
 
-### Phase 4 — 製品化
+### Phase 4 — productization
 
-**Status: Complete (2026-07-21)** — package-first / own-on-demand の通常利用、
-source ownership、upstream追従、v0 catalog、制約の自己選択、consumer側の実browser
-回帰契約までを一続きの製品経路として出荷した。各sliceの正本は下記リンクに置く。
+**Status: Complete (2026-07-21)** — Shipped normal package-first / own-on-demand use,
+source ownership, upstream tracking, the v0 catalog, self-selection around constraints, and
+a consumer-side real-browser regression contract as one continuous product path. The links below
+are the canonical sources for each slice.
 
-**検証仮説**: package-first / own-on-demand(§3)が実装として成立する — 通常利用は package import + theme token で完結し、所有しても保守可能である。§0 の一言定義を実装が追い越すまで製品とは呼ばない。
+**Hypothesis**: package-first / own-on-demand (§3) works in implementation: normal use requires only a package import + theme tokens, and owned source remains maintainable. Do not call it a product until the implementation catches up to §0's one-sentence definition.
 
-スライス順:
+Slice order:
 
-1. **Package 実体化** — **完了(2026-07-18、theme契約を2026-07-21改訂)**。blueprints を `packages/core/blueprints/` へ移し raw SFC のまま `/components` から export。semantic token はfallbackなしのBlueprint参照 + `default-theme.css` + coverage check / replacement-theme診断で管理する。playground が package 消費経路と token-only ブランド変更の実証。設計と実装結果は `docs/phase4-package-design.md`
-2. **`own` / `diff` CLI と `@nagi-source` metadata 形式の固定** — **完了(2026-07-18)**。`nagi-ui own/diff/list` を package 同梱 bin として実装し、metadata を `@nagi-source <component>/<file>@<version>`(per-file 刻印)に固定。`diff` は clean / modified / drifted / unknown-source を判定し CI gate に使える。詳細は `docs/phase4-ownership-cli.md`
-3. **早期検証実験** — **coding-agent アーム完了(2026-07-21)**。Button(theme)/ Dropdown(ownership)/ Combobox(upstream 追従)の 3 境界すべてで、無文脈 agent が誘導なしに設計意図の経路(token 上書き / own + 拡張レシピ / 3-way merge + stamp 更新)を選び PASS。副産物: CLI テストのバグ修正、`diff` の gate を `drifted` / `unknown-source` に限定、「own したら即コミット」の base 確保手順。記録は `docs/phase4-validation-experiments.md`。人間アームと反復実行は今後の課題
-4. **blueprints の拡充** — **完了(2026-07-21)**。Popover / Dialog / Tooltip / Disclosure / Toast を追加して公開 behavior core との欠落を解消し、styling-only baseline を Button / Card / Alert / Badge に固定。全12 componentをpackage + ownable raw SFCで出荷し、consumer用Nagi CSS presetも同梱した。unit 103/103、SSR、ownership、verified-bindings、theme parity、owned/consumer Nagi CSS、browser + axe 37/37を検証。将来のstyling-only追加は実要求ベースでphase独立に行い、このsliceを再openしない。詳細は `docs/phase4-blueprint-catalog.md`
-5. **consumer guidance / test recipe** — **完了(2026-07-21)**。§8 を利用者向けの[`docs/when-not-to-use-nagi-ui.md`](docs/when-not-to-use-nagi-ui.md)へ翻訳し、dismiss細粒度・任意stack・interactive backdrop・gesture sheet・Motion級animation・custom Select等はcomponent単位で別ライブラリへ任せる境界を明文化。Vitest Browser Mode / Playwrightのcopyable contractを`packages/core/recipes/testing/`としてnpm packageへ同梱し、keyboard / focus / dismiss / form / `assertNagiDom` / axe / SSR・zero-JS選択条件と、`own`即commit → `diff` → merge → real-browser testの更新loopを固定。unit 116/116、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、browser + axe 41/41、package tarballへのrecipe 6 files収録を確認した
+1. **Package realization** — **Complete (2026-07-18; theme contract revised 2026-07-21)**. Moved Blueprints to `packages/core/blueprints/` and exported raw SFCs through `/components`. Semantic tokens are managed through fallback-free Blueprint references, `default-theme.css`, coverage checks, and replacement-theme diagnostics. The playground proves both the package-consumption path and token-only brand customization. Design and implementation results: `docs/phase4-package-design.md`.
+2. **Fix the `own` / `diff` CLI and `@nagi-source` metadata format** — **Complete (2026-07-18)**. Implemented `nagi-ui own/diff/list` as package-bundled binaries and fixed metadata as a per-file `@nagi-source <component>/<file>@<version>` stamp. `diff` classifies clean / modified / drifted / unknown-source and can serve as a CI gate. See `docs/phase4-ownership-cli.md`.
+3. **Early validation experiments** — **Coding-agent arm complete (2026-07-21)**. Across all three boundaries—Button (theme), Dropdown (ownership), and Combobox (upstream tracking)—an agent without context independently chose the intended path without prompting: token override, own + extension recipe, or three-way merge + stamp update. All passed. Byproducts: a CLI-test bug fix; restricting the `diff` gate to `drifted` / `unknown-source`; and a procedure to secure a merge base by committing immediately after `own`. Recorded in `docs/phase4-validation-experiments.md`. A human arm and repeated runs remain future work.
+4. **Expand Blueprints** — **Complete (2026-07-21)**. Added Popover, Dialog, Tooltip, Disclosure, and Toast to close gaps with the public behavior core, and fixed the styling-only baseline as Button, Card, Alert, and Badge. Shipped all 12 components as package and ownable raw SFCs, with a consumer Nagi CSS preset. Validated unit 103/103, SSR, ownership, verified bindings, theme parity, owned/consumer Nagi CSS, and browser + axe 37/37. Future styling-only additions proceed independently of phases and from real requirements; do not reopen this slice. See `docs/phase4-blueprint-catalog.md`.
+5. **Consumer guidance / test recipe** — **Complete (2026-07-21)**. Translated §8 into consumer-facing [`docs/when-not-to-use-nagi-ui.md`](docs/when-not-to-use-nagi-ui.md), explicitly assigning fine-grained dismiss policy, arbitrary stacking, interactive backdrops, gesture sheets, Motion-level animation, custom Select, and similar requirements to other libraries component by component. Shipped copyable Vitest Browser Mode / Playwright contracts in the npm package under `packages/core/recipes/testing/`. Fixed keyboard, focus, dismiss, form, `assertNagiDom`, axe, SSR/zero-JavaScript selection criteria, and the update loop: immediate commit after `own` → `diff` → merge → real-browser test. Validated unit 116/116, TypeScript 7, verified bindings, owned/consumer Nagi CSS, browser + axe 41/41, and inclusion of six recipe files in the package tarball.
 
 ---
 
-## 改訂履歴
+## Revision History
 
-- **2026-07-22** expanded catalog anatomy slice 1として InputGroup / NumberField / ToggleGroupを追加。InputGroupはcaller-owned native controlと明示的Nagi CSS slot surfaceだけを束ね、Input APIを複製しない。NumberFieldは実`input[type=number]`とnative steppingを維持し、step/reset同期だけを固定2引数adapterへ隠す。ToggleGroupはflat schemaをreal pressed buttonへ描画し、roving focusを導入しない。SFC露出再監査、FormData/reset/keyboard/forced-colors、package/ownership/preset/tarball経路を検証し、進捗をexpanded 40/54 = 74.1%、Base UI aligned 29/37 = 78.4%へ更新。unit 221/221、browser + axe 80/80、TypeScript 7、integration lint、owned/consumer Nagi CSSを確認。正本は`docs/expanded-catalog-anatomy-slice-1.md`。
-- **2026-07-22** expanded catalog small interactive sliceとして FileInput / Pagination / Ratingを追加し、一般UI scopeの進捗を37/54 = 68.5%へ更新。FileInputはvisible native controlにchooser/FileList/form/resetを委譲し、Paginationはflat schemaをreal link/native buttonへ描画してrouter/data-fetchingを持たず、Ratingはnative radio groupと固定2引数reset helperだけに限定した。全SFCの最終露出監査、forced-colors、keyboard、FormData、reset、package/ownership/preset/tarball経路を検証。全browser gateで見つかったthemed Dropdownの境界的shortcut contrastもtheme token overrideで修正し、unit 208/208、browser + axe 78/78、TypeScript 7、integration lint、owned/consumer Nagi CSSを確認。正本は`docs/expanded-catalog-small-interactive-slice.md`。
-- **2026-07-22** component overloadの第三引数を全廃。一般的で安定した変更は名前付きprops、schemaやinteraction algorithmの変更は1引数の完全な`useX({...})`へ分け、model・form・ARIA・rendererが異なる設定値を見る経路を作らない。Listboxは`orientation` / `dir` / `loop` propsを追加し、全componentで汎用`:options` propやNagi固有override DSLを導入しない境界へ統一した。
-- **2026-07-22** expanded catalog thin sliceとして Breadcrumb / ButtonGroup / EmptyState / Kbd / Skeleton / Spinner / Textareaを追加し、一般UI scopeの進捗を34/54 = 63.0%へ更新。native/presentationだけで成立する境界に限定し、router node、Button API複製、shortcut registry、loading state machine、autosizeは持ち込まなかった。package export・ownership・consumer preset・catalogを同じSFCへ接続し、Nagi CSS presetのcomponent class手書きmapを廃止して`componentClassPrefix: "n-"` + component名からの規約導出へ統一。unit 198/198、browser + axe 75/75、TypeScript 7、owned/consumer Nagi CSS、tarball収録を確認。正本は`docs/expanded-catalog-thin-slice.md`。
-- **2026-07-22** Base UI + shadcn-vue + PrimeVueの全catalogをNagi sliceへ正規化し、一般UIとして採用する全体scopeを54（27 shipped + 27 backlog）へ拡張。全体進捗を27/54 = 50.0%とし、従来の27/37 = 73.0%はBase UI aligned指標として併記する。Nagi Grid等の別product、Native/recipe、Declineは分母から除外。正本は`docs/expanded-vue-component-catalog.md`。
-- **2026-07-22** Nagi CSSのSTN anatomy語彙変更に合わせ、出荷Blueprint・playground・自動テストの`.zone`を`.unit`へ一括移行。後方互換aliasは残さず、同時監査で見つかった旧Blueprintの色リテラルも既存theme tokenへ統一した。packageに混入していたPhase 0 zero-JS用Dropdownを`demos/NativePopoverDropdown.vue`へ移し、package/ownership正本をschema-driven版へ一本化。unit testで旧anatomyと色リテラルの再混入を禁止し、canonical / consumerのcross-repo lintを両方通過させた。
-- **2026-07-22** Base UI alignment D3として Accordion / AlertDialogを追加し、Base UI aligned進捗を採用37 slice中27出荷の73.0%へ更新。Accordionはflat items schemaをnative `<details name>`へ描画し、single/multiple共通のcontrolled `openKeys`、disabled summary、content-only summary/panel slotを提供する。AlertDialogはvisual Alertから分離し、native modal `<dialog role="alertdialog">`、必須description、明示的Cancel/Action、Cancel autofocusに固定した。実装後のSFC配線監査でgenerated name・native toggle順・disabled activation・固定dismiss policyを`/component-controls`へ隠し、schema解釈・公開event・IDREF・DOM/CSSだけをSFCへ残した。正本は`docs/base-ui-alignment-d3-accordion-alert-dialog.md`。
-- **2026-07-22** Blueprint内のcomposable option objectを再分類。一対一のprop転送・getter化・安定したflat schema写像は同じpublic `useX`のcomponent overloadへ隠し、schema / algorithm全体を変える1引数のfull optionsへ展開できる形へ統一した。別名`useXControl`は全廃し、Select / Slider等の固定bindingも`useSelect` / `useSlider`とcomponent名へ揃えた。`component-controls`にはnative reset・focus repair等の固定mechanismだけを残し、Menuの再帰schema・DOM分岐・公開event変換はowned rendererへ維持する。判断表とrecipeは`docs/blueprint-wiring-audit.md`、`packages/core/recipes/control-expansion.md`。
-- **2026-07-22** 全出荷Blueprintを「ユーザーに修正してほしい場所か」で配線監査。Toast lifecycle/focus repair、Avatar image race、Combobox native form channel、Tabs model bridge、Button disabled activationをpackage composableへ隠し、Dropdown node option変換は編集対象renderer moduleへ移した。Input/Checkbox/Switch/Sliderは`useAttrs()`をtemplateの`$attrs`へ簡約、Comboboxも追加属性をbehavior propsと安全にmergeしてnative inputへ固定した。通常`own`はcomposableをコピーせず、schema/rendererの相対dependency closureだけをunit testで保証する。SFC内`watch`等を禁止ではなくmechanism漏出のreview signalとする基準を§3.5へ追加し、現時点の出荷SFCはwatch/lifecycle/direct DOM global/useAttrs 0件。正本は`docs/blueprint-wiring-audit.md`。
-- **2026-07-22** Base UI alignment D2として Avatar / Separator / Toggleを追加し、component作成進捗を採用37 slice中25出荷の67.6%へ更新。Avatarはnative image + deterministic fallback + error/src recovery、Separatorはhorizontal `<hr>` / vertical ARIA / decorative、Toggleはnative `<button aria-pressed>` + controlled modelに限定し、compound/asChild/custom state語彙を導入しなかった。同時に全SFC filenameから`Nagi` prefixを除去し、全Blueprint surfaceをNagi CSSの厳密な`n-` + filename契約へ統一した。
-- **2026-07-22** composableをDLするownership layer (`vue` / `all`) は設計だけを保持し、component catalog拡充を優先して実装延期とした。package内部でmechanismをcomposableへ隠す方針とは分離し、composable ownershipの実需要が観測されるまで再開しない。
-- **2026-07-21** Card の `title` / `description`、Alert の `title`、Dialog の `title` / `description`、Disclosure の `summary`、Badge の `label` を、plain text props をfallbackとして保つ同名content-only slotへ拡張。propかslotかを排他的に決めず、安定visible partのrich content需要が確立している場合だけ、owned wrapperを維持した最小slotを併設できると§3.5へ明文化した。required text props、ARIA IDREF、native summary behavior、header anatomy、既定typography/toneはSFCが保持し、header全体のslot化・behavior propsの受け渡し・compound partsは引き続き不採用。
-- **2026-07-21** cross-library benchmarkの最初のstrengthening sliceを完了。Alertは自由markupの`icon` slot、Buttonは`small | default | large` enum、Cardはneutral wrapperを保つ`footer` slotを追加し、compound parts・icon-name DSL・loading・header action・media APIは増やさなかった。公開`small`はNagi CSSのHTML語彙衝突を避けCSS identity `-compact`へ翻訳し、Card内部もnative landmarkを捏造せずSTN wrapperを維持。component作成進捗は採用37 slice中22出荷の59.5%とし、Native/recipeとDeclineは分母から除外する。
-- **2026-07-21** component benchmark を単一の Base UI catalog 比較から、Base UI(behavior / a11y)、shadcn-vue(Vue anatomy / ownership)、PrimeVue(package-first expectations)の三角測量へ改訂。shadcn-vue と PrimeVue に共通する visible anatomy は product evidence とみなす一方、API は §3.5 の優先順へ翻訳し、native-first と衝突する common feature は不採用または独立 slice にできると固定した。全22出荷component + Base UI 37件の台帳は `docs/base-ui-component-comparison.md`。
-- **2026-07-21** Theme契約をfallback-freeへ改訂。Blueprintの`var(--nagi-*)`からliteral fallbackを除去し、28 tokenの既定値を`default-theme.css`へ一元化。manifest / default / Blueprint vocabulary parity、`nagi-ui theme check`、opt-in computed-cascade warningにより欠落を可視化し、旧`theme.css`は互換aliasだけ残した。ownership layerは編集済みSFCのimportを書換えないrouting module方式、初期surfaceを`vue` / `all`に限定、version/path/hash sidecarを持つ設計として`docs/package-ownership-model.md`へ固定したが、実装順は後に延期した。
-- **2026-07-21** Blueprint の配線露出基準を §3.5 に追加。所有後に変更する policy / markup は SFC に残し、native event 順・Vue model / DOM property 同期など変更しない mechanism は、再利用数に関係なく固定意味の小 helper へ隠す。万能 helper / config DSL は作らず、renderer DOM 変更と同時に修正すべき処理は可視のまま保つ。
-- **2026-07-21** Base UI alignment D1 として Tabs を完了。独立した `useTabs` に manual/automatic activation、roving tabindex、horizontal/vertical + RTL、disabled skip、controlled canonicalization、dynamic fallbackとDOM focus修復を実装。package/ownable単一SFCはflat items schema + behaviorを渡さないcontent-only `panel` slotでrich markupを扱い、compound parts・Indicator geometry runtime・lazy automatic panelは不採用。`defineModel` の親prop反映前にfallbackを再読して誤focusする実browser固有bugとcontrolled SSRの全panel hidden不整合をlocal bridgeで修正し、forced-colorsでもselectionとfocusを分離。unit 155/155、browser + axe 69/69、TypeScript 7、SSR、verified-bindings/runtime IDREF verifier、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-d-tabs.md`。
-- **2026-07-21** Base UI alignment C 完了。Toast を明示的 `createToastManager()` と単一 Blueprint に分離し、structured title/description/tone/action、polite/assertive announcement、explicit-id upsert、limit、update/close-all/promise、timer pause/resume、複数regionを巡回するF6 focus returnを追加。Provider/Portal/singleton/swipe/stack physicsは不採用。native modal外のrendererへF6を出さずlive nodeのinert境界も固定し、unit 137/137、browser + axe 59/59、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-c.md`。
-- **2026-07-21** Base UI alignment B 完了。Input / Checkbox / Radio / Switch / Select / Fieldset / Progress / Meter / single-thumb Slider をnative-first package/ownership Blueprintとして追加。Comboboxにdisabled/read-only/required、selected-key submission、clear、empty/loading、resetを追加し、popupとlistboxをARIA上分離。native reset後もDOM/Vue model/FormDataを一致させる小さなbridgeのみcoreへ置き、compound Field、`useField()`、custom Select、multi-thumb Sliderは不採用。unit 124/124、browser + axe 51/51、TypeScript 7、verified-bindings、owned/consumer Nagi CSS、実tarball収録を確認。正本は`docs/base-ui-alignment-b.md`。
-- **2026-07-21** Phase 4 完了。Web標準への委譲が合わないproduct要件とcomponent単位の混在判断を利用者向けに公開し、package/owned双方で使えるVitest Browser Mode / Playwright recipeをnpm packageへ同梱。`own`完了時にも即commit・test recipe・`diff` gateを案内し、「所有しても取り残されない」をconsumer側の実行可能な契約まで接続。unit 116/116、browser + axe 41/41と実tarball収録を確認した。
-- **2026-07-21** framework integration setup を追加。`nagi-ui setup` が Vue / Nuxt、native / Vue Router / Nuxt Link、native image / Nuxt Image を選び local adapter を生成する。Dropdown schema は router DSL や framework component を受けず、実 `<a href>` に optional `navigate` / `prefetch` callback のみを足す。Nuxt Image も `useImage` の安定 URL 生成を標準 `<img>` 属性へ落とし、package / own の単一 SFC を維持する。
-- **2026-07-21** Base UI alignment A1。Dropdown schema に標準の `<a href>` を所有する `link` node を追加し、framework 固有の router-link/component escape hatch とは境界を分離。Button focusable-disabled、Disclosure/Tooltip disabled、Popover/Tooltip positioning props、Dialog description/actions、neutral Card anatomy も既存の native-first / small API 規律内で追加し、unit 108/108、browser + axe 40/40、TypeScript 7、verified-bindings、owned/consumer Nagi CSSを確認。
-- **2026-07-21** Phase 4 slice 4 完了。styling-only baseline をCHARTER §3.5の具体例どおりButton / Card / Alert / Badgeに固定し、behavior-backed 8 componentと合わせたv0 catalog 12種をpackage/ownership/presetの全経路へ登録。Alert + Badgeで2 component反復したpositive/warning tone 6 tokenを昇格し、Nagi CSSで公開prop `success` とCSS identity `-positive`を分離。unit 103/103、browser + axe 37/37を確認。
-- **2026-07-21** Phase 4 slice 4 の behavior catalog を完了。Popover / Dialog / Tooltip / Disclosure / Toast の package/ownable SFCを追加し、公開 behavior core と component catalog の欠落を解消。package component boundary と slot sub-surface を定義する Nagi CSS presetを同梱し、owned-source検査とconsumer検査を分離した。unit 102/102、browser + axe 36/36、TypeScript 7、verified-bindings、theme parity、Nagi CSSを確認。
-- **2026-07-18** Phase 4 slice 1–2 完了。package 実体化(raw SFC 配布、`/components` + `theme.css` exports、semantic token 22 個 + parity test)と ownership CLI(`nagi-ui own/diff/list`)を実装し、`@nagi-source <component>/<file>@<version>` を §3 保守契約の確定 metadata 形式とした。
-- **2026-07-18** Phase 4 を package-first の宿題に合わせて再定義。スライス順(package 実体化 → own/diff CLI → 早期検証実験 → blueprint 拡充 → 向かないケース文書化)と検証仮説を明記し、slice 1 の設計正本を `docs/phase4-package-design.md` に置いた。
-- **2026-07-18** package-first 改訂(§3)の残存整理。§3.5 等の copy-in 前提の文言を own-on-demand 用語へ更新し、items schema が package 利用中は component の最小 props API(component version に紐づく)として公開される帰結と、その下での「DSL を育てない」規律の強化を明文化。混在可能性(§8.2)の根拠を copy-in 配布から「囲いタグ・provider・グローバル状態の不在」へ訂正。package 利用中の consumer styling 境界は `docs/package-ownership-model.md` に追記。
-- **2026-07-18** Phase 3.5 完了。最終 DOM の IDREF / active descendant / native popover 関係を検査する `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` と、開いた全主要 Blueprint 状態の axe-core 検査を追加。axe が発見した Dropdown / Listbox / Combobox の secondary text contrast を rule 除外せず修正し、browser 28/28 を確認した。
-- **2026-07-18** Phase 3.5 slice 1 を開始。`mergeNagiProps()` は class/style/event/token-list ARIA の合成、semantic conflict、live getter を検証。`eslint-plugin-nagi-ui/verified-bindings` は behavior props の適用先・native属性・直接上書き・複数binding・keyを全出荷Blueprintに対して検査する。TypeScript ESLintがTS7を読めないため、`skipLibCheck`やTS downgradeではなくvue-eslint-parser公式のtemplate-only modeを採用。
-- **2026-07-18** 配布モデルを copy-first から package-first / own-on-demand へ改訂。通常は themeable package component、深い変更時だけ同一 SFC を所有する。package build と copy 元の単一ソース、Theme→小 API→少数 slot→ownership の段階、owned source の version / diff / lint / integration 保守契約を §3 に固定した。成功条件と失敗パターンは `docs/package-ownership-model.md` に記録。
-- **2026-07-18** Phase 3 完了。Select は native `<select>` を stable path とし、`appearance: base-select` は progressive enhancement、`<selectedcontent>` は採用保留と決定。customizable Select 全体と `<selectedcontent>` 単体の標準化強度を分離し、Vue compiler 対応・3エンジン stable 実装・相互運用検証を昇格条件に固定した。Combobox 派生の自前 Select fallback は作らない。
-- **2026-07-17** Phase 3 の Listbox + Combobox slice 完了。Combobox は input value / committed selection / provisional active option を分離し、filter で確定選択を prune しない。APG に従い popup option の候補フォーカスは `aria-selected` で表すため、§6 の `data-active` 例を Menu / Listbox に訂正した。
-- **2026-07-17** §3.5「Blueprint の形態選択」を追加(owned DOM / props / items schema / slot の優先順)。compound 禁止の範囲を「ライブラリ出荷の behavior 分散タグ族」に明文化し、copy-in SFC の slot を宣言済み境界として正当化(§9 も更新)。「User owns the DOM」を「所有するコードで DOM が追える」と解釈固定。menu 系の items schema 化を Phase 2.6 として追加(blueprint-local、core 非昇格、Phase 3 と並行可)。styling-only blueprint は phase 進行と独立に追加可とした。
-- **2026-07-17** Phase 2.5 完了。checkbox / radio / mixed state、任意階層の `useSubmenu` menu tree、LTR/RTL keyboard、pointer grace、nested Popover + Anchor Positioning を実装。完全な Dropdown Blueprint と利用側 SFC が Nagi CSS、unit/type/browser tests を通り、明示的 DOM + 属性注入形式を Phase 3 へ継続すると判定した。
-- **2026-07-17** Phase 2.5 に Dropdown Menu の完成形検証を追加。action menu の成功だけで結論を出さず、checkbox / radio / submenu と menu tree coordination まで載せた SFC の可読性を検証してから Listbox へ進む。props contract 安定後に `mergeNagiProps`、Nagi UI 専用 lint、dev assertions を実装する Phase 3.5 も追加。
-- **2026-07-16** Phase 1 完了。Dialog の non-modal open は標準 command が存在しないため `show()` fallback とし、native `cancel` は prevent 可能なまま保持。Tooltip は trigger hover / tooltip hover / focus の union とした。
-- **2026-07-17** Phase 2 完了。`useMenu<Item>()` の `itemProps(item)` と ActionMenu blueprint で Vue template DX を検証。Menu の focus 戦略を `aria-activedescendant` に固定し、roving tabindex との混在を禁止した。根拠・比較・invariant は `docs/phase2-menu.md` に記録。
+- **2026-07-22** Added PreviewCard, RangeSlider, and Stepper as expanded-catalog interaction slice 2, moving general-UI progress to 43/54 = 79.6% and Base UI alignment to 31/37 = 83.8%. PreviewCard preserves a real link while its composable owns only delayed pointer/focus intent and native-popover synchronization. RangeSlider retains two real range inputs, constant lower/upper tab order, native form/reset behavior, and native `input`/`change` events behind one shared pointer rail. Stepper remains flat navigation with native buttons and `aria-current="step"`; wizard panels, validation, routing, and linear progression stay in the application. The final SFC audit leaves editable markup and policy visible while hiding timer, browser synchronization, sanitization, and reset mechanisms. Canonical source: `docs/expanded-catalog-interaction-slice-2.md`.
+- **2026-07-22** Fixed Unovis as the recommended chart integration. Added no chart API to the core runtime, components, or ownership registry. Added six mode-independent series tokens, a bridge to Unovis's public CSS custom properties, a package recipe that composes Unovis directly inside Card, and the `/chart.html` playground. Unovis-generated DOM is a library boundary for consumer Nagi CSS; datum tooltip, data, scale, and axis stay in Unovis vocabulary. Fixed a contract that combines dash, labels, and a native table rather than relying on color alone.
+- **2026-07-22** Added InputGroup, NumberField, and ToggleGroup as expanded-catalog anatomy slice 1. InputGroup combines only caller-owned native controls and explicit Nagi CSS slot surfaces without duplicating the Input API. NumberField preserves a real `input[type=number]` and native stepping, hiding only step/reset synchronization in a fixed two-argument adapter. ToggleGroup renders a flat schema as real pressed buttons and does not add roving focus. Re-audited SFC exposure and validated FormData/reset/keyboard/forced-colors plus package/ownership/preset/tarball paths. Updated progress to expanded 40/54 = 74.1% and Base UI aligned 29/37 = 78.4%. Confirmed unit 221/221, browser + axe 80/80, TypeScript 7, integration lint, and owned/consumer Nagi CSS. Canonical source: `docs/expanded-catalog-anatomy-slice-1.md`.
+- **2026-07-22** Added FileInput, Pagination, and Rating as the expanded-catalog small-interactive slice, updating general-UI progress to 37/54 = 68.5%. FileInput delegates the chooser, FileList, form integration, and reset to a visible native control. Pagination renders a flat schema as real links/native buttons and owns neither routing nor data fetching. Rating is limited to a native radio group and a fixed two-argument reset helper. Audited final exposure across every SFC and validated forced colors, keyboard, FormData, reset, and package/ownership/preset/tarball paths. Also fixed borderline shortcut contrast in the themed Dropdown, found by the full browser gate, through a theme-token override. Confirmed unit 208/208, browser + axe 78/78, TypeScript 7, integration lint, and owned/consumer Nagi CSS. Canonical source: `docs/expanded-catalog-small-interactive-slice.md`.
+- **2026-07-22** Removed the third argument from every component overload. Broadly useful, stable changes use named props; schema or interaction-algorithm changes use the complete single-argument `useX({...})`. No path lets model, form, ARIA, and renderer observe different settings. Added `orientation` / `dir` / `loop` props to Listbox, and standardized all components on a boundary with neither a generic `:options` prop nor a Nagi-specific override DSL.
+- **2026-07-22** Added Breadcrumb, ButtonGroup, EmptyState, Kbd, Skeleton, Spinner, and Textarea as the expanded-catalog thin slice, updating general-UI progress to 34/54 = 63.0%. Limited the slice to boundaries achievable with native behavior/presentation, adding no router node, duplicated Button API, shortcut registry, loading state machine, or autosize behavior. Connected package exports, ownership, consumer preset, and catalog to the same SFCs. Removed the hand-written component-class map from the Nagi CSS preset and standardized convention derivation from `componentClassPrefix: "n-"` + component name. Confirmed unit 198/198, browser + axe 75/75, TypeScript 7, owned/consumer Nagi CSS, and tarball inclusion. Canonical source: `docs/expanded-catalog-thin-slice.md`.
+- **2026-07-22** Normalized the full Base UI + shadcn-vue + PrimeVue catalogs into Nagi slices and expanded the adopted general-UI scope to 54 components (27 shipped + 27 backlog). Overall progress became 27/54 = 50.0%, while the former 27/37 = 73.0% remains alongside it as the Base UI-aligned metric. Separate products such as Nagi Grid, Native/recipe items, and Declines are excluded from the denominator. Canonical source: `docs/expanded-vue-component-catalog.md`.
+- **2026-07-22** Migrated `.zone` to `.unit` across shipped Blueprints, the playground, and automated tests to match Nagi CSS's STN-anatomy vocabulary change. Kept no backward-compatible alias, and standardized old Blueprint color literals found during the same audit on existing theme tokens. Moved the Phase 0 zero-JavaScript Dropdown that had leaked into the package to `demos/NativePopoverDropdown.vue`, making the schema-driven version the single package/ownership source. Unit tests prohibit reintroduction of the old anatomy and color literals; both canonical and consumer cross-repository lint passed.
+- **2026-07-22** Added Accordion and AlertDialog as Base UI alignment D3, updating Base UI-aligned progress to 27 shipped out of 37 adopted slices = 73.0%. Accordion renders a flat items schema into native `<details name>`, with controlled `openKeys` shared by single/multiple modes, disabled summaries, and content-only summary/panel slots. AlertDialog is separate from visual Alert and fixed to native modal `<dialog role="alertdialog">`, a required description, explicit Cancel/Action, and autofocus on Cancel. The post-implementation SFC-wiring audit hid generated names, native toggle ordering, disabled activation, and fixed dismiss policy in `/component-controls`, leaving only schema interpretation, public events, IDREF, DOM, and CSS in the SFC. Canonical source: `docs/base-ui-alignment-d3-accordion-alert-dialog.md`.
+- **2026-07-22** Reclassified composable option objects in Blueprints. One-to-one prop forwarding, getter conversion, and stable flat-schema mappings are hidden in a component overload of the same public `useX`, which can expand to complete single-argument options when changing the entire schema/algorithm. Removed every `useXControl` alias and aligned fixed bindings such as Select and Slider with component-named `useSelect` / `useSlider`. `component-controls` retains only fixed mechanisms such as native reset and focus repair; recursive Menu schemas, DOM branches, and public-event conversion stay in the owned renderer. Decision table and recipe: `docs/blueprint-wiring-audit.md` and `packages/core/recipes/control-expansion.md`.
+- **2026-07-22** Audited wiring in every shipped Blueprint by asking whether users should modify it. Hid Toast lifecycle/focus repair, Avatar image races, Combobox's native form channel, Tabs's model bridge, and Button's disabled activation in package composables; moved Dropdown node-to-option conversion to an editable renderer module. Simplified `useAttrs()` in Input/Checkbox/Switch/Slider to template `$attrs`; Combobox also safely merges additional attributes with behavior props onto the native input. A normal `own` does not copy composables; unit tests guarantee only the relative dependency closure for schema/renderer files. Added §3.5 criteria treating `watch` and similar APIs as review signals for mechanism leakage rather than prohibitions. Current shipped SFC counts for watch/lifecycle/direct DOM globals/useAttrs are all zero. Canonical source: `docs/blueprint-wiring-audit.md`.
+- **2026-07-22** Added Avatar, Separator, and Toggle as Base UI alignment D2, updating component progress to 25 shipped out of 37 adopted slices = 67.6%. Avatar uses a native image, deterministic fallback, and error/src recovery; Separator uses horizontal `<hr>`, vertical ARIA, and decorative modes; Toggle is limited to native `<button aria-pressed>` + a controlled model. No compound, asChild, or custom-state vocabulary was introduced. At the same time, removed the `Nagi` prefix from every SFC filename and standardized every Blueprint surface on Nagi CSS's strict `n-` + filename contract.
+- **2026-07-22** Retained only the design for composable-download ownership layers (`vue` / `all`) and deferred implementation in favor of expanding the component catalog. This is separate from hiding mechanisms inside package composables; do not resume until real demand for composable ownership is observed.
+- **2026-07-21** Extended Card `title` / `description`, Alert `title`, Dialog `title` / `description`, Disclosure `summary`, and Badge `label` with content-only slots of the same names while retaining plain-text prop fallbacks. §3.5 now states that props and slots are not an exclusive choice: a minimal slot that preserves its owned wrapper may accompany a prop only when demand for rich content in a stable visible part is established. The SFC retains required text props, ARIA IDREF, native summary behavior, header anatomy, and default typography/tone. Whole-header slots, passing behavior props through slots, and compound parts remain declined.
+- **2026-07-21** Completed the first strengthening slice of the cross-library benchmark. Added a free-markup `icon` slot to Alert, a `small | default | large` enum to Button, and a `footer` slot that preserves Card's neutral wrapper. Added no compound parts, icon-name DSL, loading behavior, header action, or media API. The public `small` maps to CSS identity `-compact` to avoid collision with Nagi CSS's HTML vocabulary. Card internals retain STN wrappers without inventing native landmarks. Component progress became 22 shipped of 37 adopted slices = 59.5%; Native/recipe and Decline are excluded from the denominator.
+- **2026-07-21** Revised component benchmarking from a single Base UI catalog comparison to triangulation across Base UI (behavior/accessibility), shadcn-vue (Vue anatomy/ownership), and PrimeVue (package-first expectations). Visible anatomy shared by shadcn-vue and PrimeVue counts as product evidence, while APIs are translated through §3.5's priority order. Common features that conflict with native-first may be declined or assessed as separate slices. The ledger for all 22 shipped components + 37 Base UI entries is `docs/base-ui-component-comparison.md`.
+- **2026-07-21** Revised the Theme contract to be fallback-free. Removed literal fallbacks from Blueprint `var(--nagi-*)` references and centralized defaults for 28 tokens in `default-theme.css`. Manifest/default/Blueprint-vocabulary parity, `nagi-ui theme check`, and opt-in computed-cascade warnings expose omissions; old `theme.css` remains only as a compatibility alias. Fixed the ownership-layer design in `docs/package-ownership-model.md` as routing modules that never rewrite imports in edited SFCs, an initial `vue` / `all` surface, and version/path/hash sidecars, but deferred its implementation order.
+- **2026-07-21** Added Blueprint wiring-exposure criteria to §3.5. Policy/markup intended for post-ownership changes stays in the SFC; mechanisms not intended to change, such as native-event ordering or Vue-model/DOM-property synchronization, are hidden in small fixed-meaning helpers regardless of reuse count. Do not create universal helpers or config DSLs. Keep processing that must change with renderer DOM visible.
+- **2026-07-21** Completed Tabs as Base UI alignment D1. Implemented independent `useTabs` with manual/automatic activation, roving tabindex, horizontal/vertical + RTL, disabled skipping, controlled canonicalization, dynamic fallback, and DOM-focus repair. The single package/ownable SFC handles rich markup with a flat items schema + content-only `panel` slot that passes no behavior, and declines compound parts, Indicator geometry runtime, and lazy automatic panels. A local bridge fixed a real browser-specific bug where rereading fallback before the parent prop reflected `defineModel` caused incorrect focus, plus a controlled-SSR mismatch that hid every panel. Selection and focus remain distinct in forced colors. Confirmed unit 155/155, browser + axe 69/69, TypeScript 7, SSR, verified bindings/runtime IDREF verifier, owned/consumer Nagi CSS, and real tarball inclusion. Canonical source: `docs/base-ui-alignment-d-tabs.md`.
+- **2026-07-21** Completed Base UI alignment C. Split Toast into explicit `createToastManager()` and a single Blueprint. Added structured title/description/tone/action, polite/assertive announcements, explicit-id upsert, limits, update/close-all/promise, timer pause/resume, and F6 focus return cycling through multiple regions. Declined Provider, Portal, singleton, swipe, and stack physics. F6 never leaves a native modal for an outside renderer, and live-node inert boundaries are fixed. Confirmed unit 137/137, browser + axe 59/59, TypeScript 7, verified bindings, owned/consumer Nagi CSS, and real tarball inclusion. Canonical source: `docs/base-ui-alignment-c.md`.
+- **2026-07-21** Completed Base UI alignment B. Added Input, Checkbox, Radio, Switch, Select, Fieldset, Progress, Meter, and single-thumb Slider as native-first package/ownership Blueprints. Added disabled/read-only/required, selected-key submission, clear, empty/loading, and reset to Combobox, while separating popup and listbox in ARIA. Core contains only a small bridge that keeps DOM, Vue model, and FormData aligned after native reset. Declined compound Field, `useField()`, custom Select, and multi-thumb Slider. Confirmed unit 124/124, browser + axe 51/51, TypeScript 7, verified bindings, owned/consumer Nagi CSS, and real tarball inclusion. Canonical source: `docs/base-ui-alignment-b.md`.
+- **2026-07-21** Completed Phase 4. Published consumer guidance for product requirements incompatible with web-standard delegation and for per-component mixing decisions. Bundled Vitest Browser Mode / Playwright recipes usable by package and owned components in the npm package. After `own`, the CLI also directs users to commit immediately, use the test recipe, and gate with `diff`, connecting "owned without being abandoned" to an executable consumer contract. Confirmed unit 116/116, browser + axe 41/41, and real tarball inclusion.
+- **2026-07-21** Added framework-integration setup. `nagi-ui setup` selects Vue/Nuxt, native/Vue Router/Nuxt Link, and native image/Nuxt Image, then generates a local adapter. Dropdown schemas accept neither a router DSL nor framework components; they add only optional `navigate` / `prefetch` callbacks to a real `<a href>`. Nuxt Image's `useImage` also produces a stable URL for standard `<img>` attributes, preserving one package/owned SFC.
+- **2026-07-21** Base UI alignment A1. Added a `link` node owning a standard `<a href>` to the Dropdown schema, separating it from framework-specific router-link/component escape hatches. Also added focusable-disabled Button, disabled Disclosure/Tooltip, Popover/Tooltip positioning props, Dialog description/actions, and neutral Card anatomy within existing native-first/small-API discipline. Confirmed unit 108/108, browser + axe 40/40, TypeScript 7, verified bindings, and owned/consumer Nagi CSS.
+- **2026-07-21** Completed Phase 4 slice 4. Fixed the styling-only baseline to Button, Card, Alert, and Badge as specified by CHARTER §3.5, and registered a 12-component v0 catalog—these four plus eight behavior-backed components—across package, ownership, and preset paths. Promoted six positive/warning tone tokens proven across two components, Alert + Badge. In Nagi CSS, separated public prop `success` from CSS identity `-positive`. Confirmed unit 103/103 and browser + axe 37/37.
+- **2026-07-21** Completed the Phase 4 slice 4 behavior catalog. Added package/ownable SFCs for Popover, Dialog, Tooltip, Disclosure, and Toast, closing gaps between the public behavior core and component catalog. Bundled a Nagi CSS preset defining package-component boundaries and slot sub-surfaces, separating owned-source checks from consumer checks. Confirmed unit 102/102, browser + axe 36/36, TypeScript 7, verified bindings, theme parity, and Nagi CSS.
+- **2026-07-18** Completed Phase 4 slices 1–2. Implemented the package as a real artifact—raw SFC distribution, `/components` + `theme.css` exports, 22 semantic tokens + parity tests—and the ownership CLI (`nagi-ui own/diff/list`). Fixed `@nagi-source <component>/<file>@<version>` as the §3 maintenance contract's definitive metadata format.
+- **2026-07-18** Redefined Phase 4 around the remaining package-first work. Explicitly recorded the slice order—package realization → own/diff CLI → early validation experiments → Blueprint expansion → document when not to use Nagi—and its validation hypotheses. Made `docs/phase4-package-design.md` the canonical design source for slice 1.
+- **2026-07-18** Cleaned up remaining consequences of the package-first revision (§3). Updated copy-in assumptions in §3.5 and elsewhere to own-on-demand terminology. Documented the consequence that an items schema is exposed during package use as the component's minimal props API, tied to its component version, and strengthened the corresponding "do not grow a DSL" discipline. Corrected §8.2's basis for coexistence from copy-in distribution to the absence of wrapper tags, providers, and global state. Added the consumer-styling boundary during package use to `docs/package-ownership-model.md`.
+- **2026-07-18** Completed Phase 3.5. Added `verifyNagiDom()` / `assertNagiDom()` / opt-in `observeNagiDom()` to inspect final-DOM IDREF, active-descendant, and native-popover relationships, plus axe-core checks of every major open Blueprint state. Fixed secondary-text contrast in Dropdown, Listbox, and Combobox found by axe without excluding rules. Confirmed browser 28/28.
+- **2026-07-18** Began Phase 3.5 slice 1. `mergeNagiProps()` validates class/style/event/token-list ARIA composition, semantic conflicts, and live getters. `eslint-plugin-nagi-ui/verified-bindings` inspects all shipped Blueprints for application targets of behavior props, native attributes, direct overrides, multiple bindings, and keys. Because TypeScript ESLint cannot read TS7, adopted vue-eslint-parser's official template-only mode rather than `skipLibCheck` or a TypeScript downgrade.
+- **2026-07-18** Revised the distribution model from copy-first to package-first / own-on-demand. Normal use consumes themeable package components; only deep changes own the same SFC. Fixed in §3 the package-build/copy-source single source, Theme → small API → few slots → ownership ladder, and owned-source version/diff/lint/integration maintenance contract. Success criteria and failure modes are recorded in `docs/package-ownership-model.md`.
+- **2026-07-18** Completed Phase 3. Chose native `<select>` as Select's stable path, `appearance: base-select` as progressive enhancement, and deferred `<selectedcontent>`. Separated the standardization strength of customizable Select as a whole from `<selectedcontent>` alone, and fixed promotion criteria as Vue-compiler support, stable implementation in all three engines, and interoperability validation. Do not create a Combobox-derived Select fallback.
+- **2026-07-17** Completed the Phase 3 Listbox + Combobox slice. Combobox separates input value, committed selection, and provisional active option, and filtering never prunes committed selection. Following the APG, candidate focus for popup options is represented with `aria-selected`; therefore corrected §6's `data-active` example to Menu/Listbox.
+- **2026-07-17** Added §3.5, "Choosing a Blueprint form," with the owned DOM / props / items schema / slot priority order. Clarified that the compound prohibition covers library-shipped families of behavior-distributing tags, and justified slots in copy-in SFCs as declared boundaries; also updated §9. Fixed "User owns the DOM" to mean that the DOM is traceable through code the user owns. Added menu items schemas as Phase 2.6, Blueprint-local, not promoted to core, and able to run in parallel with Phase 3. Styling-only Blueprints may be added independently of phase progress.
+- **2026-07-17** Completed Phase 2.5. Implemented checkbox/radio/mixed state, an arbitrarily deep `useSubmenu` menu tree, LTR/RTL keyboard behavior, pointer grace, and nested Popover + Anchor Positioning. The complete Dropdown Blueprint and consumer SFC passed Nagi CSS plus unit/type/browser tests, so the explicit DOM + attribute-injection form continues into Phase 3.
+- **2026-07-17** Added complete-form validation of Dropdown Menu to Phase 2.5. Do not conclude from action-menu success alone; verify SFC readability through checkbox, radio, submenu, and menu-tree coordination before proceeding to Listbox. Also added Phase 3.5, which implements `mergeNagiProps`, Nagi UI-specific lint, and development assertions after the props contract stabilizes.
+- **2026-07-16** Completed Phase 1. Because no standard command exists for non-modal Dialog opening, use a `show()` fallback while keeping native `cancel` preventable. Tooltip uses the union of trigger hover, tooltip hover, and focus.
+- **2026-07-17** Completed Phase 2. Validated Vue-template DX with `useMenu<Item>()`'s `itemProps(item)` and the ActionMenu Blueprint. Fixed Menu's focus strategy to `aria-activedescendant` and forbade mixing it with roving tabindex. Rationale, comparison, and invariants are recorded in `docs/phase2-menu.md`.
 
-- **2026-07-15** リポジトリ `CHARTER.md` を正本化。§4.4 の controlled mode 実装方式を「beforetoggle preventDefault」から「双方向ミラー同期(sync flush + 冪等適用)」へ改訂 — Popover API 仕様で hide 方向の beforetoggle が cancel 不能なため。目的(4.4 の3要件)は不変。
-- **2026-07-15** §7 Toast 再昇格の機構を訂正: `showModal()` が open popover を全強制クローズする(HTML 仕様)ため、「開いていたら hide→show」は成立しない。再昇格の条件は region の DOM 状態ではなく useToast 自身のモデル(生きている toast の有無)とし、top layer 同居者の open toggle で再 show する方式に改めた。実装バグとして実際に検出・修正済み。
+- **2026-07-15** Made the repository's `CHARTER.md` canonical. Revised §4.4's controlled-mode implementation from "prevent `beforetoggle`" to "bidirectional mirror synchronization (sync flush + idempotent application)," because the Popover API makes hide-direction `beforetoggle` non-cancelable. The three goals in §4.4 are unchanged.
+- **2026-07-15** Corrected §7's Toast re-promotion mechanism: `showModal()` force-closes every open popover per the HTML specification, so "hide then show if already open" cannot work. Re-promotion now depends on `useToast`'s own model—the presence of live toasts—rather than the region's DOM state, and re-shows when a top-layer peer toggles open. This was detected and fixed as a real implementation bug.

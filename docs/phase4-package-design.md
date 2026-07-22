@@ -1,231 +1,295 @@
-# Phase 4 slice 1 — Package 実体化の設計
+# Phase 4 slice 1 - Package implementation design
 
-Status: Implemented (2026-07-18). D1〜D5 はレビュー確定済み・実装済み。実装結果は末尾。
+Status: Implemented (2026-07-18). D1-D5 were approved in review and have been
+implemented. Implementation results appear at the end.
 
-## 目的
+## Objective
 
-CHARTER §0 / §3 の package-first を実装が追い越す。完了時に次が実働する。
+Make the implementation catch up with the package-first model in CHARTER
+sections 0 and 3. On completion, these imports work:
 
 ```ts
 import { DropdownMenu, Listbox, Combobox } from "@nagi-labs/nagi-ui/components"
 import "@nagi-labs/nagi-ui/default-theme.css"
 ```
 
-blueprints は単一ソースのまま(package build と own コピー元の分岐を作らない)。
+Blueprints remain a single source; there is no fork between the package build
+and the source copied by `own`.
 
-## D1. 配布形態: raw SFC 配布(compile しない)
+## D1. Distribution format: ship raw SFCs without compilation
 
-core は既に raw TS 配布である(`exports: "./src/index.ts"`、build なし)。component も
-同じ方針で raw `.vue` を配布する。
+Core already ships raw TypeScript (`exports: "./src/index.ts"`) without a build.
+Components follow the same policy and ship as raw `.vue` files.
 
-- **単一ソースが構造的に成立する**: package が含むファイルが own コマンドのコピー元
-  そのものになる。「package build と copy 元の差分」という危険信号(ownership model
-  doc)は、build 産物が存在しないことで原理的に消える
-- node_modules を開けば blueprint がそのまま読める(AI agent・人間の両方に効く)
-- Vite / Nuxt は依存内 `.vue` を plugin-vue でそのまま compile できる
-- 代償: bundler + Vue plugin の無い環境(CDN 直読みなど)を捨てる。SFC 利用者には
-  既に前提なので受け入れ、「向かないケース」に記載する
+- **The single-source model is structural:** files included in the package are
+  the exact source copied by `own`. The ownership model's warning sign of
+  divergence between the package build and copy source is impossible because
+  no separate build artifact exists.
+- Opening `node_modules` reveals the Blueprint as-is, which helps both coding
+  agents and humans.
+- Vite and Nuxt can compile dependency `.vue` files directly through
+  plugin-vue.
+- Tradeoff: environments without a bundler and Vue plugin, such as direct CDN
+  consumption, are unsupported. This prerequisite is acceptable for SFC users
+  and is documented under cases where Nagi is not a fit.
 
-## D2. パッケージ内配置: blueprints をパッケージ内へ移動
+## D2. Package layout: move Blueprints inside the package
 
-npm はパッケージルート外のファイルを含められないため、リポジトリルートの
-`blueprints/` を `packages/core/blueprints/` へ移動する(git mv、履歴保持)。
+npm cannot include files outside the package root, so move the repository-root
+`blueprints/` directory to `packages/core/blueprints/` with `git mv` to preserve
+history.
 
 ```text
 packages/core/
-  src/            ← composable 層。CSS を一切含まない(§3 の不変条件は layer 単位)
-  blueprints/     ← component 層。SFC(scoped CSS 込み)
-  components.ts   ← "/components" entry(SFC の named re-export のみ)
-  theme/default-theme.css ← 完全な既定 token 定義
+  src/            <- composable layer; contains no CSS (the section 3 invariant applies per layer)
+  blueprints/     <- component layer; SFCs including scoped CSS
+  components.ts   <- "/components" entry; named SFC re-exports only
+  theme/default-theme.css <- complete default token definitions
 ```
 
-exports map:
+Exports map:
 
 ```jsonc
 {
-  ".": "./src/index.ts",              // composables のみ(現状維持)
-  "./components": "./components.ts",  // blueprint SFC の named re-export
+  ".": "./src/index.ts",              // composables only; unchanged
+  "./components": "./components.ts",  // named Blueprint SFC re-exports
   "./default-theme.css": "./theme/default-theme.css",
   "./theme.css": "./theme/default-theme.css", // compatibility alias
-  "./blueprints/*": "./blueprints/*"  // own コマンドと direct import 用
+  "./blueprints/*": "./blueprints/*"  // own command and direct imports
 }
 ```
 
-- **`.` に component を混ぜない(推奨案)**。理由: ①unit テストは
-  `node --test` + type stripping で `.` を import しており、`.vue` を `.` の module
-  graph に入れると Node 実行が壊れる。②「core 層は CSS を含まない」不変条件が
-  exports 境界として見える。③tree-shaking への依存が消える。
-  `docs/package-ownership-model.md` の import 例(`from "@nagi-labs/nagi-ui"`)は
-  `/components` 付きへ 1 行修正する
-- 対案(採らない): `.` を composable + component の facade にする。DX は 1 文字分
-  良いが、Node からの core 利用と SSR ユニットテストが `.vue` loader を要求する
-  ようになる
-- `sideEffects` は `["**/*.vue", "*.css"]` を宣言し、使用 component の style chunk が
-  aggressive shaking で落ちないようにする
+- **Do not mix components into `.` (recommended design).** First, unit tests
+  import `.` through `node --test` and type stripping, and adding `.vue` to that
+  module graph would break Node execution. Second, the invariant that the core
+  layer contains no CSS is visible at the exports boundary. Third, this removes
+  reliance on tree shaking. Update the import example in
+  `docs/package-ownership-model.md` from `@nagi-labs/nagi-ui` to the
+  `/components` subpath.
+- Rejected alternative: make `.` a facade for composables and components. This
+  saves one subpath in the developer experience but makes Node-based core use
+  and SSR unit tests require a `.vue` loader.
+- Declare `sideEffects` as `["**/*.vue", "*.css"]` so aggressive tree shaking
+  does not remove style chunks for used components.
 
-## D3. Theme token 層
+## D3. Theme-token layer
 
-### 契約上の位置づけ
+### Position in the contract
 
-Nagi CSS CONTRACT は library component 内部への styling を
-「props → Pass Through → **CSS custom properties** → `::part()`」の non-owned ladder に
-限定しており(boundary class から `>` で内部へ降りることは禁止)、design token は
-custom properties が正規経路と明記済み。theme 層は新機構ではなく **CONTRACT の既定
-経路に token 語彙を与えるもの**である。
+The Nagi CSS CONTRACT limits non-owned styling inside library components to the
+ladder "props -> Pass Through -> **CSS custom properties** -> `::part()`". It
+forbids descending with `>` from a boundary class and explicitly names custom
+properties as the canonical path for design tokens. The theme layer is not a
+new mechanism; it supplies token vocabulary to the CONTRACT's default path.
 
-### 採用形態: 小さな semantic セット(shadcn 型 B)
+### Chosen form: a small semantic set, shadcn-style model B
 
-比較した形態は 4 つ: ①3 層 token(Material / PrimeVue v4。primitive→semantic→
-component)、②小 semantic セットのみ(shadcn)、③primitive スケールのみ
-(Radix Colors / Open Props)、④component 単位 token の公開(Vuetify / AntD)。
+Four models were compared: (1) three token layers, as in Material and PrimeVue
+v4 (primitive -> semantic -> component); (2) a small semantic set, as in
+shadcn; (3) only primitive scales, as in Radix Colors and Open Props; and
+(4) public per-component tokens, as in Vuetify and Ant Design.
 
-**②を採用する。** 根拠は §3 のカスタマイズ階段(theme token → 小 props → 少数 slot
-→ ownership)が②と同型であること。①④の component token 層は「ownership」の段と
-役割が重複し、Nagi ではその仕事を ownership が担う。③はスケール段の直書きが
-component 側に残り、色相以外のリブランドが component 編集になる。
+**Choose model 2.** It matches the customization ladder in section 3 exactly:
+theme tokens -> small props -> a few slots -> ownership. The component-token
+layers in models 1 and 4 duplicate ownership's role, which ownership fulfills in
+Nagi. Model 3 leaves direct scale references in components, so rebranding
+beyond hue requires component edits.
 
-### 運用原理(7 か条)
+### Seven operating principles
 
-1. **token は「値」ではなく「役割」である。** 値の一致ではなく役割の一致で統合する
-   (同じ #fff でも surface と on-accent text は別役割)。役割が **2 blueprint 以上で
-   反復**して初めて token になる。1 blueprint 固有の値はその SFC の意匠として literal
-   のまま置く — それを変えたい要求は ownership の領分。
-2. **語彙文法を固定する。** `--nagi-<tier>-<role>[-<state>]`。tier は
-   `color / font / radius / shadow / size / space` の 6 つで閉じる(space は
-   2026-07-18 に density 需要の言明を受けて追加 — tier 集合の変更はこのように
-   意図的な改訂としてのみ行う)。role は閉じた小集合、state 接尾辞は
-   `active / disabled / muted` 程度。tier 内アルファベット順。
-3. **背景役割の token は文字色との対で考える。** 背景に使う token
-   (`surface` / `surface-active` 等)を差し替えるとき、その上に乗る文字 token との
-   コントラストが利用者の責任になる。妥当性の機械検証は Phase 3.5 の axe suite が
-   担う(themed playground を axe に通す)。命名でも対を意識し、対にならない
-   飾り色を背景役割として token 化しない。
-4. **fallback 禁止 + coverage test。** blueprint 側は常に
-   `var(--nagi-color-text)` の形で参照する。既定値は `default-theme.css` だけに置き、
-   theme 未導入や不完全な replacement theme を見た目の fallback で隠さない。manifest・
-   default theme・Blueprint参照語彙の一致を unit test で検査し、replacement theme は
-   `nagi-ui theme check`、実 cascade は明示的な dev warning で不足を検出する。
-5. **token は ownership を生き延びる。** own した SFC も `var()` 参照を保持したまま
-   コピーされるため、**ブランド変更は ownership 後も default theme + override 一式で全 component に
-   届く**。owned component が theme から切り離されるのは利用者が var() を消した時
-   だけで、それは意図的な離脱である。
-6. **token は package の public API である。** package-first の帰結として、token 名は
-   component version に紐づく互換性対象になる(schema union と同じ立場)。追加は
-   §3.5 と同じ規律(実要求の頻度で昇格、投機的追加の禁止)、改名・削除は breaking
-   change として扱う。
-7. **命名は mode 非依存。** `white` / `light-gray` のような値ベースの名前を禁止し、
-   役割名のみとする。将来の dark / multi-theme は同じ token 名への別値供給
-   (`[data-nagi-theme="dark"]` 等)で受け、語彙の変更を伴わない(将来スライス)。
+1. **A token represents a role, not a value.** Consolidate values only when
+   their roles match. For example, surface and on-accent text remain separate
+   roles even if both currently equal `#fff`. A role becomes a token only after
+   it recurs in **at least two Blueprints**. A value unique to one Blueprint
+   remains a literal expression of that SFC's design; changing it belongs to
+   ownership. Integration vocabulary for a specialized library is an exception
+   only when a package-shipped recipe and a live playground/browser contract
+   both exist and Nagi does not proxy the library API. Do not fabricate
+   references in unrelated Blueprints merely to justify a token.
+2. **Fix the vocabulary grammar.** Use
+   `--nagi-<tier>-<role>[-<state>]`. The tier set is closed to
+   `color / font / radius / shadow / size / space`. `space` was added on
+   2026-07-18 after an explicit density requirement; changes to the tier set
+   must likewise be deliberate revisions. Roles form a small closed set, while
+   state suffixes are limited to values such as `active`, `disabled`, and
+   `muted`. Sort tokens alphabetically within each tier.
+3. **Treat background roles as pairs with foreground colors.** When a consumer
+   replaces a background token such as `surface` or `surface-active`, they are
+   responsible for its contrast with the foreground token rendered on it.
+   Phase 3.5 axe tests validate this mechanically by scanning the themed
+   playground. Names should make these pairs clear; do not promote decorative
+   colors without a foreground pair into background-role tokens.
+4. **No fallbacks, plus coverage tests.** Blueprints always use the form
+   `var(--nagi-color-text)`. Defaults live only in `default-theme.css`, so a
+   missing theme import or incomplete replacement theme is not hidden by a
+   visual fallback. Unit tests enforce parity among the manifest, default
+   theme, and token vocabulary referenced by Blueprints. Replacement themes use
+   `nagi-ui theme check`, and an explicit development warning detects missing
+   values in the actual cascade.
+5. **Tokens survive ownership.** Copied SFCs retain their `var()` references,
+   so **brand changes continue to reach all components through the default
+   theme and overrides after ownership**. An owned component disconnects from
+   the theme only when the consumer deliberately removes those references.
+6. **Tokens are package public API.** Under the package-first model, token names
+   are versioned compatibility commitments just like schema unions. Additions
+   follow the section 3.5 discipline: promote frequently observed real needs
+   and forbid speculative additions. Renames and removals are breaking changes.
+7. **Names are mode-independent.** Value-based names such as `white` and
+   `light-gray` are forbidden; use roles only. Future dark and multi-theme modes
+   provide different values for the same token names through selectors such as
+   `[data-nagi-theme="dark"]`, without changing the vocabulary. That work is a
+   future slice.
 
-### 導出手順(実装時にこの順で棚卸しする)
+### Derivation procedure
 
-1. 全 blueprint の `<style>` から literal 値を列挙する
-2. 各出現に**役割**を割り当てる(値ではなく用途で分類)
-3. 2 blueprint 以上で反復する役割だけを残し、同役割の値ゆらぎを統合する
-   (例: muted 系灰色が現在 #667d84 / #5d7279 / #50676f / #526970 の 4 種混在 →
-   1〜2 役割へ正規化。これは事実上の色の棚卸しでもある)
-4. 文法(原理 2)で命名し、背景役割は文字対(原理 3)を確認する
-5. blueprint を fallback なしの `var()` へ置換、`default-theme.css` に既定値を定義し、
-   manifest / default / 参照語彙の coverage test を追加する
+Audit in this order during implementation:
 
-目安は 16〜25 個。現行の反復値からは
-color(text / text-muted / text-disabled / accent / surface / surface-active /
-border / focus-ring / danger)、radius(control / overlay)、shadow(overlay)、
-size(control)、font(detail)程度に収まる見込み。
+1. enumerate literal values in every Blueprint `<style>` block
+2. assign each occurrence a **role**, classifying by purpose rather than value
+3. retain only roles repeated in two or more Blueprints, and normalize value
+   variance within each role; for example, the four current muted grays
+   `#667d84`, `#5d7279`, `#50676f`, and `#526970` become one or two roles, which
+   also constitutes a practical color audit
+4. name tokens with the grammar in principle 2 and verify foreground pairs for
+   background roles as required by principle 3
+5. replace literals in Blueprints with fallback-free `var()` references, define
+   defaults in `default-theme.css`, and add coverage tests for the manifest,
+   defaults, and referenced vocabulary
 
-### nagi-css との関係
+The expected range is 16-25 tokens. Repeated values at the time suggested
+color roles for text, text-muted, text-disabled, accent, surface,
+surface-active, border, focus-ring, and danger; radius roles for control and
+overlay; shadow for overlay; size for control; and font for detail.
 
-§3 の表は theme の配布を「Nagi CSS package」と置いているが、nagi-css 側に token 仕様が
-存在するまでは **token 語彙の定義と default theme.css を nagi-ui package に置く**。
-nagi-css が contract preset として token 検査(未定義 token 参照の lint 等)を持った
-時点で語彙の正本を移管する。cross-repo 調整をこのスライスの blocking にしない。
+### Relationship with nagi-css
 
-## D4. own metadata(このスライスでは実装しない)
+The table in section 3 assigns theme distribution to the Nagi CSS package. Until
+nagi-css defines a token specification, however, **the Nagi UI package owns the
+token vocabulary and `default-theme.css`**. When nagi-css provides token checks
+as a contract preset, such as linting references to undefined tokens, transfer
+the source of truth there. Do not make cross-repository coordination a blocker
+for this slice.
 
-raw SFC 配布により own は「node_modules の同一ファイルをアプリへコピーし、
-`@nagi-source <component>@<version>` を刻印して import を切り替える」操作に還元される。
-metadata 形式と CLI は slice 2 で実装検証とともに固定する(ownership model doc の
-「実装検証を経ずに固定しない」に従う)。
+## D4. `own` metadata, not implemented in this slice
 
-## D5. 実装時の変更点と検証
+Shipping raw SFCs reduces `own` to copying the same file from `node_modules`
+into the application, stamping it with
+`@nagi-source <component>@<version>`, and switching the import. Slice 2 fixes
+the metadata format and CLI after implementation validation, following the
+ownership-model rule not to freeze the design before validating it.
 
-変更:
+## D5. Implementation changes and verification
 
-- `git mv blueprints packages/core/blueprints` + 参照更新(playground labs、tests、
-  `.sandbox/nagi.config.mjs`、`eslint.nagi.config.mjs`、docs のパス)
-- `src/components.ts` 新設、`package.json` exports / files / sideEffects 更新
-- blueprint CSS の token 置換 + `theme/default-theme.css` 新設
-- playground labs の import を相対パスから `@nagi-labs/nagi-ui/components` へ切替
-  (**playground が package 消費経路の実証になる**)
+Changes:
 
-検証(すべて既存インフラで機械検証可能):
+- `git mv blueprints packages/core/blueprints` and update references in
+  playground labs, tests, `.sandbox/nagi.config.mjs`,
+  `eslint.nagi.config.mjs`, and documentation paths
+- add `src/components.ts`; update package exports, files, and side effects
+- replace Blueprint CSS values with tokens and add
+  `theme/default-theme.css`
+- switch playground lab imports from relative paths to
+  `@nagi-labs/nagi-ui/components`, so **the playground proves the package
+  consumption path**
 
-1. unit / typecheck / `test:integration` / `nagi-css check` が green のまま
-2. browser suite 28/28 が green のまま(labs は package 経由 import に切替済みの状態で)
-3. theme 実証: playground に token を数個上書きする「themed」セクションを追加し、
-   **ownership なしでブランド変更が完了する**ことを axe 込みで確認(Button 実験の前哨)
-4. default theme 未 import / 不完全 replacement theme の token 不足を CLI と明示的な
-   dev diagnostic が列挙すること
+Verification, all mechanically enforceable through existing infrastructure:
 
-## 決定事項(2026-07-18 レビュー確定)
+1. unit tests, typecheck, `test:integration`, and `nagi-css check` remain green
+2. the browser suite remains 28/28 green while labs import through the package
+3. the theme proof adds a themed playground section that overrides several
+   tokens and confirms, including axe checks, that rebranding works **without
+   ownership**; this is preparation for the Button experiment
+4. the CLI and an explicit development diagnostic enumerate missing tokens when
+   the default theme is not imported or a replacement theme is incomplete
 
-1. exports は `/components` 分離(D2 推奨案)を採用
-2. theme token は小 semantic セット(形態②)+ 上記 7 か条の運用原理で設計する
-3. `blueprints/` はリポジトリルートから `packages/core/blueprints/` へ移動(D2 の dir 設計どおり)
+## Decisions approved in review on 2026-07-18
 
-## 実装結果(2026-07-18)
+1. separate `/components` exports as recommended in D2
+2. design theme tokens as the small semantic set in model 2 under the seven
+   operating principles above
+3. move `blueprints/` from the repository root to
+   `packages/core/blueprints/`, following D2's directory design
 
-- 出荷 component は `Button` / `DropdownMenu` / `Listbox` / `Combobox` の 4 つ
-  (+ schema 型)。`ActionMenu` と phase 0 の popover Dropdown は phase 検証用の
-  歴史的 blueprint として残置し、`/components` から export せず token 化もしない
-- **命名規則(2026-07-22改訂)**: SFC filename と公開exportは `Button.vue` / `Button`
-  のように製品名をそのまま使い、library namespaceをfilenameへ混ぜない。surface
-  rootは Nagi CSS の厳密な `surfaceRootPrefixes: ["n-"]` 契約により
-  `n-` + filename kebab (`Button.vue` → `.n-button`)へ一意に導出する。bare
-  `.button` とfilename不一致の`.n-control`はどちらもlint errorとなる
-- token は導出手順の結果 **22 個**(color 10 / font 2 / radius 3 / shadow 2 /
-  size 1 / space 4)。`--nagi-color-danger` は予告どおり Button(第 2 使用者)の
-  登場で昇格した。棚卸しで muted 系文字色 3 値(#50676f / #526970 / #61777e)を
-  `--nagi-color-text-muted` に、hover/active 背景 2 値(#e5f1f4 / #edf5f7)を
-  `--nagi-color-surface-active` に統合した
-- **space tier(density)**: `surface-inset` / `item` / `item-gap` / `control` の
-  4 role。control 余白 2 値(trigger 0.5/0.8rem、input 0.55/0.7rem)と combobox
-  item 余白(0.4/0.6rem)を正規化した。**density は乗数 token ではなく、
-  space/size token 群を一括上書きする theme preset として表現する** —
-  `calc()` の全面導入は可読 CSS の契約に反し、単一乗数では余白と tap target を
-  独立に調整できないため。menu 専用の余白(category label、separator)は
-  原理 1 どおり literal のまま
-- **原理 1 をそのまま適用した結果、`danger`(menu のみ)と `separator`(menu のみ)は
-  token 化していない。** どちらも第 2 の使用 component(Button 実験、将来の
-  ContextMenu 等)が現れた時点での昇格第一候補
-- manifest ↔ default theme ↔ Blueprint参照語彙の parity と、Blueprint fallback 不在は
-  `tests/theme-parity.test.ts` が機械検証する
-- playground は package 消費経路の実証に切替済み(labs は
-  `@nagi-labs/nagi-ui/components` を import、全 component lab は `default-theme.css` を読み、
-  「Themed」セクションが token 上書きだけのブランド変更を実演。popover は
-  Teleport されないため custom property が開いた menu tree へそのまま継承される)
-- 検証: unit 89/89(parity 3 件含む)、typecheck、`test:integration`、
-  `nagi-css check` clean、labs 3 種の SSR 実行 OK。browser suite は themed
-  axe 検査を含め 29/29 green(2026-07-21 実行)
+## Implementation results (2026-07-18)
+
+- The four shipped components were `Button`, `DropdownMenu`, `Listbox`, and
+  `Combobox`, plus schema types. `ActionMenu` and the Phase 0 popover Dropdown
+  remain historical validation Blueprints. They are not exported from
+  `/components` and were not tokenized.
+- **Naming rule, revised 2026-07-22:** SFC filenames and public exports use the
+  product name directly, such as `Button.vue` and `Button`, without embedding
+  the library namespace in the filename. Under the strict Nagi CSS
+  `surfaceRootPrefixes: ["n-"]` contract, the surface root is uniquely derived
+  as `n-` plus the kebab-cased filename (`Button.vue` -> `.n-button`). Both bare
+  `.button` and filename-mismatched `.n-control` are lint errors.
+- The derivation procedure produced **22 tokens**: color 10, font 2, radius 3,
+  shadow 2, size 1, and space 4. As anticipated, `--nagi-color-danger` was
+  promoted when Button became its second consumer. The audit consolidated the
+  three muted text colors `#50676f`, `#526970`, and `#61777e` into
+  `--nagi-color-text-muted`, and the two hover/active backgrounds `#e5f1f4`
+  and `#edf5f7` into `--nagi-color-surface-active`.
+- **Space tier and density:** the four roles are `surface-inset`, `item`,
+  `item-gap`, and `control`. The work normalized the two control-padding values
+  (trigger `0.5/0.8rem`, input `0.55/0.7rem`) and combobox item padding
+  (`0.4/0.6rem`). **Density is expressed as a theme preset that overrides the
+  space and size token groups together, not as a multiplier token.** Applying
+  `calc()` everywhere conflicts with the readable-CSS contract, and one
+  multiplier cannot tune spacing independently from tap-target size. Menu-only
+  spacing for category labels and separators remains literal under principle 1.
+- **Applying principle 1 directly means `danger` and `separator`, each used
+  only by Menu, were not tokenized.** They become the first promotion candidates
+  when a second component appears, such as the Button experiment or a future
+  ContextMenu.
+- `tests/theme-parity.test.ts` mechanically enforces parity among the manifest,
+  default theme, and Blueprint token references, and also enforces the absence
+  of Blueprint fallbacks.
+- The playground now demonstrates the package consumption path: labs import
+  `@nagi-labs/nagi-ui/components`; every component lab imports
+  `default-theme.css`; and the Themed section demonstrates brand changes using
+  token overrides alone. Because the popover is not teleported, custom
+  properties inherit directly into the open menu tree.
+- Verification: unit tests 89/89, including three parity tests; typecheck;
+  `test:integration`; clean `nagi-css check`; and successful SSR execution for
+  three lab variants. The browser suite was 29/29 green, including themed axe
+  checks, when run on 2026-07-21.
 
 ### Slice 4 token promotion (2026-07-21)
 
-初期22 tokenに対し、AlertとBadgeで2 component反復が成立したpositive / warning
-foregroundとaccent / positive / warning / danger surfaceの6 roleを追加し、現在は
-28 token。値が一致する`surface-accent`と`surface-active`も役割が異なるため統合せず、
-theme public API上で別名を維持する。詳細は`docs/phase4-blueprint-catalog.md`。
+The initial 22 tokens grew by six roles after Alert and Badge established
+two-component repetition: positive and warning foregrounds, plus accent,
+positive, warning, and danger surfaces. The total is now 28 tokens. Even though
+`surface-accent` and `surface-active` currently have the same value, their roles
+differ, so the theme public API keeps distinct names. See
+`docs/phase4-blueprint-catalog.md` for details.
 
 ### Theme contract revision (2026-07-21)
 
-初期実装の「各 `var()` に literal fallback を持たせて theme import を optional にする」
-方針は廃止した。fallback は欠落 token を視覚上だけ埋め、custom theme の不完全さを出荷前に
-発見しにくくするためである。現在は `default-theme.css` を明示 import する。完全置換を選ぶ
-場合は `nagi-ui theme check` を CI gate にし、必要なら
-`warnMissingNagiThemeTokens()` で実 cascade を開発時に検査する。旧 `/theme.css` export は
-互換 alias として同じ既定ファイルを指すが、正規名ではない。
+The initial policy of giving each `var()` a literal fallback and making the
+theme import optional has been retired. Fallbacks conceal missing tokens
+visually and make incomplete custom themes difficult to detect before release.
+Consumers now import `default-theme.css` explicitly. Complete replacement
+themes use `nagi-ui theme check` as a CI gate and may call
+`warnMissingNagiThemeTokens()` to inspect the real cascade during development.
+The old `/theme.css` export remains a compatibility alias to the same default
+file, but is not the canonical name.
+
+### Unovis series palette (2026-07-22)
+
+Unovis is the recommended Chart integration, and the theme adds
+`--nagi-color-series-1` through `--nagi-color-series-6`. The manifest now
+contains **34 tokens**. Instead of fabricating references in existing
+Blueprints, parity tests recognize the package-shipped
+`recipes/unovis/theme.css` as the formal consumer. Unovis is only a development
+dependency of the root playground, never a core dependency or peer dependency.
+Nagi does not add `Chart.vue`, a data schema, or scale and axis proxies. The
+default theme provides light-mode values; a complete dark replacement theme
+overrides all of them through the same mode-independent token names. Color must
+not be the sole identifier, so the recipe requires labels, dash or marker
+distinctions, and a native data table.
 
 ## Release invariant
 
-`packages/core/package.json` の version を変更した直後、tag / publish より前に
-`vp run test` を必ず実行する。CLI marker が installed version を読むため、version
-bump 下でのみ露見する fixture の直書きや ownership status の退行をここで捕捉する。
+Immediately after changing the version in `packages/core/package.json`, run
+`vp run test` before tagging or publishing. CLI markers read the installed
+version, so this gate catches hard-coded fixture values and ownership-status
+regressions that only appear after a version bump.

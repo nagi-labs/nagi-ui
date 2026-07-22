@@ -10,10 +10,10 @@ canonical architecture charter and it constrains implementation choices:
   Commands); the library injects standard attributes via composables and
   directive sugar.
 - Do not propose these forbidden structures as "improvements". When in doubt,
-  follow CHARTER §1 決定原理.
+  follow the Decision Principles in CHARTER §1.
 
 When an implementation discovery forces a design change, update CHARTER.md
-(the affected section plus the 改訂履歴 at the bottom) in the same change.
+(the affected section plus the Revision History at the bottom) in the same change.
 
 The styling foundation is the Nagi CSS contract, developed in the sibling
 repository `../nagi-css` (see its `CONTRACT.md`). Blueprints must pass

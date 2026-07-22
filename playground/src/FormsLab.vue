@@ -13,6 +13,7 @@ import {
   NumberField,
   Progress,
   Radio,
+  RangeSlider,
   Rating,
   Select as NagiSelect,
   Slider,
@@ -51,6 +52,10 @@ const marketing = ref(true);
 const contact = ref<string | null>("email");
 const plan = ref("standard");
 const rating = ref<number | null>(3);
+const priceRange = ref<readonly [number, number]>([25, 75]);
+const priceRangeMin = ref(0);
+const priceRangeMax = ref(100);
+const priceRangeStep = ref(5);
 const seats = ref<number | null>(2);
 const nativeDefaultPlan = ref<string>();
 const nativePlans = ref<readonly NagiSelectOption[]>(plans);
@@ -91,6 +96,12 @@ function captureSubmission(event: SubmitEvent) {
 
 function removeInitialPlanOption() {
   nativePlans.value = plans.filter((option) => option.value === "pro");
+}
+
+function narrowPriceRange() {
+  priceRangeMin.value = 40;
+  priceRangeMax.value = 60;
+  priceRangeStep.value = 10;
 }
 </script>
 
@@ -252,6 +263,17 @@ function removeInitialPlanOption() {
             :max="20"
             :step="3"
           />
+          <RangeSlider
+            v-model="priceRange"
+            label="Price range"
+            lower-label="Minimum price"
+            upper-label="Maximum price"
+            lower-name="priceMin"
+            upper-name="priceMax"
+            :min="priceRangeMin"
+            :max="priceRangeMax"
+            :step="priceRangeStep"
+          />
           <InputGroup prefix="https://" suffix=".dev">
             <input
               class="n-input-group-control"
@@ -270,6 +292,9 @@ function removeInitialPlanOption() {
           <button class="button" type="button" @click="removeInitialPlanOption">
             Remove initial plan option
           </button>
+          <button class="button" type="button" @click="narrowPriceRange">
+            Narrow price bounds
+          </button>
           <button class="button" type="reset">Reset interactive controls</button>
         </div>
       </form>
@@ -280,6 +305,9 @@ function removeInitialPlanOption() {
       </output>
       <output data-testid="constrained-volume-value">
         constrained volume: {{ constrainedVolume }}
+      </output>
+      <output data-testid="price-range-value">
+        price range: {{ priceRange[0] }}–{{ priceRange[1] }}
       </output>
     </section>
 

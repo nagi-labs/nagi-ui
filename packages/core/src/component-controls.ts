@@ -9,6 +9,12 @@ export { useButton } from "./button.ts";
 export { useNativeCombobox } from "./combobox.ts";
 export { useAlertDialog } from "./dialog.ts";
 export { useNumberField, type NumberFieldBinding } from "./number-field.ts";
+export {
+  useRangeSlider,
+  type RangeSliderBinding,
+  type RangeSliderRailProps,
+  type RangeSliderValue,
+} from "./range-slider.ts";
 export { useSelect, type SelectBinding } from "./select.ts";
 export { useSlider } from "./slider.ts";
 export { useTabsModelBridge } from "./tabs.ts";

@@ -11,6 +11,8 @@
     "./theme.css": "./theme/default-theme.css",
     "./blueprints/*": "./blueprints/*",
     "./recipes/control-expansion.md": "./recipes/control-expansion.md",
+    "./recipes/unovis/theme.css": "./recipes/unovis/theme.css",
+    "./recipes/unovis/README.md": "./recipes/unovis/README.md",
     "./package.json": "./package.json"
   },
   "bin": {

@@ -8,6 +8,10 @@ import { nagiThemeTokens } from "../packages/core/theme/tokens.mjs";
 const repo = path.join(import.meta.dirname, "..");
 const themePath = path.join(repo, "packages/core/theme/default-theme.css");
 const blueprintRoot = path.join(repo, "packages/core/blueprints");
+const unovisBridgePath = path.join(
+  repo,
+  "packages/core/recipes/unovis/theme.css",
+);
 
 function themeTokens(): Map<string, string> {
   const source = fs.readFileSync(themePath, "utf8");
@@ -18,17 +22,19 @@ function themeTokens(): Map<string, string> {
   return tokens;
 }
 
-function blueprintTokenUses(): { file: string; token: string }[] {
+function shippedTokenUses(): { file: string; token: string }[] {
   const uses: { file: string; token: string }[] = [];
   const files = fs
     .readdirSync(blueprintRoot, { recursive: true })
     .map(String)
-    .filter((file) => file.endsWith(".vue"));
+    .filter((file) => file.endsWith(".vue"))
+    .map((file) => path.join(blueprintRoot, file));
+  files.push(unovisBridgePath);
   for (const file of files) {
-    const source = fs.readFileSync(path.join(blueprintRoot, file), "utf8");
+    const source = fs.readFileSync(file, "utf8");
     for (const match of source.matchAll(/var\((--nagi-[a-z0-9-]+)\s*\)/g)) {
       uses.push({
-        file,
+        file: path.relative(repo, file),
         token: match[1] as string,
       });
     }
@@ -36,17 +42,30 @@ function blueprintTokenUses(): { file: string; token: string }[] {
   return uses;
 }
 
-test("default theme, public manifest, and Blueprint token vocabulary stay identical", () => {
+test("default theme, public manifest, and shipped token-consumer vocabulary stay identical", () => {
   const tokens = themeTokens();
   assert.ok(tokens.size > 0);
   assert.deepEqual([...tokens.keys()].sort(), [...nagiThemeTokens].sort());
-  const used = new Set(blueprintTokenUses().map((use) => use.token));
+  const uses = shippedTokenUses();
+  const used = new Set(uses.map((use) => use.token));
   for (const token of nagiThemeTokens) {
-    assert.ok(used.has(token), `theme token ${token} is not used by any blueprint`);
+    assert.ok(used.has(token), `theme token ${token} has no shipped consumer`);
   }
-  for (const use of blueprintTokenUses()) {
+  for (const use of uses) {
     assert.ok(tokens.has(use.token), `${use.file}: unknown token ${use.token}`);
   }
+});
+
+test("the Unovis bridge exposes every series token without hiding missing values", () => {
+  const source = fs.readFileSync(unovisBridgePath, "utf8");
+  for (let index = 0; index < 6; index += 1) {
+    assert.match(
+      source,
+      new RegExp(`--vis-color${index}:\\s*var\\(--nagi-color-series-${index + 1}\\)`),
+    );
+  }
+  assert.doesNotMatch(source, /var\(--nagi-[^,)]+,/u);
+  assert.doesNotMatch(source, /#[\da-f]{3,8}\b|\brgba?\(|\bhsla?\(/iu);
 });
 
 test("Blueprint token references never embed fallback values", () => {

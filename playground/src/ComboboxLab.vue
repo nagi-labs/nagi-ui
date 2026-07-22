@@ -20,8 +20,8 @@ const selected = ref<string | null>("vue");
   <main class="n-combobox-lab">
     <h1 class="title">Nagi UI — Combobox</h1>
     <p class="text">
-      DOM focus は input に残り、候補だけを aria-activedescendant で移動します。入力で候補を
-      filter しても、Enter / click で次を確定するまでは以前の選択を失いません。
+      DOM focus stays on the input while aria-activedescendant moves through suggestions.
+      Filtering preserves the previous selection until Enter or click commits a new one.
     </p>
 
     <section class="section">

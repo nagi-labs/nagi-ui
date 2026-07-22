@@ -272,6 +272,73 @@ test("components entry exposes the first anatomy-sensitive catalog slice", async
   });
 });
 
+test("components entry exposes RangeSlider as one native two-thumb range", async () => {
+  await withComponents(async (components) => {
+    assert.ok(components.RangeSlider, "RangeSlider is exported from /components");
+    const range = await render(components.RangeSlider as Component, {
+      label: "Price range",
+      lowerLabel: "Minimum price",
+      upperLabel: "Maximum price",
+      lowerName: "priceMin",
+      upperName: "priceMax",
+      min: 0,
+      max: 100,
+      step: 5,
+      modelValue: [25, 75],
+    });
+    assert.match(range, /<fieldset[^>]*class="n-range-slider"/);
+    assert.match(range, /<legend[^>]*>Price range<\/legend>/);
+    assert.equal(range.match(/<input[^>]*type="range"/gu)?.length, 2);
+    assert.match(range, /<input[^>]*name="priceMin"[^>]*max="75"/);
+    assert.match(range, /<input[^>]*name="priceMax"[^>]*min="25"/);
+  });
+});
+
+test("components entry exposes PreviewCard as a real link with an interactive preview", async () => {
+  await withComponents(async (components) => {
+    assert.ok(components.PreviewCard, "PreviewCard is exported from /components");
+    const preview = await renderSlotFunctions(
+      components.PreviewCard as Component,
+      {
+        href: "/packages/nagi-ui",
+        label: "Nagi UI package",
+        title: "@nagi-labs/nagi-ui",
+        description: "Native-first Vue components.",
+      },
+      {
+        default: () => h("a", {
+          class: "n-preview-card-content",
+          href: "/packages/nagi-ui/compatibility",
+        }, "Compatibility notes"),
+      },
+    );
+    assert.match(preview, /<a[^>]*class="link"[^>]*href="\/packages\/nagi-ui"/);
+    assert.match(preview, /<span[^>]*class="unit"[^>]*popover/);
+    assert.match(preview, /href="\/packages\/nagi-ui\/compatibility"/);
+    assert.doesNotMatch(preview, /role="tooltip"|aria-describedby/);
+  });
+});
+
+test("components entry exposes Stepper as flat native navigation", async () => {
+  await withComponents(async (components) => {
+    assert.ok(components.Stepper, "Stepper is exported from /components");
+    const stepper = await render(components.Stepper as Component, {
+      label: "Package setup",
+      currentKey: "access",
+      items: [
+        { key: "details", label: "Details", description: "Package identity" },
+        { key: "access", label: "Access", description: "Visibility and roles" },
+        { key: "publish", label: "Publish", disabled: true },
+      ],
+    });
+    assert.match(stepper, /<nav[^>]*aria-label="Package setup"/);
+    assert.match(stepper, /<ol[^>]*class="list"/);
+    assert.equal(stepper.match(/<button/gu)?.length, 3);
+    assert.match(stepper, /aria-current="step"[^>]*>.*Access/s);
+    assert.match(stepper, /<button[^>]*disabled[^>]*>.*Publish/s);
+  });
+});
+
 test("Accordion and AlertDialog preserve their native SSR contracts", async () => {
   await withComponents(async (components) => {
     const accordion = await renderSlotFunctions(

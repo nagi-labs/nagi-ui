@@ -21,24 +21,23 @@ requirements users repeatedly expect around that behavior.
 
 The primary coverage scope is:
 
-- every component Nagi currently ships: **40 / 40** below (29 Base UI-aligned
-  components plus eleven expanded-catalog additions);
+- every component Nagi currently ships: **43 / 43** below (31 Base UI-aligned
+  components plus twelve expanded-catalog additions);
 - every component in the Base UI 1.6.0 baseline: **37 / 37**, split between
-  the 25 direct shipped mappings and 12 unshipped capabilities below.
+  the 26 direct shipped mappings and 11 unshipped capabilities below.
 
 PrimeVue's 90+ catalog and every shadcn-vue block are not automatic Nagi scope.
 Data grids, calendars and other product domains should receive their own
 benchmark slice when Nagi chooses to enter that domain.
 
 For component-creation progress, the adopted implementation set is currently
-37 slices: 29 shipped components plus 8 unbuilt component slices (one
-`Candidate`, six `Defer`, and the separate multi-thumb Slider). This is
-**29 / 37 = 78.4%**. `Native/recipe` and `Decline` rows are deliberately not
+37 slices: 31 shipped components plus 6 unbuilt component slices. This is
+**31 / 37 = 83.8%**. `Native/recipe` and `Decline` rows are deliberately not
 counted as components to build. This metric tracks Nagi's chosen product, not
 API parity with any reference catalog.
 
 This is specifically the Base UI-aligned metric. The expanded normalized scope
-across Base UI, shadcn-vue, and PrimeVue is **40 / 54 = 74.1%**; see
+across Base UI, shadcn-vue, and PrimeVue is **43 / 54 = 79.6%**; see
 [`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).
 
 ## Benchmark rule
@@ -124,11 +123,12 @@ This table applies the same four-axis review to every package/ownable component.
 | `Meter` | [Meter](https://base-ui.com/react/components/meter) and native `<meter>` define scalar-range semantics | No direct Meter | [MeterGroup](https://primevue.dev/metergroup/) is a multi-value visualization, not the native one-value primitive | **Shipped**: native value/min/max/low/high/optimum and label. MeterGroup would be a separate visualization. |
 | `NumberField` | [Number Field](https://base-ui.com/react/components/number-field): increment/decrement, min/max/step, form and accessible labeling | [Number Field](https://www.shadcn-vue.com/docs/components/number-field): visible input with step buttons | [InputNumber](https://primevue.dev/inputnumber/): number input, buttons and min/max/step | **Shipped**: a real `input[type=number]`, explicit native step buttons, nullable model and form/reset behavior. Browser parsing and validity remain native; locale formatting, scrub gestures and button-layout modes are intentionally outside this contract. |
 | `Popover` | [Popover](https://base-ui.com/react/components/popover): controlled anchored popup, positioning and accessible relationships | [Popover](https://www.shadcn-vue.com/docs/components/popover): arbitrary trigger/content composition | [Popover](https://primevue.dev/popover/): trigger-controlled generic overlay content | **Shipped**: native light-dismiss popup, controlled state and positioning. The package Blueprint has a fixed button; arbitrary triggers use `usePopover`, framework adapters or ownership instead of a behavior-bearing trigger slot. |
+| `PreviewCard` | [Preview Card](https://base-ui.com/react/components/preview-card): real link, delayed pointer/focus intent and interactive preview transit | [Hover Card](https://www.shadcn-vue.com/docs/components/hover-card): rich hover/focus preview | Popover/Tooltip are the nearest products | **Shipped**: real `<a href>`, native auto popover, controlled open, anchor positioning and pointer/focus transit. It has no click interception or Tooltip ARIA, touch hover is suppressed, and its inline default slot is explicitly phrasing-content only. |
 | `Progress` | [Progress](https://base-ui.com/react/components/progress) and native `<progress>` define determinate/indeterminate semantics | [Progress](https://www.shadcn-vue.com/docs/components/progress): value-driven bar | [ProgressBar](https://primevue.dev/progressbar/): determinate/indeterminate bar and optional value label | **Shipped**: native progress plus an accessible label. Decorative value rendering can remain caller/owned markup. |
 | `Radio` | [Radio](https://base-ui.com/react/components/radio): exclusive selection, form and validation behavior | [Radio Group](https://www.shadcn-vue.com/docs/components/radio-group): explicit group with repeated items | [RadioButton](https://primevue.dev/radiobutton/): repeated same-name controls | **Shipped**: real radios share one `v-model` and native name, with Fieldset for group labeling. A package RadioGroup is not yet common across the two Vue references. |
 | `Select` | [Select](https://base-ui.com/react/components/select): custom popup, keyboard, form and rich item capability | [Native Select](https://www.shadcn-vue.com/docs/components/native-select) and custom [Select](https://www.shadcn-vue.com/docs/components/select) are both offered | [Select](https://primevue.dev/select/): custom popup, filtering, multiple selection and templates | **Shipped / deliberate boundary**: native `<select>/<option>` is the stable path. Cross-library custom rendering is real demand, but rebuilding Select conflicts with Nagi's platform-first contract; use Combobox, ownership or another component library. |
 | `Separator` | [Separator](https://base-ui.com/react/components/separator): semantic/decorative orientation | [Separator](https://www.shadcn-vue.com/docs/components/separator): horizontal/vertical decorative line | [Divider](https://primevue.dev/divider/): horizontal/vertical content divider | **Shipped**: native `<hr>` for horizontal semantic separation, explicit `role="separator"` for vertical, and an `aria-hidden` decorative form. Content-bearing Divider is a different product. |
-| `Slider` | [Slider](https://base-ui.com/react/components/slider): orientation and multiple thumbs above range-input behavior | [Slider](https://www.shadcn-vue.com/docs/components/slider): one or multiple values | [Slider](https://primevue.dev/slider/): single/range and horizontal/vertical modes | **Shipped + separate Candidate**: native single-thumb Slider is complete. Multi-thumb/range is common evidence but must be a separately tested thick component, not a mode that compromises the native path. |
+| `Slider` | [Slider](https://base-ui.com/react/components/slider): orientation and multiple thumbs above range-input behavior | [Slider](https://www.shadcn-vue.com/docs/components/slider): one or multiple values | [Slider](https://primevue.dev/slider/): single/range and horizontal/vertical modes | **Shipped as two components**: Slider preserves the single native path. RangeSlider overlays two real range inputs on one visual track, keeps lower/upper labels and constant tab order, applies dependent bounds, submits two names and restores its tuple on native form reset. |
 | `Switch` | [Switch](https://base-ui.com/react/components/switch): boolean setting, focus and form behavior | [Switch](https://www.shadcn-vue.com/docs/components/switch): checked/disabled control | [ToggleSwitch](https://primevue.dev/toggleswitch/): checked/disabled/form states | **Shipped**: native checkbox-backed switch with label, form/reset/validation and forced-colors support. |
 | `Tabs` | [Tabs](https://base-ui.com/react/components/tabs): activation modes, orientation, focus and panel relationships | [Tabs](https://www.shadcn-vue.com/docs/components/tabs): list/trigger/content composition | [Tabs](https://primevue.dev/tabs/): value-driven tab list/panels with scrollable/dynamic examples | **Shipped**: flat items, manual/automatic activation, orientation/RTL, disabled/dynamic repair and rich panel content. Compound parts, indicator geometry and PrimeVue-only window-like features remain out. |
 | `Toast` | [Toast](https://base-ui.com/react/components/toast): manager, priority, actions, lifecycle and keyboard access | [Toast](https://www.shadcn-vue.com/docs/components/toast) / Sonner: app-level notifications and actions | [Toast](https://primevue.dev/toast/): service-driven severity, summary/detail, groups, position and lifetime | **Shipped**: explicit manager, structured content/action, priority, update/close/promise, limit/timers and F6. Placement is styling/ownership; providers, portals, swipe and stack physics remain out. |
@@ -136,14 +136,14 @@ This table applies the same four-axis review to every package/ownable component.
 | `ToggleGroup` | [Toggle Group](https://base-ui.com/react/components/toggle-group): single/multiple pressed selection, disabled items and group labeling | [Toggle Group](https://www.shadcn-vue.com/docs/components/toggle-group): repeated pressed controls | [SelectButton](https://primevue.dev/selectbutton/): single/multiple item selection | **Shipped**: flat items schema, single/multiple controlled value, real `button[aria-pressed]` controls and group/item disabled state. Every button remains a native tab stop; no roving-focus state machine or compound item family is added. |
 | `Tooltip` | [Tooltip](https://base-ui.com/react/components/tooltip): hover/focus, delay, positioning and disabled handling | [Tooltip](https://www.shadcn-vue.com/docs/components/tooltip): arbitrary trigger/content with provider coordination | [Tooltip](https://primevue.dev/tooltip/): directive on arbitrary targets with position/delay options | **Shipped**: hover/focus union, delays, controlled state, disabled and positioning. Arbitrary package triggers use the composable or ownership; no mandatory provider or trigger slot carrying behavior props. |
 
-Base UI-aligned shipped audit result: **29 / 29** components reviewed through
+Base UI-aligned shipped audit result: **31 / 31** components reviewed through
 the same platform/Base UI + shadcn-vue + PrimeVue + Nagi translation rule.
 
 ## Shipped expanded-catalog additions
 
-These eleven components come from repeated shadcn-vue / PrimeVue product signal,
+These twelve components come from repeated shadcn-vue / PrimeVue product signal,
 not from additional Base UI baseline rows. They therefore increase the expanded
-catalog numerator without changing the Base UI-aligned 29 / 37 metric.
+catalog numerator without changing the Base UI-aligned 31 / 37 metric.
 
 | Nagi component | Platform foundation | Cross-library signal | Nagi decision |
 |---|---|---|---|
@@ -157,9 +157,10 @@ catalog numerator without changing the Base UI-aligned 29 / 37 metric.
 | `Rating` | Native same-name radio group inside `fieldset`/`legend` | shadcn-vue Radio Group recipe; PrimeVue Rating | **Shipped**: localized numeric items, keyboard/form/reset behavior and presentational stars. No hover value, half-star, pointer-only model or roving-focus reimplementation. |
 | `Skeleton` | Decorative presentation with owner-supplied loading semantics | Both Vue catalogs expose Skeleton | **Shipped**: always `aria-hidden`, token styling and reduced-motion support; it never owns `aria-busy` or live state. |
 | `Spinner` | Empty status indicator or decorative presentation | shadcn-vue Spinner and PrimeVue ProgressSpinner | **Shipped**: optional accessible label selects `status` vs `aria-hidden`; determinate progress stays in Progress. |
+| `Stepper` | Native named navigation, ordered list and buttons with `aria-current="step"` | Both Vue catalogs expose Stepper | **Shipped**: flat items and one required controlled current key. Wizard panels, validation, routing and linear completion remain application policy. |
 | `Textarea` | Native form-associated `<textarea>` | Both Vue catalogs expose Textarea | **Shipped**: label, string model, native attrs, form/reset/validation and no autosize behavior. |
 
-Overall shipped package audit result: **40 / 40** components represented here.
+Overall shipped package audit result: **43 / 43** components represented here.
 
 ## Unshipped Base UI baseline
 
@@ -177,13 +178,12 @@ agreement changes priority, but never bypasses the architectural translation.
 | Menubar | [Menubar](https://base-ui.com/react/components/menubar) | [Menubar](https://www.shadcn-vue.com/docs/components/menubar) | [Menubar](https://primevue.dev/menubar/) | **Defer**: strong common signal. Add a dedicated horizontal roving-focus coordinator over Menu; never use menu roles for ordinary site navigation. |
 | Navigation Menu | [Navigation Menu](https://base-ui.com/react/components/navigation-menu) | [Navigation Menu](https://www.shadcn-vue.com/docs/components/navigation-menu) | Menubar/MegaMenu are adjacent products | **Defer**: native `<nav>` and links first; hover/focus panel coordination is an independent navigation primitive. |
 | OTP Field | [OTP Field](https://base-ui.com/react/components/otp-field) | [Pin Input](https://www.shadcn-vue.com/docs/components/pin-input) | [InputOtp](https://primevue.dev/inputotp/) | **Defer**: strong common signal but mobile paste, password-manager and one-real-input behavior need a focused slice. |
-| Preview Card | [Preview Card](https://base-ui.com/react/components/preview-card) | [Hover Card](https://www.shadcn-vue.com/docs/components/hover-card) | Popover/Tooltip are the nearest products | **Candidate**: real link trigger, pointer transit and interactive preview semantics over hint popover positioning. |
 | Scroll Area | [Scroll Area](https://base-ui.com/react/components/scroll-area) | [Scroll Area](https://www.shadcn-vue.com/docs/components/scroll-area) | [ScrollArea](https://primevue.dev/scrollarea/) | **Native/recipe** despite strong demand: prefer `overflow: auto`, `scrollbar-*` CSS and platform scrollbars; do not add synchronized custom-thumb behavior for parity alone. |
 | Toolbar | [Toolbar](https://base-ui.com/react/components/toolbar) | No direct Toolbar component | [Toolbar](https://primevue.dev/toolbar/) | **Defer**: attribute-injection `useToolbar` for arbitrary owned controls; avoid a ToolbarButton/ToolbarLink family. |
 
-Base UI catalog result: **37 / 37 represented** (25 direct shipped mappings +
-12 unshipped decisions). Nagi's four additional shipped products are Alert,
-Badge, Card and standalone Listbox.
+Base UI catalog result: **37 / 37 represented** (26 direct shipped mappings +
+11 unshipped decisions). Nagi's additional shipped products include Alert,
+Badge, Card, standalone Listbox and the cross-library Stepper.
 
 ## First strengthening result
 
@@ -209,7 +209,8 @@ consequences without expanding the component count:
 The same rule also confirms deliberate non-parity:
 
 - custom Select is widespread, but conflicts with Nagi's native stable path;
-- multi-thumb Slider is widespread, but must be an independent thick component;
+- multi-thumb Slider is shipped as independent RangeSlider rather than a mode
+  that compromises the single native Slider;
 - custom trigger composition for Popover/Dialog/Tooltip remains available at
   the composable or ownership layer instead of recreating `asChild` through a
   behavior-bearing slot;
@@ -244,7 +245,7 @@ policy live in `@nagi-labs/nagi-ui/component-controls`. The SFCs retain the
 editable schema mapping, labels, action tone/event, IDREFs, DOM and CSS. The
 package catalog was then 27 components. The Base UI-aligned implementation set
 was 73.0% complete at that point, while later catalog slices move the current
-Base UI-aligned metric to 78.4% and the cross-library set to 74.1%. Full
+Base UI-aligned metric to 83.8% and the cross-library set to 79.6%. Full
 rationale and browser contracts are recorded in
 [`base-ui-alignment-d3-accordion-alert-dialog.md`](base-ui-alignment-d3-accordion-alert-dialog.md).
 

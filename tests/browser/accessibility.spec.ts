@@ -61,6 +61,17 @@ test("native form catalog is axe-clean with an empty Combobox open", async ({ pa
   await expectAxeClean(page)
 })
 
+test("Unovis recipe is axe-clean with its chart summary and data table", async ({ page }) => {
+  await page.goto("/chart.html")
+  await expect(
+    page.getByRole("figure", { name: /current period rises from 118 to 184/u }),
+  ).toBeVisible()
+  await expectAxeClean(page)
+
+  await page.getByTestId("chart-theme-toggle").click()
+  await expectAxeClean(page)
+})
+
 test("Dialog and Tooltip are axe-clean in their opened states", async ({ page }) => {
   await page.goto("/phase1.html")
   await page.getByRole("button", { name: "Open dialog" }).click()
@@ -74,7 +85,8 @@ test("Dialog and Tooltip are axe-clean in their opened states", async ({ page })
   await expectAxeClean(page)
 })
 
-test("package Blueprint catalog is axe-clean in opened states", async ({ page }) => {
+test("package overlay Blueprints are axe-clean in opened states", async ({ page }) => {
+  test.setTimeout(60_000)
   await page.goto("/catalog.html")
 
   await page.getByRole("button", { name: "Open package popover" }).click()
@@ -90,6 +102,11 @@ test("package Blueprint catalog is axe-clean in opened states", async ({ page })
   await expect(page.getByRole("alertdialog", { name: "Delete this package?" })).toBeVisible()
   await expectAxeClean(page)
   await page.getByRole("alertdialog").getByRole("button", { name: "Cancel" }).click()
+})
+
+test("package disclosure and notification Blueprints are axe-clean", async ({ page }) => {
+  test.setTimeout(60_000)
+  await page.goto("/catalog.html")
 
   await page.getByRole("button", { name: "More information" }).focus()
   await expect(page.getByRole("tooltip")).toBeVisible()

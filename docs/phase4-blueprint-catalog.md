@@ -189,6 +189,15 @@ the native tab order instead of adding roving focus. The catalog is now 40 / 54
 metric to 29 / 37 (78.4%). Contracts and browser results are recorded in
 [`expanded-catalog-anatomy-slice-1.md`](expanded-catalog-anatomy-slice-1.md).
 
+The second interaction follow-up adds components 41–43: PreviewCard,
+RangeSlider and Stepper. PreviewCard keeps a real link and native auto popover
+while its composable owns delayed pointer/focus transit. RangeSlider preserves
+two native form controls and constant tab order on one visual track. Stepper is
+only flat step navigation, not a wizard controller. The catalog is now 43 / 54
+(79.6%), and PreviewCard plus RangeSlider move the independent Base UI-aligned
+metric to 31 / 37 (83.8%). Contracts and browser results are recorded in
+[`expanded-catalog-interaction-slice-2.md`](expanded-catalog-interaction-slice-2.md).
+
 The first cross-library strengthening slice originally kept the catalog at 22 while
 adding the product anatomy independently established by shadcn-vue and
 PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
@@ -199,7 +208,7 @@ and receive those values as slot props. The SFCs continue to own the wrappers,
 ARIA relationships, native summary behavior, typography and tone. All remain
 one-SFC package/ownership surfaces; no compound family, whole-header slot,
 behavior-bearing slot, icon-name DSL, or expanded pass-through API was introduced. The complete
-decision ledger records the current Base UI-aligned 78.4% metric in
+decision ledger records the current Base UI-aligned 83.8% metric in
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md); the
-expanded cross-library metric is 40 / 54 (74.1%) in
+expanded cross-library metric is 43 / 54 (79.6%) in
 [`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).

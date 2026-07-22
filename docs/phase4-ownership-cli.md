@@ -1,7 +1,7 @@
-# Phase 4 slice 2 — ownership CLI (`nagi-ui own` / `diff`)
+# Phase 4 slice 2 - ownership CLI (`nagi-ui own` / `diff`)
 
 Status: Implemented (2026-07-18). The `@nagi-source` metadata format is now
-fixed by this implementation (CHARTER §3 保守契約).
+fixed by this implementation under the CHARTER section 3 maintenance contract.
 
 ## Commands
 
@@ -17,12 +17,12 @@ duplicate that growing registry as a static list; package-export/ownership
 parity is enforced by `tests/cli.test.ts`.
 
 The binary ships with `@nagi-labs/nagi-ui`. `packages/core/cli/nagi-ui.mjs`
-defines the `setup` / `list` / `own` / `diff` subcommands through `citty`;
+defines the `setup`, `list`, `own`, and `diff` subcommands through `citty`;
 ownership and setup logic live in focused sibling modules. Because the package
 distributes raw SFC source, `own` copies **the exact files the package itself
-consumes** — there is no separate build artifact to drift from (single-source
-principle). Framework setup is documented separately in
-`docs/setup-integrations.md`.
+consumes**. There is no separate build artifact that can drift from the source,
+which preserves the single-source principle. Framework setup is documented
+separately in `docs/setup-integrations.md`.
 
 ## Fixed metadata format
 
@@ -33,61 +33,64 @@ The first line of every owned file is a machine-readable marker:
 // @nagi-source dropdown-menu/dropdown-schema.ts@0.4.0       (.ts)
 ```
 
-Grammar: `@nagi-source <component>/<file>@<version>` — the component name from
+Grammar: `@nagi-source <component>/<file>@<version>` - the component name from
 the CLI registry, the file within that component, and the installed package
-version at copy time. Per-file stamping (not per-directory) keeps the marker
-adjacent to the content it describes and survives file moves.
+version at copy time. Per-file stamping, rather than one marker per directory,
+keeps the marker adjacent to the content it describes and survives file moves.
 
 ## `diff` statuses
 
 | Status | Meaning |
 |---|---|
 | `clean` | owned body is identical to the installed upstream source |
-| `modified` | bodies differ and the stamp matches the installed version — the difference is local |
-| `drifted` | bodies differ and the installed version moved past the stamp — local and upstream changes may both be present |
-| `unknown-source` | the marker names a component/file the installed version does not ship |
+| `modified` | bodies differ and the stamp matches the installed version; the difference is local |
+| `drifted` | bodies differ and the installed version moved past the stamp; local and upstream changes may both be present |
+| `unknown-source` | the marker names a component or file the installed version does not ship |
 
-`diff` exits non-zero only for `drifted` and `unknown-source`, so it can run
-in CI as an "owned sources reconciled after upgrade?" gate — `modified` is the
-normal steady state of a customized owned file and does not fail the gate
-(learned in validation experiment C). For content comparison it prints a
-ready-made `git diff --no-index` command against the installed source.
+`diff` exits nonzero only for `drifted` and `unknown-source`, so it can run in CI
+as an "owned sources reconciled after upgrade?" gate. `modified` is the normal
+steady state of a customized owned file and does not fail the gate, as learned
+in validation experiment C. For content comparison, the command prints a ready-
+made `git diff --no-index` invocation against the installed source.
 
-## Own したら即コミットする(3-way merge の base 確保)
+## Commit immediately after `own` to preserve the three-way merge base
 
-`drifted` の解消は 3-way merge(base = own 時点の upstream、ours = owned、
-theirs = 現在の upstream)が最も安全だが、**base の内容は marker の version
-番号からは復元できない**。消費プロジェクトで base を確保する唯一の一般的手段は
-「`own` 直後に owned ファイルをそのままコミットする」ことである(以後 base は
-git 履歴から取れる)。validation experiment C はこの手順で `git merge-file` に
-よる正確な取り込みに成功した。base を CLI 側で保存する仕組みは、必要が観測
-されてから検討する。
+The safest way to resolve `drifted` is a three-way merge: base is the upstream
+source at ownership time, ours is the owned source, and theirs is the current
+upstream source. However, **the marker's version number cannot reconstruct the
+base content**. The only general way for a consuming project to preserve the
+base is to commit the untouched owned files immediately after `own`; future
+merges can then retrieve the base from Git history. Validation experiment C
+followed this procedure and merged accurately with `git merge-file`. A CLI-side
+mechanism for storing the base should be considered only after demand is
+observed.
 
-`own` の完了表示も、importの切り替えだけでなく、無変更sourceの即時commit、package
-同梱の[`recipes/testing`](../packages/core/recipes/testing/README.md)適用、CIでの
-`nagi-ui diff` gateまでを次の手順として表示する。ownershipはcopy command単体ではなく、
-この保守loopまで含む機能である。
+After `own`, the completion message therefore instructs the consumer not only
+to switch imports, but also to commit the unchanged source immediately, apply
+the package-shipped [`recipes/testing`](../packages/core/recipes/testing/README.md),
+and run `nagi-ui diff` as a CI gate. Ownership is not merely a copy command; it
+includes this complete maintenance loop.
 
 ## Deliberate limits of this slice
 
 - `own` does not rewrite application imports; it prints the instruction. The
-  owned copy keeps importing `@nagi-labs/nagi-ui` (composables) and its own
+  owned copy keeps importing `@nagi-labs/nagi-ui` for composables and its own
   relative files, so it compiles as copied.
 - Owned files keep their fallback-free `var(--nagi-*)` references, so the
-  default theme and consumer overrides continue to apply after ownership
-  (design principle 5).
-- No three-way merge: `drifted` tells you both sides moved; resolving is a
-  manual (or agent-driven) edit informed by the printed diff command.
-  A breaking release must ship its version-specific migration note; v0 has no
-  prior breaking release to migrate from. A generic migration engine and
-  richer merge tooling remain demand-driven follow-up work.
+  default theme and consumer overrides continue to apply after ownership under
+  design principle 5.
+- There is no three-way merge command. `drifted` tells consumers that both sides
+  moved; resolution is a manual or agent-driven edit informed by the printed
+  diff command. A breaking release must ship its version-specific migration
+  note; v0 has no prior breaking release to migrate from. A generic migration
+  engine and richer merge tooling remain demand-driven follow-up work.
 
 ## Verification
 
-- `tests/cli.test.ts`: marker round-trip, own copies byte-identical bodies
-  with stamps, non-empty target refusal, unknown component error, and the
-  full clean → modified → drifted → unknown-source status matrix on temp dirs;
-  citty subcommand routing also covers multi-component ownership and enum
-  validation.
-- Manual end-to-end in-repo: `own dropdown-menu` into a temp dir followed by
-  `diff` reports 4 × `clean`, exit 0.
+- `tests/cli.test.ts` covers marker round trips, byte-identical owned bodies with
+  stamps, refusal to overwrite a nonempty target, unknown-component errors, and
+  the full clean -> modified -> drifted -> unknown-source status matrix in
+  temporary directories. Citty subcommand routing also covers multi-component
+  ownership and enum validation.
+- A manual in-repository end-to-end run owns `dropdown-menu` into a temporary
+  directory and then runs `diff`, which reports four `clean` files and exits 0.

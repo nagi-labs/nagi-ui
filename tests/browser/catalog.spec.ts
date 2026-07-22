@@ -205,6 +205,59 @@ test("ToggleGroup keeps native buttons while updating single and multiple models
   await expect(page.getByTestId("format-state")).toHaveText("formats: bold, italic");
 });
 
+test("PreviewCard preserves link navigation and interactive pointer/focus transit", async ({
+  page,
+}) => {
+  const root = page.locator(".n-preview-card");
+  const trigger = root.getByRole("link", { name: "Nagi UI package" });
+  const preview = root.locator(":scope > .unit");
+  const notes = preview.getByRole("link", { name: "Read compatibility notes" });
+
+  await expect(trigger).toHaveAttribute("href", "#preview-card-target");
+  await expect(preview).toBeHidden();
+  await trigger.hover();
+  await expect(preview).toBeVisible({ timeout: 1_200 });
+  await preview.hover();
+  await page.waitForTimeout(350);
+  await expect(preview).toBeVisible();
+
+  await notes.focus();
+  await page.waitForTimeout(350);
+  await expect(notes).toBeFocused();
+  await expect(preview).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(preview).toBeHidden();
+
+  await page.mouse.move(0, 0);
+  await trigger.focus();
+  await expect(preview).toBeVisible({ timeout: 1_200 });
+  await page.keyboard.press("Tab");
+  await expect(notes).toBeFocused();
+  await page.waitForTimeout(350);
+  await expect(preview).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(preview).toBeHidden();
+
+  await trigger.click();
+  await expect(page).toHaveURL(/#preview-card-target$/);
+});
+
+test("Stepper keeps native button focus while changing only the current step", async ({ page }) => {
+  const stepper = page.getByRole("navigation", { name: "Package setup" });
+  const details = stepper.getByRole("button", { name: /Details/ });
+  const access = stepper.getByRole("button", { name: /Access/ });
+  const publish = stepper.getByRole("button", { name: /Publish/ });
+
+  await expect(details).toHaveAttribute("aria-current", "step");
+  await access.focus();
+  await access.press("Space");
+  await expect(access).toBeFocused();
+  await expect(access).toHaveAttribute("aria-current", "step");
+  await expect(details).not.toHaveAttribute("aria-current", "step");
+  await expect(page.getByTestId("stepper-state")).toHaveText("current step: access");
+  await expect(publish).toBeDisabled();
+});
+
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");

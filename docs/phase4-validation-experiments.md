@@ -1,155 +1,183 @@
-# Phase 4 slice 3 — Package-first モデルの早期検証実験
+# Phase 4 slice 3 — Early validation experiments for the package-first model
 
 Status: Coding-agent arm complete (2026-07-21). Human arm and repeated runs remain.
 
-Note: この実験時点の literal fallback 契約は2026-07-21に廃止した。実験が検証した
-「Blueprintを変更せずapp側tokenでbrand変更できる」という境界は不変で、現在の正規経路は
-`default-theme.css` + app override、または検査済みのcomplete replacement themeである。
+Note: the literal-fallback contract in effect during these experiments was
+retired on 2026-07-21. The boundary validated by the experiments — that an app
+can change its brand through app-side tokens without modifying a Blueprint —
+is unchanged. The canonical paths are now `default-theme.css` plus app
+overrides, or a checked complete replacement theme.
 
-`docs/package-ownership-model.md` の「早期検証」を実行可能なプロトコルに落とす。
-検証対象は package-first / own-on-demand モデルの 3 つの境界であり、各実験は
-危険信号(同 doc)への判定材料を返す。
+This document turns the "early validation" section in
+`docs/package-ownership-model.md` into an executable protocol. It evaluates
+three boundaries of the package-first / own-on-demand model. Each experiment
+produces evidence for the warning signs documented there.
 
-## 共通プロトコル(coding-agent アーム)
+## Shared protocol (coding-agent arm)
 
-- 被験者: この会話の文脈を持たない coding agent。リポジトリと同梱ドキュメント
-  (README / CHARTER / docs / AGENTS.md)だけを与える — 実利用者と同じ知識条件
-- タスクは利用者の言葉で与え、**期待する解法(token / own / recipe)は一切
-  示唆しない**。どの経路を選ぶか自体が計測対象
-- 実行は clean な main 上で行い、終了後に diff を採取して `git checkout . &&
-  git clean -fd` で復元する。agent はコミットしない
-- 計測: タスク完遂(機械検証 green を含む)、変更ファイル数と diff 行数、
-  package/blueprint ソースへの侵入の有無、選んだ経路、agent の自己申告による
-  参照ファイル。自己申告バイアスは既知の限界として記録する
-- browser suite はサンドボックス制約により人間が実行する
+- Subject: a coding agent with no context from this conversation. It receives
+  only the repository and bundled documentation (README, CHARTER, docs, and
+  AGENTS.md), matching the information available to a real consumer.
+- Tasks are phrased in the consumer's language and **never hint at the expected
+  path** (token, own, or recipe). Which path the agent chooses is itself a
+  measured result.
+- Run each task on a clean `main`, capture the diff afterward, then restore with
+  `git checkout . && git clean -fd`. The agent does not commit.
+- Measurements: task completion (including green machine verification), changed
+  file count and diff line count, whether package/Blueprint source was entered,
+  chosen path, and files consulted as self-reported by the agent. Self-reporting
+  bias is recorded as a known limitation.
+- The browser suite is run by a human because of sandbox constraints.
 
-## 実験 A — Button / theme 境界
+## Experiment A — Button/theme boundary
 
-**問い**: 通常のブランド変更は theme token だけで完了するか(危険信号 3
-「theme と ownership の間の崖」/ 6「AI に扱いやすいは差別化にならない」)。
+**Question**: Can an ordinary brand change be completed using only theme tokens?
+(warning sign 3, "the cliff between theme and ownership," and warning sign 6,
+"AI friendliness does not differentiate the product").
 
-- タスク: 「playground の UI ブランドを琥珀系(#b45309)へ変更し、全体をやや
-  compact にしたい。/dropdown.html と /listbox.html に反映され、既存の unit
-  テストが通ること」
-- 成功: `packages/core/blueprints` に変更ゼロ。アプリ側 CSS の token 上書き
-  (または complete theme の差し替え相当)だけで達成。diff が小さい
-- 失敗シグナル: blueprint SFC の直接編集、literal 色の総置換、token の存在に
-  気づかない
+- Task: "Change the playground UI brand to an amber palette (`#b45309`) and
+  make the overall density slightly more compact. The change must appear on
+  `/dropdown.html` and `/listbox.html`, and the existing unit tests must pass."
+- Success: zero changes under `packages/core/blueprints`; achieved only through
+  app-side CSS token overrides (or an equivalent complete theme replacement),
+  with a small diff.
+- Failure signals: direct Blueprint SFC edits, global literal-color replacement,
+  or failure to discover the tokens.
 
-## 実験 B — Dropdown / ownership 境界
+## Experiment B — Dropdown/ownership boundary
 
-**問い**: schema で表せない要求(avatar 付き account 行)に対して ownership が
-局所的に働くか(危険信号 2「own した瞬間に保証が消える」/ 4「owned Blueprint が
-読みにくい」)。
+**Question**: Does ownership remain local for a requirement that the schema
+cannot express (an account row with an avatar)? (warning sign 2, "guarantees
+disappear upon own," and warning sign 4, "owned Blueprints are hard to read").
 
-- タスク: 「/dropdown.html のメニュー先頭に、イニシャル avatar + 氏名 + メール
-  を表示する account 行を追加したい(選択で `lastAction = "account"`)。他の
-  項目の挙動は壊さないこと。unit テストが通ること」
-- 成功: `nagi-ui own dropdown-menu`(または同等のコピー)→ owned union +
-  template 分岐 + CSS の拡張レシピ通りの局所 diff。package ソース無変更。
-  配線(`itemProps`)が renderer 内に留まる
-- 失敗シグナル: package 内 blueprint の直接改変、schema を迂回した slot 化、
-  ARIA 配線の破壊(lint / テストが検出するか自体も計測対象)
+- Task: "Add an account row at the top of the menu on `/dropdown.html`, showing
+  an initial avatar, name, and email (selection sets `lastAction = \"account\"`).
+  Do not break the behavior of other items. Unit tests must pass."
+- Success: `nagi-ui own dropdown-menu` (or equivalent copy), followed by a local
+  diff that follows the extension recipe for the owned union, template branch,
+  and CSS. Package source remains unchanged, and wiring (`itemProps`) remains
+  in the renderer.
+- Failure signals: direct edits to the package Blueprint, replacing the schema
+  with a slot, or breaking ARIA wiring (whether lint/tests detect this is also
+  measured).
 
-## 実験 C — Combobox / upstream 追従境界
+## Experiment C — Combobox/upstream-following boundary
 
-**問い**: behavior を変更した owned source が upstream 修正へ追従できるか
-(危険信号 2 の核心)。
+**Question**: Can owned source with behavior changes follow an upstream fix?
+(the core of warning sign 2).
 
-- 準備(実験者側): combobox を own し、ローカル変更(例: 選択確定時に入力へ
-  フォーカスを残したまま全選択する)を加えた状態を作る。その後 upstream の
-  `Combobox.vue` に小さな修正を入れ、package version を bump して `nagi-ui
-  diff` が `drifted` を報告する状態にする
-- タスク: 「パッケージ更新後に `nagi-ui diff` が drifted と言っている。upstream
-  の修正を取り込みつつ、ローカルの変更を維持してほしい」
-- 成功: 取り込み後に diff が `modified`(ローカル差分のみ)へ戻り、双方の
-  変更が生きている。unit テスト green
-- 失敗シグナル: ローカル変更の喪失、upstream 修正の取りこぼし、stamp の
-  更新忘れ、マージ不能で own を放棄
+- Setup (by the experimenter): own Combobox and add a local change (for example,
+  select the entire input after committing a selection while retaining input
+  focus). Then make a small upstream change to `Combobox.vue`, bump the package
+  version, and create a state in which `nagi-ui diff` reports `drifted`.
+- Task: "After updating the package, `nagi-ui diff` reports drifted. Incorporate
+  the upstream fix while preserving the local change."
+- Success: after integration, diff returns to `modified` (local changes only),
+  both changes remain, and unit tests are green.
+- Failure signals: loss of the local change, omission of the upstream fix,
+  failure to update the stamp, or abandoning ownership because the merge cannot
+  be completed.
 
-## 判定の使い方
+## Using the results
 
-- A が失敗 → token 語彙の不足(具体的にどの役割か)を昇格候補として記録
-- B が失敗 → 拡張レシピ文書か lint の不足。slot 化へ逃げたなら §3.5 の防波堤が
-  文書として弱い証拠
-- C が失敗 → ownership 保守契約(diff / migration)の道具不足。Phase 4 の
-  後続スライスで tooling を強化してから製品化する
+- A fails: record the missing token vocabulary, including the specific role,
+  as an elevation candidate.
+- B fails: the extension recipe or lint is insufficient. Escaping into slots is
+  evidence that the guardrails in §3.5 are too weak as documentation.
+- C fails: the ownership maintenance contract lacks diff/migration tooling.
+  Strengthen tooling in a later Phase 4 slice before productization.
 
-## 結果記録
+## Results
 
-### 実験 A — 2026-07-21 実行(coding-agent アーム): **PASS**
+### Experiment A — coding-agent arm, 2026-07-21: **PASS**
 
-- 経路: agent は自力で semantic token に到達し、`playground/src/brand.css`
-  (新規、`:root` の token 上書き 13 個)+ 両エントリへの import で達成した
-- **`packages/core` への変更ゼロ**(git diff で機械確認)。blueprint の直接編集も
-  literal 総置換も発生せず
-- diff 規模: 6 ファイル、+65 / −62 行(大半は依頼範囲内のページクローム暖色化と
-  fixture のハードコード色 → 当時の token 参照化)
-- 判断品質の特記: parity test の存在から「default theme・blueprint を触るとテストが
-  壊れる。ブランド変更はアプリ側 token 上書きが設計意図」と正しく推論。
-  no-Teleport による popover への custom property 継承にも言及。theme override 後勝ち
-  の import 順も正しく処理
-- 機械検証: `vp run test` 96/96。agent は 2 ページの本番ビルドまで行い、出力
-  CSS に `#b45309` が含まれることを確認
-- 参照ファイル(自己申告): 約 12
-- 危険信号への含意: 「theme と ownership の間の崖」はこの標準的ブランド変更
-  タスクでは**観測されず**。「AI に扱いやすいは差別化にならない」に対しては、
-  同梱ドキュメント + parity test だけで無文脈 agent が正しい経路を選んだ、
-  という 1 標本の反証
+- Path: the agent independently found the semantic tokens and completed the
+  change with a new `playground/src/brand.css` (13 `:root` token overrides) plus
+  imports from both entries.
+- **Zero changes under `packages/core`**, mechanically confirmed by `git diff`.
+  There were no direct Blueprint edits or global literal replacements.
+- Diff size: 6 files, +65 / −62 lines. Most of this was the requested warm-toned
+  page chrome and fixture hardcoded colors changed to token references under
+  the contract in effect at the time.
+- Notable judgment: from the parity test, the agent correctly inferred that
+  changing the default theme or Blueprint would break tests and that app-side
+  token overrides were intended for brand changes. It also noted custom-property
+  inheritance into popovers under the no-Teleport model and handled import order
+  correctly so the theme override wins.
+- Machine verification: `vp run test`, 96/96. The agent also production-built
+  both pages and confirmed that their output CSS included `#b45309`.
+- Files consulted (self-reported): approximately 12.
+- Warning-sign implication: the "cliff between theme and ownership" was **not
+  observed** for this ordinary brand-change task. Against "AI friendliness does
+  not differentiate the product," this is one sample in which a context-free
+  agent chose the correct path using only bundled documentation and the parity
+  test.
 
-### 実験 B — 2026-07-21 実行(coding-agent アーム): **PASS**
+### Experiment B — coding-agent arm, 2026-07-21: **PASS**
 
-- 経路: agent は自力で `nagi-ui own dropdown-menu` に到達し、owned schema を
-  拡張レシピ通りに拡張した(union member `DropdownMenuAccountNode` + `accountEntry()`
-  + `menuEntries()` の case + template 分岐 + `.-account` CSS)
-- **代替案の棄却理由まで正確**: package 側 schema の直接拡張は「speculative node
-  kinds are not added to the package API」に反する、`#item` slot は CHARTER §3.5
-  名指しの違反、として自ら却下。防波堤の文書が意図通り機能した
-- **局所性**: `packages/core` への変更ゼロ。app 側 diff は DropdownLab +18/−2 と
-  owned 4 ファイル(うち編集は schema + Item の 2 つ、残り 2 つは clean)。
-  owned 版への import 切替は File actions のみで、RTL / Themed は package 版のまま
-- **配線の保全**: ARIA / focus 配線は `menu.itemProps(accountEntry(node), …)` で
-  renderer 内に留まった。`nagi-ui/verified-bindings` lint と `nagi-ui diff`
-  (2 ファイル modified、他 clean)も agent 自身が実行
-- **契約による教育の再現**: 初回 `nagi-css check` で `.avatar` が語彙外として
-  fail → agent は CONTRACT に従い `text -avatar` variant へ自己修正。named error
-  → 収束のループが第三者 agent でも機能することの実証
-- 機械検証: `vp run test` 96/96、SSR スモークで account 行の描画・role・separator
-  を確認。browser suite は sandbox 制約で未実行(人間アーム側で確認する)
-- 参照ファイル(自己申告): 約 15
-- 危険信号への含意: 「own した瞬間に保証が消える」に対し、own 直後の lint /
-  diff / test が全て機能。「owned Blueprint が読みにくい」に対し、変更は
-  schema + renderer の 2 ファイルに収まった
+- Path: the agent independently reached `nagi-ui own dropdown-menu` and extended
+  the owned schema according to the recipe (`DropdownMenuAccountNode` union
+  member, `accountEntry()`, a `menuEntries()` case, a template branch, and
+  `.-account` CSS).
+- **It also rejected the alternatives for the correct reasons**: directly
+  extending the package schema would violate "speculative node kinds are not
+  added to the package API," while a `#item` slot is explicitly prohibited by
+  CHARTER §3.5. The written guardrails worked as intended.
+- **Locality**: zero changes under `packages/core`. The app-side diff was
+  DropdownLab +18/−2 plus four owned files (only schema and Item were edited;
+  two remained clean). Only File actions switched to the owned import; RTL and
+  Themed continued to use the package version.
+- **Wiring preservation**: ARIA/focus wiring remained in the renderer through
+  `menu.itemProps(accountEntry(node), …)`. The agent also ran
+  `nagi-ui/verified-bindings` lint and `nagi-ui diff` (two files modified, the
+  rest clean).
+- **Reproducible contract teaching**: the first `nagi-css check` rejected
+  `.avatar` as out-of-vocabulary. The agent followed CONTRACT and corrected it
+  to the `text -avatar` variant. This demonstrates that the named-error-to-
+  convergence loop works for a third-party agent.
+- Machine verification: `vp run test`, 96/96; an SSR smoke test confirmed the
+  account row's rendering, role, and separator. The browser suite was not run
+  because of sandbox constraints and remains part of the human arm.
+- Files consulted (self-reported): approximately 15.
+- Warning-sign implication: lint, diff, and tests all remained effective
+  immediately after own, contrary to "guarantees disappear upon own." Against
+  "owned Blueprints are hard to read," the change was confined to two files:
+  schema and renderer.
 
-### 実験 C — 2026-07-21 実行(coding-agent アーム): **PASS**(実益 2 件つき)
+### Experiment C — coding-agent arm, 2026-07-21: **PASS** (with two concrete benefits)
 
-- 仕込み: combobox を own(@0.0.0)→ ローカル変更 2 点(`spellcheck="false"`、
-  input の `font-weight: 650`)→ upstream に `autocapitalize="none"` 修正 +
-  version 0.0.1 → `diff` が `drifted`。**ローカル変更と upstream 修正は同一
-  `<input>` 要素上で衝突**するよう設計
-- 経路: agent は stamp(@0.0.0)と installed(0.0.1)から状況を正しく解釈し、
-  base を確保して `git merge-file` による **3-way merge** を実施。衝突 1 箇所を
-  両採用で解消し、stamp を `@0.0.1` に更新。最終状態は `modified`(ローカル
-  差分のみ)で upstream 修正・ローカル変更とも保全。`vp run test` 96/96
-- **実益 1(agent がバグを発見)**: CLI テストがバージョン `@0.0.0` を
-  ハードコードしており、version bump 下で drifted を作れず fail。agent が
-  version 非依存の形へ修正 → 本体に採用済み
-- **実益 2(設計課題の露見)**: `diff` が `modified` でも exit 1 だったが、
-  `modified` はカスタマイズ済み owned file の**定常状態**であり CI gate を
-  恒久的に赤にしてしまう。gate 対象を `drifted` / `unknown-source` のみに修正
-  し、exit 規約のテストを追加した
-- **限界の明文化**: 3-way merge の base は marker からは復元できない。今回
-  agent は「version bump が未コミットだったため HEAD = 0.0.0」という状況に
-  救われた。消費プロジェクトでの一般解は「**own したら即コミット**」で、
-  `docs/phase4-ownership-cli.md` に手順として明記した(base を CLI が保存する
-  仕組みは需要観測後)
+- Setup: own Combobox at `@0.0.0`, add two local changes
+  (`spellcheck="false"` and input `font-weight: 650`), then add upstream
+  `autocapitalize="none"` and bump to version 0.0.1 so `diff` reports `drifted`.
+  **The local and upstream changes were deliberately placed on the same
+  `<input>` element so they would conflict.**
+- Path: the agent correctly interpreted stamp `@0.0.0` against installed
+  0.0.1, obtained the base, and performed a **three-way merge** with
+  `git merge-file`. It resolved one conflict by retaining both changes and
+  updated the stamp to `@0.0.1`. The final state was `modified` (local changes
+  only), with both the upstream fix and local change preserved. `vp run test`
+  passed 96/96.
+- **Benefit 1 (agent found a bug)**: the CLI test hardcoded version `@0.0.0` and
+  could not create a drifted state after a version bump. The agent made it
+  version-independent, and that fix has been adopted.
+- **Benefit 2 (design issue surfaced)**: `diff` exited 1 even for `modified`,
+  but `modified` is the **steady state** of a customized owned file and would
+  leave the CI gate permanently red. The gate was corrected to fail only for
+  `drifted` and `unknown-source`, with an added test for the exit contract.
+- **Documented limitation**: a three-way merge base cannot be reconstructed
+  from the marker. In this experiment, the agent was saved by the uncommitted
+  version bump, which meant HEAD still represented 0.0.0. The general consumer
+  workflow is to **commit immediately after own**. This is now documented in
+  `docs/phase4-ownership-cli.md`; storing the base in the CLI is deferred until
+  demand is observed.
 
-## 総括(coding-agent アーム、各 1 標本)
+## Summary (coding-agent arm, one sample per experiment)
 
-3 実験とも PASS。無文脈 agent が theme 境界 / ownership 境界 / upstream 追従
-境界のそれぞれで、誘導なしに設計意図どおりの経路(token 上書き / own +
-拡張レシピ / 3-way merge + stamp 更新)を選び、防波堤文書(§3.5、speculative
-API 禁止)と機械検証(parity / nagi-css / verified-bindings / diff)がすべて
-意図した向きに働いた。ownership model の危険信号 2・3・4・6 について、現時点で
-モデルを覆す観測はない。標本数は各 1 であり、人間アームと反復実行は今後の
-課題として残る。
+All three experiments passed. At the theme, ownership, and upstream-following
+boundaries, a context-free agent independently chose the intended path (token
+override, own plus extension recipe, and three-way merge plus stamp update).
+The guardrail documentation (§3.5 and the prohibition on speculative APIs) and
+machine verification (parity, nagi-css, verified-bindings, and diff) all pushed
+in the intended direction. There is currently no observation that overturns
+the ownership model for warning signs 2, 3, 4, or 6. Each experiment has only
+one sample; the human arm and repeated runs remain future work.

@@ -1,114 +1,128 @@
-# Nagi UI が向かないケース
+# When not to use Nagi UI
 
 Status: Phase 4 consumer guidance (2026-07-21).
 
-Nagi UI は、ブラウザ標準へ振る舞いを委譲することで、少ない独自語彙と
-hydration 前から働く HTML を得る。その代わり、ブラウザの状態機械をライブラリ側で
-置き換えない。この文書は、その交換条件がプロダクト要件と合わない場面を先に判定する
-ためのガイドである。
+Nagi UI gains a small custom vocabulary and HTML that works before hydration
+by delegating behavior to browser standards. In exchange, it does not replace
+the browser's state machines with library-owned implementations. This guide
+helps identify product requirements for which that tradeoff is a poor fit.
 
-Nagi UI を採用するかどうかはアプリ全体で一度だけ決める必要はない。Nagi は必須の
-provider、portal root、グローバル状態を持たないため、**要件が衝突する component だけを
-別ライブラリに任せてよい**。Reka UI / Base UI 型の全 JS 実装や、Vaul / Motion 型の専用
-runtime との混在は失敗ではなく、component ごとに適切な状態機械を選んだ結果である。
+Adopting Nagi UI does not have to be a single app-wide decision. Nagi has no
+required provider, portal root, or global state, so **only the components whose
+requirements conflict with Nagi need to use another library**. Mixing Nagi with
+a fully JavaScript-driven Reka UI/Base UI-style implementation or with a
+specialized Vaul/Motion-style runtime is not a failure; it is the result of
+choosing the appropriate state machine for each component.
 
-## 先に見る判断表
+## Decision table
 
-| 要求 | 判定 | 推奨する境界 |
+| Requirement | Decision | Recommended boundary |
 |---|---|---|
-| theme token、小さな props / schema で足りる | Nagi package を使う | 通常の package update を受け取る |
-| DOM 構造、項目レイアウト、framework node を変えたい | ownership 候補 | `nagi-ui own` で SFC を所有し、標準の振る舞いは core に残す |
-| dismiss、top layer、focus、gesture を UA と異なる状態機械にしたい | Nagi に向かない | その component だけ別ライブラリへ任せる |
-| browser 間で見た目と挙動を完全に同一化したい | Nagi に向かない | platform 委譲ではなく全 JS 実装を選ぶ |
-| CSS の entry / discrete transition で十分 | Nagi が適する | native state selector と CSS を使う |
-| spring、interruptible exit、swipe / snap が製品要件 | Nagi に向かない | Motion / gesture 専用 runtime を選ぶ |
+| Theme tokens and small props/schema are sufficient | Use the Nagi package | Continue receiving ordinary package updates. |
+| Need to change DOM structure, item layout, or a framework node | Ownership candidate | Own the SFC with `nagi-ui own`, while keeping standard behavior in core. |
+| Need a dismiss, top-layer, focus, or gesture state machine different from the UA | Poor fit for Nagi | Delegate only that component to another library. |
+| Need identical appearance and behavior across browsers | Poor fit for Nagi | Choose a fully JavaScript-driven implementation instead of platform delegation. |
+| CSS entry/discrete transitions are sufficient | Good fit for Nagi | Use native state selectors and CSS. |
+| Springs, interruptible exits, swipe, or snap are product requirements | Poor fit for Nagi | Choose a dedicated Motion/gesture runtime. |
 
-重要なのは、**source ownership は DOM と integration の変更手段であって、ブラウザの
-状態機械を交換する手段ではない**ことだ。次の hard constraint は、SFC を own しても
-解消しない。
+The key point is that **source ownership is a way to change DOM and integration,
+not a way to replace the browser's state machine**. The hard constraints below
+do not disappear after owning the SFC.
 
-## 別ライブラリを選ぶべき hard constraint
+## Hard constraints that require another library
 
-| 必須要件 | Nagi で満たせない理由 | 選択の目安 |
+| Required capability | Why Nagi cannot provide it | Selection guidance |
 |---|---|---|
-| 「外側 click では閉じるが Escape では閉じない」など、event ごとの dismiss policy | light dismiss は UA が所有し、Nagi が選ぶ粒度は `popover="auto/manual/hint"`。`manual` へ落として dismiss 状態機械を再実装することは設計上禁止 | event cancellation API を持つ Reka UI / Base UI 型の overlay を使う |
-| overlay の重なりを任意の `z-index` やアプリ独自 priority で制御 | top layer の順序は open 順であり `z-index` では変更できない。Toast の再昇格は既知の Dialog 共存問題への限定対処で、汎用 stack manager ではない | portal と stack manager を所有するライブラリへ、その overlay 群をまとめて任せる |
-| backdrop 内に button、menu、drag handle などの interactive DOM を置く | `::backdrop` は pseudo-element であり、子 DOM を持てない | 実 DOM の overlay layer を描画する実装を使う。単なる click-to-dismiss なら native backdrop のままでよい |
-| legacy browser 対応、UA bug のライブラリ patch、全 browser で完全に同じ挙動 | Nagi は Popover / Dialog / Invoker Commands 等の UA 実装を正とする。evergreen browser が前提で、挙動差を独自 runtime で上書きしない | support matrix を固定し、振る舞いを JS で所有するライブラリを選ぶ |
-| trigger と popup の id reference を異なる Shadow Root 間に張る | `popovertarget` / `aria-controls` の idref 配線は Shadow Root を越えない。v1 は Reference Target 等の標準化待ち | 同じ root に配置するか、shadow boundary を前提に配線を所有する実装を使う |
-| exit 完了まで mount を保持する Motion 級 orchestration、spring、途中で反転できる animation | native popover / dialog の表示切替と `v-if` / AnimatePresence 型の lifecycle は同じ状態所有モデルではない。Nagi の正規経路は CSS transition | exit lifecycle を必須契約にする component は Motion 対応 runtime に任せる |
-| swipe-to-dismiss、drag 中断、velocity、snap point を持つ Drawer / bottom sheet | pointer gesture の連続状態に native owner がなく、実装には gesture runtime と独自 dismiss coordination が必要 | Vaul / vaul-vue 型の sheet をその component だけ使う。静的な side panel は Nagi Dialog の styling でよい |
-| rich option、複雑な trigger rendering、全 engine で同一外観を保証する Select | Nagi の stable path は native `<select>`。`appearance: base-select` は progressive enhancement であり、`<selectedcontent>` も stable Blueprint の前提にしない | native Select の制約が製品要件に反するなら Reka UI / Base UI 型の Select を使う。free-form 入力なら Select ではなく Combobox / Autocomplete の意味論も再確認する |
-| dependency 内の raw Vue SFC を compile できない build / CDN-only 環境 | Nagi package component と own 元は同じ raw `.vue` を配布する。Vue SFC を扱う bundler / plugin が配布契約の一部 | core composable だけを使って caller DOM を書くか、事前 compile 済み component を配る別製品を選ぶ |
+| Per-event dismiss policy, such as "close on outside click but not Escape" | The UA owns light dismiss; Nagi's granularity is `popover="auto/manual/hint"`. Dropping to `manual` and rebuilding the dismiss state machine is forbidden by design. | Use a Reka UI/Base UI-style overlay with event-cancellation APIs. |
+| Arbitrary overlay order controlled by `z-index` or app-specific priority | Top-layer order follows open order and cannot be changed with `z-index`. Toast re-promotion is a narrow fix for the known Dialog coexistence case, not a general stack manager. | Delegate the whole overlay group to a library that owns a portal and stack manager. |
+| Interactive DOM such as a button, menu, or drag handle inside a backdrop | `::backdrop` is a pseudo-element and cannot contain child DOM. | Use an implementation that renders a real DOM overlay layer. Keep the native backdrop when only click-to-dismiss is needed. |
+| Legacy-browser support, library patches for UA bugs, or exactly identical behavior in every browser | Nagi treats UA implementations of Popover, Dialog, Invoker Commands, and related standards as canonical. It targets evergreen browsers and does not override behavioral differences with a custom runtime. | Fix a support matrix and choose a library that owns behavior in JavaScript. |
+| Trigger-to-popup id references across separate Shadow Roots | `popovertarget` / `aria-controls` idref wiring does not cross a Shadow Root. Version 1 waits for standards such as Reference Target. | Keep both nodes in the same root, or use an implementation that owns wiring across the shadow boundary. |
+| Motion-level orchestration that keeps content mounted through exit, springs, or animations that can reverse midway | Native popover/dialog visibility and a `v-if` / AnimatePresence-style lifecycle do not share the same state-ownership model. Nagi's canonical path is a CSS transition. | Delegate components whose contract requires an exit lifecycle to a Motion-capable runtime. |
+| Drawer/bottom sheet with swipe-to-dismiss, interrupted drag, velocity, or snap points | Continuous pointer-gesture state has no native owner and requires a gesture runtime plus custom dismiss coordination. | Use a Vaul/vaul-vue-style sheet for that component. A static side panel can use Nagi Dialog styling. |
+| Select with rich options, complex trigger rendering, and identical appearance across engines | Nagi's stable path is native `<select>`. `appearance: base-select` is progressive enhancement, and `<selectedcontent>` is not a stable Blueprint prerequisite. | If native Select conflicts with product requirements, use a Reka UI/Base UI-style Select. For free-form input, also reconsider whether Combobox/Autocomplete semantics are more appropriate than Select. |
+| Build or CDN-only environment that cannot compile raw Vue SFCs from dependencies | Nagi package components and ownership sources distribute the same raw `.vue` files. A bundler/plugin that handles Vue SFCs is part of the distribution contract. | Use only core composables with caller-authored DOM, or choose a product that distributes precompiled components. |
 
-これらを Nagi core の option や mode として増やすと、ブラウザ委譲と独自状態機械が同じ
-component に共存する。分岐の数だけ keyboard、focus、dismiss、SSR の組み合わせが増え、
-Nagi を小さな platform layer に保つ利点が消える。そのため「技術的にコードを書けるか」
-ではなく、「Nagi の状態所有モデルのまま満たせるか」で判断する。
+Adding these capabilities as options or modes in Nagi core would put platform
+delegation and a custom state machine in the same component. Every branch
+multiplies the combinations of keyboard, focus, dismiss, and SSR behavior,
+removing the benefit of keeping Nagi a small platform layer. The decision is
+therefore not "can this be coded?" but "can this requirement be met under
+Nagi's state-ownership model?"
 
-## 可能だが高コストな要求
+## Possible but high-cost requirements
 
-次は絶対に不可能とは限らないが、標準 package API に取り込むと Nagi らしさを失いやすい。
-一回きりなら ownership、複数プロダクトで反復する behavior なら専用 component / 別ライブラリ
-を検討する。
+The following requirements are not necessarily impossible, but adding them to
+the standard package API is likely to erode Nagi's identity. Use ownership for
+a one-off requirement. Consider a dedicated component or another library for
+behavior repeated across products.
 
-| 要求 | 先に試すこと | 撤退条件 |
+| Requirement | Try first | Exit condition |
 |---|---|---|
-| browser 固有差を細部まで吸収する | feature detection と progressive enhancement。非対応時は native rendering へ戻す | fallback ではなく独自 widget の再実装が必要になったら別ライブラリ |
-| complex overlay 同士を独自 priority で協調する | native top layer の open 順で要件を満たせるか確認 | global overlay manager / portal root が必要なら Nagi の担当外 |
-| 高度な animation を一部だけ足す | `:popover-open`、`[open]`、`@starting-style`、discrete transition で表す | JS が visibility と mount lifecycle の真実になるなら Motion 側へ委譲 |
-| native Select の外観を深く変える | native `<select>` と progressive enhancement で許容できる範囲を確認 | rich DOM と cross-engine pixel identity が必須なら custom Select |
-| framework 固有 renderer を Blueprint 内へ入れる | `nagi-ui setup` の標準 `<a href>` / `<img>` adapter で足りるか確認 | `<RouterLink>` custom slot、`<NuxtPicture>` art direction 等、実 component が必要なら ownership または caller markup |
+| Normalize fine-grained browser-specific differences | Feature detection and progressive enhancement; fall back to native rendering when unsupported. | Use another library when fallback requires rebuilding a custom widget. |
+| Coordinate complex overlays with custom priorities | Check whether native top-layer open order satisfies the requirement. | It is outside Nagi's scope if a global overlay manager or portal root is required. |
+| Add advanced animation to only part of a component | Express it through `:popover-open`, `[open]`, `@starting-style`, and discrete transitions. | Delegate to Motion when JavaScript becomes the source of truth for visibility and mount lifecycle. |
+| Deeply restyle native Select | Determine what is acceptable with native `<select>` plus progressive enhancement. | Use a custom Select when rich DOM and cross-engine pixel identity are mandatory. |
+| Put a framework-specific renderer inside a Blueprint | First check whether the standard `<a href>` / `<img>` adapter from `nagi-ui setup` is sufficient. | Use ownership or caller markup when an actual component is required, such as a `<RouterLink>` custom slot or `<NuxtPicture>` art direction. |
 
-高コストな要求を package props、slot、pass-through API で一般化しない。実利用から複数回
-観測され、なお platform vocabulary のまま表せる場合だけ公開 API への昇格を検討する。
+Do not generalize high-cost requirements into package props, slots, or a
+pass-through API. Consider elevating one to public API only after it has been
+observed repeatedly in real use and can still be expressed in platform
+vocabulary.
 
-## Ownership が適するケース
+## When ownership is appropriate
 
-ownership が適するのは、状態機械ではなく**利用者が所有すべき構造と integration**を変える
-ときである。
+Ownership is appropriate when changing **structure and integration that the
+consumer should own**, rather than the state machine.
 
-- Dropdown item に avatar、description、permission 表示を加える
-- items schema にアプリ固有 node を局所追加する
-- `<RouterLink>` / `<NuxtLink>` の custom slot や active-class rendering を使う
-- `<NuxtImg>` / `<NuxtPicture>` の placeholder や art direction を使う
-- Card / Dialog の anatomy、markup、declared slot をプロダクト固有に変える
-- component 固有の CSS を semantic theme token の範囲より深く変える
+- Add an avatar, description, or permission indicator to a Dropdown item.
+- Locally add an app-specific node to an items schema.
+- Use a `<RouterLink>` / `<NuxtLink>` custom slot or active-class rendering.
+- Use `<NuxtImg>` / `<NuxtPicture>` placeholders or art direction.
+- Adapt Card/Dialog anatomy, markup, or declared slots to a specific product.
+- Change component-specific CSS beyond the semantic theme-token layer.
 
-own 後も `usePopover` / `useMenu` 等へ標準 props を渡し、keyboard・focus・dismiss の責務は
-core / UA に残す。`nagi-ui diff`、Nagi UI lint、Nagi CSS lint、real-browser test を継続し、
-upstream の a11y / browser 修正を取り込む。3-way merge の base を残すため、`own` 直後の
-無変更 source は必ずコミットする。詳細は [ownership CLI](./phase4-ownership-cli.md) と
-[package-first / own-on-demand model](./package-ownership-model.md)を参照。
+After ownership, continue passing standard props to `usePopover`, `useMenu`,
+and related composables, leaving keyboard, focus, and dismiss responsibilities
+in core/the UA. Keep running `nagi-ui diff`, Nagi UI lint, Nagi CSS lint, and
+real-browser tests so upstream accessibility and browser fixes can be merged.
+To preserve the base for a three-way merge, commit the unchanged source
+immediately after `own`. See the [ownership CLI](./phase4-ownership-cli.md) and
+the [package-first / own-on-demand model](./package-ownership-model.md).
 
-反対に、own 後の変更が Teleport、custom focus trap、独自 light dismiss、native state と
-重複する `data-state`、core 内の animation runtime を必要とするなら、ownership の範囲を
-越えている。その component は別ライブラリへ任せる。
+Conversely, if post-ownership changes require Teleport, a custom focus trap,
+custom light dismiss, a `data-state` that duplicates native state, or an
+animation runtime inside core, they exceed the ownership boundary. Delegate
+that component to another library.
 
-## 混在時のルール
+## Rules for mixing libraries
 
-1. **1つの surface に1つの状態 owner。** 同じ popup へ Nagi と別ライブラリの open / focus /
-   dismiss props を同時に結線しない。
-2. **component 境界で分ける。** 例: Dropdown は Nagi、gesture Drawer は Vaul 型実装、rich
-   Select は Reka UI 型実装、と分離する。
-3. **見た目は token で揃える。** 状態機械を統一するために全 component を同じライブラリへ
-   寄せる必要はない。別 component の theme を Nagi の semantic token へ対応付ける。
-4. **overlay stack は混在テストする。** native top layer と portal overlay を同時に開き、
-   visual order、focus return、Escape、screen reader name を real browser で確認する。
-5. **ownership と外部 component を二重に使わない。** 外部 runtime を採る surface では、Nagi
-   Blueprint を wrapper として残さず、そのライブラリに DOM と behavior を一貫して任せる。
+1. **One state owner per surface.** Do not wire Nagi and another library's open,
+   focus, or dismiss props to the same popup.
+2. **Split at component boundaries.** For example: Nagi Dropdown, a Vaul-style
+   gesture Drawer, and a Reka UI-style rich Select.
+3. **Unify appearance through tokens.** State machines need not be unified by
+   moving every component to one library. Map the other component's theme to
+   Nagi semantic tokens.
+4. **Test mixed overlay stacks.** Open native top-layer and portal overlays
+   together in a real browser and verify visual order, focus return, Escape,
+   and screen-reader names.
+5. **Do not combine ownership with an external component on the same surface.**
+   When adopting an external runtime, do not retain a Nagi Blueprint as a
+   wrapper. Let that library own both DOM and behavior consistently.
 
-## 最終チェック
+## Final checklist
 
-次のいずれかが必須なら、その component には Nagi UI を選ばない。
+Do not choose Nagi UI for a component if any of these is mandatory:
 
-- UA と異なる dismiss / focus / stack の状態機械
-- interactive backdrop または portal 前提の DOM layer
-- interrupted gesture、spring、exit lifecycle が機能要件
-- legacy browser patch または全 engine での挙動・外観の完全同一化
-- Shadow Root を越える idref 配線
-- native Select では表現できない rich option / trigger を stable path として保証
+- A dismiss/focus/stack state machine different from the UA.
+- Interactive backdrop or a portal-dependent DOM layer.
+- Interrupted gestures, springs, or an exit lifecycle as functional requirements.
+- Legacy-browser patches or completely identical behavior and appearance across engines.
+- Idref wiring across Shadow Roots.
+- A stable path for rich Select options/triggers that native Select cannot express.
 
-一方、要求が DOM 構造、項目表示、framework integration、component 固有 CSS に留まるなら、
-Nagi を捨てる前に source ownership を選ぶ。境界は「カスタマイズが深いか」ではなく、
-**変更したいものが DOM か、状態機械か**で決まる。
+If requirements are limited to DOM structure, item presentation, framework
+integration, or component-specific CSS, choose source ownership before
+discarding Nagi. The boundary is not "how deep is the customization?" but
+**whether the thing being changed is the DOM or the state machine**.

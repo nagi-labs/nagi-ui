@@ -1,13 +1,15 @@
-# Package-first / own-on-demand 配布モデル
+# Package-first / own-on-demand distribution model
 
 Status: Architecture decision (2026-07-18).
 
-## 一言定義
+## One-sentence definition
 
-Nagi UI の完成形は「PrimeVue の導入体験 + shadcn の所有権」である。
+The final form of Nagi UI combines PrimeVue's installation experience with
+shadcn's source ownership.
 
-普段は themeable な npm component として使い、theme token と小さな API
-で足りなくなった component だけ source ownership へ移る。
+Use components from the themeable npm package by default, with theme tokens and
+a small API. Move only the components that outgrow those mechanisms into source
+ownership.
 
 ```ts
 import { DropdownMenu, Listbox } from "@nagi-labs/nagi-ui/components"
@@ -18,7 +20,8 @@ import "@nagi-labs/nagi-ui/default-theme.css"
 vp exec nagi-ui own dropdown-menu
 ```
 
-後者は概念上、次のような source 一式を利用者のリポジトリへコピーする。
+Conceptually, the latter copies a complete source set like this into the
+consumer repository:
 
 ```text
 src/components/nagi/dropdown-menu/
@@ -28,128 +31,157 @@ src/components/nagi/dropdown-menu/
   dropdown-schema.ts
 ```
 
-以後は local import に切り替え、利用者と coding agent が SFC を直接変更する。
+The consumer then switches to a local import, and both the consumer and coding
+agents edit the SFC directly.
 
-## なぜhybridなのか
+## Why a hybrid model
 
-copy-first は所有権が明快だが、変更しない大多数の利用者にも source 管理を要求し、
-導入と更新のコストを上げる。package-only は更新が容易だが、深いカスタマイズ要求を
-props、slots、render props、pass-through API として永久に公開し続ける必要がある。
+A copy-first model makes ownership explicit, but requires the majority of users
+who never customize a component to manage its source, increasing installation
+and update costs. A package-only model makes updates easy, but must continually
+expose deep customization requirements through props, slots, render props, and
+pass-through APIs.
 
-Nagiは両者の境界を次の順序に固定する。
+Nagi fixes the boundary between these approaches in this order:
 
-1. **Theme token** — 色、spacing、radius、typography、shadow、control size、state appearance
-2. **小さなprops / items schema** — 文字列、真偽、列挙、同型項目
-3. **宣言済みの少数slot** — 本当に自由なmarkupだけ
-4. **Source ownership** — DOM構造、特殊要素、behavior連携を変える要求
+1. **Theme tokens** - color, spacing, radius, typography, shadow, control size,
+   and state appearance
+2. **Small props / item schemas** - strings, booleans, enums, and homogeneous
+   items
+3. **A few declared slots** - only for genuinely free-form markup
+4. **Source ownership** - changes to DOM structure, specialized elements, or
+   behavior integration
 
-avatar、router-link、特殊レイアウト等を安定DSLへ足し続けず、「そこから先はsourceを
-所有する」と言えるため、package版のAPIを小さく保てる。
+The package API can remain small because it does not need to keep adding avatar,
+router-link, specialized layout, and similar concerns to a stable DSL. Beyond
+that boundary, consumers own the source.
 
-## 単一ソース原則
+## Single-source principle
 
-package版とownership版を別々に実装してはならない。
+The package and ownership versions must not be separate implementations.
 
 ```text
 packages/core/blueprints/menu/DropdownMenu.vue
-                 ├─ package component build
-                 └─ own command copy source
+                 |-- package component build
+                 `-- own command copy source
 ```
 
-behavior、a11y、browser workaround、markup、default stylingの修正は常に同じSFCへ入る。
-二重管理を許すと「package版は直ったがcopy元は壊れた」という最悪の分岐が生まれる。
+Behavior, accessibility, browser workarounds, markup, and default styling are
+always fixed in the same SFC. Allowing duplicate implementations creates the
+worst possible fork: the package version is fixed while the copy source remains
+broken.
 
-## Nagiが提供する保証の境界
+## Boundary of Nagi's guarantees
 
-package利用中のstylingはtheme tokenとcomponentのpublic API(props / 宣言済みslot)まで
-とする。package componentのrootはNagi CSS契約上のUI library boundary classであり、
-内部DOMへのconsumer CSSはboundary越えのdescendant step + 宣言を要する構造で、
-契約が「そこはあなたの所有物ではない」と示している。内部のmarkupやselectorを
-直接styleしたくなった時点が、theme token追加要求かsource ownershipへの移行点である。
+While using package components, styling is limited to theme tokens and the
+component's public API: props and declared slots. A package component root is a
+UI library boundary class under the Nagi CSS contract. Consumer CSS that reaches
+internal DOM requires a declared descendant step across that boundary, making
+the contract explicit that the internal DOM is not consumer-owned. Wanting to
+style internal markup or selectors directly marks either a request for a new
+theme token or the transition to source ownership.
 
-package利用中は通常のversion updateで修正を受け取れる。ownership後はlocal sourceが
-優先されるため、自動更新されない。この逆転は、複雑で修正が重要なcomponentほど
-ownershipされやすい点で危険になる。
+Package consumers receive fixes through normal version updates. After ownership,
+local source takes precedence and is not updated automatically. This reversal is
+risky because the most complex components, where fixes matter most, are also the
+most likely to be owned.
 
-したがってownership機能は、最低でも次を一組として設計する。
+The ownership feature therefore includes at least this complete set:
 
-- source fileにコピー元componentとversionを記録するmetadata
-- installed/upstream sourceとの差分を確認する`diff` workflow
-- breaking releaseごとに、そのversionで必要な手順を案内するmigration note
-- Nagi CSS lintとNagi UI behavior lint
-- keyboard/focus/form/a11y integration test recipe
+- metadata in every source file recording the source component and version
+- a `diff` workflow for comparing owned and installed/upstream source
+- a migration note for each breaking release that requires version-specific
+  action
+- Nagi CSS lint and Nagi UI behavior lint
+- keyboard, focus, form, and accessibility integration-test recipes
 
-一般的なmigration engineを先に作るのではなく、breaking changeを出すreleaseが必要な
-migration noteを同梱する。v0には移行対象となる過去のbreaking releaseはない。日常の
-upstream追従は`diff`とconsumer testで検出し、version固有の手順が発生した時点でrelease
-noteを保守契約へ追加する。
+Do not build a generic migration engine in advance. Ship the migration note
+required by each release that introduces a breaking change. There are no past
+breaking releases to migrate from in v0. Routine upstream tracking is detected
+through `diff` and consumer tests; add version-specific instructions to the
+maintenance contract only when such instructions become necessary.
 
-metadata形式は Phase 4 slice 2 の実装検証を経て次の形へ**固定済み**
-(詳細は `docs/phase4-ownership-cli.md`):
+The metadata format was **fixed** after implementation validation in Phase 4,
+slice 2 (see `docs/phase4-ownership-cli.md`):
 
 ```html
 <!-- @nagi-source dropdown-menu/DropdownMenu.vue@0.4.0 -->
 ```
 
-`nagi-ui own` がコピー時に刻印し、`nagi-ui diff` が clean / modified / drifted /
-unknown-source を判定して CI gate に使える exit code を返す。
+`nagi-ui own` stamps this marker when copying. `nagi-ui diff` reports `clean`,
+`modified`, `drifted`, or `unknown-source` and returns an exit code suitable for
+a CI gate.
 
 ## Deferred design: `vue` / `all` ownership layers
 
-Status: **設計固定、実装延期** (2026-07-22)。component catalog拡充を優先し、
-composable ownershipの具体的需要が観測されるまで次スライスとして着手しない。
+Status: **Design fixed, implementation deferred** (2026-07-22). Component-catalog
+expansion takes priority. Do not start this as the next slice until concrete
+demand for composable ownership is observed.
 
-固定behaviorのcomposableはpackage importのままとし、通常の`own <component>`では
-コピーしない。SFCが相対importするschema / renderer moduleだけは編集対象であり、
-componentの必須source dependencyとして一緒にコピーする。CLI testはVue/TSを問わず
-相対importの推移closureを検査し、registry漏れを禁止する。
+Composables for fixed behavior remain package imports and are not copied by the
+normal `own <component>` command. Schema and renderer modules imported by an SFC
+through relative paths are editable source dependencies and are copied with the
+component. CLI tests inspect the transitive closure of relative imports across
+Vue and TypeScript files and reject omissions from the registry.
 
-現在のcanonical SFCは、安定した標準schema/propsからheadless composableへの既定写像を
-public `useX(props, model)` overloadで使う。一般的で安定した設定は名前付きpropsへ置き、
-schemaやinteraction algorithm全体を所有するときは1引数の`useX({...})`へ降りる。
-component overloadの第三引数、汎用`:options` prop、別名の`useXControl`、Nagi固有override
-DSLは作らない。通常のdefault変更は利用側の薄いwrapper SFCでnamed propsを固定する。
+Current canonical SFCs use a public `useX(props, model)` overload to map stable,
+standard schemas and props to headless composables. Common stable settings
+belong in named props. Owning the complete schema or interaction algorithm uses
+the single-argument `useX({...})` form. Do not add a third argument to the
+component overload, a generic `:options` prop, a separate `useXControl` alias,
+or a Nagi-specific override DSL. A thin consumer wrapper SFC with fixed named
+props handles ordinary default changes.
 
-native同期等の固定mechanismだけは`@nagi-labs/nagi-ui/component-controls`からimportする。
-このsubpathはpackage component / owned SFC用の実装境界であり、通常の`own`ではコピーしない。
-完全展開後もreset / focus / DOM-model同期helperはpackage依存として残す。
+Only fixed mechanisms such as native synchronization are imported from
+`@nagi-labs/nagi-ui/component-controls`. This subpath is an implementation
+boundary for package components and owned SFCs and is not copied by ordinary
+`own`. Even after full expansion, reset, focus, and DOM-model synchronization
+helpers remain package dependencies.
 
-behavior を小さな composable に隠しても、所有者が必要な層だけを選べるようにする。ただし
-初期 surface は利用頻度が高い次の2段に絞り、`composable-only` は実需要が観測されるまで
-出荷しない。
+Small composables may hide behavior while still allowing owners to select only
+the layer they need. The initial surface is limited to the two most commonly
+needed levels. Do not ship `composable-only` ownership until real demand is
+observed.
 
-- `own <component> --layer vue`: SFC と component-local な schema / style をコピーする。
-  behavior は package 版を使い続ける
-- `own <component> --layer all`: 上記に加え、その component の behavior dependency closure
-  をコピーする
+- `own <component> --layer vue`: copy the SFC and component-local schema and
+  styles; continue using package behavior
+- `own <component> --layer all`: copy the above plus the component's behavior
+  dependency closure
 
-owned SFC の import を昇格時に機械書換えしてはならない。`vue` ownership の時点で、SFC は
-生成された component-local routing module（例: `behavior.ts`）だけを import する。
-`behavior.ts` は最初は package composable を1行 re-exportし、`vue` → `all` の昇格時は
-owned composable を re-exportする内容へ置き換える。したがって利用者が編集済みの `.vue`
-には触れず、変更は生成ファイルだけに閉じる。
+Promotion must not mechanically rewrite imports in an edited owned SFC. At the
+time of `vue` ownership, the SFC imports only a generated component-local
+routing module, such as `behavior.ts`. Initially, `behavior.ts` is a one-line
+re-export of the package composable. When promoting from `vue` to `all`, replace
+its contents with re-exports of owned composables. The user's edited `.vue` file
+is therefore untouched; only generated files change.
 
-canonical SFC / composable と routing module は同じ provenance 単位として扱わない。前者は
-upstream diff の対象、後者は layer から決定的に再生成できる adapter である。sidecar の
-`nagi.lock.json` に少なくとも component、layer、package version、source path、各 source の
-SHA-256を記録する。hash は「何をコピーしたか」の照合には使えるが、3-way merge の base
-本文を復元できない。exact package source の取得または base snapshot を別途設計するまで、
-既存の「`own` 直後に即コミットして git 履歴を base にする」手順は必須のままとする。
+Do not treat the canonical SFC/composable and the routing module as the same
+provenance unit. The former is subject to upstream diffing; the latter is an
+adapter that can be regenerated deterministically from the layer. A sidecar
+`nagi.lock.json` records at least the component, layer, package version, source
+path, and SHA-256 for each source file. A hash can verify what was copied, but
+cannot reconstruct the base text for a three-way merge. Until exact package
+source retrieval or a separate base snapshot is designed, the existing
+requirement to commit immediately after `own` and use Git history as the base
+remains mandatory.
 
-この構造は `composable-only` の将来追加を妨げない。自分でDOMを書くが標準 behavior で
-よい利用者は package composable を直接 import できるため、先に3層目を出して CLI・dependency
-closure・test matrix を増やさない。
+This structure does not prevent adding `composable-only` ownership later. A
+consumer who writes their own DOM but accepts standard behavior can import the
+package composable directly, so there is no reason to add a third layer and
+expand the CLI, dependency closure, and test matrix prematurely.
 
-### Owned sourceのsurface namespace
+### Surface namespace for owned source
 
-canonical SFCは `Button.vue` のようにfilenameへlibrary名を混ぜず、root classを
-`.n-button` とする。Nagi CSSはprefixを単なる`startsWith` escape hatchにせず、
-`surfaceRootPrefixes` + filename kebabの完全一致として検査する。したがって
-`Button.vue`でbare `.button`や`.n-control`は不正である。
+A canonical SFC keeps the library name out of the filename, for example
+`Button.vue`, and uses `.n-button` as its root class. Nagi CSS does not treat a
+prefix as a simple `startsWith` escape hatch. It validates the exact combination
+of `surfaceRootPrefixes` and the kebab-cased filename. Consequently, bare
+`.button` and mismatched `.n-control` are both invalid in `Button.vue`.
 
-package componentとして使うだけならconsumer presetのboundary classで完結する。
-`own`したSFCをNagi CSSで検査するconsumerは、自身のsurface prefixと合わせて
-`nagiUiSurfaceRootPrefixes`を外部configへ追加する。
+Consumers using package components need only the consumer preset's boundary
+classes. Consumers who run Nagi CSS against owned SFCs add
+`nagiUiSurfaceRootPrefixes` to their external configuration alongside their own
+surface prefix.
 
 ```js
 import nagiUi, {
@@ -164,79 +196,93 @@ export default {
 }
 ```
 
-複数prefixは異なるowned namespaceを同じrepoで検査するための候補であり、任意の
-suffixを許可しない。各候補ともfilenameとの完全一致が必要である。
+Multiple prefixes support checking distinct owned namespaces in one repository;
+they do not permit arbitrary suffixes. Every candidate still has to match its
+filename exactly.
 
-## 狙いが外れるパターン
+## Failure modes
 
-### 1. package利用者にもcopy利用者にも選ばれない
+### 1. Neither package consumers nor copy consumers choose Nagi
 
-packageとしてはPrimeVueよりcomponent・slot・デザイン完成度が不足し、ownership用途では
-shadcn-vue / Reka UIより事例と既知語彙が少ない、という中間状態になり得る。
+Nagi may end up in an undesirable middle ground: fewer components, slots, and
+less design polish than PrimeVue as a package, but fewer examples and less
+familiar vocabulary than shadcn-vue or Reka UI for source ownership.
 
-対策は「なぜ既存ライブラリではなくNagiか」を一文で説明できること。候補は、
-「通常は隠れているが、必要になった瞬間にWeb標準語彙のSFCを完全所有できる」である。
+The mitigation is a one-sentence answer to why Nagi exists instead of another
+library. The current candidate is: "Usually hidden, but fully ownable as a
+Web-standard SFC the moment you need it."
 
-### 2. ownした瞬間に保証が消える
+### 2. Guarantees disappear as soon as a component is owned
 
-最も本質的なリスク。難しいDropdown / Combobox / Dialogほどownership後のa11y・browser
-修正が必要になる。diff、migration、lint、integration testが実用水準でなければ、
-ownershipは保守不能なforkである。
+This is the most fundamental risk. Complex components such as Dropdown,
+Combobox, and Dialog still need accessibility and browser fixes after ownership.
+Without practical diff, migration, lint, and integration testing, ownership is
+an unmaintainable fork.
 
-### 3. Themeとownershipの間が崖になる
+### 3. A cliff between theme customization and ownership
 
-avatar、trigger差し替え、router-link、option description程度でSFC一式のownershipが
-必要なら重すぎる。逆に全部を公開APIへ入れるとPrimeVue型の巨大surfaceになる。
+Requiring ownership of an entire SFC for an avatar, trigger replacement,
+router-link, or option description is too heavy. Conversely, exposing every
+case in the public API creates a PrimeVue-style surface.
 
-要求頻度を観測し、少数の高頻度要求だけをprops / schema / slotへ昇格させる。将来あるかも
-しれない要求のためにescape hatchを増やさない。
+Observe request frequency and promote only a small number of common requirements
+to props, schemas, or slots. Do not add escape hatches for hypothetical future
+requirements.
 
-### 4. owned Blueprintが実際には読みにくい
+### 4. Owned Blueprints are not actually readable
 
-recursive renderer、schema変換、composable、submenu coordination、CSS contract、lint規則を
-追うために多数のファイルを横断するなら、「ブラウザ表示とSFCが近い」という価値は弱まる。
+The value of keeping the browser output close to the SFC diminishes if a change
+requires traversing many files for a recursive renderer, schema conversion,
+composable, submenu coordination, CSS contract, and lint rules.
 
-所有単位ごとに、変更対象までに読むファイル数と変更diffを計測する。内部ファイル分割は
-runtime都合ではなく、利用者とagentの局所変更可能性を基準に評価する。
+Measure how many files must be read and how large the change diff is for each
+ownership task. Evaluate internal file boundaries by whether consumers and
+agents can make local changes, not by runtime convenience.
 
-### 5. Web標準への委譲が製品要求に負ける
+### 5. Product requirements defeat delegation to Web standards
 
-細かなdismiss policy、任意のtop-layer順、desktop/mobile完全統一などが主要要求なら、
-利用者はNagiの委譲を思想ではなく機能不足と評価する。その市場にはReka / Base UI型の
-全JS実装を案内し、Nagi内部で再実装しない。
+If fine-grained dismiss policies, arbitrary top-layer ordering, or identical
+desktop/mobile behavior are primary requirements, users will perceive Nagi's
+delegation as missing functionality rather than design intent. Recommend a
+fully JavaScript-driven library such as Reka or Base UI for that market; do not
+reimplement it inside Nagi.
 
-### 6. 「AIに扱いやすい」が差別化にならない
+### 6. "Easy for AI" is not a differentiator
 
-AIはRadix / React Aria / shadcnを大量に学習している。Nagiのschema、CSS contract、own
-workflow、専用lintも新規語彙である。単純そうという印象ではなく比較実験で検証する。
+AI models have seen large amounts of Radix, React Aria, and shadcn code. Nagi's
+schema, CSS contract, ownership workflow, and dedicated lint rules are also new
+vocabulary. Validate the claim with comparative experiments instead of relying
+on the impression that the design looks simple.
 
-## 早期検証
+## Early validation
 
-代表3componentでモデル全体を検証する。
+Validate the whole model with three representative components.
 
-| Component | 検証する境界 |
+| Component | Boundary under test |
 |---|---|
-| Button | theme tokenだけで通常のブランド変更が完了するか |
-| Dropdown | avatar / router-link追加でownershipが局所的か |
-| Combobox | behavior変更後もupstream保証へ追従できるか |
+| Button | Can theme tokens complete an ordinary brand change? |
+| Dropdown | Is ownership local when adding an avatar or router-link? |
+| Combobox | Can an owned behavior change continue tracking upstream guarantees? |
 
-人間と知識を与えていないcoding agentの双方について、次を計測する。
+Measure the following for both humans and coding agents with no Nagi-specific
+knowledge:
 
-- task完了率とbehavior regression数
-- 読んだファイル数、変更ファイル数、diff行数
-- Nagi lint / browser testsが変更ミスを検出した割合
-- package API追加なしで要求を満たせた割合
-- upstream更新をowned sourceへ取り込む時間
+- task completion rate and behavior regression count
+- number of files read, number of files changed, and changed lines
+- percentage of mistakes detected by Nagi lint and browser tests
+- percentage of requirements met without adding package API
+- time needed to incorporate an upstream update into owned source
 
-## 危険信号
+## Warning signs
 
-- 最初の実用的な変更でほぼ全利用者がownする
-- owned sourceがcore / browser修正へ追従できない
-- package版へのprops / slot / pass-through追加要求が増え続ける
-- BlueprintよりReka UIのコードをagentが正確に変更する
-- theme tokenが増え続けて独自CSS言語になる
-- package buildとcopy元に差分が生じる
+- almost every consumer uses `own` for their first practical customization
+- owned source cannot keep up with core or browser fixes
+- requests for package props, slots, and pass-through APIs keep growing
+- agents modify Reka UI code more accurately than Blueprints
+- theme tokens keep multiplying into a proprietary CSS language
+- package consumption and ownership copy sources diverge
 
-Nagiの成功条件は「copyできる」ことではない。
+Nagi succeeds not merely when source can be copied, but when:
 
-> 普段は所有しなくてよく、所有しても壊れたまま取り残されない。
+> Consumers usually do not need ownership, and ownership never leaves them
+> stranded with broken source.

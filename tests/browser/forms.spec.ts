@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/forms.html");
@@ -6,6 +6,22 @@ test.beforeEach(async ({ page }) => {
 
 async function json(locator: Locator): Promise<Record<string, unknown>> {
   return JSON.parse((await locator.textContent()) ?? "{}");
+}
+
+async function dragRangeThumb(
+  page: Page,
+  input: Locator,
+  fromRatio: number,
+  toRatio: number,
+) {
+  const box = await input.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) return;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(box.x + box.width * fromRatio, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * toRatio, y, { steps: 5 });
+  await page.mouse.up();
 }
 
 test("native controls expose initial state and submit browser FormData", async ({ page }) => {
@@ -137,6 +153,8 @@ test("native form controls retain visible focus outlines in forced colors", asyn
     page.getByRole("combobox", { name: "Framework", exact: true }),
     page.getByRole("radio", { name: "Email" }),
     page.getByRole("slider", { name: "Volume", exact: true }),
+    page.getByRole("slider", { name: "Minimum price" }),
+    page.getByRole("slider", { name: "Maximum price" }),
     page.getByTestId("release-file"),
     page.getByRole("switch", { name: "Product updates" }),
   ];
@@ -197,6 +215,97 @@ test("NumberField and InputGroup preserve native step, form, and reset behavior"
   await expect(seats).toHaveValue("2");
   await expect(page.getByTestId("seats-value")).toHaveText("seats: 2");
   await expect(projectUrl).toHaveValue("nagi-ui");
+});
+
+test("RangeSlider keeps two native thumbs ordered, form-associated, and resettable", async ({
+  page,
+}) => {
+  const form = page.locator("#interactive-form");
+  const lower = page.getByRole("slider", { name: "Minimum price" });
+  const upper = page.getByRole("slider", { name: "Maximum price" });
+
+  await expect(lower).toHaveValue("25");
+  await expect(upper).toHaveValue("75");
+  const rangeFieldset = page.locator(".n-range-slider");
+  await rangeFieldset.evaluate((element) => {
+    element.setAttribute("data-input-events", "0");
+    element.setAttribute("data-change-events", "0");
+    element.addEventListener("input", (event) => {
+      const count = Number(element.getAttribute("data-input-events")) + 1;
+      element.setAttribute("data-input-events", String(count));
+      element.setAttribute("data-last-input-target", (event.target as HTMLInputElement).id);
+    });
+    element.addEventListener("change", (event) => {
+      const count = Number(element.getAttribute("data-change-events")) + 1;
+      element.setAttribute("data-change-events", String(count));
+      element.setAttribute("data-last-change-target", (event.target as HTMLInputElement).id);
+    });
+  });
+  await lower.focus();
+  await page.keyboard.press("Tab");
+  await expect(upper).toBeFocused();
+
+  await dragRangeThumb(page, lower, 0.25, 0.35);
+  await dragRangeThumb(page, upper, 0.75, 0.65);
+  await expect(lower).toHaveValue("35");
+  await expect(upper).toHaveValue("65");
+  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 35–65");
+  expect(Number(await rangeFieldset.getAttribute("data-input-events"))).toBeGreaterThan(1);
+  await expect(rangeFieldset).toHaveAttribute("data-change-events", "2");
+  await expect(rangeFieldset).toHaveAttribute(
+    "data-last-input-target",
+    await upper.getAttribute("id") ?? "",
+  );
+  await expect(rangeFieldset).toHaveAttribute(
+    "data-last-change-target",
+    await upper.getAttribute("id") ?? "",
+  );
+  expect(
+    await form.evaluate((element: HTMLFormElement) =>
+      Object.fromEntries(new FormData(element).entries()),
+    ),
+  ).toMatchObject({ priceMin: "35", priceMax: "65" });
+
+  await lower.focus();
+  await lower.press("End");
+  await expect(lower).toHaveValue("65");
+  await expect(upper).toHaveValue("65");
+  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 65–65");
+
+  await dragRangeThumb(page, lower, 0.6, 0.45);
+  await expect(lower).toHaveValue("45");
+  await expect(upper).toHaveValue("65");
+
+  await form.getByRole("button", { name: "Reset interactive controls" }).click();
+  await expect(lower).toHaveValue("25");
+  await expect(upper).toHaveValue("75");
+  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 25–75");
+
+  await rangeFieldset.evaluate((element: HTMLFieldSetElement) => {
+    element.disabled = true;
+  });
+  await dragRangeThumb(page, lower, 0.25, 0.5);
+  await expect(lower).toHaveValue("25");
+  await expect(upper).toHaveValue("75");
+  await rangeFieldset.evaluate((element: HTMLFieldSetElement) => {
+    element.disabled = false;
+  });
+
+  await form.getByRole("button", { name: "Narrow price bounds" }).click();
+  await expect(lower).toHaveValue("40");
+  await expect(upper).toHaveValue("60");
+  await expect(lower).toHaveAttribute("min", "40");
+  await expect(lower).toHaveAttribute("max", "60");
+  await expect(upper).toHaveAttribute("min", "40");
+  await expect(upper).toHaveAttribute("max", "60");
+  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 40–60");
+  await lower.focus();
+  await page.keyboard.press("Tab");
+  await expect(upper).toBeFocused();
+
+  await form.getByRole("button", { name: "Reset interactive controls" }).click();
+  await expect(lower).toHaveValue("40");
+  await expect(upper).toHaveValue("60");
 });
 
 test("Select and Slider adopt native initial sanitization and reset their canonical models", async ({

@@ -6,6 +6,7 @@ import test from "node:test";
 const repo = path.join(import.meta.dirname, "..");
 const packageRoot = path.join(repo, "packages/core");
 const recipeRoot = path.join(packageRoot, "recipes/testing");
+const unovisRecipeRoot = path.join(packageRoot, "recipes/unovis");
 
 const recipeFiles = [
   "README.md",
@@ -27,6 +28,16 @@ test("the npm package includes copyable consumer browser-test recipes", () => {
     "./recipes/control-expansion.md",
   );
   assert.ok(fs.existsSync(path.join(packageRoot, "recipes/control-expansion.md")));
+  assert.equal(
+    manifest.exports?.["./recipes/unovis/theme.css"],
+    "./recipes/unovis/theme.css",
+  );
+  assert.equal(
+    manifest.exports?.["./recipes/unovis/README.md"],
+    "./recipes/unovis/README.md",
+  );
+  assert.ok(fs.existsSync(path.join(unovisRecipeRoot, "theme.css")));
+  assert.ok(fs.existsSync(path.join(unovisRecipeRoot, "README.md")));
   for (const file of recipeFiles) {
     assert.ok(fs.existsSync(path.join(recipeRoot, file)), `testing recipe ships ${file}`);
   }

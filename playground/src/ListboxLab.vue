@@ -33,8 +33,9 @@ const visibleToppings = computed(() =>
   <main class="n-listbox-lab">
     <h1 class="title">Nagi UI — Listbox</h1>
     <p class="text">
-      useListbox の aria-activedescendant 方式。single は selection follows focus、multiple は
-      Space / Shift+Arrow / Ctrl+A。filter しても選択はデータ側に残ります。
+      useListbox keeps DOM focus on the listbox and moves the active option with
+      aria-activedescendant. Single selection follows focus; multiple selection uses Space,
+      Shift+Arrow, and Ctrl+A. Filtering never removes the stored selection.
     </p>
 
     <section class="section">

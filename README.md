@@ -26,6 +26,8 @@ learning lands.
   Playwright consumer contracts for package and owned components.
 - `packages/core/recipes/control-expansion.md` — copyable examples for replacing
   a package component mapping with the complete public `useX({...})` form.
+- `packages/core/recipes/unovis/` — the opt-in theme bridge and integration
+  boundary for composing Unovis directly inside Card without a Chart proxy.
 - `playground/` — Vite labs for the phase slices (`vp exec vite playground`;
   `?autotest=stacking` runs the Demo B self-test).
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app
@@ -46,13 +48,14 @@ orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 The expanded cross-library benchmark currently places component creation at
-**40 / 54 (74.1%)**: 40 shipped components and 14 adopted backlog slices. The
-narrower Base UI-aligned scope is **29 / 37 (78.4%)**. Native recipes,
+**43 / 54 (79.6%)**: 43 shipped components and 11 adopted backlog slices. The
+narrower Base UI-aligned scope is **31 / 37 (83.8%)**. Native recipes,
 explicit declines, and separate products such as Nagi Grid are not counted;
 see [`docs/expanded-vue-component-catalog.md`](docs/expanded-vue-component-catalog.md)
 and [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
-The latest anatomy-sensitive slice and its native-boundary audit are recorded in
-[`docs/expanded-catalog-anatomy-slice-1.md`](docs/expanded-catalog-anatomy-slice-1.md).
+The latest intent/navigation/range slice and its native-boundary audit are
+recorded in
+[`docs/expanded-catalog-interaction-slice-2.md`](docs/expanded-catalog-interaction-slice-2.md).
 
 Package components are available without copying source:
 
@@ -84,13 +87,16 @@ import {
   Pagination,
   Popover,
   Progress,
+  PreviewCard,
   Radio,
+  RangeSlider,
   Rating,
   Select,
   Separator,
   Skeleton,
   Slider,
   Spinner,
+  Stepper,
   Switch,
   Tabs,
   Textarea,
@@ -117,8 +123,15 @@ alias, but new code should use `./default-theme.css`.
 
 The component catalog runs at `/catalog.html`; native form controls and the
 strengthened Combobox run at `/forms.html`; the Alignment D Tabs matrix runs at
-`/tabs.html`. Package/ownership details are in
+`/tabs.html`; the recommended Unovis composition runs at `/chart.html`.
+Package/ownership details are in
 [`docs/phase4-blueprint-catalog.md`](docs/phase4-blueprint-catalog.md).
+
+Charts are an integration recipe rather than a Nagi component. Unovis is the
+recommended default; Nagi provides Card anatomy, six mode-independent series
+tokens and a CSS-custom-property bridge, while data/scales/axes/datum tooltips
+remain Unovis vocabulary. See
+[`docs/unovis-integration.md`](docs/unovis-integration.md).
 
 Framework integration is selected once through the setup wizard:
 
@@ -149,7 +162,7 @@ adapter, non-interactive flags, and exact boundary are documented in
   `nagi-css check` clean.
 - [x] Demo B (implementation + self-test): `useToast` re-promotes the toast
   region above later top-layer entries — including the `showModal()`
-  hide-all-popovers case (see CHARTER 改訂履歴). Self-test at
+  hide-all-popovers case (see the CHARTER revision history). Self-test at
   `playground/?autotest=stacking` paints a PASS/FAIL banner, confirmed PASS
   in a real browser.
 

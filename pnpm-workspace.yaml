@@ -1,2 +1,5 @@
 packages:
   - "packages/*"
+allowBuilds:
+  # Unovis pulls maplibre-gl transitively; its published postinstall is empty.
+  maplibre-gl: false

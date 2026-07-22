@@ -18,15 +18,18 @@ import {
   Kbd,
   Pagination,
   Popover,
+  PreviewCard,
   Separator,
   Skeleton,
   Spinner,
+  Stepper,
   Textarea,
   Toast,
   Toggle,
   ToggleGroup,
   Tooltip,
   type PaginationItem,
+  type StepperItem,
   type ToggleGroupItem,
   type ToggleGroupValue,
 } from "@nagi-labs/nagi-ui/components";
@@ -77,6 +80,18 @@ const paginationItems: readonly PaginationItem[] = [
 ];
 const currentPage = ref("2");
 const paginationSelections = ref(0);
+const stepperItems: readonly StepperItem[] = [
+  { key: "details", label: "Details", description: "Package identity" },
+  { key: "access", label: "Access", description: "Visibility and roles" },
+  { key: "review", label: "Review", description: "Confirm before publishing" },
+  {
+    key: "publish",
+    label: "Publish",
+    description: "Unavailable in this demo",
+    disabled: true,
+  },
+];
+const currentStep = ref("details");
 const alignmentItems: readonly ToggleGroupItem[] = [
   { key: "left", label: "Left" },
   { key: "center", label: "Center" },
@@ -353,6 +368,34 @@ function runPromiseToast() {
         <Button type="reset">Reset release notes</Button>
       </form>
       <output data-testid="release-notes-value">{{ releaseNotes }}</output>
+    </section>
+
+    <section class="section" aria-labelledby="stepper-heading">
+      <h2 id="stepper-heading" class="title">Stepper</h2>
+      <Stepper
+        v-model:current-key="currentStep"
+        label="Package setup"
+        :items="stepperItems"
+      />
+      <output data-testid="stepper-state">current step: {{ currentStep }}</output>
+    </section>
+
+    <section id="preview-card-target" class="section" aria-labelledby="preview-card-heading">
+      <h2 id="preview-card-heading" class="title">Preview Card</h2>
+      <p class="text">
+        Inspect the
+        <PreviewCard
+          href="#preview-card-target"
+          label="Nagi UI package"
+          title="@nagi-labs/nagi-ui"
+          description="Native-first Vue components with ownable source."
+        >
+          <span class="n-preview-card-content">
+            <a href="#preview-card-notes">Read compatibility notes</a>
+          </span>
+        </PreviewCard>
+        before following the link.
+      </p>
     </section>
 
     <section class="section" aria-labelledby="popover-heading">

@@ -7,6 +7,13 @@ export {
   type UsePopoverReturn,
 } from "./popover.ts"
 export {
+  usePreviewCard,
+  type PreviewCardProps,
+  type PreviewCardTriggerProps,
+  type UsePreviewCardOptions,
+  type UsePreviewCardReturn,
+} from "./preview-card.ts"
+export {
   createAnchorPair,
   type AnchorArea,
   type AnchorOptions,

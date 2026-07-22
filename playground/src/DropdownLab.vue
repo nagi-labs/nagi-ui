@@ -141,8 +141,8 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
   <main class="n-dropdown-lab">
     <h1 class="title">Nagi UI — complete Dropdown</h1>
     <p class="text">
-      schema 版 Blueprint(items データを渡す)と、明示 DOM 版 fixture を並置しています。behavior
-      はどちらも同じ useMenu / useSubmenu です。
+      The schema-driven Blueprint (items as data) appears beside the explicit-DOM fixture.
+      Both use the same useMenu and useSubmenu behavior.
     </p>
 
     <section class="section">

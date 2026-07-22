@@ -2,156 +2,160 @@
 
 Status: Research and scope baseline (2026-07-22).
 
-この文書は、Base UI 37項目だけを母集団にした既存比較を補い、
-shadcn-vueとPrimeVueのカタログ全体から「一般的なVue UIライブラリとして
-Nagi UIが持つべき範囲」を決めるためのledgerである。
+This document supplements the existing comparison, whose population is limited
+to Base UI's 37 entries. It is the ledger used to decide what Nagi UI should
+cover as a general-purpose Vue UI library based on the full shadcn-vue and
+PrimeVue catalogs.
 
-これはAPI parityの約束ではない。外部ライブラリの名前をそのまま実装数へ
-足さず、同じ製品要求を1つのNagi sliceへ正規化してから採否を決める。
+This is not a promise of API parity. External library names are not added
+directly to the implementation count. We first normalize equivalent product
+requirements into one Nagi slice, then decide whether to adopt each slice.
 
 ## Source snapshot
 
 | Source | Raw catalog snapshot | Counting note |
 |---|---:|---|
-| [Base UI 1.6.0](https://base-ui.com/llms.txt) | 37 | behavior / accessibility baseline。既存比較表で37 / 37判定済み |
-| [shadcn-vue components](https://www.shadcn-vue.com/docs/components) | 69 | 公式Componentsナビゲーションのトップレベル項目。recipe、block寄りの項目も含む |
-| [PrimeVue 4.5.5](https://primevue.org/) | 80+ | 公式トップページの表記 |
-| [PrimeVue UI Kit component navigation](https://primevue.org/uikit/) | 92 names | Form 28、Button 3、Data 10、Panel 11、Overlay 7、File 1、Menu 8、Chart 1、Messages 2、Media 4、Misc 17。directive / utilityも含む |
+| [Base UI 1.6.0](https://base-ui.com/llms.txt) | 37 | Behavior/accessibility baseline; all 37 entries have already been assessed in the existing comparison. |
+| [shadcn-vue components](https://www.shadcn-vue.com/docs/components) | 69 | Top-level entries in the official Components navigation, including some recipe- and block-oriented entries. |
+| [PrimeVue 4.5.5](https://primevue.org/) | 80+ | Count stated on the official home page. |
+| [PrimeVue UI Kit component navigation](https://primevue.org/uikit/) | 92 names | Form 28, Button 3, Data 10, Panel 11, Overlay 7, File 1, Menu 8, Chart 1, Messages 2, Media 4, Misc 17; also includes directives and utilities. |
 
-カタログはrollingなので、件数ではなく上記URLと日付をsnapshotの正本とする。
+Because these catalogs are rolling, the URLs and date above, rather than the
+counts alone, are the source of truth for this snapshot.
 
 ## New progress denominator
 
-外部カタログのraw nameをそのまま分母にしない。次を正規化する。
+Raw names from external catalogs are not used directly as the denominator. We
+normalize them as follows:
 
-- `Message` / `Alert`、`Tag` / `Badge`のようなaliasは1 sliceへまとめる。
-- `Sonner` / `Toast`のような実装選択肢は1製品要求へまとめる。
-- `InputText`、`Native Select`のようなnative control wrapperは既存Nagi componentへ対応させる。
-- compound part、内部subcomponent、variantはcomponent数へ足さない。
-- HTML/CSSまたは既存Nagi componentのcompositionで十分なものは`Native/recipe`とし、実装分母から除く。
-- domain product、Nagiのplatform-first方針と衝突するもの、単独ライブラリにしか根拠がないものも分母から除く。
+- Aliases such as `Message` / `Alert` and `Tag` / `Badge` become one slice.
+- Alternative implementations such as `Sonner` / `Toast` become one product requirement.
+- Native-control wrappers such as `InputText` and `Native Select` map to existing Nagi components.
+- Compound parts, internal subcomponents, and variants do not increase the component count.
+- Capabilities adequately covered by HTML/CSS or composition of existing Nagi components are classified as `Native/recipe` and excluded from the implementation denominator.
+- Domain products, capabilities that conflict with Nagi's platform-first direction, and capabilities supported by only one library are also excluded from the denominator.
 
-この規則で、Nagi UIが採用するcomponent / behavior sliceは次の **54**。
+Under these rules, Nagi UI has adopted the following **54** component/behavior
+slices:
 
 | State | Slices | Count |
 |---|---|---:|
-| Shipped | 現在のpackage / ownership catalog | 40 |
-| Adopted backlog | 下表のCandidate / Defer | 14 |
+| Shipped | Current package/ownership catalog | 43 |
+| Adopted backlog | Candidate/Defer entries in the table below | 11 |
 | Total adopted Nagi UI scope | shipped + backlog | 54 |
 
-したがって拡張カタログ基準の進捗は **40 / 54 = 74.1%**。
-既存の **29 / 37 = 78.4%** は「Base UI aligned scope」の指標として残し、
-一般UIカタログ全体の進捗とは呼ばない。
+Progress against the expanded catalog is therefore **43 / 54 = 79.6%**. The
+existing **31 / 37 = 83.8%** figure remains the metric for the "Base UI-aligned
+scope" and is not presented as progress against the full general UI catalog.
 
-DataTableとTreeTableはこの分母に含めない。両者は
-**Nagi Grid** のproduct scopeであり、Nagi UIはButton、Input、
-Popover等の周辺primitiveだけを提供する。
+DataTable and TreeTable are not included in this denominator. Both belong to
+the **Nagi Grid** product scope; Nagi UI provides only adjacent primitives such
+as Button, Input, and Popover.
 
-## Shipped normalized capabilities (40)
+## Shipped normalized capabilities (43)
 
-正本の詳細比較は
-[`base-ui-component-comparison.md`](base-ui-component-comparison.md)に置く。
+The canonical detailed comparison is
+[`base-ui-component-comparison.md`](base-ui-component-comparison.md).
 
 `Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Breadcrumb`, `Button`,
 `ButtonGroup`, `Card`, `Checkbox`, `Combobox`, `Dialog`, `Disclosure`,
 `DropdownMenu`, `EmptyState`, `Fieldset`, `FileInput`, `Input`, `InputGroup`,
 `Kbd`, `Listbox`, `Meter`, `NumberField`, `Pagination`, `Popover`, `Progress`,
-`Radio`, `Rating`, `Select`,
-`Separator`, `Skeleton`, `Slider`, `Spinner`, `Switch`, `Tabs`, `Textarea`,
-`Toast`, `Toggle`, `ToggleGroup`, `Tooltip`。
+`PreviewCard`, `Radio`, `RangeSlider`, `Rating`, `Select`,
+`Separator`, `Skeleton`, `Slider`, `Spinner`, `Stepper`, `Switch`, `Tabs`, `Textarea`,
+`Toast`, `Toggle`, `ToggleGroup`, `Tooltip`.
 
-## Adopted backlog (14)
+## Adopted backlog (11)
 
-`Candidate`はNagiらしい形がすでに見えるもの、`Defer`は需要を認めるが
-behavior / browser / mobile検証を独立sliceとして必要とするもの。
+`Candidate` means a Nagi-shaped implementation is already visible. `Defer`
+means demand is recognized, but behavior, browser, or mobile verification must
+be completed as an independent slice.
 
 | Normalized slice | shadcn-vue signal | PrimeVue signal | Decision and Nagi boundary |
 |---|---|---|---|
-| Autocomplete | Combobox recipeが近い | AutoComplete | **Defer**。free-form textとcommitted suggestionを分離し、restricted Comboboxへmode追加しない |
-| Carousel | Carousel | Carousel / Galleria | **Defer**。CSS scroll snapを基礎にし、controls、focus、reduced motion、announcementをbrowser testする |
-| Context Menu | Context Menu | ContextMenu | **Defer**。Menu coreを再利用し、virtual anchor、right-click、long-press、mobile policyを独立検証 |
-| Menubar | Menubar | Menubar | **Defer**。Menuとは別のhorizontal roving-focus coordinator。site navigationへmenu roleを使わない |
-| Multi Select | Combobox recipeで構成可能 | MultiSelect | **Defer**。chips、popup selection、form submission、remove focusを1つの厚いsliceとして検証 |
-| Navigation Menu | Navigation Menu | MegaMenu / Menubar | **Defer**。native `nav` / links優先。hover/focus panel coordinationだけを追加価値として評価 |
-| OTP Field | Input OTP / Pin Input | InputOtp | **Defer**。one-real-input、paste、mobile keyboard、password manager、screen readerを実機検証 |
-| Preview Card | Hover Card | Popover / Tooltipが近い | **Candidate**。real link trigger、pointer transit、interactive preview。generic hover popoverへしない |
-| Range Slider | Slider | Slider range | **Candidate**。single native Sliderを複雑化せず、multi-thumbを独立componentとして実装 |
-| Resizable | Resizable | Splitter | **Defer**。pointer capture、keyboard resize、min/max、RTL、nested panelsを独立検証 |
-| Stepper | Stepper | Stepper | **Defer**。progress表示、navigation、form wizardを混同せず、まずflat items + current stepを定義 |
-| Tags Input | Tags Input | Chip / MultiSelectが近い | **Defer**。text editing、token removal、IME、paste、duplicate policyをまとめてbrowser test |
-| Toolbar | recipeのみ | Toolbar | **Defer**。arbitrary owned controlsへattribute injection。ToolbarButton familyは作らない |
-| Tree | Sidebar/Command recipesが近い | Tree / TreeSelect | **Defer**。tree keyboard model、lazy children、selectionとexpansionをListboxへ混ぜない |
+| Autocomplete | Similar Combobox recipe | AutoComplete | **Defer**. Separate free-form text from a committed suggestion; do not add a mode to the restricted Combobox. |
+| Carousel | Carousel | Carousel / Galleria | **Defer**. Use CSS scroll snap as the foundation and browser-test controls, focus, reduced motion, and announcements. |
+| Context Menu | Context Menu | ContextMenu | **Defer**. Reuse the Menu core, then independently validate virtual anchors, right-click, long-press, and mobile policy. |
+| Menubar | Menubar | Menubar | **Defer**. This requires a horizontal roving-focus coordinator distinct from Menu. Do not use the menu role for site navigation. |
+| Multi Select | Composable from the Combobox recipe | MultiSelect | **Defer**. Validate chips, popup selection, form submission, and removal focus as one thick slice. |
+| Navigation Menu | Navigation Menu | MegaMenu / Menubar | **Defer**. Prefer native `nav` and links; evaluate only hover/focus panel coordination as additional value. |
+| OTP Field | Input OTP / Pin Input | InputOtp | **Defer**. Validate one-real-input architecture, paste, mobile keyboards, password managers, and screen readers on real devices. |
+| Resizable | Resizable | Splitter | **Defer**. Independently validate pointer capture, keyboard resize, min/max constraints, RTL, and nested panels. |
+| Tags Input | Tags Input | Similar Chip / MultiSelect | **Defer**. Browser-test text editing, token removal, IME, paste, and duplicate policy together. |
+| Toolbar | Recipe only | Toolbar | **Defer**. Inject attributes into arbitrary owned controls. Do not create a ToolbarButton family. |
+| Tree | Similar Sidebar/Command recipes | Tree / TreeSelect | **Defer**. Keep the tree keyboard model, lazy children, selection, and expansion out of Listbox. |
 
 ### Suggested delivery order
 
 1. **Thin native/presentation slice — shipped (2026-07-22)**: Textarea,
-   Skeleton, Spinner, Kbd, Breadcrumb, Empty State, Button Group。
+   Skeleton, Spinner, Kbd, Breadcrumb, Empty State, Button Group.
 2. **Small interactive slice — shipped (2026-07-22)**: Pagination, Rating,
-   File Input。
-3. **Anatomy-sensitive slice — first half shipped (2026-07-22)**: Input Group,
-   Number Field, Toggle Group。Preview CardとStepperは独立sliceとして残す。
+   File Input.
+3. **Anatomy-sensitive slice — shipped (2026-07-22)**: Input Group,
+   Number Field, Toggle Group. Preview Card, Range Slider, and Stepper were
+   also shipped as an independent follow-up.
 4. **Thick behavior slice**: Autocomplete, Multi Select, Tags Input,
-   Range Slider, Carousel, Resizable, Tree, Context Menu, Menubar,
-   Navigation Menu, OTP Field, Toolbar。
+   Carousel, Resizable, Tree, Context Menu, Menubar,
+   Navigation Menu, OTP Field, Toolbar.
 
 ## Native / recipe instead of another package component
 
 | External names normalized together | Nagi answer |
 |---|---|
 | Aspect Ratio | CSS `aspect-ratio` recipe |
-| Calendar / Date Picker / Range Calendar | stable pathはnative date/time input。custom calendarはlocale、timezone、range、mobile差異を持つためNagi UI componentにしない |
-| Checkbox Group / Radio Group | repeated native controls + `Fieldset`。group items schemaは実需要が出てから |
-| ColorPicker | native `input[type=color]`。advanced pickerは別製品を利用 |
-| Command | `Dialog` + `Combobox` / `Listbox` recipe。独自command DSLは作らない |
-| DataView | caller-owned list/grid markup + Card / pagination recipe |
-| Deferred | Vue async component、`v-if`、`content-visibility` |
-| Field / Form / Label | native label、validation、fieldsetとconsumer test recipe。form-state frameworkにはならない |
-| FloatLabel / IftaLabel | CSS label recipe。Inputのmodeにしない |
-| Image | native `img` + `nagi-ui setup` image adapter。framework image componentはownership |
-| Inplace | Disclosure、Popoverまたはcaller stateのcomposition |
-| Item | generic list rowはcaller-owned DOM。意味のない万能Item DSLを作らない |
-| MeterGroup | Meter / Progressとcaller-owned visualization。単一referenceなのでAPI化しない |
-| Panel | CardまたはDisclosure。Panel modeを増やさない |
-| PanelMenu | Accordion + Menu composition |
-| Password | Input `type=password` + caller action。strength meterはMeter recipe |
-| Scroll Area / ScrollPanel | `overflow: auto` + `scrollbar-*` CSS。custom thumb同期を持たない |
-| ScrollTop | anchor/link + `scroll-behavior` recipe |
-| Sheet / static edge Drawer | positioned native Dialog recipe。gesture Drawerは下のDecline |
-| Sidebar | application shell recipe。再利用componentではなくlayout ownership |
-| SpeedDial / SplitButton | Button + DropdownMenu composition |
-| Table | native `table` recipe。sorting/filtering/virtualizationへ進んだらNagi Grid |
-| Timeline | semantic list + CSS recipe |
-| Typography | Nagi CSS typography tokens / prose recipe |
-| VirtualScroller | componentではなく将来のcollection infrastructureとして評価 |
-| AnimateOnScroll / Fluid / StyleClass | CSS、container queries、Vue class/style binding |
-| BlockUI | native `inert`、Dialog / Popoverとcaller stateのrecipe |
+| Calendar / Date Picker / Range Calendar | The stable path is a native date/time input. A custom calendar carries locale, time-zone, range, and mobile differences, so it is not a Nagi UI component. |
+| Checkbox Group / Radio Group | Repeated native controls plus `Fieldset`. Add a group items schema only after real demand appears. |
+| ColorPicker | Native `input[type=color]`; use a separate product for an advanced picker. |
+| Command | `Dialog` + `Combobox` / `Listbox` recipe. Do not create a custom command DSL. |
+| DataView | Caller-owned list/grid markup plus Card/pagination recipe. |
+| Deferred | Vue async component, `v-if`, and `content-visibility`. |
+| Field / Form / Label | Native labels, validation, fieldsets, and the consumer test recipe. Nagi UI does not become a form-state framework. |
+| FloatLabel / IftaLabel | CSS label recipe; do not add a mode to Input. |
+| Image | Native `img` plus the `nagi-ui setup` image adapter. Framework image components require ownership. |
+| Inplace | Composition of Disclosure, Popover, or caller state. |
+| Item | A generic list row is caller-owned DOM. Do not create a semantically empty universal Item DSL. |
+| MeterGroup | Meter/Progress plus caller-owned visualization. Do not create an API from a single reference. |
+| Panel | Card or Disclosure; do not add a Panel mode. |
+| PanelMenu | Accordion + Menu composition. |
+| Password | Input `type=password` plus a caller action. A strength meter is a Meter recipe. |
+| Scroll Area / ScrollPanel | `overflow: auto` plus `scrollbar-*` CSS; do not own custom-thumb synchronization. |
+| ScrollTop | Anchor/link plus a `scroll-behavior` recipe. |
+| Sheet / static edge Drawer | Positioned native Dialog recipe. Gesture Drawer is listed under Decline below. |
+| Sidebar | Application-shell recipe; layout ownership rather than a reusable component. |
+| SpeedDial / SplitButton | Button + DropdownMenu composition. |
+| Table | Native `table` recipe. Move to Nagi Grid when sorting, filtering, or virtualization is required. |
+| Timeline | Semantic list plus CSS recipe. |
+| Typography | Nagi CSS typography tokens/prose recipe. |
+| VirtualScroller | Evaluate as future collection infrastructure rather than a component. |
+| AnimateOnScroll / Fluid / StyleClass | CSS, container queries, and Vue class/style binding. |
+| BlockUI | Native `inert` plus a Dialog/Popover and caller-state recipe. |
 
 ## Separate products
 
 | External capability | Destination |
 |---|---|
-| Data Table / Tree Table / advanced Data Grid | **Nagi Grid**。column model、sorting、filtering、virtualization、editingをNagi UIへ持ち込まない |
-| Chart | charting library / 将来の別product。Nagi UIはCard、Tooltip、theme tokenを提供 |
-| Editor / TextEditor | ProseMirror / Lexical / Tiptap等の専用engine。別product以外では扱わない |
-| Org Chart / Diagram | visualization product。generic UI componentとして数えない |
-| advanced Calendar / scheduler / event calendar | date productとして独立させる。Nagi UIのnative date pathとは分離 |
+| Data Table / Tree Table / advanced Data Grid | **Nagi Grid**. Do not bring its column model, sorting, filtering, virtualization, or editing into Nagi UI. |
+| Chart | Adopt **Unovis as the recommended integration**. Nagi UI supplies Card, Tooltip/Popover for adjacent controls, six series theme tokens, and a CSS bridge recipe. Datum tooltips, data, scales, and axes remain Unovis vocabulary; do not create `Chart.vue`. |
+| Editor / TextEditor | Dedicated engines such as ProseMirror, Lexical, or Tiptap. Handle only as a separate product. |
+| Org Chart / Diagram | Visualization products; do not count them as generic UI components. |
+| Advanced Calendar / scheduler / event calendar | Separate date product, distinct from Nagi UI's native date path. |
 
 ## Decline or exclude
 
 | External names | Reason |
 |---|---|
-| gesture Drawer / Vaul parity | interrupted gesture、snap point、physicsはNagiのsmall contained behaviorを超える。static edge panelはDialog recipe |
-| FocusTrap | native modal dialogが所有する。custom trapは出荷しない |
-| DynamicDialog / global dialog service | markupとownershipを隠し、typed local stateより認知負荷が高い |
-| ConfirmPopup | destructive confirmationをnon-modal anchored overlayへ一般化しない。AlertDialogを使う |
-| KeyFilter | IME、paste、mobile inputを壊しやすい。`inputmode`、`pattern`、validationを使う |
-| Knob | non-standard control。Slider / number inputよりアクセシビリティ保証が弱い |
-| Dock / Ripple | visual interaction effectであり、Nagi UIのbehavior componentではない |
-| CascadeSelect | 現時点では単一referenceのspecialized selector。Tree / Navigation Menu実装後に再評価 |
-| OrderList / PickList | specialized data manipulation UI。実利用例が出るまでownership recipe |
-| ImageCompare | specialized media widget。CSS/owned implementationを優先 |
-| Terminal | domain application block。component catalogから除外 |
-| Attachment / Bubble / Marker / chat Message / Message Scroller | chat product anatomy。汎用Nagi UI primitiveではなくapplication / registry block |
+| Gesture Drawer / Vaul parity | Interrupted gestures, snap points, and physics exceed Nagi's small, contained behavior. A static edge panel is a Dialog recipe. |
+| FocusTrap | Owned by the native modal dialog; do not ship a custom trap. |
+| DynamicDialog / global dialog service | Hides markup and ownership and creates more cognitive load than typed local state. |
+| ConfirmPopup | Do not generalize destructive confirmation into a non-modal anchored overlay. Use AlertDialog. |
+| KeyFilter | Likely to break IME, paste, and mobile input. Use `inputmode`, `pattern`, and validation. |
+| Knob | Non-standard control with weaker accessibility guarantees than Slider or number input. |
+| Dock / Ripple | Visual interaction effects, not Nagi UI behavior components. |
+| CascadeSelect | Currently a specialized selector with evidence from only one source. Reassess after Tree/Navigation Menu is implemented. |
+| OrderList / PickList | Specialized data-manipulation UI. Keep as an ownership recipe until real use cases appear. |
+| ImageCompare | Specialized media widget. Prefer CSS or an owned implementation. |
+| Terminal | Domain application block; exclude it from the component catalog. |
+| Attachment / Bubble / Marker / chat Message / Message Scroller | Chat product anatomy; application/registry blocks rather than generic Nagi UI primitives. |
 
 ## Raw catalog coverage cross-check
 
@@ -162,14 +166,14 @@ behavior / browser / mobile検証を独立sliceとして必要とするもの。
   Dialog, Dropdown Menu, Empty, Input, Input Group, Kbd, Native Select,
   Number Field, Popover, Progress, Pagination, Select, Separator, Skeleton,
   Slider, Sonner, Spinner, Switch, Tabs, Textarea, Toast, Toggle, Toggle Group,
-  Tooltip。
-- **Adopted backlog**: Carousel, Context Menu, Hover Card, Input OTP, Menubar,
-  Navigation Menu, Pin Input, Resizable, Stepper, Tags Input。
+  Tooltip.
+- **Adopted backlog**: Carousel, Context Menu, Input OTP, Menubar,
+  Navigation Menu, Pin Input, Resizable, Tags Input.
 - **Native/recipe**: Aspect Ratio, Calendar, Command, Date Picker, Field, Form,
   Item, Label, Radio Group, Range Calendar, Scroll Area, Sheet, Sidebar, Table,
-  Typography。
+  Typography.
 - **Separate/excluded**: Attachment, Bubble, Chart, Data Table, Drawer, Marker,
-  Message, Message Scroller。
+  Message, Message Scroller.
 
 The four groups above account for all 69 official top-level names exactly once.
 
@@ -179,23 +183,23 @@ The four groups above account for all 69 official top-level names exactly once.
   DatePicker, Editor, FloatLabel, IconField, IftaLabel, InputGroup, InputMask,
   InputNumber, InputOtp, InputText, KeyFilter, Knob, Listbox, MultiSelect,
   Password, RadioButton, Rating, Select, SelectButton, Slider, Textarea,
-  ToggleButton, ToggleSwitch, TreeSelect。
-- **Button (3)**: Button, SpeedDial, SplitButton。
+  ToggleButton, ToggleSwitch, TreeSelect.
+- **Button (3)**: Button, SpeedDial, SplitButton.
 - **Data (10)**: DataTable, DataView, OrderList, OrgChart, Paginator, PickList,
-  Timeline, Tree, TreeTable, VirtualScroller。
+  Timeline, Tree, TreeTable, VirtualScroller.
 - **Panel (11)**: Accordion, Card, Deferred, Divider, Fieldset, Panel,
-  ScrollPanel, Splitter, Stepper, Tabs, Toolbar。
+  ScrollPanel, Splitter, Stepper, Tabs, Toolbar.
 - **Overlay (7)**: ConfirmDialog, ConfirmPopup, Dialog, Drawer, DynamicDialog,
-  Popover, Tooltip。
-- **File (1)**: Upload。
+  Popover, Tooltip.
+- **File (1)**: Upload.
 - **Menu (8)**: Breadcrumb, ContextMenu, Dock, Menu, Menubar, MegaMenu,
-  PanelMenu, TieredMenu。
-- **Chart (1)**: Chart.js。
-- **Messages (2)**: Message, Toast。
-- **Media (4)**: Carousel, Galleria, Image, ImageCompare。
+  PanelMenu, TieredMenu.
+- **Chart (1)**: Chart.js.
+- **Messages (2)**: Message, Toast.
+- **Media (4)**: Carousel, Galleria, Image, ImageCompare.
 - **Misc (17)**: AnimateOnScroll, Avatar, Badge, BlockUI, Chip, FocusTrap,
   Fluid, Inplace, MeterGroup, ProgressBar, ProgressSpinner, ScrollTop,
-  Skeleton, Ripple, StyleClass, Tag, Terminal。
+  Skeleton, Ripple, StyleClass, Tag, Terminal.
 
 Each raw PrimeVue name maps to a shipped component, adopted backlog,
 Native/recipe, separate product, or explicit decline above. Raw names remain in
@@ -204,10 +208,10 @@ without re-interpreting the current count.
 
 ## Metric interpretation
 
-- **74.1%** means Nagi UI has shipped 40 of the 54 normalized component slices
+- **79.6%** means Nagi UI has shipped 43 of the 54 normalized component slices
   it has consciously adopted from Base UI + shadcn-vue + PrimeVue evidence.
 - It does not mean Nagi has half of PrimeVue's APIs or files.
-- `Native/recipe` is a completed design decision, not missing implementation。
-- Separate products such as Nagi Grid have their own roadmap and denominator。
+- `Native/recipe` is a completed design decision, not missing implementation.
+- Separate products such as Nagi Grid have their own roadmap and denominator.
 - Adding a new external catalog name does not automatically lower progress;
-  it lowers progress only after Nagi adopts a distinct slice。
+  it lowers progress only after Nagi adopts a distinct slice.
