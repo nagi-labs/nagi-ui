@@ -66,8 +66,10 @@ they do not reopen Phase 4 or justify copying another suite's catalog.
 
 ## Nagi CSS consumer preset
 
-`@nagi-labs/nagi-ui/nagi-css-preset` exports the fixed package-component
-boundary classes and declared default-slot sub-surfaces. A package consumer
+`@nagi-labs/nagi-ui/nagi-css-preset` exports the opaque package-component
+names, the `n-` component prefix, and declared default-slot sub-surfaces.
+Nagi CSS derives each boundary (`ButtonGroup` → `n-button-group`); the preset
+does not duplicate a hand-written class map. A package consumer
 merges it into the `semantic` section of its external Nagi CSS config:
 
 ```js
@@ -158,6 +160,14 @@ The same integration migrates the retired Nagi CSS anatomy class `.zone` to
 `.unit` across every shipped Blueprint and playground fixture, without a
 compatibility alias.
 
+The expanded-catalog thin slice adds components 28–34: Breadcrumb,
+ButtonGroup, EmptyState, Kbd, Skeleton, Spinner and Textarea. Native semantics
+or presentation own the entire contract; no composable state machine, compound
+family, autosize behavior, shortcut registry, or loading DSL was added. The
+same SFCs are exported, registered for ownership, declared as opaque consumer
+boundaries and exercised in `/catalog.html`. The catalog is now 34 / 54
+(63.0%); the independent Base UI-aligned metric remains 27 / 37 (73.0%).
+
 The first cross-library strengthening slice originally kept the catalog at 22 while
 adding the product anatomy independently established by shadcn-vue and
 PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
@@ -170,5 +180,5 @@ one-SFC package/ownership surfaces; no compound family, whole-header slot,
 behavior-bearing slot, icon-name DSL, or expanded pass-through API was introduced. The complete
 decision ledger records the Base UI-aligned 73.0% metric in
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md); the
-expanded cross-library metric is 27 / 54 (50.0%) in
+expanded cross-library metric is 34 / 54 (63.0%) in
 [`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).

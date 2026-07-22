@@ -44,7 +44,7 @@ orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 The expanded cross-library benchmark currently places component creation at
-**27 / 54 (50.0%)**: 27 shipped components and 27 adopted backlog slices. The
+**34 / 54 (63.0%)**: 34 shipped components and 20 adopted backlog slices. The
 narrower Base UI-aligned scope remains **27 / 37 (73.0%)**. Native recipes,
 explicit declines, and separate products such as Nagi Grid are not counted;
 see [`docs/expanded-vue-component-catalog.md`](docs/expanded-vue-component-catalog.md)
@@ -59,15 +59,19 @@ import {
   AlertDialog,
   Avatar,
   Badge,
+  Breadcrumb,
   Button,
+  ButtonGroup,
   Card,
   Checkbox,
   Combobox,
   Dialog,
   Disclosure,
   DropdownMenu,
+  EmptyState,
   Fieldset,
   Input,
+  Kbd,
   Listbox,
   Meter,
   Popover,
@@ -75,9 +79,12 @@ import {
   Radio,
   Select,
   Separator,
+  Skeleton,
   Slider,
+  Spinner,
   Switch,
   Tabs,
+  Textarea,
   Toast,
   Toggle,
   Tooltip,

@@ -35,11 +35,11 @@ Nagi UIが持つべき範囲」を決めるためのledgerである。
 
 | State | Slices | Count |
 |---|---|---:|
-| Shipped | 現在のpackage / ownership catalog | 27 |
-| Adopted backlog | 下表のCandidate / Defer | 27 |
+| Shipped | 現在のpackage / ownership catalog | 34 |
+| Adopted backlog | 下表のCandidate / Defer | 20 |
 | Total adopted Nagi UI scope | shipped + backlog | 54 |
 
-したがって拡張カタログ基準の進捗は **27 / 54 = 50.0%**。
+したがって拡張カタログ基準の進捗は **34 / 54 = 63.0%**。
 既存の **27 / 37 = 73.0%** は「Base UI aligned scope」の指標として残し、
 一般UIカタログ全体の進捗とは呼ばない。
 
@@ -47,17 +47,18 @@ DataTableとTreeTableはこの分母に含めない。両者は
 **Nagi Grid** のproduct scopeであり、Nagi UIはButton、Input、
 Popover等の周辺primitiveだけを提供する。
 
-## Shipped normalized capabilities (27)
+## Shipped normalized capabilities (34)
 
 正本の詳細比較は
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md)に置く。
 
-`Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`,
-`Checkbox`, `Combobox`, `Dialog`, `Disclosure`, `DropdownMenu`, `Fieldset`,
-`Input`, `Listbox`, `Meter`, `Popover`, `Progress`, `Radio`, `Select`,
-`Separator`, `Slider`, `Switch`, `Tabs`, `Toast`, `Toggle`, `Tooltip`。
+`Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Breadcrumb`, `Button`,
+`ButtonGroup`, `Card`, `Checkbox`, `Combobox`, `Dialog`, `Disclosure`,
+`DropdownMenu`, `EmptyState`, `Fieldset`, `Input`, `Kbd`, `Listbox`, `Meter`,
+`Popover`, `Progress`, `Radio`, `Select`, `Separator`, `Skeleton`, `Slider`,
+`Spinner`, `Switch`, `Tabs`, `Textarea`, `Toast`, `Toggle`, `Tooltip`。
 
-## Adopted backlog (27)
+## Adopted backlog (20)
 
 `Candidate`はNagiらしい形がすでに見えるもの、`Defer`は需要を認めるが
 behavior / browser / mobile検証を独立sliceとして必要とするもの。
@@ -65,14 +66,10 @@ behavior / browser / mobile検証を独立sliceとして必要とするもの。
 | Normalized slice | shadcn-vue signal | PrimeVue signal | Decision and Nagi boundary |
 |---|---|---|---|
 | Autocomplete | Combobox recipeが近い | AutoComplete | **Defer**。free-form textとcommitted suggestionを分離し、restricted Comboboxへmode追加しない |
-| Breadcrumb | Breadcrumb | Breadcrumb | **Candidate**。native `nav` + `ol` + link items。router componentはsetup adapter / ownership |
-| Button Group | Button Group | SplitButtonが隣接 | **Candidate**。owned layoutと少数のorientationだけ。Button APIを複製しない |
 | Carousel | Carousel | Carousel / Galleria | **Defer**。CSS scroll snapを基礎にし、controls、focus、reduced motion、announcementをbrowser testする |
 | Context Menu | Context Menu | ContextMenu | **Defer**。Menu coreを再利用し、virtual anchor、right-click、long-press、mobile policyを独立検証 |
-| Empty State | Empty | DataView empty anatomyが隣接 | **Candidate**。title / description / actionを持つ小さなowned anatomy。page block DSLにはしない |
 | File Input | Inputのfile recipe | Upload | **Candidate**。native `input[type=file]`とlabel/statusまで。chunk upload、storage SDK、dropzone engineはscope外 |
 | Input Group | Input Group | InputGroup / IconField | **Candidate**。native control attributesの送付先を壊さず、prefix/suffix/actionの最小anatomyを設計 |
-| Kbd | Kbd | shortcut表示はmenu等に存在 | **Candidate**。native `kbd` presentationのみ。shortcut registryは持たない |
 | Menubar | Menubar | Menubar | **Defer**。Menuとは別のhorizontal roving-focus coordinator。site navigationへmenu roleを使わない |
 | Multi Select | Combobox recipeで構成可能 | MultiSelect | **Defer**。chips、popup selection、form submission、remove focusを1つの厚いsliceとして検証 |
 | Navigation Menu | Navigation Menu | MegaMenu / Menubar | **Defer**。native `nav` / links優先。hover/focus panel coordinationだけを追加価値として評価 |
@@ -83,19 +80,16 @@ behavior / browser / mobile検証を独立sliceとして必要とするもの。
 | Range Slider | Slider | Slider range | **Candidate**。single native Sliderを複雑化せず、multi-thumbを独立componentとして実装 |
 | Rating | Radio Group recipe | Rating | **Candidate**。native radio groupを土台にし、iconはpresentation。pointer-only widgetにしない |
 | Resizable | Resizable | Splitter | **Defer**。pointer capture、keyboard resize、min/max、RTL、nested panelsを独立検証 |
-| Skeleton | Skeleton | Skeleton | **Candidate**。presentation-only。loading semanticsはownerが実content regionへ付与 |
-| Spinner | Spinner | ProgressSpinner | **Candidate**。visual spinner + optional accessible label。Progressの代替state machineにしない |
 | Stepper | Stepper | Stepper | **Defer**。progress表示、navigation、form wizardを混同せず、まずflat items + current stepを定義 |
 | Tags Input | Tags Input | Chip / MultiSelectが近い | **Defer**。text editing、token removal、IME、paste、duplicate policyをまとめてbrowser test |
-| Textarea | Textarea | Textarea | **Candidate**。native textarea、label、model、form/reset/validation。autosizeは別behavior |
 | Toggle Group | Toggle Group | SelectButton | **Candidate**。flat items + pressed buttons。selected semanticsに必要な場合だけroving focusを追加 |
 | Toolbar | recipeのみ | Toolbar | **Defer**。arbitrary owned controlsへattribute injection。ToolbarButton familyは作らない |
 | Tree | Sidebar/Command recipesが近い | Tree / TreeSelect | **Defer**。tree keyboard model、lazy children、selectionとexpansionをListboxへ混ぜない |
 
 ### Suggested delivery order
 
-1. **Thin native/presentation slice**: Textarea, Skeleton, Spinner, Kbd,
-   Breadcrumb, Empty State, Button Group。
+1. **Thin native/presentation slice — shipped (2026-07-22)**: Textarea,
+   Skeleton, Spinner, Kbd, Breadcrumb, Empty State, Button Group。
 2. **Small interactive slice**: Pagination, Rating, File Input。
 3. **Anatomy-sensitive slice**: Input Group, Number Field, Toggle Group,
    Preview Card, Stepper。
@@ -166,14 +160,14 @@ behavior / browser / mobile検証を独立sliceとして必要とするもの。
 
 ### shadcn-vue 69 names
 
-- **Shipped mapping**: Accordion, Alert, Alert Dialog, Avatar, Badge, Button,
-  Card, Checkbox, Collapsible, Combobox, Dialog, Dropdown Menu, Input,
-  Native Select, Popover, Progress, Select, Separator, Slider, Sonner, Switch,
-  Tabs, Toast, Toggle, Tooltip。
-- **Adopted backlog**: Breadcrumb, Button Group, Carousel, Context Menu, Empty,
-  Hover Card, Input Group, Input OTP, Kbd, Menubar, Navigation Menu, Number
-  Field, Pagination, Pin Input, Resizable, Skeleton, Spinner, Stepper, Tags
-  Input, Textarea, Toggle Group。
+- **Shipped mapping**: Accordion, Alert, Alert Dialog, Avatar, Badge,
+  Breadcrumb, Button, Button Group, Card, Checkbox, Collapsible, Combobox,
+  Dialog, Dropdown Menu, Empty, Input, Kbd, Native Select, Popover, Progress,
+  Select, Separator, Skeleton, Slider, Sonner, Spinner, Switch, Tabs, Textarea,
+  Toast, Toggle, Tooltip。
+- **Adopted backlog**: Carousel, Context Menu, Hover Card, Input Group,
+  Input OTP, Menubar, Navigation Menu, Number Field, Pagination, Pin Input,
+  Resizable, Stepper, Tags Input, Toggle Group。
 - **Native/recipe**: Aspect Ratio, Calendar, Command, Date Picker, Field, Form,
   Item, Label, Radio Group, Range Calendar, Scroll Area, Sheet, Sidebar, Table,
   Typography。
@@ -213,8 +207,8 @@ without re-interpreting the current count.
 
 ## Metric interpretation
 
-- **50.0%** means Nagi UI has shipped half of the normalized component set it
-  has consciously adopted from Base UI + shadcn-vue + PrimeVue evidence.
+- **63.0%** means Nagi UI has shipped 34 of the 54 normalized component slices
+  it has consciously adopted from Base UI + shadcn-vue + PrimeVue evidence.
 - It does not mean Nagi has half of PrimeVue's APIs or files.
 - `Native/recipe` is a completed design decision, not missing implementation。
 - Separate products such as Nagi Grid have their own roadmap and denominator。

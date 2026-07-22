@@ -53,8 +53,8 @@ excluded.
 
 | Group | Components | Result |
 |---|---|---|
-| presentation-only | Alert, Badge, Card, Fieldset, Separator | props, slots, DOM and CSS only |
-| native elements | Input, Checkbox, Radio, Select, Slider, Switch, Meter, Progress | native control remains visible; reset/property synchronization is in a fixed helper |
+| presentation/native structure | Alert, Badge, Breadcrumb, ButtonGroup, Card, EmptyState, Fieldset, Kbd, Separator, Skeleton, Spinner | props, schema policy, fixed ARIA, slots, DOM and CSS only; no behavior mechanism exists to extract |
+| native elements | Input, Textarea, Checkbox, Radio, Select, Slider, Switch, Meter, Progress | native control remains visible; reset/property synchronization is in a fixed helper |
 | behavior composition | Accordion, AlertDialog, Dialog, Disclosure, Listbox, Popover, Tabs, Toast, Toggle, Tooltip | thin components use one package adapter; schema-aware components retain their editable mapping; state machines stay in composables |
 | menu renderers | ActionMenu, DropdownMenu, DropdownSubmenu, DropdownMenuItem | editable schema-to-DOM branches stay visible; fixed node option and navigation mechanics moved to an owned helper |
 | renderer-specific mechanisms | Avatar, Combobox, Button | image races, native combobox form channels, and focusable-disabled activation are package composables and are not copied by ordinary `own` |
@@ -93,6 +93,10 @@ not a permanent ban on every future use.
   public action/cancel events, visible IDREFs and explicit button anatomy stay
   in the SFC. Native close commands replace a nested `form method="dialog"`,
   so ownership remains safe inside consumer forms.
+- The expanded thin slice adds no new adapter: Breadcrumb's flat-schema/current
+  rule is editable renderer policy; ButtonGroup, EmptyState, Kbd, Skeleton and
+  Spinner have no state mechanism; Textarea reuses the existing one-line
+  `useNativeValueReset` boundary.
 - Input, Checkbox, Switch, and Slider bind `$attrs` directly in the template;
   Combobox merges `$attrs` with its behavior props through `mergeNagiProps`.
   Consumer attributes, classes, styles, and listeners intentionally target the
