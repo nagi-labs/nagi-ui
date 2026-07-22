@@ -8,12 +8,19 @@ import {
   AlertDialog,
   Avatar,
   Badge,
+  Breadcrumb,
   Button,
+  ButtonGroup,
   Card,
   Dialog,
   Disclosure,
+  EmptyState,
+  Kbd,
   Popover,
   Separator,
+  Skeleton,
+  Spinner,
+  Textarea,
   Toast,
   Toggle,
   Tooltip,
@@ -50,6 +57,12 @@ const dialogOpen = ref(false);
 const disclosureOpen = ref(false);
 const focusableDisabledClicks = ref(0);
 const pinned = ref(false);
+const releaseNotes = ref("Native behavior first.");
+const breadcrumbItems = [
+  { key: "home", label: "Home", href: "/catalog.html" },
+  { key: "components", label: "Components", href: "/catalog.html#utility-heading" },
+  { key: "catalog", label: "Catalog" },
+] as const;
 const toastManager = createToastManager({ duration: 0, limit: 3 });
 const secondaryToastManager = createToastManager({ duration: 0, limit: 3 });
 const undoneActions = ref(0);
@@ -239,6 +252,56 @@ function runPromiseToast() {
         <span>Native pressed state</span>
       </div>
       <Separator decorative />
+    </section>
+
+    <section class="section" aria-labelledby="utility-heading">
+      <h2 id="utility-heading" class="title">Utility and feedback primitives</h2>
+      <Breadcrumb label="Package path" :items="breadcrumbItems" />
+
+      <div class="list -primitives">
+        <span>Open search</span>
+        <Kbd label="Command" />
+        <span>+</span>
+        <Kbd label="K" />
+        <Spinner label="Loading package catalog" />
+        <Spinner data-testid="decorative-spinner" />
+      </div>
+
+      <div
+        class="unit"
+        role="status"
+        aria-label="Loading card preview"
+        aria-busy="true"
+      >
+        <Skeleton data-testid="catalog-skeleton" />
+        <Skeleton />
+        <Skeleton />
+      </div>
+
+      <ButtonGroup class="n-button-group" label="Editor actions">
+        <Button class="n-button-group-content">Save draft</Button>
+        <Button class="n-button-group-content" variant="accent">Publish</Button>
+      </ButtonGroup>
+
+      <EmptyState
+        class="n-empty-state"
+        title="No packages yet"
+        description="Create a package to populate this workspace."
+      >
+        <Button class="n-empty-state-action" variant="accent">Create package</Button>
+      </EmptyState>
+
+      <form class="form" @submit.prevent>
+        <Textarea
+          v-model="releaseNotes"
+          label="Release notes"
+          name="releaseNotes"
+          :rows="3"
+          placeholder="Describe this release"
+        />
+        <Button type="reset">Reset release notes</Button>
+      </form>
+      <output data-testid="release-notes-value">{{ releaseNotes }}</output>
     </section>
 
     <section class="section" aria-labelledby="popover-heading">
@@ -443,6 +506,34 @@ function runPromiseToast() {
       &.-primitives {
         min-block-size: 3rem;
       }
+    }
+
+    > .unit[aria-busy="true"] {
+      display: grid;
+      gap: 0.45rem;
+      margin-block: 1rem;
+    }
+
+    > .n-button-group {
+      margin-block-end: 1rem;
+
+      .n-button-group-content {
+        min-inline-size: 7rem;
+      }
+    }
+
+    > .n-empty-state {
+      margin-block-end: 1rem;
+
+      .n-empty-state-action {
+        min-inline-size: 9rem;
+      }
+    }
+
+    > .form {
+      display: grid;
+      gap: 0.65rem;
+      max-inline-size: 32rem;
     }
 
     > .n-card {

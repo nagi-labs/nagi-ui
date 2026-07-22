@@ -9,35 +9,43 @@ export { nagiThemeTokens as nagiUiThemeTokens } from "./theme/tokens.mjs"
 
 export const nagiUiSurfaceRootPrefixes = ["n-"]
 
-export const nagiUiComponentClasses = {
-  Accordion: "n-accordion",
-  Alert: "n-alert",
-  AlertDialog: "n-alert-dialog",
-  Avatar: "n-avatar",
-  Badge: "n-badge",
-  Button: "n-button",
-  Card: "n-card",
-  Checkbox: "n-checkbox",
-  Combobox: "n-combobox",
-  Dialog: "n-dialog",
-  Disclosure: "n-disclosure",
-  DropdownMenu: "n-dropdown-menu",
-  Fieldset: "n-fieldset",
-  Input: "n-input",
-  Listbox: "n-listbox",
-  Meter: "n-meter",
-  Popover: "n-popover",
-  Progress: "n-progress",
-  Radio: "n-radio",
-  Select: "n-select",
-  Separator: "n-separator",
-  Slider: "n-slider",
-  Switch: "n-switch",
-  Tabs: "n-tabs",
-  Toast: "n-toast",
-  Toggle: "n-toggle",
-  Tooltip: "n-tooltip",
-}
+/** Opaque package component names. Nagi CSS derives `n-<kebab-name>`. */
+export const nagiUiComponents = [
+  "Accordion",
+  "Alert",
+  "AlertDialog",
+  "Avatar",
+  "Badge",
+  "Breadcrumb",
+  "Button",
+  "ButtonGroup",
+  "Card",
+  "Checkbox",
+  "Combobox",
+  "Dialog",
+  "Disclosure",
+  "DropdownMenu",
+  "EmptyState",
+  "Fieldset",
+  "Input",
+  "Kbd",
+  "Listbox",
+  "Meter",
+  "Popover",
+  "Progress",
+  "Radio",
+  "Select",
+  "Separator",
+  "Skeleton",
+  "Slider",
+  "Spinner",
+  "Switch",
+  "Tabs",
+  "Textarea",
+  "Toast",
+  "Toggle",
+  "Tooltip",
+]
 
 export const nagiUiComponentSlots = {
   Accordion: {
@@ -52,6 +60,7 @@ export const nagiUiComponentSlots = {
   Avatar: { fallback: "n-avatar-fallback" },
   Badge: { label: "n-badge-label" },
   Button: { default: "n-button-content" },
+  ButtonGroup: { default: "n-button-group-content" },
   Card: {
     default: "n-card-content",
     title: "n-card-title",
@@ -68,6 +77,7 @@ export const nagiUiComponentSlots = {
     default: "n-disclosure-content",
     summary: "n-disclosure-summary",
   },
+  EmptyState: { default: "n-empty-state-action" },
   Fieldset: { default: "n-fieldset-content" },
   Popover: { default: "n-popover-content" },
   Tabs: { panel: "n-tabs-panel" },
@@ -75,7 +85,8 @@ export const nagiUiComponentSlots = {
 }
 
 const nagiUiPreset = {
-  componentClasses: nagiUiComponentClasses,
+  componentClassPrefix: "n-",
+  componentClasses: nagiUiComponents,
   componentSlots: nagiUiComponentSlots,
 }
 

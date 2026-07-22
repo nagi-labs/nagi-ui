@@ -74,6 +74,36 @@ test("Avatar recovers after an image error and Toggle exposes native pressed sta
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
 });
 
+test("expanded thin primitives preserve native semantics and form reset", async ({ page }) => {
+  const breadcrumb = page.getByRole("navigation", { name: "Package path" });
+  await expect(breadcrumb.getByRole("link", { name: "Home" })).toHaveAttribute(
+    "href",
+    "/catalog.html",
+  );
+  await expect(breadcrumb.getByText("Catalog", { exact: true })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+
+  const group = page.getByRole("group", { name: "Editor actions" });
+  await expect(group.getByRole("button", { name: "Save draft" })).toBeVisible();
+  await expect(group.getByRole("button", { name: "Publish" })).toBeVisible();
+
+  await expect(page.getByRole("status", { name: "Loading package catalog" })).toBeVisible();
+  await expect(page.getByTestId("decorative-spinner")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.getByTestId("catalog-skeleton")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.getByText("No packages yet", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create package" })).toBeVisible();
+
+  const textarea = page.getByRole("textbox", { name: "Release notes" });
+  await expect(textarea).toHaveValue("Native behavior first.");
+  await textarea.fill("Edited release notes");
+  await expect(page.getByTestId("release-notes-value")).toHaveText("Edited release notes");
+  await page.getByRole("button", { name: "Reset release notes" }).click();
+  await expect(textarea).toHaveValue("Native behavior first.");
+  await expect(page.getByTestId("release-notes-value")).toHaveText("Native behavior first.");
+});
+
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");

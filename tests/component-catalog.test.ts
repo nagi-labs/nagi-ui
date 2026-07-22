@@ -104,6 +104,74 @@ test("components entry exposes Accordion and AlertDialog", async () => {
   });
 });
 
+test("components entry exposes the expanded thin catalog slice", async () => {
+  await withComponents(async (components) => {
+    for (const name of [
+      "Breadcrumb",
+      "ButtonGroup",
+      "EmptyState",
+      "Kbd",
+      "Skeleton",
+      "Spinner",
+      "Textarea",
+    ]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+
+    const breadcrumb = await render(components.Breadcrumb as Component, {
+      label: "Project path",
+      items: [
+        { key: "home", label: "Home", href: "/" },
+        { key: "project", label: "Project" },
+      ],
+    });
+    assert.match(breadcrumb, /<nav[^>]*aria-label="Project path"/);
+    assert.match(breadcrumb, /<ol[^>]*class="list"/);
+    assert.match(breadcrumb, /<a[^>]*href="\/"/);
+    assert.match(breadcrumb, /aria-current="page"[^>]*>Project/);
+
+    const buttonGroup = await render(
+      components.ButtonGroup as Component,
+      { label: "Editor actions" },
+      "Action",
+    );
+    assert.match(buttonGroup, /role="group"/);
+    assert.match(buttonGroup, /aria-label="Editor actions"/);
+
+    const emptyState = await render(
+      components.EmptyState as Component,
+      { title: "No projects", description: "Create one to begin." },
+      "Create project",
+    );
+    assert.match(emptyState, /No projects/);
+    assert.match(emptyState, /Create one to begin\./);
+    assert.match(emptyState, /Create project/);
+
+    const kbd = await render(components.Kbd as Component, { label: "K" });
+    assert.match(kbd, /<kbd[^>]*>K<\/kbd>/);
+
+    const skeleton = await render(components.Skeleton as Component);
+    assert.match(skeleton, /aria-hidden="true"/);
+
+    const spinner = await render(components.Spinner as Component, { label: "Loading" });
+    assert.match(spinner, /role="status"/);
+    assert.match(spinner, /aria-label="Loading"/);
+
+    const textarea = await render(components.Textarea as Component, {
+      label: "Notes",
+      modelValue: "Initial",
+      name: "notes",
+      rows: 4,
+      placeholder: "Describe the release",
+    });
+    assert.match(textarea, /<label[^>]*class="n-textarea"/);
+    assert.match(textarea, /<textarea[^>]*name="notes"/);
+    assert.match(textarea, /rows="4"/);
+    assert.match(textarea, /placeholder="Describe the release"/);
+    assert.match(textarea, />Initial<\/textarea>/);
+  });
+});
+
 test("Accordion and AlertDialog preserve their native SSR contracts", async () => {
   await withComponents(async (components) => {
     const accordion = await renderSlotFunctions(

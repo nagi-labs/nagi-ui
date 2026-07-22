@@ -8,8 +8,8 @@ import {
   type MaybeRefOrGetter,
 } from "vue";
 
-type NativeFormControl = HTMLInputElement | HTMLSelectElement;
-type NativeValueControl = HTMLInputElement | HTMLSelectElement;
+type NativeFormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+type NativeValueControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 type NativeValidityControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 type ReadonlyControlRef<Control> = Readonly<{
   value: Control | null;
@@ -75,7 +75,7 @@ export function useNativeFormReset<Control extends NativeFormControl>(
   });
 }
 
-/** Restores a string-backed input or select without exposing reset plumbing. */
+/** Restores a string-backed input, select, or textarea without exposing reset plumbing. */
 export function useNativeValueReset<Value extends string | undefined>(
   control: ReadonlyControlRef<NativeValueControl>,
   model: WritableModel<Value>,
