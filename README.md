@@ -44,11 +44,13 @@ orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 The expanded cross-library benchmark currently places component creation at
-**34 / 54 (63.0%)**: 34 shipped components and 20 adopted backlog slices. The
+**37 / 54 (68.5%)**: 37 shipped components and 17 adopted backlog slices. The
 narrower Base UI-aligned scope remains **27 / 37 (73.0%)**. Native recipes,
 explicit declines, and separate products such as Nagi Grid are not counted;
 see [`docs/expanded-vue-component-catalog.md`](docs/expanded-vue-component-catalog.md)
 and [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
+The latest three-component slice and its native-boundary audit are recorded in
+[`docs/expanded-catalog-small-interactive-slice.md`](docs/expanded-catalog-small-interactive-slice.md).
 
 Package components are available without copying source:
 
@@ -70,13 +72,16 @@ import {
   DropdownMenu,
   EmptyState,
   Fieldset,
+  FileInput,
   Input,
   Kbd,
   Listbox,
   Meter,
+  Pagination,
   Popover,
   Progress,
   Radio,
+  Rating,
   Select,
   Separator,
   Skeleton,

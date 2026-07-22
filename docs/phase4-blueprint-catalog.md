@@ -168,6 +168,15 @@ same SFCs are exported, registered for ownership, declared as opaque consumer
 boundaries and exercised in `/catalog.html`. The catalog is now 34 / 54
 (63.0%); the independent Base UI-aligned metric remains 27 / 37 (73.0%).
 
+The small interactive slice adds components 35–37: FileInput, Pagination and
+Rating. FileInput leaves chooser state, `FileList`, submission and reset to the
+visible native file control. Pagination renders a flat schema as real links or
+native buttons and keeps data fetching and router-specific nodes outside its
+contract. Rating renders same-name native radios; only the browser reset/model
+ordering is hidden in a fixed two-argument helper. None adds compound parts,
+custom focus movement, pointer-only state or an upload engine. The catalog is
+now 37 / 54 (68.5%), while the Base UI-aligned metric remains 27 / 37 (73.0%).
+
 The first cross-library strengthening slice originally kept the catalog at 22 while
 adding the product anatomy independently established by shadcn-vue and
 PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
@@ -180,5 +189,5 @@ one-SFC package/ownership surfaces; no compound family, whole-header slot,
 behavior-bearing slot, icon-name DSL, or expanded pass-through API was introduced. The complete
 decision ledger records the Base UI-aligned 73.0% metric in
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md); the
-expanded cross-library metric is 34 / 54 (63.0%) in
+expanded cross-library metric is 37 / 54 (68.5%) in
 [`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).

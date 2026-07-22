@@ -21,8 +21,8 @@ requirements users repeatedly expect around that behavior.
 
 The primary coverage scope is:
 
-- every component Nagi currently ships: **34 / 34** below (27 Base UI-aligned
-  components plus seven expanded-catalog additions);
+- every component Nagi currently ships: **37 / 37** below (27 Base UI-aligned
+  components plus ten expanded-catalog additions);
 - every component in the Base UI 1.6.0 baseline: **37 / 37**, split between
   the 23 direct shipped mappings and 14 unshipped capabilities below.
 
@@ -38,7 +38,7 @@ counted as components to build. This metric tracks Nagi's chosen product, not
 API parity with any reference catalog.
 
 This is specifically the Base UI-aligned metric. The expanded normalized scope
-across Base UI, shadcn-vue, and PrimeVue is **34 / 54 = 63.0%**; see
+across Base UI, shadcn-vue, and PrimeVue is **37 / 54 = 68.5%**; see
 [`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).
 
 ## Benchmark rule
@@ -139,7 +139,7 @@ the same platform/Base UI + shadcn-vue + PrimeVue + Nagi translation rule.
 
 ## Shipped expanded-catalog additions
 
-These seven components come from repeated shadcn-vue / PrimeVue product signal,
+These ten components come from repeated shadcn-vue / PrimeVue product signal,
 not from additional Base UI baseline rows. They therefore increase the expanded
 catalog numerator without changing the Base UI-aligned 27 / 37 metric.
 
@@ -148,12 +148,15 @@ catalog numerator without changing the Base UI-aligned 27 / 37 metric.
 | `Breadcrumb` | Native named `nav`, ordered list, links and `aria-current` | Both Vue catalogs expose Breadcrumb | **Shipped**: flat link schema, one current item and text separator; router components remain adapter / ownership concerns. |
 | `ButtonGroup` | `role="group"` plus caller-owned native buttons | shadcn-vue Button Group; PrimeVue SplitButton is adjacent evidence | **Shipped**: layout, orientation and optional group name only; Button API is not duplicated. |
 | `EmptyState` | Presentation and document hierarchy remain caller-owned | shadcn-vue Empty; PrimeVue DataView has empty anatomy | **Shipped**: required title, optional description and one action surface; no page-block DSL or fixed heading level. |
+| `FileInput` | Visible native `input[type=file]`, chooser, `FileList`, form submission and reset | shadcn-vue Input recipe; PrimeVue Upload establishes the product demand | **Shipped**: visible native control, label and native attribute forwarding. File state, dropzone, upload transport, progress and storage SDKs remain caller/product concerns. |
 | `Kbd` | Native `<kbd>` | shadcn-vue Kbd; shortcut display recurs in menu products | **Shipped**: required plain label only; no shortcut registry or keyboard behavior. |
+| `Pagination` | Named `nav`, list, real links and native buttons | Both Vue catalogs expose Pagination/Paginator | **Shipped**: flat link/button schema, one controlled current key and a selection event. Links retain navigation; fetching and router-specific nodes stay outside the stable schema. |
+| `Rating` | Native same-name radio group inside `fieldset`/`legend` | shadcn-vue Radio Group recipe; PrimeVue Rating | **Shipped**: localized numeric items, keyboard/form/reset behavior and presentational stars. No hover value, half-star, pointer-only model or roving-focus reimplementation. |
 | `Skeleton` | Decorative presentation with owner-supplied loading semantics | Both Vue catalogs expose Skeleton | **Shipped**: always `aria-hidden`, token styling and reduced-motion support; it never owns `aria-busy` or live state. |
 | `Spinner` | Empty status indicator or decorative presentation | shadcn-vue Spinner and PrimeVue ProgressSpinner | **Shipped**: optional accessible label selects `status` vs `aria-hidden`; determinate progress stays in Progress. |
 | `Textarea` | Native form-associated `<textarea>` | Both Vue catalogs expose Textarea | **Shipped**: label, string model, native attrs, form/reset/validation and no autosize behavior. |
 
-Overall shipped package audit result: **34 / 34** components represented here.
+Overall shipped package audit result: **37 / 37** components represented here.
 
 ## Unshipped Base UI baseline
 
@@ -239,8 +242,8 @@ event ordering, disabled-summary suppression and fixed alert-dialog dismiss
 policy live in `@nagi-labs/nagi-ui/component-controls`. The SFCs retain the
 editable schema mapping, labels, action tone/event, IDREFs, DOM and CSS. The
 package catalog was then 27 components. The Base UI-aligned implementation set
-remains 73.0% complete, while the later expanded thin slice moves the
-cross-library set to 63.0% complete. Full
+remains 73.0% complete, while the later expanded-catalog slices move the
+cross-library set to 68.5% complete. Full
 rationale and browser contracts are recorded in
 [`base-ui-alignment-d3-accordion-alert-dialog.md`](base-ui-alignment-d3-accordion-alert-dialog.md).
 
