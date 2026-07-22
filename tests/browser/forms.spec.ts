@@ -404,6 +404,15 @@ test("InputGroup distinguishes action focus, forwards invalid state, and preserv
   const numberField = page.locator(".n-number-field > .unit");
   const seats = page.getByRole("spinbutton", { name: "Seats" });
 
+  expect(
+    await inputGroup.evaluate((element) => element.getBoundingClientRect().height),
+  ).toBeLessThan(64);
+  expect(
+    await inputGroup.locator(".-prefix, .-suffix").evaluateAll((affixes) =>
+      affixes.map((affix) => affix.scrollWidth > affix.clientWidth),
+    ),
+  ).toEqual([false, false]);
+
   await action.focus();
   await expect(action).toBeFocused();
   expect(

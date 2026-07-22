@@ -71,7 +71,7 @@ defineProps<{
 
     &.-control {
       display: flex;
-      flex: 1 1 auto;
+      flex: 1 1 0;
       min-inline-size: 4ch;
       padding: 0;
       background: transparent;
