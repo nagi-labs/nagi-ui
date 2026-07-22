@@ -51,7 +51,7 @@ avatar、router-link、特殊レイアウト等を安定DSLへ足し続けず、
 package版とownership版を別々に実装してはならない。
 
 ```text
-packages/core/blueprints/dropdown/DropdownMenu.vue
+packages/core/blueprints/menu/DropdownMenu.vue
                  ├─ package component build
                  └─ own command copy source
 ```

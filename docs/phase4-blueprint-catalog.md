@@ -146,6 +146,18 @@ vertical semantics to `role="separator"`; Toggle uses a native
 `<button aria-pressed>`. The same slice removes `Nagi` from every SFC filename
 and moves every Blueprint surface to the exact `.n-<filename-kebab>` namespace.
 
+Post-v0 Alignment D3 adds Accordion and AlertDialog as components 26–27.
+Accordion keeps repeated disclosure behavior in native `<details name>` while a
+fixed adapter owns generated grouping, controlled `openKeys` synchronization
+and disabled activation suppression. AlertDialog reuses native modal Dialog
+behavior with `role="alertdialog"`, required description, explicit owned
+Cancel/Action buttons and no nested form. Decisions and browser contracts are
+recorded in
+[`base-ui-alignment-d3-accordion-alert-dialog.md`](base-ui-alignment-d3-accordion-alert-dialog.md).
+The same integration migrates the retired Nagi CSS anatomy class `.zone` to
+`.unit` across every shipped Blueprint and playground fixture, without a
+compatibility alias.
+
 The first cross-library strengthening slice originally kept the catalog at 22 while
 adding the product anatomy independently established by shadcn-vue and
 PrimeVue: Alert icon markup, Button small/default/large sizing, and Card footer
@@ -156,5 +168,7 @@ and receive those values as slot props. The SFCs continue to own the wrappers,
 ARIA relationships, native summary behavior, typography and tone. All remain
 one-SFC package/ownership surfaces; no compound family, whole-header slot,
 behavior-bearing slot, icon-name DSL, or expanded pass-through API was introduced. The complete
-decision ledger and current 67.6% component-creation metric are in
-[`base-ui-component-comparison.md`](base-ui-component-comparison.md).
+decision ledger records the Base UI-aligned 73.0% metric in
+[`base-ui-component-comparison.md`](base-ui-component-comparison.md); the
+expanded cross-library metric is 27 / 54 (50.0%) in
+[`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).

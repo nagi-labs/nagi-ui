@@ -55,7 +55,7 @@ excluded.
 |---|---|---|
 | presentation-only | Alert, Badge, Card, Fieldset, Separator | props, slots, DOM and CSS only |
 | native elements | Input, Checkbox, Radio, Select, Slider, Switch, Meter, Progress | native control remains visible; reset/property synchronization is in a fixed helper |
-| behavior composition | Dialog, Disclosure, Listbox, Popover, Tabs, Toast, Toggle, Tooltip | thin components use one package adapter; schema-aware components retain their editable mapping; state machines stay in composables |
+| behavior composition | Accordion, AlertDialog, Dialog, Disclosure, Listbox, Popover, Tabs, Toast, Toggle, Tooltip | thin components use one package adapter; schema-aware components retain their editable mapping; state machines stay in composables |
 | menu renderers | ActionMenu, DropdownMenu, DropdownSubmenu, DropdownMenuItem | editable schema-to-DOM branches stay visible; fixed node option and navigation mechanics moved to an owned helper |
 | renderer-specific mechanisms | Avatar, Combobox, Button | image races, native combobox form channels, and focusable-disabled activation are package composables and are not copied by ordinary `own` |
 
@@ -83,6 +83,16 @@ not a permanent ban on every future use.
   package `useButtonControl`.
 - Dialog, Disclosure, Popover, Tooltip, and Toggle replace direct prop option
   objects with their package `use*Control(props, model)` adapters.
+- Accordion delegates generated native grouping, exclusive/multiple open-key
+  synchronization, native toggle ordering and disabled summary activation to
+  `useAccordionControl(props, openKeys)`. Its SFC retains `item.key`,
+  `item.disabled`, summary/content fallbacks, slots and DOM as editable schema
+  interpretation.
+- AlertDialog delegates its fixed `modal: true` / `closedby: "closerequest"`
+  policy to `useAlertDialogControl(open)`. Required labels, action tone,
+  public action/cancel events, visible IDREFs and explicit button anatomy stay
+  in the SFC. Native close commands replace a nested `form method="dialog"`,
+  so ownership remains safe inside consumer forms.
 - Input, Checkbox, Switch, and Slider bind `$attrs` directly in the template;
   Combobox merges `$attrs` with its behavior props through `mergeNagiProps`.
   Consumer attributes, classes, styles, and listeners intentionally target the

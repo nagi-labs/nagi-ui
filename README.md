@@ -43,16 +43,20 @@ product needs custom dismiss/stack state, gesture sheets, or Motion-level
 orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
-The cross-library component benchmark currently places creation progress at
-**25 / 37 (67.6%)**: 25 shipped components and 12 adopted component slices not
-yet built. Native recipes and explicit declines are not counted as components;
-see [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
+The expanded cross-library benchmark currently places component creation at
+**27 / 54 (50.0%)**: 27 shipped components and 27 adopted backlog slices. The
+narrower Base UI-aligned scope remains **27 / 37 (73.0%)**. Native recipes,
+explicit declines, and separate products such as Nagi Grid are not counted;
+see [`docs/expanded-vue-component-catalog.md`](docs/expanded-vue-component-catalog.md)
+and [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
 
 Package components are available without copying source:
 
 ```ts
 import {
+  Accordion,
   Alert,
+  AlertDialog,
   Avatar,
   Badge,
   Button,
@@ -238,6 +242,9 @@ upgrades.
   primitives, and normalizes every shipped SFC to a prefix-free filename with
   an exact `n-` surface namespace. See
   [`docs/base-ui-alignment-d2-primitives.md`](docs/base-ui-alignment-d2-primitives.md).
+- [x] Alignment D3 ships Accordion as a controlled native `<details>` group
+  and AlertDialog as an explicit native modal decision surface. See
+  [`docs/base-ui-alignment-d3-accordion-alert-dialog.md`](docs/base-ui-alignment-d3-accordion-alert-dialog.md).
 - [x] The Blueprint wiring audit keeps ordinary product change points in SFCs,
   moves fixed browser/Vue mechanisms behind narrow helpers, and verifies that
   `own` copies every local dependency. See

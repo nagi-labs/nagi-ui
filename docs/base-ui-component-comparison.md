@@ -21,20 +21,24 @@ requirements users repeatedly expect around that behavior.
 
 The primary coverage scope is:
 
-- every component Nagi currently ships: **25 / 25** below;
+- every component Nagi currently ships: **27 / 27** below;
 - every component in the Base UI 1.6.0 baseline: **37 / 37**, split between
-  the 21 direct shipped mappings and 16 unshipped capabilities below.
+  the 23 direct shipped mappings and 14 unshipped capabilities below.
 
 PrimeVue's 90+ catalog and every shadcn-vue block are not automatic Nagi scope.
 Data grids, calendars and other product domains should receive their own
 benchmark slice when Nagi chooses to enter that domain.
 
 For component-creation progress, the adopted implementation set is currently
-37 slices: 25 shipped components plus 12 unbuilt component slices (five
+37 slices: 27 shipped components plus 10 unbuilt component slices (three
 `Candidate`, six `Defer`, and the separate multi-thumb Slider). This is
-**25 / 37 = 67.6%**. `Native/recipe` and `Decline` rows are deliberately not
+**27 / 37 = 73.0%**. `Native/recipe` and `Decline` rows are deliberately not
 counted as components to build. This metric tracks Nagi's chosen product, not
 API parity with any reference catalog.
+
+This is specifically the Base UI-aligned metric. The expanded normalized scope
+across Base UI, shadcn-vue, and PrimeVue is **27 / 54 = 50.0%**; see
+[`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).
 
 ## Benchmark rule
 
@@ -101,7 +105,9 @@ This table applies the same four-axis review to every package/ownable component.
 
 | Nagi component | Platform / Base UI guarantee | shadcn-vue product signal | PrimeVue product signal | Nagi decision |
 |---|---|---|---|---|
+| `Accordion` | [Accordion](https://base-ui.com/react/components/accordion) plus native `<details name>` define exclusive disclosure and browser-owned keyboard behavior | [Accordion](https://www.shadcn-vue.com/docs/components/accordion): single/multiple groups and rich headers/content | [Accordion](https://primevue.dev/accordion/): repeated panels, multiple mode and rich headers/content | **Shipped**: flat items schema, controlled `openKeys`, single/multiple native details, disabled summaries and content-only summary/panel slots. Generated grouping, toggle ordering and activation suppression stay in a fixed package adapter; no item compound family or duplicate ARIA state. |
 | `Alert` | Native `status`/`alert`; Base UI has Alert Dialog, not a visual callout | [Alert](https://www.shadcn-vue.com/docs/components/alert): icon, title, description, destructive variant | [Message](https://primevue.dev/message/): severity, icon and optional close behavior | **Shipped**: required title prop with a same-name rich-content slot, body/tone/role and one free-markup `icon` slot cover the common anatomy. The owned heading and status role remain fixed. Dismiss remains non-common. |
+| `AlertDialog` | [Alert Dialog](https://base-ui.com/react/components/alert-dialog): modal critical decision, name/description and explicit actions | [Alert Dialog](https://www.shadcn-vue.com/docs/components/alert-dialog): title, description, cancel and action | [ConfirmDialog](https://primevue.dev/confirmdialog/): explicit accept/reject confirmation | **Shipped**: native modal `<dialog role="alertdialog">`, required title/description/action labels, owned Cancel/Action buttons, safe initial Cancel focus and action tone. `closedby="closerequest"` keeps Escape browser-owned without outside light-dismiss; no portal, provider or action slot. |
 | `Avatar` | [Avatar](https://base-ui.com/react/components/avatar): image loading and fallback state | [Avatar](https://www.shadcn-vue.com/docs/components/avatar): image plus fallback | [Avatar](https://primevue.dev/avatar/): image, label and icon forms | **Shipped**: native image, stable wrapper accessible name, deterministic text fallback, rich fallback content and tested load/error/source-recovery. Group/stack anatomy remains composition. |
 | `Badge` | No behavior primitive required | [Badge](https://www.shadcn-vue.com/docs/components/badge): compact variant label and icon composition | [Tag](https://primevue.dev/tag/): value, severity, icon, template content and rounded presentation | **Shipped**: required label prop with a same-name phrasing-content slot plus tone cover the common status-label core. The outer span retains typography and tone. Size additions need a more precise common contract. |
 | `Button` | [Button](https://base-ui.com/react/components/button): native semantics and focusable-disabled behavior | [Button](https://www.shadcn-vue.com/docs/components/button): variants, small/default/large and icon sizes, icon/spinner composition | [Button](https://primevue.dev/button/): severity/variants, sizes, icons and loading | **Shipped**: native button, variants, arbitrary label/icon content, focusable-disabled and the small/default/large enum cover the common contract. Loading remains composable content plus explicit busy semantics until its contract is fixed. |
@@ -127,18 +133,16 @@ This table applies the same four-axis review to every package/ownable component.
 | `Toggle` | [Toggle](https://base-ui.com/react/components/toggle): controlled pressed and disabled semantics | [Toggle](https://www.shadcn-vue.com/docs/components/toggle): pressed button with content | [ToggleButton](https://primevue.dev/togglebutton/): binary pressed control | **Shipped**: native `<button aria-pressed>`, controlled/uncontrolled model, disabled behavior and free label/icon content. No arbitrary-element rendering or custom state vocabulary. |
 | `Tooltip` | [Tooltip](https://base-ui.com/react/components/tooltip): hover/focus, delay, positioning and disabled handling | [Tooltip](https://www.shadcn-vue.com/docs/components/tooltip): arbitrary trigger/content with provider coordination | [Tooltip](https://primevue.dev/tooltip/): directive on arbitrary targets with position/delay options | **Shipped**: hover/focus union, delays, controlled state, disabled and positioning. Arbitrary package triggers use the composable or ownership; no mandatory provider or trigger slot carrying behavior props. |
 
-Audit result: **25 / 25 shipped Nagi components reviewed through the same
+Audit result: **27 / 27 shipped Nagi components reviewed through the same
 platform/Base UI + shadcn-vue + PrimeVue + Nagi translation rule.**
 
 ## Unshipped Base UI baseline
 
-These 16 rows complete the Base UI 1.6.0 catalog audit. Styled-library
+These 14 rows complete the Base UI 1.6.0 catalog audit. Styled-library
 agreement changes priority, but never bypasses the architectural translation.
 
 | Capability | Base UI | shadcn-vue | PrimeVue | Nagi decision |
 |---|---|---|---|---|
-| Accordion | [Accordion](https://base-ui.com/react/components/accordion) | [Accordion](https://www.shadcn-vue.com/docs/components/accordion) | [Accordion](https://primevue.dev/accordion/) | **Candidate**: strong three-source signal. Start with repeated Disclosure/native `<details name>` and a flat package anatomy; no item compound family. |
-| Alert Dialog | [Alert Dialog](https://base-ui.com/react/components/alert-dialog) | [Alert Dialog](https://www.shadcn-vue.com/docs/components/alert-dialog) | [ConfirmDialog](https://primevue.dev/confirmdialog/) | **Candidate**: strict native Dialog Blueprint with `role="alertdialog"`, description and explicit actions. Do not overload visual Alert. |
 | Autocomplete | [Autocomplete](https://base-ui.com/react/components/autocomplete) | Combobox is the nearest recipe | [AutoComplete](https://primevue.dev/autocomplete/) | **Defer**: distinct free-form `useAutocomplete`; do not add free-form modes to restricted Combobox. |
 | Checkbox Group | [Checkbox Group](https://base-ui.com/react/components/checkbox-group) | Repeated Checkbox in Field/Form | Repeated Checkbox values | **Native/recipe**: native names plus Fieldset first; add an items schema only if package repetition proves useful. |
 | Context Menu | [Context Menu](https://base-ui.com/react/components/context-menu) | [Context Menu](https://www.shadcn-vue.com/docs/components/context-menu) | [ContextMenu](https://primevue.dev/contextmenu/) | **Defer**: strong common signal but needs a virtual pointer anchor, right-click/long-press policy and mobile browser tests. Reuse menu schema/core. |
@@ -154,8 +158,8 @@ agreement changes priority, but never bypasses the architectural translation.
 | Toggle Group | [Toggle Group](https://base-ui.com/react/components/toggle-group) | [Toggle Group](https://www.shadcn-vue.com/docs/components/toggle-group) | [SelectButton](https://primevue.dev/selectbutton/) | **Candidate**: strong common signal. Flat items schema and pressed buttons; add roving focus only when the selected ARIA pattern requires it. |
 | Toolbar | [Toolbar](https://base-ui.com/react/components/toolbar) | No direct Toolbar component | [Toolbar](https://primevue.dev/toolbar/) | **Defer**: attribute-injection `useToolbar` for arbitrary owned controls; avoid a ToolbarButton/ToolbarLink family. |
 
-Base UI catalog result: **37 / 37 represented** (21 direct shipped mappings +
-16 unshipped decisions). Nagi's four additional shipped products are Alert,
+Base UI catalog result: **37 / 37 represented** (23 direct shipped mappings +
+14 unshipped decisions). Nagi's four additional shipped products are Alert,
 Badge, Card and standalone Listbox.
 
 ## First strengthening result
@@ -201,6 +205,24 @@ The same slice separates three naming concerns: public component names and SFC
 filenames stay prefix-free (`Button` / `Button.vue`), while Nagi CSS derives the
 owned surface exactly from configured namespace plus filename (`.n-button`).
 Missing prefixes and unrelated `.n-*` names are lint errors.
+
+## Alignment D3 result
+
+The next native-composite slice moves Accordion and Alert Dialog from Candidate
+to Shipped. Accordion renders one flat items schema as real `<details>`
+elements, uses a generated native `name` for exclusive mode, omits it for
+multiple mode, and exposes one `openKeys` model shape for both. Alert Dialog is
+not a visual Alert variant: it is a strict native modal dialog with required
+name/description, explicit Cancel/Action buttons and safe Cancel autofocus.
+
+Both SFCs were audited after implementation. Generated names, native toggle
+event ordering, disabled-summary suppression and fixed alert-dialog dismiss
+policy live in `@nagi-labs/nagi-ui/component-controls`. The SFCs retain the
+editable schema mapping, labels, action tone/event, IDREFs, DOM and CSS. The
+package catalog is now 27 components, the Base UI-aligned implementation set is
+73.0% complete, and the expanded cross-library set is 50.0% complete. Full
+rationale and browser contracts are recorded in
+[`base-ui-alignment-d3-accordion-alert-dialog.md`](base-ui-alignment-d3-accordion-alert-dialog.md).
 
 ## Capabilities that do not survive translation
 
