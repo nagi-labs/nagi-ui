@@ -23,6 +23,11 @@ adopted slices (68.5%). The independent Base UI-aligned metric remains
   general two-way value and the browser already resets the control correctly.
   Consumer attributes and listeners visibly target the real input through
   `inheritAttrs: false` plus `v-bind="$attrs"`.
+- FileInput also leaves the browser-generated chooser and filename typography
+  UA-owned. Nagi themes only the chooser button, colors and spacing, but does
+  not force the application font size onto locale-dependent native text or draw
+  a second field around the browser's filename display. This avoids an
+  oversized split-control appearance at narrow widths.
 - Pagination does not infer page numbers or fetch data. An enabled `href` item
   is an anchor and its click is never prevented. An item without `href` is a
   native button and updates `currentKey`. An unknown controlled key displays no

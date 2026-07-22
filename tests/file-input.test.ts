@@ -86,6 +86,20 @@ test("FileInput leaves file state, chooser, and reset policy with the browser", 
   assert.match(source, /label: string/u);
   assert.match(source, /<input[\s\S]*v-bind="\$attrs"[\s\S]*type="file"/u);
   assert.match(source, /&::file-selector-button/u);
+  assert.match(
+    source,
+    /&::file-selector-button \{[\s\S]*box-sizing: border-box[\s\S]*min-block-size: var\(--nagi-size-control\)[\s\S]*padding: var\(--nagi-space-item\)/u,
+  );
+  assert.match(
+    source,
+    /> \.input \{[\s\S]*border: 0[\s\S]*background: transparent/u,
+  );
+  assert.match(source, /&:focus-visible::file-selector-button/u);
+  assert.doesNotMatch(
+    source,
+    /\bfont:\s*inherit|font-size:\s*0\.875rem/u,
+    "native file-control typography stays UA-owned",
+  );
   assert.doesNotMatch(source, /<slot\b|defineModel\b|modelValue|v-model/u);
   assert.doesNotMatch(
     source,

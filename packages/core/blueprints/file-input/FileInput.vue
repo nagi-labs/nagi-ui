@@ -52,21 +52,19 @@ const props = withDefaults(
     box-sizing: border-box;
     inline-size: 100%;
     min-block-size: var(--nagi-size-control);
-    border: 1px solid var(--nagi-color-border);
-    border-radius: var(--nagi-radius-control);
-    background: var(--nagi-color-surface);
-    color: var(--nagi-color-text);
-    font: inherit;
+    border: 0;
+    background: transparent;
+    color: var(--nagi-color-text-muted);
 
     &::file-selector-button {
+      box-sizing: border-box;
       min-block-size: var(--nagi-size-control);
       margin-inline-end: var(--nagi-space-item-gap);
-      padding: var(--nagi-space-control);
-      border: 0;
-      border-inline-end: 1px solid var(--nagi-color-border);
-      background: var(--nagi-color-surface-accent);
+      padding: var(--nagi-space-item);
+      border: 1px solid var(--nagi-color-border);
+      border-radius: var(--nagi-radius-control);
+      background: var(--nagi-color-surface);
       color: var(--nagi-color-text);
-      font: inherit;
       font-weight: 650;
       cursor: pointer;
     }
@@ -77,6 +75,9 @@ const props = withDefaults(
 
     &:focus-visible {
       outline: none;
+    }
+
+    &:focus-visible::file-selector-button {
       border-color: var(--nagi-color-focus-ring);
       box-shadow: var(--nagi-shadow-focus);
     }
@@ -94,7 +95,9 @@ const props = withDefaults(
 
     &:user-invalid,
     &[aria-invalid="true"] {
-      border-color: var(--nagi-color-danger);
+      &::file-selector-button {
+        border-color: var(--nagi-color-danger);
+      }
     }
   }
 }

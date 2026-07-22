@@ -254,10 +254,11 @@ function captureSubmission(event: SubmitEvent) {
     </section>
 
     <section class="section" aria-labelledby="external-heading">
-      <h2 id="external-heading" class="title">External form owner</h2>
+      <h2 id="external-heading" class="title">Form owner rebinding test</h2>
       <p class="text">
-        This input is outside the form DOM tree and participates through
-        <code class="code">form="alignment-form"</code>.
+        Development fixture: the input is outside both forms. Change its
+        <code class="code">form</code> owner, then verify that only the new
+        owner's reset restores the model.
       </p>
       <NagiInput
         v-model="externalNote"
@@ -272,10 +273,10 @@ function captureSubmission(event: SubmitEvent) {
           type="button"
           @click="externalFormOwner = 'alternate-form'"
         >
-          Move to alternate form
+          1. Assign to alternate form
         </button>
         <form id="alternate-form" class="form">
-          <button class="button" type="reset">Reset alternate form</button>
+          <button class="button" type="reset">2. Reset alternate form</button>
         </form>
       </div>
     </section>
