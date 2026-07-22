@@ -10,7 +10,9 @@ export { nagiThemeTokens as nagiUiThemeTokens } from "./theme/tokens.mjs"
 export const nagiUiSurfaceRootPrefixes = ["n-"]
 
 export const nagiUiComponentClasses = {
+  Accordion: "n-accordion",
   Alert: "n-alert",
+  AlertDialog: "n-alert-dialog",
   Avatar: "n-avatar",
   Badge: "n-badge",
   Button: "n-button",
@@ -38,7 +40,15 @@ export const nagiUiComponentClasses = {
 }
 
 export const nagiUiComponentSlots = {
+  Accordion: {
+    summary: "n-accordion-summary",
+    panel: "n-accordion-panel",
+  },
   Alert: { default: "n-alert-content", icon: "n-alert-icon", title: "n-alert-title" },
+  AlertDialog: {
+    title: "n-alert-dialog-title",
+    description: "n-alert-dialog-description",
+  },
   Avatar: { fallback: "n-avatar-fallback" },
   Badge: { label: "n-badge-label" },
   Button: { default: "n-button-content" },

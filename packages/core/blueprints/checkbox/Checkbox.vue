@@ -42,7 +42,7 @@ useNativeCheckboxControl(input, checked, indeterminate);
       :disabled="disabled"
       :required="required"
     />
-    <span class="zone">{{ label }}</span>
+    <span class="unit">{{ label }}</span>
   </label>
 </template>
 
@@ -55,7 +55,7 @@ useNativeCheckboxControl(input, checked, indeterminate);
   cursor: pointer;
 
   &:has(> .input:disabled) {
-    > .zone {
+    > .unit {
       color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
@@ -85,7 +85,7 @@ useNativeCheckboxControl(input, checked, indeterminate);
 
   }
 
-  > .zone {
+  > .unit {
     line-height: 1.35;
   }
 }

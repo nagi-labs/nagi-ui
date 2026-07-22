@@ -97,7 +97,7 @@ const listbox = useListbox<ListboxOption>({
       }
 
       &[aria-selected="true"] {
-        background: #dcebef;
+        background: var(--nagi-color-surface-accent);
         font-weight: 650;
       }
 

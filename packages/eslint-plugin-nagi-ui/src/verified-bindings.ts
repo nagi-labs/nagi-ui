@@ -227,6 +227,10 @@ const contracts: Record<string, BindingContract> = {
     tags: ["details"],
     protectedAttributes: set("id", "open", "name"),
   },
+  summaryProps: {
+    tags: ["summary"],
+    protectedAttributes: set("aria-disabled"),
+  },
   regionProps: {
     protectedAttributes: set("id", "popover", "aria-live"),
   },

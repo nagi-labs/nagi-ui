@@ -31,7 +31,7 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
 
   try {
     const blueprint = (
-      await server.ssrLoadModule("/@fs" + path.join(repo, "packages/core/blueprints/dropdown/DropdownMenu.vue"))
+      await server.ssrLoadModule("/@fs" + path.join(repo, "demos/NativePopoverDropdown.vue"))
     ).default
     const lab = (
       await server.ssrLoadModule("/@fs" + path.join(repo, "playground/src/PopoverLab.vue"))
@@ -89,7 +89,7 @@ test("SSR emits the full popover wiring as plain attributes", async () => {
 <body>
 <h1>Zero-JS proof</h1>
 <p>This page contains no script tags. The dropdown below is the server-rendered
-output of DropdownMenu.vue — clicking it works because the wiring is native
+output of NativePopoverDropdown.vue — clicking it works because the wiring is native
 (<code>popovertarget</code>), not hydration.</p>
 ${blueprintHtml}
 </body>

@@ -85,7 +85,7 @@ function captureSubmission(event: SubmitEvent) {
     <section class="section" aria-labelledby="form-heading">
       <h2 id="form-heading" class="title">Form-associated controls</h2>
       <form id="alignment-form" class="form" @submit.prevent="captureSubmission">
-        <div class="zone">
+        <div class="unit">
           <NagiInput
             v-model="fullName"
             data-testid="full-name"
@@ -136,7 +136,7 @@ function captureSubmission(event: SubmitEvent) {
           />
         </Fieldset>
 
-        <div class="zone">
+        <div class="unit">
           <NagiSelect
             v-model="plan"
             data-testid="plan"
@@ -156,7 +156,7 @@ function captureSubmission(event: SubmitEvent) {
           />
         </div>
 
-        <div class="zone">
+        <div class="unit">
           <Combobox
             v-model="frameworkInput"
             v-model:selected="frameworkKey"
@@ -218,7 +218,7 @@ function captureSubmission(event: SubmitEvent) {
 
     <section class="section" aria-labelledby="status-heading">
       <h2 id="status-heading" class="title">Native status elements</h2>
-      <div class="zone">
+      <div class="unit">
         <Progress
           data-testid="determinate-progress"
           label="Build progress"
@@ -241,7 +241,7 @@ function captureSubmission(event: SubmitEvent) {
 
     <section class="section" aria-labelledby="combobox-states-heading">
       <h2 id="combobox-states-heading" class="title">Combobox states</h2>
-      <div class="zone">
+      <div class="unit">
         <Combobox
           v-model="loadingInput"
           v-model:selected="loadingKey"
@@ -346,7 +346,7 @@ function captureSubmission(event: SubmitEvent) {
       display: grid;
       gap: 1rem;
 
-      > .zone {
+      > .unit {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
         gap: 1rem;
@@ -379,7 +379,7 @@ function captureSubmission(event: SubmitEvent) {
       }
     }
 
-    > .zone {
+    > .unit {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
       gap: 1rem;

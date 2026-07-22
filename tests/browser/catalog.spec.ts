@@ -97,7 +97,82 @@ test("package Dialog mirrors open state and closes through its owned button", as
 
   await dialog.getByRole("button", { name: "Close" }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByText("model open: false")).toBeVisible();
+  await expect(page.getByText("model open: false", { exact: true })).toBeVisible();
+});
+
+test("AlertDialog keeps critical actions explicit and returns focus through native dialog", async ({
+  page,
+}) => {
+  const trigger = page.getByRole("button", { name: "Delete package", exact: true });
+  await trigger.click();
+
+  const dialog = page.getByRole("alertdialog", { name: "Delete this package?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAccessibleDescription(
+    "This action permanently removes the package and cannot be undone.",
+  );
+  await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
+  await expect(page.locator("form form")).toHaveCount(0);
+  await expect(page.getByText("alert model open: true")).toBeVisible();
+
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByTestId("alert-dialog-cancels")).toHaveText("cancels: 1");
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  await dialog.getByRole("button", { name: "Delete package" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByTestId("alert-dialog-actions")).toHaveText("actions: 1");
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(page.getByText("alert model open: false")).toBeVisible();
+  await expect(page.getByTestId("alert-dialog-cancels")).toHaveText("cancels: 1");
+});
+
+test("Accordion delegates exclusive and multiple disclosure state to native details", async ({
+  page,
+}) => {
+  const accordion = page.locator(".n-accordion").first();
+  const details = accordion.locator("details");
+  const names = await details.evaluateAll((elements) =>
+    elements.map((element) => element.getAttribute("name")),
+  );
+  expect(names.every((name) => name === names[0] && name !== null)).toBe(true);
+  await expect(details.nth(0)).toHaveAttribute("open", "");
+  await expect(details.nth(1)).not.toHaveAttribute("open", "");
+
+  await accordion.getByText("Can I return an order?", { exact: true }).click();
+  await expect(details.nth(0)).not.toHaveAttribute("open", "");
+  await expect(details.nth(1)).toHaveAttribute("open", "");
+  await expect(page.getByTestId("accordion-open-keys")).toContainText("open: returns");
+
+  await page.getByRole("button", { name: "Open shipping programmatically" }).click();
+  await expect(details.nth(0)).toHaveAttribute("open", "");
+  await expect(details.nth(1)).not.toHaveAttribute("open", "");
+  await expect(page.getByTestId("accordion-open-keys")).toContainText("open: shipping");
+
+  const disabled = accordion.locator("summary", { hasText: "Legacy policy" });
+  await expect(disabled).toHaveAttribute("aria-disabled", "true");
+  await disabled.click({ force: true });
+  await expect(details.nth(2)).not.toHaveAttribute("open", "");
+  await disabled.focus();
+  await disabled.press("Enter");
+  await expect(details.nth(2)).not.toHaveAttribute("open", "");
+
+  const multiple = page.locator(".n-accordion").nth(1);
+  const multipleDetails = multiple.locator("details");
+  await expect(multipleDetails).toHaveCount(2);
+  await expect(multipleDetails.nth(0)).not.toHaveAttribute("name", /.+/);
+  await expect(multipleDetails.nth(0)).toHaveAttribute("open", "");
+  await expect(multipleDetails.nth(1)).toHaveAttribute("open", "");
+  await multiple.getByText("How does shipping work?", { exact: true }).click();
+  await expect(multipleDetails.nth(0)).not.toHaveAttribute("open", "");
+  await expect(multipleDetails.nth(1)).toHaveAttribute("open", "");
+  await expect(page.getByTestId("multiple-accordion-open-keys")).toContainText("open: returns");
 });
 
 test("disabled Tooltip and Disclosure suppress activation", async ({ page }) => {

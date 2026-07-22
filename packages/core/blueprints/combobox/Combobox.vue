@@ -72,7 +72,7 @@ const control = useComboboxControl(props, inputElement, combobox);
 <template>
   <div class="n-combobox">
     <label :id="labelId" class="label" :for="combobox.inputId">{{ label }}</label>
-    <div class="zone -control">
+    <div class="unit -control">
       <input
         ref="input"
         class="input"
@@ -103,7 +103,7 @@ const control = useComboboxControl(props, inputElement, combobox);
       :disabled="disabled"
     />
     <div
-      class="zone -popup"
+      class="unit -popup"
       popover
       :aria-busy="loading ? 'true' : undefined"
       v-bind="combobox.popupProps"
@@ -145,7 +145,7 @@ const control = useComboboxControl(props, inputElement, combobox);
     text-transform: uppercase;
   }
 
-  > .zone {
+  > .unit {
     &.-control {
       position: relative;
 

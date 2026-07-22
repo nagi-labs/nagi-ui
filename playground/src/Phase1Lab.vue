@@ -39,7 +39,7 @@ const faq2 = useDisclosure({ name: "faq" })
       <h2 class="title">useTooltip</h2>
       <p class="text">Hover or keyboard-focus the button; the hint anchors to it.</p>
       <button class="button -trigger" v-bind="tooltip.triggerProps">Hover or focus me</button>
-      <div class="zone -hint" popover="hint" v-bind="tooltip.tooltipProps">
+      <div class="unit -hint" popover="hint" v-bind="tooltip.tooltipProps">
         <p class="text">Shown via <code class="code">popover="hint"</code>.</p>
       </div>
     </section>
@@ -139,7 +139,7 @@ const faq2 = useDisclosure({ name: "faq" })
       }
     }
 
-    > .zone {
+    > .unit {
       &.-hint {
         margin: 0;
         padding: 0.5rem 0.75rem;

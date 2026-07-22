@@ -6,7 +6,7 @@
  */
 export async function runStackingAutotest() {
   const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-  const region = () => document.querySelector<HTMLElement>(".zone.-toasts")!
+  const region = () => document.querySelector<HTMLElement>(".unit.-toasts")!
   const dialog = document.querySelector<HTMLDialogElement>(".section.-stacking > .dialog")!
   const fireButton = document.querySelector<HTMLButtonElement>(".section.-stacking > .button")!
 

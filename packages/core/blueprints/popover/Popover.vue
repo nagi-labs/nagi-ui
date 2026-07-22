@@ -28,7 +28,7 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
     >
       {{ triggerLabel }}
     </button>
-    <div class="zone" popover v-bind="popover.popoverProps">
+    <div class="unit" popover v-bind="popover.popoverProps">
       <slot />
     </div>
   </div>
@@ -65,7 +65,7 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
     }
   }
 
-  > .zone {
+  > .unit {
     max-inline-size: 24rem;
     margin: 0;
     padding: 0.75rem 1rem;

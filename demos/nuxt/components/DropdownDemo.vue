@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue"
 
-import DropdownMenu from "../../../blueprints/dropdown/DropdownMenu.vue"
+import NativePopoverDropdown from "../../NativePopoverDropdown.vue"
 
 // Flips to true only once this component hydrates on the client. Under
 // `hydrate-after`/`hydrate-never` it stays false until (or forever without)
@@ -25,7 +25,7 @@ const items = [
     <p class="text">
       component hydrated: <span class="value" :data-hydrated="hydrated">{{ hydrated }}</span>
     </p>
-    <DropdownMenu label="Actions" :items="items" @select="picked = $event" />
+    <NativePopoverDropdown label="Actions" :items="items" @select="picked = $event" />
     <p class="text">picked: <span class="value" :data-pick="picked">{{ picked }}</span></p>
   </div>
 </template>

@@ -5,7 +5,7 @@ import { useTemplateRef } from "vue"
 
 import { usePopover, useToast, vPopoverTrigger } from "@nagi-labs/nagi-ui"
 
-import DropdownMenu from "../../packages/core/blueprints/dropdown/DropdownMenu.vue"
+import NativePopoverDropdown from "../../demos/NativePopoverDropdown.vue"
 
 const dialogElement = useTemplateRef<HTMLDialogElement>("dialogElement")
 const notifier = useToast({ duration: 3000 })
@@ -51,7 +51,7 @@ const hinted = usePopover()
         open state lives in the UA. Light dismiss just works.
       </p>
       <button class="button -trigger" v-bind="basic.triggerProps">Open menu</button>
-      <div class="zone" popover v-bind="basic.popoverProps">
+      <div class="unit" popover v-bind="basic.popoverProps">
         <ul class="list">
           <li class="item"><button class="button">Rename</button></li>
           <li class="item"><button class="button">Duplicate</button></li>
@@ -70,7 +70,7 @@ const hinted = usePopover()
         <button class="button" @click="closeAfterDelay">Close after 600ms</button>
       </footer>
       <button class="button -trigger" v-bind="controlled.triggerProps">Open via trigger</button>
-      <div class="zone" popover v-bind="controlled.popoverProps">
+      <div class="unit" popover v-bind="controlled.popoverProps">
         <p class="text">
           This popover mirrors a ref. Light dismiss updates the store; the
           store closes it imperatively.
@@ -81,14 +81,14 @@ const hinted = usePopover()
     <section class="section -directive">
       <h2 class="title">Directive sugar</h2>
       <button class="button -trigger" v-popover-trigger="hinted.id">Directive trigger</button>
-      <div class="zone" popover v-bind="hinted.popoverProps">
+      <div class="unit" popover v-bind="hinted.popoverProps">
         <p class="text">Wired by <code class="code">v-popover-trigger</code>.</p>
       </div>
     </section>
 
     <section class="section -blueprint">
       <h2 class="title">Dropdown blueprint (anchored)</h2>
-      <DropdownMenu label="Actions" :items="menuItems" @select="lastPick = $event" />
+      <NativePopoverDropdown label="Actions" :items="menuItems" @select="lastPick = $event" />
       <p class="text">
         picked: <span class="value" :data-pick="lastPick">{{ lastPick }}</span>
       </p>
@@ -112,7 +112,7 @@ const hinted = usePopover()
       </dialog>
     </section>
 
-    <div class="zone -announcements">
+    <div class="unit -announcements">
       <p
         v-for="item in notifier.toasts.value"
         :key="`${item.id}-${item.revision}`"
@@ -124,7 +124,7 @@ const hinted = usePopover()
       </p>
     </div>
 
-    <div class="zone -toasts" v-bind="notifier.regionProps">
+    <div class="unit -toasts" v-bind="notifier.regionProps">
       <ul class="list">
         <li v-for="item in notifier.toasts.value" :key="item.id" class="item">
           {{ item.title ?? item.description }}
@@ -199,7 +199,7 @@ const hinted = usePopover()
       }
     }
 
-    > .zone {
+    > .unit {
       padding: 0.75rem 1rem;
       border: 1px solid #d2e2e7;
       border-radius: 0.5rem;
@@ -237,7 +237,7 @@ const hinted = usePopover()
     }
   }
 
-  > .zone {
+  > .unit {
     &.-toasts {
       position: fixed;
       inset: auto 1rem 1rem auto;

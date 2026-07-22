@@ -1,28 +1,29 @@
 <script setup lang="ts">
-import {
-  vDialogClose,
-  type DialogClosedBy,
-} from "@nagi-labs/nagi-ui";
-import { useDialogControl } from "@nagi-labs/nagi-ui/component-controls";
+import { vDialogClose } from "@nagi-labs/nagi-ui";
+import { useAlertDialogControl } from "@nagi-labs/nagi-ui/component-controls";
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     triggerLabel: string;
     title: string;
-    description?: string;
-    closeLabel?: string;
-    modal?: boolean;
-    closedby?: DialogClosedBy;
+    description: string;
+    actionLabel: string;
+    cancelLabel?: string;
+    actionTone?: "accent" | "danger";
   }>(),
   {
-    closeLabel: "Close",
-    modal: true,
-    closedby: "any",
+    cancelLabel: "Cancel",
+    actionTone: "accent",
   },
 );
 
+defineEmits<{
+  action: [event: MouseEvent];
+  cancel: [event: MouseEvent];
+}>();
+
 const open = defineModel<boolean>("open", { default: false });
-const dialog = useDialogControl(props, open);
+const dialog = useAlertDialogControl(open);
 const titleId = `${dialog.id}-title`;
 const descriptionId = `${dialog.id}-description`;
 
@@ -30,35 +31,43 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 </script>
 
 <template>
-  <div class="n-dialog">
+  <div class="n-alert-dialog">
     <button class="button -trigger" type="button" v-bind="dialog.triggerProps">
       {{ triggerLabel }}
     </button>
     <dialog
       class="dialog"
+      role="alertdialog"
       :aria-labelledby="titleId"
-      :aria-describedby="description || $slots.description ? descriptionId : undefined"
+      :aria-describedby="descriptionId"
       v-bind="dialog.dialogProps"
     >
       <header class="header">
         <h2 :id="titleId" class="title">
           <slot name="title" :title="title">{{ title }}</slot>
         </h2>
-        <p v-if="description || $slots.description" :id="descriptionId" class="text">
+        <p :id="descriptionId" class="text">
           <slot name="description" :description="description">{{ description }}</slot>
         </p>
       </header>
-      <section class="section">
-        <slot />
-      </section>
       <footer class="footer">
-        <slot name="actions" />
         <button
           v-dialog-close="dialog.id"
-          class="button -close"
+          autofocus
+          class="button -cancel"
           type="button"
+          @click="$emit('cancel', $event)"
         >
-          {{ closeLabel }}
+          {{ cancelLabel }}
+        </button>
+        <button
+          v-dialog-close="dialog.id"
+          class="button -action"
+          :class="`-${actionTone}`"
+          type="button"
+          @click="$emit('action', $event)"
+        >
+          {{ actionLabel }}
         </button>
       </footer>
     </dialog>
@@ -66,7 +75,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 </template>
 
 <style scoped>
-.n-dialog {
+.n-alert-dialog {
   display: inline-block;
   color: var(--nagi-color-text);
 
@@ -92,7 +101,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
   }
 
   > .dialog {
-    inline-size: min(30rem, calc(100vi - 2rem));
+    inline-size: min(28rem, calc(100vi - 2rem));
     padding: 0;
     border: 1px solid var(--nagi-color-border-muted);
     border-radius: var(--nagi-radius-overlay);
@@ -119,15 +128,11 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
       }
     }
 
-    > .section {
-      padding: 0.75rem 1rem;
-    }
-
     > .footer {
       display: flex;
       gap: 0.5rem;
       justify-content: flex-end;
-      padding: 0 1rem 1rem;
+      padding: 1rem;
 
       > .button {
         min-block-size: var(--nagi-size-control);
@@ -147,6 +152,18 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
           outline: none;
           border-color: var(--nagi-color-focus-ring);
           box-shadow: var(--nagi-shadow-focus);
+        }
+
+        &.-accent {
+          border-color: var(--nagi-color-accent);
+          background: var(--nagi-color-surface-accent);
+          color: var(--nagi-color-accent);
+        }
+
+        &.-danger {
+          border-color: var(--nagi-color-danger);
+          background: var(--nagi-color-surface-danger);
+          color: var(--nagi-color-danger);
         }
       }
     }

@@ -3,7 +3,9 @@ import { createRequire } from "node:module"
 import path from "node:path"
 
 export const components = {
+  accordion: { dir: "blueprints/accordion", files: ["Accordion.vue"] },
   alert: { dir: "blueprints/alert", files: ["Alert.vue"] },
+  "alert-dialog": { dir: "blueprints/alert-dialog", files: ["AlertDialog.vue"] },
   avatar: { dir: "blueprints/avatar", files: ["Avatar.vue"] },
   badge: { dir: "blueprints/badge", files: ["Badge.vue"] },
   button: { dir: "blueprints/button", files: ["Button.vue"] },

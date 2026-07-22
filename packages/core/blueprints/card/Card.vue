@@ -15,10 +15,10 @@ defineProps<{
         <slot name="description" :description="description">{{ description }}</slot>
       </div>
     </header>
-    <div class="zone">
+    <div class="unit">
       <slot />
     </div>
-    <div v-if="$slots.footer" class="zone -secondary">
+    <div v-if="$slots.footer" class="unit -secondary">
       <slot name="footer" />
     </div>
   </div>
@@ -48,11 +48,11 @@ defineProps<{
     }
   }
 
-  > .zone {
+  > .unit {
     padding: 1rem;
   }
 
-  > .zone.-secondary {
+  > .unit.-secondary {
     padding: 0 1rem 1rem;
   }
 }

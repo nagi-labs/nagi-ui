@@ -3,7 +3,9 @@ import { ref } from "vue";
 import { createToastManager } from "@nagi-labs/nagi-ui";
 
 import {
+  Accordion,
   Alert,
+  AlertDialog,
   Avatar,
   Badge,
   Button,
@@ -17,9 +19,33 @@ import {
   Tooltip,
 } from "@nagi-labs/nagi-ui/components";
 
+const accordionItems = [
+  {
+    key: "shipping",
+    summary: "How does shipping work?",
+    content: "Orders normally ship within two business days.",
+  },
+  {
+    key: "returns",
+    summary: "Can I return an order?",
+    content: "Unused items can be returned within thirty days.",
+  },
+  {
+    key: "legacy",
+    summary: "Legacy policy",
+    content: "This policy is unavailable.",
+    disabled: true,
+  },
+] as const;
+
 const avatarImage =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%2316768b'/%3E%3Ccircle cx='40' cy='31' r='15' fill='white'/%3E%3Cpath d='M14 80c3-19 13-28 26-28s23 9 26 28' fill='white'/%3E%3C/svg%3E";
 const avatarSrc = ref(avatarImage);
+const accordionOpenKeys = ref<readonly string[]>(["shipping"]);
+const multipleAccordionOpenKeys = ref<readonly string[]>(["shipping", "returns"]);
+const alertDialogOpen = ref(false);
+const alertDialogActions = ref(0);
+const alertDialogCancels = ref(0);
 const dialogOpen = ref(false);
 const disclosureOpen = ref(false);
 const focusableDisabledClicks = ref(0);
@@ -250,6 +276,32 @@ function runPromiseToast() {
       </Dialog>
     </section>
 
+    <section class="section" aria-labelledby="alert-dialog-heading">
+      <h2 id="alert-dialog-heading" class="title">Alert Dialog</h2>
+      <p class="text">alert model open: {{ alertDialogOpen }}</p>
+      <form class="form" @submit.prevent>
+        <AlertDialog
+          v-model:open="alertDialogOpen"
+          trigger-label="Delete package"
+          title="Delete this package?"
+          description="This action permanently removes the package and cannot be undone."
+          action-label="Delete package"
+          action-tone="danger"
+          @action="alertDialogActions += 1"
+          @cancel="alertDialogCancels += 1"
+        >
+          <template #title="{ title }">
+            <span class="n-alert-dialog-title">{{ title }}</span>
+          </template>
+          <template #description="{ description }">
+            <span class="n-alert-dialog-description">{{ description }}</span>
+          </template>
+        </AlertDialog>
+      </form>
+      <output data-testid="alert-dialog-actions">actions: {{ alertDialogActions }}</output>
+      <output data-testid="alert-dialog-cancels">cancels: {{ alertDialogCancels }}</output>
+    </section>
+
     <section class="section" aria-labelledby="tooltip-heading">
       <h2 id="tooltip-heading" class="title">Tooltip</h2>
       <Tooltip
@@ -280,6 +332,37 @@ function runPromiseToast() {
       <Disclosure summary="Unavailable disclosure" disabled>
         <p class="text">Disabled disclosure content.</p>
       </Disclosure>
+    </section>
+
+    <section class="section" aria-labelledby="accordion-heading">
+      <h2 id="accordion-heading" class="title">Accordion</h2>
+      <Accordion
+        v-model:open-keys="accordionOpenKeys"
+        class="n-accordion"
+        :items="accordionItems"
+      >
+        <template #summary="{ summary }">
+          <span class="n-accordion-summary">{{ summary }}</span>
+        </template>
+        <template #panel="{ item }">
+          <p class="n-accordion-panel">{{ item.content }}</p>
+        </template>
+      </Accordion>
+      <output data-testid="accordion-open-keys">
+        open: {{ accordionOpenKeys.join(",") || "none" }}
+      </output>
+      <Button size="small" @click="accordionOpenKeys = ['shipping']">
+        Open shipping programmatically
+      </Button>
+      <Accordion
+        v-model:open-keys="multipleAccordionOpenKeys"
+        class="n-accordion"
+        :items="accordionItems.slice(0, 2)"
+        multiple
+      />
+      <output data-testid="multiple-accordion-open-keys">
+        open: {{ multipleAccordionOpenKeys.join(",") || "none" }}
+      </output>
     </section>
 
     <section class="section" aria-labelledby="toast-heading">
@@ -397,6 +480,12 @@ function runPromiseToast() {
         gap: 0.75rem;
         align-items: center;
         justify-content: space-between;
+      }
+    }
+
+    > .n-accordion {
+      .n-accordion-panel {
+        margin: 0;
       }
     }
   }

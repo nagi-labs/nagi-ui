@@ -14,7 +14,7 @@ withDefaults(
     :disabled="disabled"
   >
     <legend class="legend">{{ legend }}</legend>
-    <div class="zone">
+    <div class="unit">
       <slot />
     </div>
   </fieldset>
@@ -34,7 +34,7 @@ withDefaults(
     font-weight: 650;
   }
 
-  > .zone {
+  > .unit {
     display: grid;
     gap: var(--nagi-space-item-gap);
   }

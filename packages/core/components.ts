@@ -5,7 +5,10 @@
  * loadable by plain Node and ships no CSS. The re-exported SFCs are the same
  * files the `own` workflow copies (single-source principle, CHARTER §3).
  */
+export { default as Accordion } from "./blueprints/accordion/Accordion.vue";
+export type { AccordionItem } from "./blueprints/accordion/Accordion.vue";
 export { default as Alert } from "./blueprints/alert/Alert.vue";
+export { default as AlertDialog } from "./blueprints/alert-dialog/AlertDialog.vue";
 export { default as Avatar } from "./blueprints/avatar/Avatar.vue";
 export { default as Badge } from "./blueprints/badge/Badge.vue";
 export { default as Button } from "./blueprints/button/Button.vue";

@@ -61,3 +61,33 @@ test("Blueprint token references never embed fallback values", () => {
     }
   }
 });
+
+test("Blueprint styling never embeds literal colors", () => {
+  const files = fs
+    .readdirSync(blueprintRoot, { recursive: true })
+    .map(String)
+    .filter((file) => file.endsWith(".vue"));
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(blueprintRoot, file), "utf8");
+    assert.doesNotMatch(
+      source,
+      /#[\da-f]{3,8}\b|\brgba?\(|\bhsla?\(/iu,
+      `${file}: use a required theme token instead of a literal color`,
+    );
+  }
+});
+
+test("retired zone anatomy does not return to shipped Blueprints", () => {
+  const files = fs
+    .readdirSync(blueprintRoot, { recursive: true })
+    .map(String)
+    .filter((file) => file.endsWith(".vue"));
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(blueprintRoot, file), "utf8");
+    assert.doesNotMatch(
+      source,
+      /class="[^"]*\bzone\b|\.zone\b/u,
+      `${file}: use the current .unit anatomy class`,
+    );
+  }
+});

@@ -40,7 +40,7 @@ test("Avatar SSR keeps image and fallback semantics deterministic", async () => 
     ));
     assert.match(imageHtml, /<span[^>]*class="n-avatar"[^>]*role="img"/);
     assert.match(imageHtml, /aria-label="Ada Lovelace"/);
-    assert.match(imageHtml, /<span class="zone">AL<\/span>/);
+    assert.match(imageHtml, /<span class="unit">AL<\/span>/);
     assert.match(imageHtml, /<img[^>]*class="image"[^>]*src="\/ada.jpg"[^>]*alt=""/);
 
     const fallbackHtml = normalizeSsrHtml(await renderToString(
@@ -48,7 +48,7 @@ test("Avatar SSR keeps image and fallback semantics deterministic", async () => 
         render: () => h(avatar, { alt: "Account owner", fallback: "AO" }),
       }),
     ));
-    assert.match(fallbackHtml, /<span class="zone">AO<\/span>/);
+    assert.match(fallbackHtml, /<span class="unit">AO<\/span>/);
     assert.doesNotMatch(fallbackHtml, /<img/);
 
     const slotHtml = normalizeSsrHtml(await renderToString(
@@ -60,7 +60,7 @@ test("Avatar SSR keeps image and fallback semantics deterministic", async () => 
         ),
       }),
     ));
-    assert.match(slotHtml, /<span class="zone"><b>AO<\/b><\/span>/);
+    assert.match(slotHtml, /<span class="unit"><b>AO<\/b><\/span>/);
 
     const decorativeHtml = normalizeSsrHtml(await renderToString(
       createSSRApp({ render: () => h(avatar, { alt: "" }) }),

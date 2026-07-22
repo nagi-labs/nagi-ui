@@ -43,7 +43,7 @@ useNativeValueReset(input, model);
 
 <template>
   <label class="n-input">
-    <span class="zone">{{ label }}</span>
+    <span class="unit">{{ label }}</span>
     <input
       v-bind="$attrs"
       ref="input"
@@ -65,7 +65,7 @@ useNativeValueReset(input, model);
   gap: var(--nagi-space-item-gap);
   color: var(--nagi-color-text);
 
-  > .zone {
+  > .unit {
     color: var(--nagi-color-text-muted);
     font-size: var(--nagi-font-size-label);
     font-weight: 650;

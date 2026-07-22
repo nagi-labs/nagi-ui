@@ -96,6 +96,66 @@ test("components entry exposes Avatar, Separator, and Toggle", async () => {
   });
 });
 
+test("components entry exposes Accordion and AlertDialog", async () => {
+  await withComponents(async (components) => {
+    for (const name of ["Accordion", "AlertDialog"]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+  });
+});
+
+test("Accordion and AlertDialog preserve their native SSR contracts", async () => {
+  await withComponents(async (components) => {
+    const accordion = await renderSlotFunctions(
+      components.Accordion as Component,
+      {
+        items: [
+          { key: "shipping", summary: "Shipping", content: "Two days" },
+          { key: "returns", summary: "Returns", content: "Thirty days" },
+        ],
+        openKeys: ["shipping"],
+      },
+      {
+        summary: (slotProps) => h("strong", String(slotProps.summary)),
+        panel: (slotProps) => h("p", String(
+          (slotProps.item as { content: string }).content,
+        )),
+      },
+    );
+    const names = [...accordion.matchAll(/<details[^>]* name="([^"]+)"/g)]
+      .map((match) => match[1]);
+    assert.deepEqual(names.length, 2);
+    assert.equal(new Set(names).size, 1);
+    assert.equal(accordion.match(/<details[^>]* open(?:="")?/g)?.length, 1);
+    assert.match(accordion, /<strong>Shipping<\/strong>/);
+    assert.match(accordion, /<section[^>]*class="section"[^>]*>.*<p>Two days<\/p>/);
+
+    const alertDialog = await renderSlots(
+      components.AlertDialog as Component,
+      {
+        triggerLabel: "Delete package",
+        title: "Delete this package?",
+        description: "This cannot be undone.",
+        actionLabel: "Delete package",
+        actionTone: "danger",
+      },
+      {
+        title: "Delete this package?",
+        description: "This cannot be undone.",
+      },
+    );
+    const dialogTag = alertDialog.match(/<dialog[^>]*>/)?.[0] ?? "";
+    assert.match(dialogTag, /role="alertdialog"/);
+    assert.match(dialogTag, /closedby="closerequest"/);
+    const labelledBy = dialogTag.match(/aria-labelledby="([^"]+)"/)?.[1];
+    const describedBy = dialogTag.match(/aria-describedby="([^"]+)"/)?.[1];
+    assert.ok(labelledBy && alertDialog.includes(`id="${labelledBy}"`));
+    assert.ok(describedBy && alertDialog.includes(`id="${describedBy}"`));
+    assert.doesNotMatch(alertDialog, /<form/);
+    assert.equal(alertDialog.match(/command="close"/g)?.length, 2);
+  });
+});
+
 test("small native primitives preserve their semantics during SSR", async () => {
   await withComponents(async (components) => {
     const avatar = await render(components.Avatar as Component, {
@@ -485,7 +545,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
       { title: "Billing" },
       { default: "Plan details", footer: "Manage subscription" },
     );
-    assert.match(cardWithFooter, /<div[^>]*class="zone -secondary"/);
+    assert.match(cardWithFooter, /<div[^>]*class="unit -secondary"/);
     assert.match(cardWithFooter, /Manage subscription/);
 
     const cardWithRichHeader = await renderSlotFunctions(

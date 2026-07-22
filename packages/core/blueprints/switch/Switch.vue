@@ -42,7 +42,7 @@ useNativeCheckedReset(input, checked);
       :disabled="disabled"
       :required="required"
     />
-    <span class="zone">{{ label }}</span>
+    <span class="unit">{{ label }}</span>
   </label>
 </template>
 
@@ -55,7 +55,7 @@ useNativeCheckedReset(input, checked);
   cursor: pointer;
 
   &:has(> .input:disabled) {
-    > .zone {
+    > .unit {
       color: var(--nagi-color-text-disabled);
       cursor: not-allowed;
     }
@@ -106,7 +106,7 @@ useNativeCheckedReset(input, checked);
 
   }
 
-  > .zone {
+  > .unit {
     line-height: 1.35;
   }
 }

@@ -116,7 +116,7 @@ const labelId = useId();
     box-sizing: content-box;
     block-size: 1px;
     padding: 0.35rem 0.3rem;
-    background: #dbe6e9;
+    background: var(--nagi-color-border-muted);
     background-clip: content-box;
   }
 

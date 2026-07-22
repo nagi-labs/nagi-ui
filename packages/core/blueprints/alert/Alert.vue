@@ -21,7 +21,7 @@ withDefaults(
     <h2 class="title">
       <slot name="title" :title="title">{{ title }}</slot>
     </h2>
-    <div class="zone">
+    <div class="unit">
       <slot />
     </div>
   </section>
@@ -47,7 +47,7 @@ withDefaults(
     }
 
     > .title,
-    > .zone {
+    > .unit {
       grid-column: 2;
     }
   }
@@ -57,7 +57,7 @@ withDefaults(
     font-size: 0.9rem;
   }
 
-  > .zone {
+  > .unit {
     margin-block-start: 0.25rem;
     font-size: 0.85rem;
 

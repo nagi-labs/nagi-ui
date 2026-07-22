@@ -42,18 +42,20 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
 <style scoped>
 .n-action-menu {
   display: inline-block;
+  color: var(--nagi-color-text);
 
   > .button {
     &.-trigger {
       padding: 0.45rem 0.9rem;
-      border: 1px solid #c6d6dc;
+      border: 1px solid var(--nagi-color-border);
       border-radius: 0.45rem;
-      background: #fff;
+      background: var(--nagi-color-surface);
+      color: inherit;
       font: inherit;
       cursor: pointer;
 
       &:hover {
-        background: #f0f6f8;
+        background: var(--nagi-color-surface-active);
       }
     }
   }
@@ -62,10 +64,11 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
     min-inline-size: 11rem;
     margin: 0;
     padding: 0.3rem;
-    border: 1px solid #d2e2e7;
+    border: 1px solid var(--nagi-color-border-muted);
     border-radius: 0.5rem;
-    background: #fff;
-    box-shadow: 0 10px 28px rgb(22 48 60 / 0.16);
+    background: var(--nagi-color-surface);
+    box-shadow: var(--nagi-shadow-overlay);
+    color: var(--nagi-color-text);
     list-style: none;
     opacity: 0;
     translate: 0 -0.4rem;
@@ -97,13 +100,13 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
         cursor: pointer;
 
         &[data-active] {
-          background: #e8f1f4;
-          outline: 2px solid #7bb6c5;
+          background: var(--nagi-color-surface-active);
+          outline: 2px solid var(--nagi-color-focus-ring);
           outline-offset: -2px;
         }
 
         &[aria-disabled="true"] {
-          color: #829198;
+          color: var(--nagi-color-text-disabled);
           cursor: not-allowed;
         }
       }

@@ -21,7 +21,7 @@ const { fallbackText, hasImage, image, onImageError } = useAvatarControl(props);
     :aria-label="alt || undefined"
     :aria-hidden="alt ? undefined : 'true'"
   >
-    <span class="zone">
+    <span class="unit">
       <slot name="fallback" :fallback="fallbackText">{{ fallbackText }}</slot>
     </span>
     <img
@@ -47,14 +47,14 @@ const { fallbackText, hasImage, image, onImageError } = useAvatarControl(props);
   color: var(--nagi-color-text);
   vertical-align: middle;
 
-  > .zone,
+  > .unit,
   > .image {
     grid-area: 1 / 1;
     inline-size: 100%;
     block-size: 100%;
   }
 
-  > .zone {
+  > .unit {
     display: grid;
     place-items: center;
     font-size: var(--nagi-font-size-label);

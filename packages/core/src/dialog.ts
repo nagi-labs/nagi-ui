@@ -170,6 +170,11 @@ export function useDialogControl(
   })
 }
 
+/** Fixed modal and dismiss policy for the package AlertDialog. */
+export function useAlertDialogControl(open: Ref<boolean>): UseDialogReturn {
+  return useDialog({ open, modal: true, closedby: "closerequest" })
+}
+
 /**
  * Sugar for a close button inside the dialog: `v-dialog-close`. Renders the
  * `command="close"` / `commandfor` wiring on the server so a close button works

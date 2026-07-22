@@ -161,6 +161,35 @@ test("accepts owned Tabs wiring and protects its role relationships", () => {
   )
 })
 
+test("protects native Accordion details and summary wiring", () => {
+  const valid = verify(`
+    <template>
+      <details
+        v-for="item in items"
+        :key="item.key"
+        v-bind="accordion.detailsProps(item.key)"
+      >
+        <summary v-bind="accordion.summaryProps(item.disabled)">{{ item.summary }}</summary>
+      </details>
+    </template>
+  `)
+  assert.deepEqual(valid, [])
+
+  const invalid = verify(`
+    <template>
+      <section v-bind="accordion.detailsProps(item.key)">
+        <button aria-disabled="false" v-bind="accordion.summaryProps(item.disabled)">
+          {{ item.summary }}
+        </button>
+      </section>
+    </template>
+  `)
+  assert.deepEqual(
+    invalid.map((message) => message.messageId),
+    ["wrongElement", "protectedOverride", "wrongElement"],
+  )
+})
+
 test("all shipped Blueprints satisfy verified-bindings", () => {
   const files = fs
     .readdirSync(path.join(repo, "packages/core/blueprints"), { recursive: true })

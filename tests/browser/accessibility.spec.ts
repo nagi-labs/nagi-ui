@@ -86,12 +86,18 @@ test("package Blueprint catalog is axe-clean in opened states", async ({ page })
   await expectAxeClean(page)
   await page.getByRole("dialog").getByRole("button", { name: "Close" }).click()
 
+  await page.getByRole("button", { name: "Delete package", exact: true }).click()
+  await expect(page.getByRole("alertdialog", { name: "Delete this package?" })).toBeVisible()
+  await expectAxeClean(page)
+  await page.getByRole("alertdialog").getByRole("button", { name: "Cancel" }).click()
+
   await page.getByRole("button", { name: "More information" }).focus()
   await expect(page.getByRole("tooltip")).toBeVisible()
   await expectAxeClean(page)
   await page.getByRole("button", { name: "More information" }).blur()
 
   await page.locator("summary", { hasText: "What does native mean?" }).click()
+  await page.locator(".n-accordion").first().getByText("Can I return an order?").click()
   await page.getByRole("button", { name: "Show toast" }).click()
   await expect(page.getByText("Catalog notification 1", { exact: true })).toBeVisible()
   await page.getByRole("button", { name: "Show undo toast" }).click()

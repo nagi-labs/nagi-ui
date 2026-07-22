@@ -52,7 +52,7 @@ defineExpose({
 
 <template>
   <div class="n-toast">
-    <div class="zone -announcements">
+    <div class="unit -announcements">
       <p
         v-for="item in notifier.toasts.value"
         :key="`${item.id}-${item.revision}`"
@@ -64,7 +64,7 @@ defineExpose({
       </p>
     </div>
 
-    <div class="zone" v-bind="notifier.regionProps">
+    <div class="unit" v-bind="notifier.regionProps">
       <ol class="list">
         <li
           v-for="item in visibleToasts"
@@ -103,7 +103,7 @@ defineExpose({
 .n-toast {
   display: contents;
 
-  > .zone.-announcements {
+  > .unit.-announcements {
     position: fixed;
     inline-size: 1px;
     block-size: 1px;
@@ -116,7 +116,7 @@ defineExpose({
     }
   }
 
-  > .zone {
+  > .unit {
     position: fixed;
     inset: auto 1rem 1rem auto;
     margin: 0;

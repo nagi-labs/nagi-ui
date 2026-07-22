@@ -17,9 +17,9 @@ function pick(key: string) {
 </script>
 
 <template>
-  <div class="n-dropdown-menu">
+  <div class="n-native-popover-dropdown">
     <button class="button -trigger" type="button" v-bind="triggerProps">{{ label }}</button>
-    <div class="zone" popover v-bind="popoverProps">
+    <div class="unit" popover v-bind="popoverProps">
       <ul class="list">
         <li v-for="item in items" :key="item.key" class="item">
           <button class="button" @click="pick(item.key)">{{ item.label }}</button>
@@ -30,31 +30,34 @@ function pick(key: string) {
 </template>
 
 <style scoped>
-.n-dropdown-menu {
+.n-native-popover-dropdown {
   display: inline-block;
+  color: var(--nagi-color-text);
 
   > .button {
     &.-trigger {
       padding: 0.45rem 0.9rem;
-      border: 1px solid #c6d6dc;
+      border: 1px solid var(--nagi-color-border);
       border-radius: 0.45rem;
-      background: #fff;
+      background: var(--nagi-color-surface);
+      color: inherit;
       font: inherit;
       cursor: pointer;
 
       &:hover {
-        background: #f0f6f8;
+        background: var(--nagi-color-surface-active);
       }
     }
   }
 
-  > .zone {
+  > .unit {
     min-inline-size: 10rem;
     padding: 0.3rem;
-    border: 1px solid #d2e2e7;
+    border: 1px solid var(--nagi-color-border-muted);
     border-radius: 0.5rem;
-    background: #fff;
-    box-shadow: 0 10px 28px rgb(22 48 60 / 0.16);
+    background: var(--nagi-color-surface);
+    box-shadow: var(--nagi-shadow-overlay);
+    color: var(--nagi-color-text);
     opacity: 0;
     translate: 0 -0.4rem;
     transition:
@@ -91,7 +94,7 @@ function pick(key: string) {
           cursor: pointer;
 
           &:hover {
-            background: #e8f1f4;
+            background: var(--nagi-color-surface-active);
           }
         }
       }

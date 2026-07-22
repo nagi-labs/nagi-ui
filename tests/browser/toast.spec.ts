@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test"
 test("Toast region re-promotes when a modal opens after a live notification", async ({ page }) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Fire toast" }).first().click()
-  const region = page.locator(".zone.-toasts")
+  const region = page.locator(".unit.-toasts")
   await expect(region).toHaveJSProperty("popover", "manual")
   await expect(region).toHaveCSS("display", "block")
 
@@ -21,7 +21,7 @@ test("Toast opened from a modal stays visible without moving F6 focus outside in
   const dialog = page.getByRole("dialog")
   const fireInside = dialog.getByRole("button", { name: "Fire toast" })
   await fireInside.click()
-  const region = page.locator(".zone.-toasts")
+  const region = page.locator(".unit.-toasts")
   await expect(region).toHaveCSS("display", "block")
   await expect(fireInside).toBeFocused()
 

@@ -32,7 +32,7 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
     <button class="button" type="button" :disabled="disabled" v-bind="tooltip.triggerProps">
       {{ triggerLabel }}
     </button>
-    <span class="zone" popover="hint" v-bind="tooltip.tooltipProps">
+    <span class="unit" popover="hint" v-bind="tooltip.tooltipProps">
       {{ text }}
     </span>
   </span>
@@ -65,7 +65,7 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
     }
   }
 
-  > .zone {
+  > .unit {
     max-inline-size: 18rem;
     margin: 0;
     padding: 0.45rem 0.65rem;
