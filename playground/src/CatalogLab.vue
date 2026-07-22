@@ -24,8 +24,11 @@ import {
   Textarea,
   Toast,
   Toggle,
+  ToggleGroup,
   Tooltip,
   type PaginationItem,
+  type ToggleGroupItem,
+  type ToggleGroupValue,
 } from "@nagi-labs/nagi-ui/components";
 
 const accordionItems = [
@@ -74,6 +77,18 @@ const paginationItems: readonly PaginationItem[] = [
 ];
 const currentPage = ref("2");
 const paginationSelections = ref(0);
+const alignmentItems: readonly ToggleGroupItem[] = [
+  { key: "left", label: "Left" },
+  { key: "center", label: "Center" },
+  { key: "right", label: "Right" },
+];
+const formatItems: readonly ToggleGroupItem[] = [
+  { key: "bold", label: "Bold" },
+  { key: "italic", label: "Italic" },
+  { key: "underline", label: "Underline", disabled: true },
+];
+const alignment = ref<ToggleGroupValue>("center");
+const formats = ref<ToggleGroupValue>(["bold"]);
 const toastManager = createToastManager({ duration: 0, limit: 3 });
 const secondaryToastManager = createToastManager({ duration: 0, limit: 3 });
 const undoneActions = ref(0);
@@ -276,6 +291,22 @@ function runPromiseToast() {
       />
       <output data-testid="pagination-state">
         current: {{ currentPage }}, selections: {{ paginationSelections }}
+      </output>
+
+      <ToggleGroup
+        v-model="alignment"
+        label="Text alignment"
+        :items="alignmentItems"
+      />
+      <output data-testid="alignment-state">alignment: {{ alignment ?? "none" }}</output>
+      <ToggleGroup
+        v-model="formats"
+        label="Text formats"
+        mode="multiple"
+        :items="formatItems"
+      />
+      <output data-testid="format-state">
+        formats: {{ Array.isArray(formats) ? formats.join(", ") || "none" : "none" }}
       </output>
 
       <div class="list -primitives">

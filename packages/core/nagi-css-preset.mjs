@@ -2,7 +2,7 @@
  * Nagi CSS semantic preset for package-component consumers.
  *
  * Package components are opaque boundaries until they are owned. The fixed
- * root classes mirror the raw SFC sources; declared default slots are the only
+ * root classes mirror the raw SFC sources; declared slots are the only
  * places where consumer-owned markup can resume a styled sub-surface.
  */
 export { nagiThemeTokens as nagiUiThemeTokens } from "./theme/tokens.mjs"
@@ -29,9 +29,11 @@ export const nagiUiComponents = [
   "Fieldset",
   "FileInput",
   "Input",
+  "InputGroup",
   "Kbd",
   "Listbox",
   "Meter",
+  "NumberField",
   "Pagination",
   "Popover",
   "Progress",
@@ -47,6 +49,7 @@ export const nagiUiComponents = [
   "Textarea",
   "Toast",
   "Toggle",
+  "ToggleGroup",
   "Tooltip",
 ]
 
@@ -82,6 +85,12 @@ export const nagiUiComponentSlots = {
   },
   EmptyState: { default: "n-empty-state-action" },
   Fieldset: { default: "n-fieldset-content" },
+  InputGroup: {
+    default: "n-input-group-control",
+    prefix: "n-input-group-prefix",
+    suffix: "n-input-group-suffix",
+    action: "n-input-group-action",
+  },
   Popover: { default: "n-popover-content" },
   Tabs: { panel: "n-tabs-panel" },
   Toggle: { default: "n-toggle-content" },

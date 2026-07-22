@@ -26,10 +26,12 @@ export { default as EmptyState } from "./blueprints/empty-state/EmptyState.vue";
 export { default as Fieldset } from "./blueprints/fieldset/Fieldset.vue";
 export { default as FileInput } from "./blueprints/file-input/FileInput.vue";
 export { default as Input } from "./blueprints/input/Input.vue";
+export { default as InputGroup } from "./blueprints/input-group/InputGroup.vue";
 export { default as Kbd } from "./blueprints/kbd/Kbd.vue";
 export { default as Listbox } from "./blueprints/listbox/Listbox.vue";
 export type { ListboxOption } from "./blueprints/listbox/Listbox.vue";
 export { default as Meter } from "./blueprints/meter/Meter.vue";
+export { default as NumberField } from "./blueprints/number-field/NumberField.vue";
 export { default as Pagination } from "./blueprints/pagination/Pagination.vue";
 export type { PaginationItem } from "./blueprints/pagination/Pagination.vue";
 export { default as Popover } from "./blueprints/popover/Popover.vue";
@@ -49,6 +51,11 @@ export type { TabsItem } from "./blueprints/tabs/Tabs.vue";
 export { default as Textarea } from "./blueprints/textarea/Textarea.vue";
 export { default as Toast } from "./blueprints/toast/Toast.vue";
 export { default as Toggle } from "./blueprints/toggle/Toggle.vue";
+export { default as ToggleGroup } from "./blueprints/toggle-group/ToggleGroup.vue";
+export type {
+  ToggleGroupItem,
+  ToggleGroupValue,
+} from "./blueprints/toggle-group/ToggleGroup.vue";
 export { default as Tooltip } from "./blueprints/tooltip/Tooltip.vue";
 export type {
   DropdownMenuActionNode,

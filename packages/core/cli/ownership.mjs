@@ -30,9 +30,11 @@ export const components = {
   fieldset: { dir: "blueprints/fieldset", files: ["Fieldset.vue"] },
   "file-input": { dir: "blueprints/file-input", files: ["FileInput.vue"] },
   input: { dir: "blueprints/input", files: ["Input.vue"] },
+  "input-group": { dir: "blueprints/input-group", files: ["InputGroup.vue"] },
   kbd: { dir: "blueprints/kbd", files: ["Kbd.vue"] },
   listbox: { dir: "blueprints/listbox", files: ["Listbox.vue"] },
   meter: { dir: "blueprints/meter", files: ["Meter.vue"] },
+  "number-field": { dir: "blueprints/number-field", files: ["NumberField.vue"] },
   pagination: { dir: "blueprints/pagination", files: ["Pagination.vue"] },
   popover: { dir: "blueprints/popover", files: ["Popover.vue"] },
   progress: { dir: "blueprints/progress", files: ["Progress.vue"] },
@@ -48,6 +50,7 @@ export const components = {
   textarea: { dir: "blueprints/textarea", files: ["Textarea.vue"] },
   toast: { dir: "blueprints/toast", files: ["Toast.vue"] },
   toggle: { dir: "blueprints/toggle", files: ["Toggle.vue"] },
+  "toggle-group": { dir: "blueprints/toggle-group", files: ["ToggleGroup.vue"] },
   tooltip: { dir: "blueprints/tooltip", files: ["Tooltip.vue"] },
 }
 

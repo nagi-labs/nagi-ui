@@ -221,6 +221,57 @@ test("components entry exposes the small interactive catalog slice", async () =>
   });
 });
 
+test("components entry exposes the first anatomy-sensitive catalog slice", async () => {
+  await withComponents(async (components) => {
+    for (const name of ["InputGroup", "NumberField", "ToggleGroup"]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+
+    const inputGroup = await renderSlotFunctions(
+      components.InputGroup as Component,
+      { prefix: "https://", suffix: ".dev" },
+      {
+        default: () => h("input", {
+          class: "n-input-group-control",
+          name: "project",
+          "aria-label": "Project URL",
+        }),
+        action: () => h("button", {
+          class: "n-input-group-action",
+          type: "button",
+        }, "Open"),
+      },
+    );
+    assert.match(inputGroup, /class="n-input-group"/);
+    assert.match(inputGroup, />https:\/\//);
+    assert.match(inputGroup, /class="n-input-group-control"/);
+    assert.match(inputGroup, /class="n-input-group-action"/);
+
+    const numberField = await render(components.NumberField as Component, {
+      label: "Seats",
+      modelValue: 2,
+      min: 0,
+      max: 8,
+      name: "seats",
+    });
+    assert.match(numberField, /<label[^>]*>Seats<\/label>/);
+    assert.match(numberField, /<input[^>]*type="number"/);
+    assert.match(numberField, /<input[^>]*value="2"/);
+    assert.equal(numberField.match(/<button/gu)?.length, 2);
+
+    const toggleGroup = await render(components.ToggleGroup as Component, {
+      label: "Alignment",
+      modelValue: "center",
+      items: [
+        { key: "left", label: "Left" },
+        { key: "center", label: "Center" },
+      ],
+    });
+    assert.match(toggleGroup, /role="group"[^>]*aria-label="Alignment"/);
+    assert.match(toggleGroup, /aria-pressed="true"[^>]*>Center<\/button>/);
+  });
+});
+
 test("Accordion and AlertDialog preserve their native SSR contracts", async () => {
   await withComponents(async (components) => {
     const accordion = await renderSlotFunctions(

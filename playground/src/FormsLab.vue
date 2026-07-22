@@ -2,12 +2,15 @@
 import { computed, ref } from "vue";
 
 import {
+  Button,
   Checkbox,
   Combobox,
   Fieldset,
   FileInput,
   Input as NagiInput,
+  InputGroup,
   Meter,
+  NumberField,
   Progress,
   Radio,
   Rating,
@@ -48,6 +51,7 @@ const marketing = ref(true);
 const contact = ref<string | null>("email");
 const plan = ref("standard");
 const rating = ref<number | null>(3);
+const seats = ref<number | null>(2);
 const volume = ref(40);
 const externalNote = ref("outside the form tree");
 const externalFormOwner = ref("alignment-form");
@@ -218,12 +222,35 @@ function captureSubmission(event: SubmitEvent) {
             name="attachment"
             accept="text/plain,.md"
           />
+          <NumberField
+            v-model="seats"
+            label="Seats"
+            name="seats"
+            :min="0"
+            :max="8"
+            decrement-label="Decrease seats"
+            increment-label="Increase seats"
+          />
+          <InputGroup prefix="https://" suffix=".dev">
+            <input
+              class="n-input-group-control"
+              type="text"
+              name="projectUrl"
+              value="nagi-ui"
+              aria-label="Project URL"
+              autocomplete="url"
+            />
+            <template #action>
+              <Button class="n-input-group-action" type="submit">Open</Button>
+            </template>
+          </InputGroup>
         </div>
         <div class="actions">
           <button class="button" type="reset">Reset interactive controls</button>
         </div>
       </form>
       <output data-testid="rating-value">rating: {{ rating ?? "none" }}</output>
+      <output data-testid="seats-value">seats: {{ seats ?? "none" }}</output>
     </section>
 
     <section class="section" aria-labelledby="external-heading">

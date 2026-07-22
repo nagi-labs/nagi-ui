@@ -122,6 +122,36 @@ test("Rating keeps the native selected control visible in forced colors", async 
   await expect(page.locator(".n-rating .icon").first()).toBeHidden();
 });
 
+test("NumberField and InputGroup preserve native step, form, and reset behavior", async ({
+  page,
+}) => {
+  const form = page.locator("#interactive-form");
+  const seats = page.getByRole("spinbutton", { name: "Seats" });
+  const projectUrl = page.getByRole("textbox", { name: "Project URL" });
+
+  await expect(seats).toHaveValue("2");
+  await page.getByRole("button", { name: "Increase seats" }).click();
+  await expect(seats).toHaveValue("3");
+  await seats.press("ArrowUp");
+  await expect(seats).toHaveValue("4");
+  await expect(page.getByTestId("seats-value")).toHaveText("seats: 4");
+  await page.getByRole("button", { name: "Decrease seats" }).click();
+  await expect(seats).toHaveValue("3");
+
+  await expect(projectUrl).toHaveValue("nagi-ui");
+  await projectUrl.fill("owned-source");
+  expect(
+    await form.evaluate((element: HTMLFormElement) =>
+      Object.fromEntries(new FormData(element).entries()),
+    ),
+  ).toMatchObject({ seats: "3", projectUrl: "owned-source" });
+
+  await form.getByRole("button", { name: "Reset interactive controls" }).click();
+  await expect(seats).toHaveValue("2");
+  await expect(page.getByTestId("seats-value")).toHaveText("seats: 2");
+  await expect(projectUrl).toHaveValue("nagi-ui");
+});
+
 test("form reset restores native DOM and every controlled Vue model", async ({ page }) => {
   await page.getByLabel("Full name").fill("Grace Hopper");
   await page.getByRole("checkbox", { name: "Accept the agreement" }).click();

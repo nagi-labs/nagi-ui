@@ -130,6 +130,34 @@ test("Pagination keeps native links and controlled button selection distinct", a
   );
 });
 
+test("ToggleGroup keeps native buttons while updating single and multiple models", async ({
+  page,
+}) => {
+  const alignment = page.getByRole("group", { name: "Text alignment" });
+  const center = alignment.getByRole("button", { name: "Center" });
+  const left = alignment.getByRole("button", { name: "Left" });
+
+  await expect(center).toHaveAttribute("aria-pressed", "true");
+  await center.click();
+  await expect(center).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByTestId("alignment-state")).toHaveText("alignment: none");
+  await left.focus();
+  await left.press("Space");
+  await expect(left).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("alignment-state")).toHaveText("alignment: left");
+  await expect(alignment.locator("button[tabindex]")).toHaveCount(0);
+
+  const formats = page.getByRole("group", { name: "Text formats" });
+  const bold = formats.getByRole("button", { name: "Bold" });
+  const italic = formats.getByRole("button", { name: "Italic" });
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await italic.click();
+  await expect(bold).toHaveAttribute("aria-pressed", "true");
+  await expect(italic).toHaveAttribute("aria-pressed", "true");
+  await expect(formats.getByRole("button", { name: "Underline" })).toBeDisabled();
+  await expect(page.getByTestId("format-state")).toHaveText("formats: bold, italic");
+});
+
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");

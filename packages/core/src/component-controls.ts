@@ -8,6 +8,7 @@ export { useButtonControl } from "./button.ts";
 export { useComboboxControl } from "./combobox.ts";
 export { useAlertDialogControl, useDialogControl } from "./dialog.ts";
 export { useDisclosureControl } from "./disclosure.ts";
+export { useNumberFieldControl, type NumberFieldControl } from "./number-field.ts";
 export { usePopoverControl } from "./popover.ts";
 export { useTabsModelBridge } from "./tabs.ts";
 export { useToastRenderer } from "./toast.ts";
