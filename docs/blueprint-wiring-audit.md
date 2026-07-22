@@ -53,9 +53,9 @@ excluded.
 
 | Group | Components | Result |
 |---|---|---|
-| presentation/native structure | Alert, Badge, Breadcrumb, ButtonGroup, Card, EmptyState, Fieldset, Kbd, Separator, Skeleton, Spinner | props, schema policy, fixed ARIA, slots, DOM and CSS only; no behavior mechanism exists to extract |
+| presentation/native structure | Alert, Badge, Breadcrumb, ButtonGroup, Card, EmptyState, Fieldset, InputGroup, Kbd, Separator, Skeleton, Spinner | props, schema policy, fixed ARIA, slots, DOM and CSS only; no behavior mechanism exists to extract |
 | native elements | Input, Textarea, Checkbox, Radio, Select, Slider, Switch, Meter, Progress | native control remains visible; reset/property synchronization is in a fixed helper |
-| small native interaction | FileInput, Pagination, Rating | file state stays entirely native; pagination keeps editable link/button schema policy visible; rating exposes real radios and delegates only native reset ordering |
+| small native interaction | FileInput, NumberField, Pagination, Rating, ToggleGroup | file state stays entirely native; number stepping/reset uses one fixed adapter; pagination and toggle-group keep editable schema policy visible; rating exposes real radios and delegates only native reset ordering |
 | behavior composition | Accordion, AlertDialog, Dialog, Disclosure, Listbox, Popover, Tabs, Toast, Toggle, Tooltip | thin components use one package adapter; schema-aware components retain their editable mapping; state machines stay in composables |
 | menu renderers | ActionMenu, DropdownMenu, DropdownSubmenu, DropdownMenuItem | editable schema-to-DOM branches stay visible; fixed node option and navigation mechanics moved to an owned helper |
 | renderer-specific mechanisms | Avatar, Combobox, Button | image races, native combobox form channels, and focusable-disabled activation are package composables and are not copied by ordinary `own` |
@@ -106,6 +106,13 @@ not a permanent ban on every future use.
   `useNativeRadioGroupReset(inputs, model)`; the fixed helper owns reset event
   ordering and restores the numeric model plus checked member without a config
   object or component-specific state machine.
+- The first anatomy-sensitive slice keeps InputGroup presentation-only: caller
+  markup owns the native control and opts into the declared control/action CSS
+  surfaces. NumberField exposes the real `input[type=number]`, while
+  `useNumberFieldControl(input, model)` contains only native step and reset
+  synchronization. ToggleGroup keeps its single/multiple items policy beside
+  the renderer and relies on ordinary pressed buttons and native tab order; it
+  has no focus coordinator to hide.
 - Input, Checkbox, Switch, and Slider bind `$attrs` directly in the template;
   Combobox merges `$attrs` with its behavior props through `mergeNagiProps`.
   Consumer attributes, classes, styles, and listeners intentionally target the

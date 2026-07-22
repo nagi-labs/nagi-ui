@@ -44,13 +44,13 @@ orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
 The expanded cross-library benchmark currently places component creation at
-**37 / 54 (68.5%)**: 37 shipped components and 17 adopted backlog slices. The
-narrower Base UI-aligned scope remains **27 / 37 (73.0%)**. Native recipes,
+**40 / 54 (74.1%)**: 40 shipped components and 14 adopted backlog slices. The
+narrower Base UI-aligned scope is **29 / 37 (78.4%)**. Native recipes,
 explicit declines, and separate products such as Nagi Grid are not counted;
 see [`docs/expanded-vue-component-catalog.md`](docs/expanded-vue-component-catalog.md)
 and [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
-The latest three-component slice and its native-boundary audit are recorded in
-[`docs/expanded-catalog-small-interactive-slice.md`](docs/expanded-catalog-small-interactive-slice.md).
+The latest anatomy-sensitive slice and its native-boundary audit are recorded in
+[`docs/expanded-catalog-anatomy-slice-1.md`](docs/expanded-catalog-anatomy-slice-1.md).
 
 Package components are available without copying source:
 
@@ -74,9 +74,11 @@ import {
   Fieldset,
   FileInput,
   Input,
+  InputGroup,
   Kbd,
   Listbox,
   Meter,
+  NumberField,
   Pagination,
   Popover,
   Progress,
@@ -92,6 +94,7 @@ import {
   Textarea,
   Toast,
   Toggle,
+  ToggleGroup,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components"
 import "@nagi-labs/nagi-ui/default-theme.css"
