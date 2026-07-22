@@ -123,6 +123,7 @@ export {
   useNativeCustomValidity,
   useNativeFormReset,
   useNativeNumberReset,
+  useNativeRadioGroupReset,
   useNativeRadioReset,
   useNativeValueReset,
 } from "./native-form.ts"

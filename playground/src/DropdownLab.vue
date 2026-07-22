@@ -262,6 +262,7 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
       --nagi-color-border: #c4b5fd;
       --nagi-color-focus-ring: #8b5cf6;
       --nagi-color-surface-active: #ede9fe;
+      --nagi-color-text-muted: #475569;
       --nagi-radius-item: 0.8rem;
       --nagi-size-control: 1.7rem;
       --nagi-space-item: 0.2rem 0.45rem;

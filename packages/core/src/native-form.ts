@@ -1,4 +1,5 @@
 import {
+  computed,
   getCurrentInstance,
   onScopeDispose,
   onUpdated,
@@ -13,6 +14,9 @@ type NativeValueControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaEle
 type NativeValidityControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 type ReadonlyControlRef<Control> = Readonly<{
   value: Control | null;
+}>;
+type ReadonlyControlListRef<Control> = Readonly<{
+  value: readonly Control[];
 }>;
 type WritableModel<Value> = { value: Value };
 
@@ -124,6 +128,22 @@ export function useNativeRadioReset(
   useNativeFormReset(control, (element) => {
     model.value = initialValue;
     element.checked = initialValue === element.value;
+  });
+}
+
+/** Restores a string/number radio group after the browser resets its checked members. */
+export function useNativeRadioGroupReset<Value extends string | number | null>(
+  controls: ReadonlyControlListRef<HTMLInputElement>,
+  model: WritableModel<Value>,
+): void {
+  const initialValue = model.value;
+  const owner = computed(() => controls.value[0] ?? null);
+
+  useNativeFormReset(owner, () => {
+    model.value = initialValue;
+    for (const control of controls.value) {
+      control.checked = initialValue !== null && control.value === String(initialValue);
+    }
   });
 }
 

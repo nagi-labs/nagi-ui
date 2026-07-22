@@ -69,6 +69,59 @@ test("native checkbox, radio, select, and slider keep platform behavior", async 
   });
 });
 
+test("Rating and FileInput keep keyboard, FormData, and reset browser-owned", async ({
+  page,
+}) => {
+  const form = page.locator("#interactive-form");
+  const rating3 = page.getByRole("radio", { name: "3 stars" });
+  const rating4 = page.getByRole("radio", { name: "4 stars" });
+  const fileInput = page.getByLabel("Release attachment");
+
+  await expect(rating3).toBeChecked();
+  await rating3.focus();
+  await rating3.press("ArrowRight");
+  await expect(rating4).toBeChecked();
+  await expect(page.getByTestId("rating-value")).toHaveText("rating: 4");
+
+  await fileInput.setInputFiles({
+    name: "release-notes.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("Nagi UI release"),
+  });
+  expect(
+    await fileInput.evaluate((input: HTMLInputElement) => ({
+      count: input.files?.length ?? 0,
+      name: input.files?.[0]?.name ?? "",
+    })),
+  ).toEqual({ count: 1, name: "release-notes.txt" });
+  expect(
+    await form.evaluate((element: HTMLFormElement) => {
+      const data = new FormData(element);
+      const file = data.get("attachment");
+      return {
+        rating: data.get("rating"),
+        fileName: file instanceof File ? file.name : "",
+      };
+    }),
+  ).toEqual({ rating: "4", fileName: "release-notes.txt" });
+
+  await form.getByRole("button", { name: "Reset interactive controls" }).click();
+  await expect(rating3).toBeChecked();
+  await expect(page.getByTestId("rating-value")).toHaveText("rating: 3");
+  expect(
+    await fileInput.evaluate((input: HTMLInputElement) => input.files?.length ?? 0),
+  ).toBe(0);
+});
+
+test("Rating keeps the native selected control visible in forced colors", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+
+  const selected = page.getByRole("radio", { name: "3 stars" });
+  await expect(selected).toBeVisible();
+  await expect(selected).toBeChecked();
+  await expect(page.locator(".n-rating .icon").first()).toBeHidden();
+});
+
 test("form reset restores native DOM and every controlled Vue model", async ({ page }) => {
   await page.getByLabel("Full name").fill("Grace Hopper");
   await page.getByRole("checkbox", { name: "Accept the agreement" }).click();

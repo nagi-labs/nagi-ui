@@ -16,6 +16,7 @@ import {
   Disclosure,
   EmptyState,
   Kbd,
+  Pagination,
   Popover,
   Separator,
   Skeleton,
@@ -24,6 +25,7 @@ import {
   Toast,
   Toggle,
   Tooltip,
+  type PaginationItem,
 } from "@nagi-labs/nagi-ui/components";
 
 const accordionItems = [
@@ -63,6 +65,15 @@ const breadcrumbItems = [
   { key: "components", label: "Components", href: "/catalog.html#utility-heading" },
   { key: "catalog", label: "Catalog" },
 ] as const;
+const paginationItems: readonly PaginationItem[] = [
+  { key: "previous", label: "Previous", disabled: true },
+  { key: "1", label: "1", href: "/catalog.html?page=1#utility-heading" },
+  { key: "2", label: "2" },
+  { key: "3", label: "3" },
+  { key: "next", label: "Next", href: "/catalog.html?page=3#utility-heading" },
+];
+const currentPage = ref("2");
+const paginationSelections = ref(0);
 const toastManager = createToastManager({ duration: 0, limit: 3 });
 const secondaryToastManager = createToastManager({ duration: 0, limit: 3 });
 const undoneActions = ref(0);
@@ -257,6 +268,15 @@ function runPromiseToast() {
     <section class="section" aria-labelledby="utility-heading">
       <h2 id="utility-heading" class="title">Utility and feedback primitives</h2>
       <Breadcrumb label="Package path" :items="breadcrumbItems" />
+      <Pagination
+        v-model:current-key="currentPage"
+        label="Catalog pages"
+        :items="paginationItems"
+        @select="paginationSelections += 1"
+      />
+      <output data-testid="pagination-state">
+        current: {{ currentPage }}, selections: {{ paginationSelections }}
+      </output>
 
       <div class="list -primitives">
         <span>Open search</span>

@@ -9,6 +9,7 @@ import {
   useNativeCustomValidity,
   useNativeFormReset,
   useNativeNumberReset,
+  useNativeRadioGroupReset,
   useNativeRadioReset,
   useNativeValueReset,
 } from "@nagi-labs/nagi-ui";
@@ -155,5 +156,29 @@ test("native form reset rebinds when the control ref changes owner", async () =>
   secondForm.dispatchEvent(new Event("reset"));
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(calls, ["reset"]);
+  scope.stop();
+});
+
+test("native radio group reset restores a numeric model and checked member", async () => {
+  const form = new EventTarget();
+  const controls = ref([
+    { form, value: "1", checked: false },
+    { form, value: "2", checked: false },
+    { form, value: "3", checked: true },
+  ] as unknown as HTMLInputElement[]);
+  const model = ref<number | null>(2);
+  const scope = effectScope();
+
+  scope.run(() => useNativeRadioGroupReset(controls, model));
+  await nextTick();
+
+  model.value = 3;
+  controls.value[1]!.checked = false;
+  controls.value[2]!.checked = true;
+  form.dispatchEvent(new Event("reset"));
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(model.value, 2);
+  assert.deepEqual(controls.value.map((control) => control.checked), [false, true, false]);
   scope.stop();
 });

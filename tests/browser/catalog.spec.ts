@@ -104,6 +104,32 @@ test("expanded thin primitives preserve native semantics and form reset", async 
   await expect(page.getByTestId("release-notes-value")).toHaveText("Native behavior first.");
 });
 
+test("Pagination keeps native links and controlled button selection distinct", async ({ page }) => {
+  const pagination = page.getByRole("navigation", { name: "Catalog pages" });
+  await expect(pagination.getByRole("button", { name: "Previous" })).toBeDisabled();
+  await expect(pagination.getByRole("link", { name: "1" })).toHaveAttribute(
+    "href",
+    "/catalog.html?page=1#utility-heading",
+  );
+  await expect(pagination.getByRole("button", { name: "2" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+
+  await pagination.getByRole("button", { name: "3" }).click();
+  await expect(pagination.getByRole("button", { name: "3" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(pagination.getByRole("button", { name: "2" })).not.toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(page.getByTestId("pagination-state")).toHaveText(
+    "current: 3, selections: 1",
+  );
+});
+
 test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");

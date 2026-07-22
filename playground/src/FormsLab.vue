@@ -5,15 +5,18 @@ import {
   Checkbox,
   Combobox,
   Fieldset,
+  FileInput,
   Input as NagiInput,
   Meter,
   Progress,
   Radio,
+  Rating,
   Select as NagiSelect,
   Slider,
   Switch,
   type ComboboxOption,
   type NagiSelectOption,
+  type RatingItem,
 } from "@nagi-labs/nagi-ui/components";
 
 const frameworks: readonly ComboboxOption[] = [
@@ -29,6 +32,14 @@ const plans: readonly NagiSelectOption[] = [
   { value: "pro", label: "Pro" },
 ];
 
+const ratingItems: readonly RatingItem[] = [
+  { value: 1, label: "1 star" },
+  { value: 2, label: "2 stars" },
+  { value: 3, label: "3 stars" },
+  { value: 4, label: "4 stars" },
+  { value: 5, label: "5 stars" },
+];
+
 const fullName = ref("Ada Lovelace");
 const disabledValue = ref("must not be submitted");
 const agreement = ref(false);
@@ -36,6 +47,7 @@ const agreementIndeterminate = ref(true);
 const marketing = ref(true);
 const contact = ref<string | null>("email");
 const plan = ref("standard");
+const rating = ref<number | null>(3);
 const volume = ref(40);
 const externalNote = ref("outside the form tree");
 const externalFormOwner = ref("alignment-form");
@@ -187,6 +199,31 @@ function captureSubmission(event: SubmitEvent) {
           <button class="button" type="reset">Reset form</button>
         </div>
       </form>
+    </section>
+
+    <section class="section" aria-labelledby="interactive-form-heading">
+      <h2 id="interactive-form-heading" class="title">Small interactive controls</h2>
+      <form id="interactive-form" class="form" @submit.prevent>
+        <div class="unit">
+          <Rating
+            v-model="rating"
+            label="Release rating"
+            name="rating"
+            :items="ratingItems"
+            required
+          />
+          <FileInput
+            data-testid="release-file"
+            label="Release attachment"
+            name="attachment"
+            accept="text/plain,.md"
+          />
+        </div>
+        <div class="actions">
+          <button class="button" type="reset">Reset interactive controls</button>
+        </div>
+      </form>
+      <output data-testid="rating-value">rating: {{ rating ?? "none" }}</output>
     </section>
 
     <section class="section" aria-labelledby="external-heading">

@@ -172,6 +172,55 @@ test("components entry exposes the expanded thin catalog slice", async () => {
   });
 });
 
+test("components entry exposes the small interactive catalog slice", async () => {
+  await withComponents(async (components) => {
+    for (const name of ["FileInput", "Pagination", "Rating"]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+
+    const pagination = await render(components.Pagination as Component, {
+      label: "Result pages",
+      currentKey: "2",
+      items: [
+        { key: "1", label: "1", href: "/results?page=1" },
+        { key: "2", label: "2" },
+      ],
+    });
+    assert.match(pagination, /<nav[^>]*aria-label="Result pages"/);
+    assert.match(pagination, /<a[^>]*href="\/results\?page=1"/);
+    assert.match(pagination, /<button[^>]*aria-current="page"[^>]*>2/);
+
+    const rating = await render(components.Rating as Component, {
+      label: "Quality",
+      name: "quality",
+      modelValue: 2,
+      items: [
+        { value: 1, label: "Poor" },
+        { value: 2, label: "Good" },
+      ],
+    });
+    assert.match(rating, /<fieldset[^>]*class="n-rating"/);
+    assert.match(rating, /<legend[^>]*>Quality<\/legend>/);
+    assert.equal(rating.match(/type="radio"/g)?.length, 2);
+    const selectedRating = rating.match(/<input[^>]*checked[^>]*>/)?.[0] ?? "";
+    assert.match(selectedRating, /value="2"/);
+
+    const fileInput = await render(components.FileInput as Component, {
+      label: "Attachment",
+      name: "attachment",
+      accept: ".txt",
+      multiple: true,
+      capture: "environment",
+    });
+    assert.match(fileInput, /<label[^>]*class="n-file-input"/);
+    assert.match(fileInput, /<input[^>]*type="file"/);
+    assert.match(fileInput, /name="attachment"/);
+    assert.match(fileInput, /accept="\.txt"/);
+    assert.match(fileInput, /multiple/);
+    assert.match(fileInput, /capture="environment"/);
+  });
+});
+
 test("Accordion and AlertDialog preserve their native SSR contracts", async () => {
   await withComponents(async (components) => {
     const accordion = await renderSlotFunctions(
