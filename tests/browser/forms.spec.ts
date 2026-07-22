@@ -249,7 +249,47 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await dragRangeThumb(page, upper, 0.75, 0.65);
   await expect(lower).toHaveValue("35");
   await expect(upper).toHaveValue("65");
+  await expect(lower).toHaveAttribute("min", "0");
+  await expect(lower).toHaveAttribute("max", "100");
+  await expect(lower).toHaveAttribute("aria-valuemax", "65");
+  await expect(upper).toHaveAttribute("min", "0");
+  await expect(upper).toHaveAttribute("max", "100");
+  await expect(upper).toHaveAttribute("aria-valuemin", "35");
   await expect(page.getByTestId("price-range-value")).toHaveText("price range: 35–65");
+  const alignment = await rangeFieldset.evaluate((element) => {
+    const track = element.querySelector<HTMLElement>(".item.-wide > .rail");
+    const inputs = element.querySelectorAll<HTMLInputElement>('input[type="range"]');
+    if (!track || inputs.length !== 2) throw new Error("RangeSlider geometry is incomplete");
+
+    const trackRect = track.getBoundingClientRect();
+    const style = getComputedStyle(track);
+    const start = Number.parseFloat(style.getPropertyValue("--range-start")) / 100;
+    const end = 1 - Number.parseFloat(style.getPropertyValue("--range-end")) / 100;
+    const sizeProbe = document.createElement("span");
+    sizeProbe.style.cssText =
+      "position:absolute;inline-size:calc(var(--nagi-size-control) / 2)";
+    element.append(sizeProbe);
+    const thumbWidth = sizeProbe.getBoundingClientRect().width;
+    sizeProbe.remove();
+    const thumbCenter = (input: HTMLInputElement) => {
+      const rect = input.getBoundingClientRect();
+      const ratio = (input.valueAsNumber - Number(input.min)) /
+        (Number(input.max) - Number(input.min));
+      return rect.left + thumbWidth / 2 + (rect.width - thumbWidth) * ratio;
+    };
+
+    return {
+      insetDelta: Math.abs(
+        trackRect.left - inputs[0]!.getBoundingClientRect().left -
+          thumbWidth / 2,
+      ),
+      lowerDelta: Math.abs(trackRect.left + trackRect.width * start - thumbCenter(inputs[0]!)),
+      upperDelta: Math.abs(trackRect.left + trackRect.width * end - thumbCenter(inputs[1]!)),
+    };
+  });
+  expect(alignment.insetDelta).toBeLessThan(0.5);
+  expect(alignment.lowerDelta).toBeLessThan(0.5);
+  expect(alignment.upperDelta).toBeLessThan(0.5);
   expect(Number(await rangeFieldset.getAttribute("data-input-events"))).toBeGreaterThan(1);
   await expect(rangeFieldset).toHaveAttribute("data-change-events", "2");
   await expect(rangeFieldset).toHaveAttribute(
@@ -270,6 +310,8 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await lower.press("End");
   await expect(lower).toHaveValue("65");
   await expect(upper).toHaveValue("65");
+  await expect(lower).toHaveAttribute("aria-valuemax", "65");
+  await expect(upper).toHaveAttribute("aria-valuemin", "65");
   await expect(page.getByTestId("price-range-value")).toHaveText("price range: 65–65");
 
   await dragRangeThumb(page, lower, 0.6, 0.45);

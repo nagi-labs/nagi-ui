@@ -40,8 +40,6 @@ const { lowerValue, upperValue, railProps } = useRangeSlider(
   upperInput,
   model,
 );
-const lowerMax = computed(() => Math.max(props.min, Math.min(props.max, upperValue.value)));
-const upperMin = computed(() => Math.min(props.max, Math.max(props.min, lowerValue.value)));
 const trackStyle = computed(() => {
   const span = props.max - props.min;
   const position = (value: number) => {
@@ -67,7 +65,13 @@ const trackStyle = computed(() => {
         <label class="label" :for="upperId ?? generatedUpperId">{{ upperLabel }}</label>
         <output class="output" :for="upperId ?? generatedUpperId">{{ upperValue }}</output>
       </div>
-      <div class="item -rail" :style="trackStyle" v-bind="railProps">
+      <div class="item -wide">
+        <span
+          class="rail"
+          aria-hidden="true"
+          :style="trackStyle"
+          v-bind="railProps"
+        ></span>
         <input
           :id="lowerId ?? generatedLowerId"
           ref="lowerInput"
@@ -77,8 +81,9 @@ const trackStyle = computed(() => {
           :name="lowerName"
           :form="form"
           :min="min"
-          :max="lowerMax"
+          :max="max"
           :step="step"
+          :aria-valuemax="upperValue"
         />
         <input
           :id="upperId ?? generatedUpperId"
@@ -88,9 +93,10 @@ const trackStyle = computed(() => {
           type="range"
           :name="upperName"
           :form="form"
-          :min="upperMin"
+          :min="min"
           :max="max"
           :step="step"
+          :aria-valuemin="lowerValue"
         />
       </div>
     </div>
@@ -141,34 +147,37 @@ const trackStyle = computed(() => {
       }
     }
 
-    > .item.-rail {
+    > .item.-wide {
       position: relative;
       grid-column: 1 / -1;
       min-block-size: var(--nagi-size-control);
-      cursor: pointer;
-      touch-action: none;
 
-      &::before {
+      > .rail {
         position: absolute;
-        inset-block-start: 50%;
-        inset-inline: 0;
-        block-size: 2px;
-        border-radius: var(--nagi-radius-control);
-        background: var(--nagi-color-border);
-        content: "";
-        transform: translateY(-50%);
-      }
+        inset-block: 0;
+        inset-inline: calc(var(--nagi-size-control) / 4);
+        cursor: pointer;
+        touch-action: none;
 
-      &::after {
-        position: absolute;
-        z-index: 1;
-        inset-block-start: 50%;
-        inset-inline: var(--range-start) var(--range-end);
-        block-size: 2px;
-        border-radius: var(--nagi-radius-control);
-        background: var(--nagi-color-accent);
-        content: "";
-        transform: translateY(-50%);
+        &::before,
+        &::after {
+          position: absolute;
+          inset-block-start: 50%;
+          block-size: 2px;
+          border-radius: var(--nagi-radius-control);
+          content: "";
+          transform: translateY(-50%);
+        }
+
+        &::before {
+          inset-inline: 0;
+          background: var(--nagi-color-border);
+        }
+
+        &::after {
+          inset-inline: var(--range-start) var(--range-end);
+          background: var(--nagi-color-accent);
+        }
       }
 
       > .input {
@@ -259,19 +268,21 @@ const trackStyle = computed(() => {
     color: var(--nagi-color-text-disabled);
   }
 
-  &:disabled > .unit > .item.-rail {
-    cursor: not-allowed;
+  &:disabled > .unit > .item.-wide {
+    > .rail {
+      cursor: not-allowed;
+    }
   }
 }
 
 @media (forced-colors: active) {
   .n-range-slider > .unit {
-    > .item.-rail {
-      &::before {
+    > .item.-wide {
+      > .rail::before {
         background: CanvasText;
       }
 
-      &::after {
+      > .rail::after {
         background: Highlight;
       }
 
@@ -314,7 +325,7 @@ const trackStyle = computed(() => {
     color: GrayText;
   }
 
-  .n-range-slider:disabled > .unit > .item.-rail::after {
+  .n-range-slider:disabled > .unit > .item.-wide > .rail::after {
     background: GrayText;
   }
 }

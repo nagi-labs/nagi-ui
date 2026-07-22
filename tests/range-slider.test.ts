@@ -214,6 +214,42 @@ test("RangeSlider rail emits native input while moving and change only on commit
   scope.stop();
 });
 
+test("RangeSlider rail emits no extra input after the active thumb reaches its peer", () => {
+  const lower = createRangeControl({ value: 20 });
+  const upper = createRangeControl({ value: 30 });
+  const model = ref<readonly [number, number]>([20, 30]);
+  const scope = effectScope();
+  const binding = scope.run(() => useRangeSlider(
+    ref(lower.control),
+    ref(upper.control),
+    model,
+  ));
+  assert.ok(binding);
+
+  const events: string[] = [];
+  lower.control.addEventListener("input", () => events.push("input"));
+  lower.control.addEventListener("change", () => events.push("change"));
+  const rail = {
+    ownerDocument: {
+      defaultView: { getComputedStyle: () => ({ direction: "ltr" }) },
+    },
+    getBoundingClientRect: () => ({ left: 0, width: 100 }),
+    setPointerCapture() {},
+    hasPointerCapture: () => false,
+    releasePointerCapture() {},
+  };
+
+  binding.railProps.onPointerdown(pointer(rail, 20));
+  binding.railProps.onPointermove(pointer(rail, 90));
+  binding.railProps.onPointermove(pointer(rail, 80));
+  binding.railProps.onPointerup(pointer(rail, 80));
+
+  assert.deepEqual(model.value, [30, 30]);
+  assert.equal(lower.control.valueAsNumber, 30);
+  assert.deepEqual(events, ["input", "change"]);
+  scope.stop();
+});
+
 test("RangeSlider renders two named native range controls with visible constraints", async () => {
   const server = await createServer({
     configFile: false,
@@ -266,14 +302,16 @@ test("RangeSlider renders two named native range controls with visible constrain
     assert.match(controls[0] ?? "", /name="priceMin"/u);
     assert.match(controls[0] ?? "", /form="filters"/u);
     assert.match(controls[0] ?? "", /min="10"/u);
-    assert.match(controls[0] ?? "", /max="75"/u);
+    assert.match(controls[0] ?? "", /max="90"/u);
+    assert.match(controls[0] ?? "", /aria-valuemax="75"/u);
     assert.match(controls[0] ?? "", /step="5"/u);
     assert.match(controls[1] ?? "", /type="range"/u);
     assert.match(controls[1] ?? "", /id="price-max"/u);
     assert.match(controls[1] ?? "", /name="priceMax"/u);
     assert.match(controls[1] ?? "", /form="filters"/u);
-    assert.match(controls[1] ?? "", /min="25"/u);
+    assert.match(controls[1] ?? "", /min="10"/u);
     assert.match(controls[1] ?? "", /max="90"/u);
+    assert.match(controls[1] ?? "", /aria-valuemin="25"/u);
     assert.match(controls[1] ?? "", /step="5"/u);
     assert.match(html, /<label class="label" for="price-min">Minimum price<\/label>/u);
     assert.match(html, /<label class="label" for="price-max">Maximum price<\/label>/u);
@@ -289,13 +327,15 @@ test("RangeSlider leaves native keyboard behavior and constraints visible in the
 
   assert.match(source, /defineModel<readonly \[number, number\]>/u);
   assert.match(source, /useRangeSlider\(\s*lowerInput,\s*upperInput,\s*model,?\s*\)/u);
-  assert.match(source, /v-bind="railProps"/u);
+  assert.match(source, /<span[\s\S]*?class="rail"[\s\S]*?v-bind="railProps"/u);
   assert.equal(source.match(/type="range"/gu)?.length, 2);
-  assert.match(source, /<div class="item -rail"[^>]*>[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u);
-  assert.match(source, /:name="lowerName"[\s\S]*:form="form"[\s\S]*:min="min"[\s\S]*:max="lowerMax"[\s\S]*:step="step"/u);
-  assert.match(source, /:name="upperName"[\s\S]*:form="form"[\s\S]*:min="upperMin"[\s\S]*:max="max"[\s\S]*:step="step"/u);
+  assert.match(source, /<div class="item -wide"[^>]*>[\s\S]*class="rail"[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u);
+  assert.match(source, /:name="lowerName"[\s\S]*:form="form"[\s\S]*:min="min"[\s\S]*:max="max"[\s\S]*:step="step"[\s\S]*:aria-valuemax="upperValue"/u);
+  assert.match(source, /:name="upperName"[\s\S]*:form="form"[\s\S]*:min="min"[\s\S]*:max="max"[\s\S]*:step="step"[\s\S]*:aria-valuemin="lowerValue"/u);
   assert.match(source, /<fieldset class="n-range-slider" :disabled="disabled">/u);
-  assert.match(source, /> \.item\.-rail[\s\S]*touch-action:\s*none/u);
+  assert.match(source, /> \.item\.-wide[\s\S]*> \.rail[\s\S]*touch-action:\s*none/u);
+  assert.match(source, /inset-inline:\s*calc\(var\(--nagi-size-control\) \/ 4\)/u);
+  assert.match(source, /::-webkit-slider-thumb[\s\S]*inline-size:\s*calc\(var\(--nagi-size-control\) \/ 2\)/u);
   assert.match(source, /pointer-events:\s*none[\s\S]*::-webkit-slider-thumb[\s\S]*pointer-events:\s*none/u);
   assert.match(source, /::-moz-range-thumb[\s\S]*pointer-events:\s*none/u);
   assert.match(source, /@media \(forced-colors: active\)/u);

@@ -168,7 +168,11 @@ export function useRangeSlider(
     const sanitized = nativeValue(control, thumb === "lower" ? model.value[0] : model.value[1]);
     if (thumb === "lower") lowerValue.value = sanitized;
     else upperValue.value = sanitized;
-    if (previous === sanitized) return false;
+    const committed = nativeValue(
+      control,
+      thumb === "lower" ? model.value[0] : model.value[1],
+    );
+    if (previous === committed) return false;
     control.dispatchEvent(new Event("input", { bubbles: true }));
     return true;
   }

@@ -9,6 +9,16 @@ export { nagiThemeTokens as nagiUiThemeTokens } from "./theme/tokens.mjs"
 
 export const nagiUiSurfaceRootPrefixes = ["n-"]
 
+/** UI anatomy used by owned Nagi component sources. */
+export const nagiUiAnatomyClasses = [
+  "actions",
+  "field",
+  "icon",
+  "media",
+  "rail",
+  "value",
+]
+
 /** Opaque package component names. Nagi CSS derives `n-<kebab-name>`. */
 export const nagiUiComponents = [
   "Accordion",
@@ -101,6 +111,7 @@ export const nagiUiComponentSlots = {
 }
 
 const nagiUiPreset = {
+  anatomyClasses: nagiUiAnatomyClasses,
   componentClassPrefix: "n-",
   componentClasses: nagiUiComponents,
   componentSlots: nagiUiComponentSlots,

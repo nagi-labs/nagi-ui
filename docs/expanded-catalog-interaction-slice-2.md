@@ -39,22 +39,27 @@ mode.
 ## RangeSlider: two real controls, one visual track
 
 RangeSlider is separate from the existing single native Slider. Its constant
-DOM and tab order are lower input then upper input. The lower input's native
-maximum follows the upper value, while the upper input's native minimum follows
-the lower value. This keeps `lower <= upper` without allowing the thumbs to swap
-their accessible names or focus order, matching the invariant described by the
+DOM and tab order are lower input then upper input. Both native inputs retain
+the same physical `min` / `max` scale so their thumb centers align with the
+shared track. The lower input's effective `aria-valuemax` follows the upper
+value, while the upper input's effective `aria-valuemin` follows the lower
+value; the model binding clamps native keyboard and pointer updates to those
+limits. This keeps `lower <= upper` without allowing the thumbs to swap their
+accessible names or focus order, matching the invariant described by the
 [WAI-ARIA multi-thumb slider pattern](https://www.w3.org/WAI/ARIA/apg/patterns/slider-multithumb/).
 
-Both inputs are visually overlaid on one owned track. The fixed binding gives
-the full-height rail a pointer target, selects the nearest thumb, uses pointer
-capture while dragging, and resolves a collision by direction (below the shared
-value selects lower; above selects upper). This avoids a 16 px thumb-only hit
-area and lets either thumb recover after both values meet. Keyboard behavior
-remains native, and the selected segment is a presentation-only fill derived
-beside the DOM. `useRangeSlider` also hides native sanitization, tuple/DOM
-syncing and reset ordering, but has no configurable behavior object. Labels,
-dependent bounds, names, form ownership, track structure and styling remain
-visible in the SFC.
+Both inputs are visually overlaid on one owned track. The visible track is inset
+by the native thumb radius, so its full span is exactly the distance traveled by
+the thumb centers; the selected segment therefore terminates at each center.
+The fixed binding gives that full-height track a pointer target, selects the
+nearest thumb, uses pointer capture while dragging, and resolves a collision by
+direction (below the shared value selects lower; above selects upper). This
+avoids a 16 px thumb-only hit area and lets either thumb recover after both
+values meet. Keyboard behavior remains native, and the selected segment is a
+presentation-only fill derived beside the DOM. `useRangeSlider` also hides
+native sanitization, tuple/DOM syncing and reset ordering, but has no
+configurable behavior object. Labels, effective bounds, names, form ownership,
+track structure and styling remain visible in the SFC.
 
 Because the shared rail is a custom pointer surface, it also reproduces the
 native event contract at the real input boundary: changed pointer positions
@@ -119,6 +124,6 @@ vp node ../nagi-css/packages/cli/src/cli.mjs check --config .sandbox/nagi.consum
 After this slice, expanded catalog progress is **43 / 54 (79.6%)**. PreviewCard
 and RangeSlider also move the independent Base UI-aligned implementation metric
 to **31 / 37 (83.8%)**; Stepper belongs to the cross-library expanded scope.
-The complete release gate passed with **268 / 268 unit tests** and **91 / 91
+The complete release gate passed with **269 / 269 unit tests** and **91 / 91
 browser + axe tests**, plus TypeScript 7, verified-bindings integration lint,
 both owned and consumer Nagi CSS checks, and package-tarball inspection.

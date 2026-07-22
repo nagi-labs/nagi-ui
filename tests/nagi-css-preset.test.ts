@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 
 import preset, {
+  nagiUiAnatomyClasses,
   nagiUiComponents,
   nagiUiComponentSlots,
   nagiUiSurfaceRootPrefixes,
@@ -21,6 +22,8 @@ test("Nagi CSS preset covers every package component export", () => {
   ).sort();
 
   assert.deepEqual([...nagiUiComponents].sort(), exportedComponents);
+  assert.equal(preset.anatomyClasses, nagiUiAnatomyClasses);
+  assert.ok(nagiUiAnatomyClasses.includes("rail"));
   assert.equal(preset.componentClassPrefix, "n-");
   assert.equal(preset.componentClasses, nagiUiComponents);
   assert.equal(preset.componentSlots, nagiUiComponentSlots);

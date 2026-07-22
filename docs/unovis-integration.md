@@ -88,6 +88,6 @@ boundary avoids an adapter that translates the Unovis event model into Nagi.
 The core package manifest does not include Unovis dependencies, so consumers
 that do not use the recipe do not receive a chart runtime.
 
-The complete release gate passed with **268 / 268 unit tests** and **91 / 91
+The complete release gate passed with **269 / 269 unit tests** and **91 / 91
 browser + axe tests**, including the chart's SVG output, token bridge, dark-theme
 override, non-color series cues, native data table, and Nagi CSS boundary.
