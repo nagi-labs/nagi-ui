@@ -122,13 +122,13 @@ interface CalendarBaseOptions {
 
 export interface CalendarComponentProps {
   label: string;
-  id?: string;
-  name?: string;
-  form?: string;
+  id?: string | undefined;
+  name?: string | undefined;
+  form?: string | undefined;
   locale: string;
   timeZone: string;
-  min?: string;
-  max?: string;
+  min?: string | undefined;
+  max?: string | undefined;
   unavailableDates: readonly string[];
   disabled: boolean;
   readOnly: boolean;
@@ -137,12 +137,12 @@ export interface CalendarComponentProps {
   validationMessage: string;
   previousLabel: string;
   nextLabel: string;
-  defaultVisibleMonth?: string;
+  defaultVisibleMonth?: string | undefined;
 }
 
 export interface RangeCalendarComponentProps extends Omit<CalendarComponentProps, "name"> {
-  startName?: string;
-  endName?: string;
+  startName?: string | undefined;
+  endName?: string | undefined;
 }
 
 export interface UseCalendarOptions extends CalendarBaseOptions {

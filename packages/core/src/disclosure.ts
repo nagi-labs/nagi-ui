@@ -17,14 +17,14 @@ export interface UseDisclosureOptions {
   /** Override the generated id. */
   id?: string
   /** Exclusive-accordion group name (`<details name>`, native). */
-  name?: string
+  name?: string | undefined
   /** Suppress user toggling while retaining a focusable native `<summary>`. */
   disabled?: MaybeRefOrGetter<boolean>
 }
 
 interface DisclosureComponentProps {
-  readonly name?: string
-  readonly disabled?: boolean
+  readonly name?: string | undefined
+  readonly disabled?: boolean | undefined
 }
 
 export interface DisclosureProps {

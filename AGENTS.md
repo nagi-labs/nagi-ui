@@ -17,15 +17,17 @@ non-obvious startup/run caveats only.
   `vp node --version`.
 - **Dependencies:** `vp install --frozen-lockfile`. The underlying pnpm version
   is pinned to `11.1.3` by the `packageManager` field and resolved by `vp`.
-- **Tests:** `vp run test` (plain `node --test`) and `vp run typecheck`
-  (TypeScript 7). `tests/ssr.test.ts` spins up
+- **Tests:** `vp run test` (plain `node --test`) and `vp run typecheck`.
+  The latter runs the pure-TypeScript project with TypeScript 7 and Vue SFCs
+  with `vue-tsc` on TypeScript 6. `tests/ssr.test.ts` spins up
   an in-process Vite server (no external service) and writes a zero-JS
   artifact to `/tmp/nagi-zero-js-demo.html`.
 - **Lint:** `vp run lint` runs separate Oxc passes for the type-aware
   TypeScript project, Vue/Vite source, and runtime tests/configuration.
   `vp run test:integration` remains the custom Nagi UI Vue-template contract
   check and is not replaced by Oxc. Do not follow `lint:typed` with
-  `typecheck`; both run compiler diagnostics for the root `tsconfig.json`.
+  `typecheck:ts`; both run compiler diagnostics for the root `tsconfig.json`.
+  In a combined gate, follow lint with only `typecheck:vue`.
 - **Browser tests:** `vp run test:browser` starts the playground through the
   Playwright `webServer` config and runs Chromium keyboard/focus coverage.
   Install the browser once with `vp exec playwright install chromium`.

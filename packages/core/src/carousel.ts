@@ -75,9 +75,9 @@ export interface CarouselComponentProps<Item> {
   readonly label: string;
   readonly previousLabel: string;
   readonly nextLabel: string;
-  readonly trackLabel?: string;
-  readonly formatAnnouncement?: (position: number | null, count: number) => string;
-  readonly formatSlideLabel?: (item: Item, position: number, count: number) => string;
+  readonly trackLabel?: string | undefined;
+  readonly formatAnnouncement?: ((position: number | null, count: number) => string) | undefined;
+  readonly formatSlideLabel?: ((item: Item, position: number, count: number) => string) | undefined;
   readonly loop: boolean;
   readonly disabled: boolean;
 }

@@ -33,6 +33,14 @@ const props = withDefaults(defineProps<{
 const open = defineModel<boolean>("open", { default: false });
 const navigation = useNavigationMenu(props, open);
 
+function isPanel(item: NavigationMenuItem): item is NavigationMenuPanel {
+  return Array.isArray(item.children);
+}
+
+function isDirectLink(item: NavigationMenuItem): item is NavigationMenuDirectLink {
+  return typeof item.href === "string";
+}
+
 function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePanel: boolean) {
   const modified = event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
   if (item.navigate && !modified && (!item.target || item.target === "_self") && item.download === undefined) {
@@ -51,9 +59,9 @@ function prefetchLink(item: NavigationMenuLinkBase) {
   <nav v-bind="navigation.navProps" class="n-navigation-menu">
     <ul class="list">
       <li v-for="item in items" :key="item.key" class="item">
-        <button v-if="item.children?.length" v-bind="navigation.navigationTriggerProps(item)" class="trigger">{{ item.label }}</button>
+        <button v-if="isPanel(item)" v-bind="navigation.navigationTriggerProps(item)" class="trigger">{{ item.label }}</button>
         <a
-          v-else
+          v-else-if="isDirectLink(item)"
           class="link"
           :href="item.href"
           :target="item.target"

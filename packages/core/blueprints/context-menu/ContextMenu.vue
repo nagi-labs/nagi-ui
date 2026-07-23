@@ -35,6 +35,10 @@ const emit = defineEmits<{ select: [item: ContextMenuItem] }>();
 const open = defineModel<boolean>("open", { default: false });
 const context = useContextMenu(props, { open, onSelect: (item) => emit("select", item) });
 
+function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
+  return typeof item.href === "string";
+}
+
 function activateLink(item: ContextMenuLinkItem, event: MouseEvent) {
   const modified = event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
   if (!item.navigate || modified || (item.target && item.target !== "_self") || item.download !== undefined) return;
@@ -71,7 +75,7 @@ function prefetchLink(item: ContextMenuLinkItem) {
     >
       <li v-for="item in items" :key="item.key" class="entry" role="none">
         <a
-          v-if="'href' in item && !item.disabled"
+          v-if="isLink(item) && !item.disabled"
           v-bind="context.menu.itemProps(item, { nativeLink: true })"
           class="item"
           :href="item.href"

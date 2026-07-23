@@ -15,11 +15,15 @@ jobs:
           node-version: "24"
           cache: true
       - run: vp install --frozen-lockfile
+      - run: vp run lint
+      - run: vp run test:integration
       - run: vp run test
-      - run: vp run typecheck
+      - run: vp run typecheck:vue
       - run: vp exec playwright install --with-deps chromium
       - run: vp run test:browser
       - run: vp install --frozen-lockfile
+        working-directory: demos/nuxt
+      - run: vp run check
         working-directory: demos/nuxt
       - run: vp run build
         working-directory: demos/nuxt

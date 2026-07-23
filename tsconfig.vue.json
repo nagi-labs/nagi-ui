@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "types": ["vite/client"]
+  },
+  "include": [
+    "packages/core/blueprints/**/*.ts",
+    "packages/core/blueprints/**/*.vue",
+    "playground/src/**/*.ts",
+    "playground/src/**/*.vue",
+    "demos/NativePopoverDropdown.vue"
+  ]
+}

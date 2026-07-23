@@ -7,6 +7,7 @@ import {
   useId,
   watch,
   type CSSProperties,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue"
@@ -40,7 +41,7 @@ interface PreviewCardComponentProps {
 
 export interface PreviewCardTriggerProps {
   /** Vue template ref callback; it does not render a DOM attribute. */
-  ref: (element: Element | null) => void
+  ref: (element: Element | ComponentPublicInstance | null) => void
   style?: CSSProperties
   onPointerenter: (event: PointerEvent) => void
   onPointerleave: (event: PointerEvent) => void
@@ -51,7 +52,7 @@ export interface PreviewCardTriggerProps {
 export interface PreviewCardProps {
   id: string
   /** Vue template ref callback; it does not render a DOM attribute. */
-  ref: (element: Element | null) => void
+  ref: (element: Element | ComponentPublicInstance | null) => void
   style?: CSSProperties
   onPointerenter: (event: PointerEvent) => void
   onPointerleave: (event: PointerEvent) => void
@@ -183,13 +184,13 @@ export function usePreviewCard(
     }, Math.max(0, closeDelay))
   }
 
-  function setTrigger(element: Element | null) {
+  function setTrigger(element: Element | ComponentPublicInstance | null) {
     triggerElement = element as HTMLElement | null
     const target = resolvePreview()
     if (target && open.value) syncAnchor(target, true)
   }
 
-  function setPreview(element: Element | null) {
+  function setPreview(element: Element | ComponentPublicInstance | null) {
     previewElement = element as NativePopoverElement | null
     if (!previewElement) {
       detachAnchor?.()

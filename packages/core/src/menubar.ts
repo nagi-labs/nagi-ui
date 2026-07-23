@@ -81,11 +81,11 @@ interface MenubarComponentAction {
   readonly href?: string;
   readonly disabled?: boolean;
 }
-interface MenubarComponentMenu {
+interface MenubarComponentMenu<Action extends MenubarComponentAction = MenubarComponentAction> {
   readonly key: string;
   readonly label: string;
   readonly disabled?: boolean;
-  readonly items: readonly MenubarComponentAction[];
+  readonly items: readonly Action[];
 }
 export interface MenubarComponentProps<Menu extends MenubarComponentMenu> {
   readonly items: readonly Menu[];
@@ -427,10 +427,13 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
 export function useMenubar<Menu, Action, Key extends string = string, ActionKey extends string = string>(
   options: UseMenubarOptions<Menu, Action, Key, ActionKey>,
 ): MenubarBinding<Menu, Action, Key, ActionKey>;
-export function useMenubar(
-  props: MenubarComponentProps<MenubarComponentMenu>,
-  model: MenubarComponentModel<MenubarComponentAction>,
-): MenubarBinding<MenubarComponentMenu, MenubarComponentAction>;
+export function useMenubar<
+  Action extends MenubarComponentAction,
+  Menu extends MenubarComponentMenu<Action>,
+>(
+  props: MenubarComponentProps<Menu>,
+  model: MenubarComponentModel<Action>,
+): MenubarBinding<Menu, Action>;
 export function useMenubar(
   optionsOrProps: unknown,
   model?: MenubarComponentModel<MenubarComponentAction>,

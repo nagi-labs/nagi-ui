@@ -352,11 +352,11 @@ export function createToastManager(
 
 export interface UseToastOptions extends CreateToastManagerOptions {
   /** Override the generated region id. */
-  id?: string
+  id?: string | undefined
   /** Connect an application-owned manager instead of creating a local one. */
-  manager?: ToastManager
+  manager?: ToastManager | undefined
   /** Accessible name for the keyboard-reachable notification region. */
-  label?: string
+  label?: string | undefined
 }
 
 export interface ToastRegionProps {

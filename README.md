@@ -34,7 +34,8 @@ learning lands.
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app
   with delayed hydration (isolated, its own install — see its README).
 - `tests/` — `vp run lint` (Oxc), `vp run test` (unit), `vp run typecheck`
-  (TypeScript 7), and `vp run test:browser` (Playwright Chromium).
+  (TypeScript 7 for library code plus TypeScript 6/`vue-tsc` for SFCs), and
+  `vp run test:browser` (Playwright Chromium).
 
 Root linting is split by type boundary. `lint:typed` combines Oxc type-aware
 rules and compiler diagnostics for the pure-TypeScript `tsconfig.json` scope.
@@ -43,9 +44,16 @@ pretending to replace Vue SFC type checking. `lint:runtime` covers the CLI,
 runtime tests, recipes, and configuration files outside that TypeScript
 project. `vp run test:integration` remains separate: it runs Nagi's custom
 `verified-bindings` Vue-template rule, which Oxc does not replace.
-`vp run typecheck` remains available as a standalone compatibility command,
-but do not chain it after `lint:typed`: that Oxc pass already includes compiler
-diagnostics for the same `tsconfig.json`.
+`vp run typecheck` remains the standalone full type check. It uses the
+`@typescript/native` alias for the TypeScript 7 CLI on `tsconfig.json`, while
+the `typescript` package resolves to the TypeScript 6 compatibility package
+required by `vue-tsc` for `tsconfig.vue.json`. In a combined gate, do not chain
+`typecheck:ts` after `lint:typed`: that Oxc pass already includes compiler
+diagnostics for the same pure-TypeScript project. Run only `typecheck:vue`
+after root lint. The SFC project keeps the root strictness, including
+`exactOptionalPropertyTypes`; component overloads explicitly accept the
+`undefined` values Vue uses for absent declared props. Only diagnostics inside
+third-party declaration files are skipped.
 
 ## Status
 

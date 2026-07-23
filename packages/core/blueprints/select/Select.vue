@@ -29,7 +29,7 @@ const props = withDefaults(
   },
 );
 
-const model = defineModel<string>();
+const model = defineModel<string | undefined>();
 const generatedId = useId();
 const select = ref<HTMLSelectElement | null>(null);
 const selectBinding = useSelect(select, model);

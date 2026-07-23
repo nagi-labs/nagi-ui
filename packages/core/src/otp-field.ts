@@ -60,8 +60,8 @@ export interface OTPFieldComponentProps {
   /** Normalized to an integer from 1 through 256. */
   readonly length: number;
   readonly kind: OTPFieldKind;
-  readonly name?: string;
-  readonly form?: string;
+  readonly name?: string | undefined;
+  readonly form?: string | undefined;
   readonly disabled: boolean;
   readonly readOnly: boolean;
   readonly required: boolean;

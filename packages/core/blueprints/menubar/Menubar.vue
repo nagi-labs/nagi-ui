@@ -34,6 +34,10 @@ const emit = defineEmits<{ select: [item: MenubarAction] }>();
 const open = defineModel<boolean>("open", { default: false });
 const menubar = useMenubar(props, { open, onSelect: (item) => emit("select", item) });
 
+function isLink(item: MenubarAction): item is MenubarLinkAction {
+  return typeof item.href === "string";
+}
+
 function activateLink(item: MenubarLinkAction, event: MouseEvent) {
   const modified = event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
   if (!item.navigate || modified || (item.target && item.target !== "_self") || item.download !== undefined) return;
@@ -60,7 +64,7 @@ function prefetchLink(item: MenubarLinkAction) {
     <ul v-bind="menubar.menuProps" class="popup" popover :style="menubar.positionStyle.value">
       <li v-for="item in menubar.activeItems()" :key="item.key" class="entry" role="none">
         <a
-          v-if="'href' in item && !item.disabled"
+          v-if="isLink(item) && !item.disabled"
           v-bind="menubar.actionProps(item)"
           class="item"
           :href="item.href"

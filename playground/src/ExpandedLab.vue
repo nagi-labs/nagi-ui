@@ -8,6 +8,7 @@ import {
   Menubar,
   MultiSelect,
   NavigationMenu,
+  type NavigationMenuItem,
   OTPField,
   Resizable,
   TagsInput,
@@ -95,7 +96,7 @@ const menus = ref([
     ],
   },
 ]);
-const navigationItems = ref([
+const navigationItems = ref<NavigationMenuItem[]>([
   {
     key: "products",
     label: "Products",

@@ -71,14 +71,14 @@ export interface TagsInputBinding {
 
 export interface TagsInputComponentProps {
   readonly label: string;
-  readonly name?: string;
-  readonly form?: string;
-  readonly placeholder?: string;
+  readonly name?: string | undefined;
+  readonly form?: string | undefined;
+  readonly placeholder?: string | undefined;
   readonly disabled: boolean;
   readonly readOnly: boolean;
   readonly required: boolean;
   readonly allowDuplicates: boolean;
-  readonly max?: number;
+  readonly max?: number | undefined;
   readonly addOnBlur: boolean;
 }
 

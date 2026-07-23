@@ -104,9 +104,9 @@ interface MultiSelectComponentItem {
 export interface MultiSelectComponentProps<Item extends MultiSelectComponentItem> {
   readonly items: readonly Item[];
   readonly label: string;
-  readonly name?: string;
-  readonly form?: string;
-  readonly placeholder?: string;
+  readonly name?: string | undefined;
+  readonly form?: string | undefined;
+  readonly placeholder?: string | undefined;
   readonly disabled: boolean;
   readonly readOnly: boolean;
   readonly required: boolean;

@@ -50,14 +50,14 @@ interface DatePickerBaseOptions {
 
 export interface DatePickerComponentProps {
   label: string;
-  calendarLabel?: string;
+  calendarLabel?: string | undefined;
   triggerLabel: string;
-  name?: string;
-  form?: string;
+  name?: string | undefined;
+  form?: string | undefined;
   locale: string;
   timeZone: string;
-  min?: string;
-  max?: string;
+  min?: string | undefined;
+  max?: string | undefined;
   unavailableDates: readonly string[];
   disabled: boolean;
   readOnly: boolean;
@@ -66,7 +66,7 @@ export interface DatePickerComponentProps {
   validationMessage: string;
   previousLabel: string;
   nextLabel: string;
-  defaultVisibleMonth?: string;
+  defaultVisibleMonth?: string | undefined;
   area: AnchorArea;
   offset: number;
 }
@@ -74,8 +74,8 @@ export interface DatePickerComponentProps {
 export interface DateRangePickerComponentProps extends Omit<DatePickerComponentProps, "name"> {
   startLabel: string;
   endLabel: string;
-  startName?: string;
-  endName?: string;
+  startName?: string | undefined;
+  endName?: string | undefined;
 }
 
 export interface UseDatePickerOptions extends DatePickerBaseOptions {
