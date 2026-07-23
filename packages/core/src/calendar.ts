@@ -337,7 +337,7 @@ function createNavigation(
   }
 
   function focusElement(date: CalendarDate) {
-    nextTick(() => {
+    void nextTick(() => {
       const documentTarget = ownerDocument
         ?? (typeof document === "undefined" ? null : document);
       documentTarget?.getElementById(cellId(date))?.focus({ preventScroll: true });

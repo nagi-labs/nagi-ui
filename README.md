@@ -33,8 +33,19 @@ learning lands.
   `?autotest=stacking` runs the Demo B self-test).
 - `demos/nuxt/` — Phase 0 Demo A: the Dropdown blueprint under a real Nuxt app
   with delayed hydration (isolated, its own install — see its README).
-- `tests/` — `vp run test` (unit), `vp run typecheck` (TypeScript 7), and
-  `vp run test:browser` (Playwright Chromium).
+- `tests/` — `vp run lint` (Oxc), `vp run test` (unit), `vp run typecheck`
+  (TypeScript 7), and `vp run test:browser` (Playwright Chromium).
+
+Root linting is split by type boundary. `lint:typed` combines Oxc type-aware
+rules and compiler diagnostics for the pure-TypeScript `tsconfig.json` scope.
+`lint:vue` checks Blueprint, playground, and demo Vue/Vite source without
+pretending to replace Vue SFC type checking. `lint:runtime` covers the CLI,
+runtime tests, recipes, and configuration files outside that TypeScript
+project. `vp run test:integration` remains separate: it runs Nagi's custom
+`verified-bindings` Vue-template rule, which Oxc does not replace.
+`vp run typecheck` remains available as a standalone compatibility command,
+but do not chain it after `lint:typed`: that Oxc pass already includes compiler
+diagnostics for the same `tsconfig.json`.
 
 ## Status
 

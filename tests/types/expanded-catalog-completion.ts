@@ -87,9 +87,9 @@ const contextBinding = useContextMenu({
   getKey: (item) => item.key,
   getTextValue: (item) => item.label,
 });
-contextBinding.contextTriggerProps;
+void contextBinding.contextTriggerProps;
 // @ts-expect-error ContextMenu intentionally has no ordinary Menu trigger binding.
-contextBinding.triggerProps;
+void contextBinding.triggerProps;
 
 // @ts-expect-error Carousel's component overload requires a numeric model.
 useCarousel({ items: options, label: "Slides", previousLabel: "Previous", nextLabel: "Next", loop: false, disabled: false }, ref("0"));

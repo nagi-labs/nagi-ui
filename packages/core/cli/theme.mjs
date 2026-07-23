@@ -16,8 +16,10 @@ export function checkThemeFiles(files) {
 
   const required = new Set(nagiThemeTokens)
   return {
-    defined: [...defined].sort(),
+    defined: [...defined].sort((left, right) => left.localeCompare(right)),
     missing: nagiThemeTokens.filter((token) => !defined.has(token)),
-    unknown: [...defined].filter((token) => !required.has(token)).sort(),
+    unknown: [...defined]
+      .filter((token) => !required.has(token))
+      .sort((left, right) => left.localeCompare(right)),
   }
 }

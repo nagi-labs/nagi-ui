@@ -119,10 +119,10 @@ export function createAnchorPair(id: string, options: AnchorOptions = {}): Ancho
     attach: (trigger, popover) => {
       let stop: (() => void) | null = null
       let cancelled = false
-      import("@floating-ui/dom").then(({ autoUpdate, computePosition, flip, offset: offsetFn, shift }) => {
+      void import("@floating-ui/dom").then(({ autoUpdate, computePosition, flip, offset: offsetFn, shift }) => {
         if (cancelled) return
         stop = autoUpdate(trigger, popover, () => {
-          computePosition(trigger, popover, {
+          void computePosition(trigger, popover, {
             strategy: "fixed",
             placement: floatingPlacement(area, direction) as never,
             middleware: [offsetFn(offset), flip(), shift({ padding: 8 })],

@@ -320,7 +320,7 @@ export function createToastManager(
   function resume() {
     if (!paused || disposed) return
     paused = false
-    for (const [id, state] of [...timers]) {
+    for (const [id, state] of timers) {
       if (!mutableToasts.value.some((toast) => toast.id === id)) {
         timers.delete(id)
       } else if (state.remaining <= 0) {

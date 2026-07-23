@@ -12,7 +12,7 @@ test("useToast stays a setup-scoped DOM binding while the manager works outside 
 test("explicit managers keep structured toast state isolated", () => {
   const first = createToastManager({ duration: 0 })
   const second = createToastManager({ duration: 0 })
-  const action = { label: "Undo", onClick() {} }
+  const action = { label: "Undo", onClick: () => {} }
 
   const id = first.add({
     title: "Saved",

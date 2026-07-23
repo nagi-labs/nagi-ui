@@ -21,6 +21,11 @@ non-obvious startup/run caveats only.
   (TypeScript 7). `tests/ssr.test.ts` spins up
   an in-process Vite server (no external service) and writes a zero-JS
   artifact to `/tmp/nagi-zero-js-demo.html`.
+- **Lint:** `vp run lint` runs separate Oxc passes for the type-aware
+  TypeScript project, Vue/Vite source, and runtime tests/configuration.
+  `vp run test:integration` remains the custom Nagi UI Vue-template contract
+  check and is not replaced by Oxc. Do not follow `lint:typed` with
+  `typecheck`; both run compiler diagnostics for the root `tsconfig.json`.
 - **Browser tests:** `vp run test:browser` starts the playground through the
   Playwright `webServer` config and runs Chromium keyboard/focus coverage.
   Install the browser once with `vp exec playwright install chromium`.
