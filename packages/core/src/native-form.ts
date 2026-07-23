@@ -8,6 +8,7 @@ import {
   watchEffect,
   type MaybeRefOrGetter,
 } from "vue";
+import { modelValueAccepted } from "./model-sync.ts";
 
 type NativeFormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 type NativeValueControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -89,6 +90,9 @@ export function useNativeValueReset<Value extends string | undefined>(
   useNativeFormReset(control, (element) => {
     model.value = initialValue;
     element.value = initialValue ?? "";
+    void modelValueAccepted(model, initialValue).then((accepted) => {
+      if (!accepted) element.value = model.value ?? "";
+    });
   });
 }
 
@@ -102,6 +106,9 @@ export function useNativeNumberReset(
   useNativeFormReset(control, (element) => {
     model.value = initialValue;
     element.value = String(initialValue);
+    void modelValueAccepted(model, initialValue).then((accepted) => {
+      if (!accepted) element.value = String(model.value);
+    });
   });
 }
 
@@ -115,6 +122,9 @@ export function useNativeCheckedReset(
   useNativeFormReset(control, (element) => {
     model.value = initialChecked;
     element.checked = initialChecked;
+    void modelValueAccepted(model, initialChecked).then((accepted) => {
+      if (!accepted) element.checked = model.value;
+    });
   });
 }
 
@@ -128,6 +138,9 @@ export function useNativeRadioReset(
   useNativeFormReset(control, (element) => {
     model.value = initialValue;
     element.checked = initialValue === element.value;
+    void modelValueAccepted(model, initialValue).then((accepted) => {
+      if (!accepted) element.checked = model.value === element.value;
+    });
   });
 }
 
@@ -144,6 +157,12 @@ export function useNativeRadioGroupReset<Value extends string | number | null>(
     for (const control of controls.value) {
       control.checked = initialValue !== null && control.value === String(initialValue);
     }
+    void modelValueAccepted(model, initialValue).then((accepted) => {
+      if (accepted) return;
+      for (const control of controls.value) {
+        control.checked = model.value !== null && control.value === String(model.value);
+      }
+    });
   });
 }
 
@@ -178,5 +197,12 @@ export function useNativeCheckbox(
     indeterminate.value = initialIndeterminate;
     element.checked = initialChecked;
     element.indeterminate = initialIndeterminate;
+    void Promise.all([
+      modelValueAccepted(checked, initialChecked),
+      modelValueAccepted(indeterminate, initialIndeterminate),
+    ]).then(([checkedAccepted, indeterminateAccepted]) => {
+      if (!checkedAccepted) element.checked = checked.value;
+      if (!indeterminateAccepted) element.indeterminate = indeterminate.value;
+    });
   });
 }

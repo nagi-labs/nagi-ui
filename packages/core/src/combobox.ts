@@ -68,6 +68,8 @@ export interface ComboboxInputProps {
   readonly readonly: boolean;
   style?: CSSProperties;
   onInput: (event: Event) => void;
+  onCompositionstart: (event: CompositionEvent) => void;
+  onCompositionend: (event: CompositionEvent) => void;
   onClick: (event: MouseEvent) => void;
   onKeydown: (event: KeyboardEvent) => void;
   onFocus: (event: FocusEvent) => void;
@@ -240,6 +242,7 @@ function createCombobox<Item, Key extends string = string>(
   let inputElement: HTMLInputElement | null = null;
   let popupElement: HTMLElement | null = null;
   let detachAnchor: (() => void) | null = null;
+  let composing = false;
 
   function recordInput(event: Event) {
     const candidate = event.currentTarget ?? event.target;
@@ -338,6 +341,7 @@ function createCombobox<Item, Key extends string = string>(
   function onInput(event: Event) {
     recordInput(event);
     if (componentDisabled() || componentReadOnly()) return;
+    if (composing || (event as InputEvent).isComposing) return;
     const target = event.currentTarget ?? event.target;
     if (typeof (target as HTMLInputElement | null)?.value !== "string") return;
     writeInputValue((target as HTMLInputElement).value);
@@ -420,6 +424,14 @@ function createCombobox<Item, Key extends string = string>(
     },
     style: anchor.anchorStyle,
     onInput,
+    onCompositionstart(event) {
+      recordInput(event);
+      composing = true;
+    },
+    onCompositionend(event) {
+      composing = false;
+      onInput(event);
+    },
     onClick(event) {
       recordInput(event);
       show();

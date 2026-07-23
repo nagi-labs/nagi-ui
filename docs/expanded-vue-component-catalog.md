@@ -1,11 +1,12 @@
 # Expanded Vue component catalog and Nagi UI scope
 
-Status: Research and scope baseline (2026-07-22).
+Status: Adopted catalog complete and shipped (revised 2026-07-23).
 
 This document supplements the existing comparison, whose population is limited
 to Base UI's 37 entries. It is the ledger used to decide what Nagi UI should
 cover as a general-purpose Vue UI library based on the full shadcn-vue and
-PrimeVue catalogs.
+PrimeVue catalogs, with React Aria as a focused reference for the adopted
+date/time family.
 
 This is not a promise of API parity. External library names are not added
 directly to the implementation count. We first normalize equivalent product
@@ -19,6 +20,7 @@ requirements into one Nagi slice, then decide whether to adopt each slice.
 | [shadcn-vue components](https://www.shadcn-vue.com/docs/components) | 69 | Top-level entries in the official Components navigation, including some recipe- and block-oriented entries. |
 | [PrimeVue 4.5.5](https://primevue.org/) | 80+ | Count stated on the official home page. |
 | [PrimeVue UI Kit component navigation](https://primevue.org/uikit/) | 92 names | Form 28, Button 3, Data 10, Panel 11, Overlay 7, File 1, Menu 8, Chart 1, Messages 2, Media 4, Misc 17; also includes directives and utilities. |
+| [React Aria date/time components](https://react-aria.adobe.com/getting-started) | 6 adopted slices | Focused behavior, accessibility, internationalization, and API reference for Calendar, RangeCalendar, DateField, DatePicker, DateRangePicker, and TimeField; this is not a raw-catalog parity denominator. |
 
 Because these catalogs are rolling, the URLs and date above, rather than the
 counts alone, are the source of truth for this snapshot.
@@ -33,57 +35,58 @@ normalize them as follows:
 - Native-control wrappers such as `InputText` and `Native Select` map to existing Nagi components.
 - Compound parts, internal subcomponents, and variants do not increase the component count.
 - Capabilities adequately covered by HTML/CSS or composition of existing Nagi components are classified as `Native/recipe` and excluded from the implementation denominator.
-- Domain products, capabilities that conflict with Nagi's platform-first direction, and capabilities supported by only one library are also excluded from the denominator.
+- Domain products, capabilities that conflict with Nagi's platform-first direction, and capabilities supported by only one library are excluded by default. An explicit product requirement may adopt a reviewed slice, as with the date/time family below.
 
-Under these rules, Nagi UI has adopted the following **54** component/behavior
+Under these rules, Nagi UI has adopted the following **60** component/behavior
 slices:
 
 | State | Slices | Count |
 |---|---|---:|
-| Shipped | Current package/ownership catalog | 43 |
-| Adopted backlog | Candidate/Defer entries in the table below | 11 |
-| Total adopted Nagi UI scope | shipped + backlog | 54 |
+| Shipped | Current release catalog | 60 |
+| Adopted candidates | None | 0 |
+| Total adopted Nagi UI scope | shipped | 60 |
 
-Progress against the expanded catalog is therefore **43 / 54 = 79.6%**. The
-existing **31 / 37 = 83.8%** figure remains the metric for the "Base UI-aligned
-scope" and is not presented as progress against the full general UI catalog.
+Current shipped progress is therefore **60 / 60 = 100%**. The corresponding
+Base UI-aligned shipped implementation metric is **37 / 37 = 100%**.
 
 DataTable and TreeTable are not included in this denominator. Both belong to
 the **Nagi Grid** product scope; Nagi UI provides only adjacent primitives such
 as Button, Input, and Popover.
 
-## Shipped normalized capabilities (43)
+## Shipped normalized capabilities (60)
 
 The canonical detailed comparison is
 [`base-ui-component-comparison.md`](base-ui-component-comparison.md).
 
-`Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Breadcrumb`, `Button`,
-`ButtonGroup`, `Card`, `Checkbox`, `Combobox`, `Dialog`, `Disclosure`,
-`DropdownMenu`, `EmptyState`, `Fieldset`, `FileInput`, `Input`, `InputGroup`,
-`Kbd`, `Listbox`, `Meter`, `NumberField`, `Pagination`, `Popover`, `Progress`,
-`PreviewCard`, `Radio`, `RangeSlider`, `Rating`, `Select`,
-`Separator`, `Skeleton`, `Slider`, `Spinner`, `Stepper`, `Switch`, `Tabs`, `Textarea`,
-`Toast`, `Toggle`, `ToggleGroup`, `Tooltip`.
+`Accordion`, `Alert`, `AlertDialog`, `Autocomplete`, `Avatar`, `Badge`,
+`Breadcrumb`, `Button`, `ButtonGroup`, `Calendar`, `Card`, `Carousel`,
+`Checkbox`, `Combobox`, `ContextMenu`, `DateField`, `DatePicker`,
+`DateRangePicker`, `Dialog`, `Disclosure`, `DropdownMenu`, `EmptyState`,
+`Fieldset`, `FileInput`, `Input`, `InputGroup`, `Kbd`, `Listbox`, `Menubar`,
+`Meter`, `MultiSelect`, `NavigationMenu`, `NumberField`, `OTPField`,
+`Pagination`, `Popover`, `Progress`, `PreviewCard`, `Radio`, `RangeCalendar`,
+`RangeSlider`, `Rating`, `Resizable`, `Select`, `Separator`, `Skeleton`,
+`Slider`, `Spinner`, `Stepper`, `Switch`, `Tabs`, `TagsInput`, `Textarea`,
+`TimeField`, `Toolbar`, `Toast`, `Toggle`, `ToggleGroup`, `Tooltip`, `Tree`.
 
-## Adopted backlog (11)
+## Final behavior slice (11, shipped)
 
-`Candidate` means a Nagi-shaped implementation is already visible. `Defer`
-means demand is recognized, but behavior, browser, or mobile verification must
-be completed as an independent slice.
+All entries below passed the full release gate and fourth independent audit in
+[`expanded-catalog-completion.md`](expanded-catalog-completion.md).
 
 | Normalized slice | shadcn-vue signal | PrimeVue signal | Decision and Nagi boundary |
 |---|---|---|---|
-| Autocomplete | Similar Combobox recipe | AutoComplete | **Defer**. Separate free-form text from a committed suggestion; do not add a mode to the restricted Combobox. |
-| Carousel | Carousel | Carousel / Galleria | **Defer**. Use CSS scroll snap as the foundation and browser-test controls, focus, reduced motion, and announcements. |
-| Context Menu | Context Menu | ContextMenu | **Defer**. Reuse the Menu core, then independently validate virtual anchors, right-click, long-press, and mobile policy. |
-| Menubar | Menubar | Menubar | **Defer**. This requires a horizontal roving-focus coordinator distinct from Menu. Do not use the menu role for site navigation. |
-| Multi Select | Composable from the Combobox recipe | MultiSelect | **Defer**. Validate chips, popup selection, form submission, and removal focus as one thick slice. |
-| Navigation Menu | Navigation Menu | MegaMenu / Menubar | **Defer**. Prefer native `nav` and links; evaluate only hover/focus panel coordination as additional value. |
-| OTP Field | Input OTP / Pin Input | InputOtp | **Defer**. Validate one-real-input architecture, paste, mobile keyboards, password managers, and screen readers on real devices. |
-| Resizable | Resizable | Splitter | **Defer**. Independently validate pointer capture, keyboard resize, min/max constraints, RTL, and nested panels. |
-| Tags Input | Tags Input | Similar Chip / MultiSelect | **Defer**. Browser-test text editing, token removal, IME, paste, and duplicate policy together. |
-| Toolbar | Recipe only | Toolbar | **Defer**. Inject attributes into arbitrary owned controls. Do not create a ToolbarButton family. |
-| Tree | Similar Sidebar/Command recipes | Tree / TreeSelect | **Defer**. Keep the tree keyboard model, lazy children, selection, and expansion out of Listbox. |
+| Autocomplete | Similar Combobox recipe | AutoComplete | **Shipped**. Free-form text stays distinct from optional suggestion commit. |
+| Carousel | Carousel | Carousel / Galleria | **Shipped**. Ordinary overflow and CSS scroll snap remain the movement foundation. |
+| Context Menu | Context Menu | ContextMenu | **Shipped**. Menu is reused with per-session coordinates and right-click/long-press ordering. |
+| Menubar | Menubar | Menubar | **Shipped**. A horizontal coordinator remains distinct from each popup Menu. |
+| Multi Select | Composable from the Combobox recipe | MultiSelect | **Shipped**. Key collection, chips, repeated form values, and reset are one contract. |
+| Navigation Menu | Navigation Menu | MegaMenu / Menubar | **Shipped**. Native `nav` and links own site navigation; optional panels add no menu roles. |
+| OTP Field | Input OTP / Pin Input | InputOtp | **Shipped**. One real input owns paste, keyboard, password-manager, and form behavior. |
+| Resizable | Resizable | Splitter | **Shipped**. A standard separator owns bounded pointer and keyboard resizing. |
+| Tags Input | Tags Input | Similar Chip / MultiSelect | **Shipped**. Arbitrary strings retain IME, paste, duplicate, removal, and repeated-form policy. |
+| Toolbar | Recipe only | Toolbar | **Shipped**. Attribute injection roves direct owned controls without a ToolbarButton family. |
+| Tree | Similar Sidebar/Command recipes | Tree / TreeSelect | **Shipped**. Hierarchical DOM, keyboard, expansion, selection, and lazy state remain separate from Listbox. |
 
 ### Suggested delivery order
 
@@ -94,16 +97,23 @@ be completed as an independent slice.
 3. **Anatomy-sensitive slice — shipped (2026-07-22)**: Input Group,
    Number Field, Toggle Group. Preview Card, Range Slider, and Stepper were
    also shipped as an independent follow-up.
-4. **Thick behavior slice**: Autocomplete, Multi Select, Tags Input,
-   Carousel, Resizable, Tree, Context Menu, Menubar,
+4. **Date/time behavior slice — shipped (2026-07-23)**: Calendar, RangeCalendar, DateField, TimeField,
+   DatePicker, then DateRangePicker. Native date/time inputs remain supported
+   throughout; popup products reuse Popover and add no Portal runtime. The
+   acceptance contract is [`date-time-components.md`](date-time-components.md).
+5. **Thick behavior slice — shipped (2026-07-23)**: Autocomplete, Multi
+   Select, Tags Input, Carousel, Resizable, Tree, Context Menu, Menubar,
    Navigation Menu, OTP Field, Toolbar.
 
 ## Native / recipe instead of another package component
 
+Native `input[type=date]`, `input[type=time]`, and `input[type=datetime-local]`
+remain the stable path for simple values. The shipped advanced components add
+advanced behavior; they do not deprecate or wrap away those controls.
+
 | External names normalized together | Nagi answer |
 |---|---|
 | Aspect Ratio | CSS `aspect-ratio` recipe |
-| Calendar / Date Picker / Range Calendar | The stable path is a native date/time input. A custom calendar carries locale, time-zone, range, and mobile differences, so it is not a Nagi UI component. |
 | Checkbox Group / Radio Group | Repeated native controls plus `Fieldset`. Add a group items schema only after real demand appears. |
 | ColorPicker | Native `input[type=color]`; use a separate product for an advanced picker. |
 | Command | `Dialog` + `Combobox` / `Listbox` recipe. Do not create a custom command DSL. |
@@ -138,7 +148,7 @@ be completed as an independent slice.
 | Chart | Adopt **Unovis as the recommended integration**. Nagi UI supplies Card, Tooltip/Popover for adjacent controls, six series theme tokens, and a CSS bridge recipe. Datum tooltips, data, scales, and axes remain Unovis vocabulary; do not create `Chart.vue`. |
 | Editor / TextEditor | Dedicated engines such as ProseMirror, Lexical, or Tiptap. Handle only as a separate product. |
 | Org Chart / Diagram | Visualization products; do not count them as generic UI components. |
-| Advanced Calendar / scheduler / event calendar | Separate date product, distinct from Nagi UI's native date path. |
+| Scheduler / event calendar | Separate date product. Availability orchestration, resources, events, recurrence, and timeline layout remain outside the six adopted date/time input and selection primitives. |
 
 ## Decline or exclude
 
@@ -167,11 +177,11 @@ be completed as an independent slice.
   Number Field, Popover, Progress, Pagination, Select, Separator, Skeleton,
   Slider, Sonner, Spinner, Switch, Tabs, Textarea, Toast, Toggle, Toggle Group,
   Tooltip.
-- **Adopted backlog**: Carousel, Context Menu, Input OTP, Menubar,
-  Navigation Menu, Pin Input, Resizable, Tags Input.
-- **Native/recipe**: Aspect Ratio, Calendar, Command, Date Picker, Field, Form,
-  Item, Label, Radio Group, Range Calendar, Scroll Area, Sheet, Sidebar, Table,
-  Typography.
+- **Shipped mapping** additionally includes Calendar, Date Picker, Range Calendar,
+  Carousel, Context Menu, Input OTP/Pin Input, Menubar, Navigation Menu,
+  Resizable, and Tags Input.
+- **Native/recipe**: Aspect Ratio, Command, Field, Form, Item, Label,
+  Radio Group, Scroll Area, Sheet, Sidebar, Table, Typography.
 - **Separate/excluded**: Attachment, Bubble, Chart, Data Table, Drawer, Marker,
   Message, Message Scroller.
 
@@ -201,15 +211,16 @@ The four groups above account for all 69 official top-level names exactly once.
   Fluid, Inplace, MeterGroup, ProgressBar, ProgressSpinner, ScrollTop,
   Skeleton, Ripple, StyleClass, Tag, Terminal.
 
-Each raw PrimeVue name maps to a shipped component, adopted backlog,
-Native/recipe, separate product, or explicit decline above. Raw names remain in
+Each raw PrimeVue name maps to a shipped component, Native/recipe, separate
+product, or explicit decline above. Raw names remain in
 this appendix so a future catalog refresh can detect additions and removals
 without re-interpreting the current count.
 
 ## Metric interpretation
 
-- **79.6%** means Nagi UI has shipped 43 of the 54 normalized component slices
-  it has consciously adopted from Base UI + shadcn-vue + PrimeVue evidence.
+- **100%** means Nagi UI has shipped all 60 normalized component slices
+  it has consciously adopted from Base UI + shadcn-vue + PrimeVue evidence and
+  the focused React Aria date/time benchmark.
 - It does not mean Nagi has half of PrimeVue's APIs or files.
 - `Native/recipe` is a completed design decision, not missing implementation.
 - Separate products such as Nagi Grid have their own roadmap and denominator.

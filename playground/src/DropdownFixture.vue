@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useId } from "vue";
+import { computed, ref, useId } from "vue";
 
 import { useMenu, useSubmenu, type MenuDirection } from "@nagi-labs/nagi-ui";
 
@@ -15,8 +15,9 @@ const props = withDefaults(
   defineProps<{
     label: string;
     dir?: MenuDirection;
+    rejectSubmenuClose?: boolean;
   }>(),
-  { dir: "ltr" },
+  { dir: "ltr", rejectSubmenuClose: false },
 );
 
 const showToolbar = defineModel<boolean>("showToolbar", { default: true });
@@ -62,11 +63,19 @@ const menu = useMenu<DropdownItem>({
   dir: props.dir,
 });
 
+const shareOpenSource = ref(false);
+const shareOpenModel = computed({
+  get: () => shareOpenSource.value,
+  set: (next: boolean) => {
+    if (next || !props.rejectSubmenuClose) shareOpenSource.value = next;
+  },
+});
 const shareMenu = useSubmenu(menu, shareItem, {
   items: shareItems,
   getKey: (item) => item.key,
   getTextValue: (item) => item.label,
   onSelect: (item) => emit("action", item.key),
+  ...(props.rejectSubmenuClose ? { open: shareOpenModel } : {}),
 });
 
 const fileLabelId = `${useId()}-file`;
@@ -298,7 +307,7 @@ const sortModifiedOptions = {
               text-align: start;
               cursor: pointer;
 
-              &[data-active] {
+              &:focus {
                 background: #e5f1f4;
                 outline: 2px solid #75adba;
                 outline-offset: -2px;
@@ -354,7 +363,7 @@ const sortModifiedOptions = {
         text-align: start;
         cursor: pointer;
 
-        &[data-active],
+        &:focus,
         &[aria-expanded="true"] {
           background: #e5f1f4;
           outline: 2px solid #75adba;
@@ -426,7 +435,7 @@ const sortModifiedOptions = {
             text-align: start;
             cursor: pointer;
 
-            &[data-active] {
+            &:focus {
               background: #e5f1f4;
               outline: 2px solid #75adba;
               outline-offset: -2px;

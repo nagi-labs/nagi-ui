@@ -87,6 +87,9 @@ const labelId = useId();
     <a
       class="link"
       :href="node.href"
+      :target="node.target"
+      :rel="node.rel"
+      :download="node.download"
       v-bind="menu.itemProps(linkEntry(node), linkOptions(node))"
       @pointerenter="prefetchLink(node)"
     >
@@ -155,7 +158,7 @@ const labelId = useId();
             text-align: start;
             cursor: pointer;
 
-            &[data-active] {
+            &:focus {
               background: var(--nagi-color-surface-active);
               outline: 2px solid var(--nagi-color-focus-ring);
               outline-offset: -2px;
@@ -205,7 +208,7 @@ const labelId = useId();
     text-align: start;
     cursor: pointer;
 
-    &[data-active] {
+    &:focus {
       background: var(--nagi-color-surface-active);
       outline: 2px solid var(--nagi-color-focus-ring);
       outline-offset: -2px;

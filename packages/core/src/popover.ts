@@ -11,6 +11,7 @@ import {
 } from "vue"
 
 import { createAnchorPair, type AnchorArea, type AnchorOptions } from "./anchor.ts"
+import { requestModelValue } from "./model-sync.ts"
 
 export interface UsePopoverOptions {
   /**
@@ -123,7 +124,11 @@ export function usePopover(
     element = event.target as HTMLElement
     const actual = event.newState === "open"
     syncAnchor(element, actual)
-    if (open.value !== actual) open.value = actual
+    if (open.value !== actual) {
+      void requestModelValue(open, actual).then((accepted) => {
+        if (!accepted) apply(open.value)
+      })
+    }
   }
 
   // Sync flush per CHARTER §4.4: a post-flush watcher coalesces a same-tick

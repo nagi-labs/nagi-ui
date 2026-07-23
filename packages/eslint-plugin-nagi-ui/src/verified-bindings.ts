@@ -5,6 +5,7 @@ interface ExpressionNode {
   name?: string
   computed?: boolean
   callee?: ExpressionNode
+  arguments?: ExpressionNode[]
   expression?: ExpressionNode
   object?: ExpressionNode
   property?: ExpressionNode
@@ -70,8 +71,9 @@ const set = (...values: string[]) => new Set(values)
 
 const contracts: Record<string, BindingContract> = {
   triggerProps: {
-    tags: ["button"],
+    tags: ["button", "a"],
     requireButtonType: true,
+    requireAnchorHref: true,
     protectedAttributes: set(
       "id",
       "popovertarget",
@@ -93,14 +95,13 @@ const contracts: Record<string, BindingContract> = {
       "aria-haspopup",
       "aria-expanded",
       "aria-disabled",
-      "data-active",
     ),
   },
   itemProps: {
     tags: ["button", "a"],
     requireButtonType: true,
     requireAnchorHref: true,
-    protectedAttributes: set("id", "role", "tabindex", "aria-disabled", "data-active"),
+    protectedAttributes: set("id", "role", "tabindex", "aria-disabled"),
   },
   checkboxItemProps: {
     tags: ["button"],
@@ -111,7 +112,6 @@ const contracts: Record<string, BindingContract> = {
       "tabindex",
       "aria-disabled",
       "aria-checked",
-      "data-active",
     ),
   },
   radioItemProps: {
@@ -123,7 +123,6 @@ const contracts: Record<string, BindingContract> = {
       "tabindex",
       "aria-disabled",
       "aria-checked",
-      "data-active",
     ),
   },
   menuProps: {
@@ -135,7 +134,6 @@ const contracts: Record<string, BindingContract> = {
       "tabindex",
       "dir",
       "aria-labelledby",
-      "aria-activedescendant",
     ),
   },
   listboxProps: {
@@ -203,6 +201,8 @@ const contracts: Record<string, BindingContract> = {
       "aria-expanded",
       "aria-activedescendant",
       "aria-required",
+      "aria-label",
+      "aria-invalid",
       "disabled",
       "readonly",
     ),
@@ -233,6 +233,247 @@ const contracts: Record<string, BindingContract> = {
   },
   regionProps: {
     protectedAttributes: set("id", "popover", "aria-live"),
+  },
+  gridProps: {
+    tags: ["table"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "aria-label",
+      "aria-disabled",
+      "aria-readonly",
+      "aria-required",
+      "aria-invalid",
+    ),
+  },
+  gridCellProps: {
+    tags: ["td"],
+    protectedAttributes: set("role", "aria-selected", "aria-disabled"),
+  },
+  cellButtonProps: {
+    tags: ["button"],
+    protectedAttributes: set(
+      "id",
+      "type",
+      "tabindex",
+      "disabled",
+      "aria-label",
+      "aria-current",
+    ),
+  },
+  previousButtonProps: {
+    tags: ["button"],
+    protectedAttributes: set("type", "disabled", "aria-label"),
+  },
+  nextButtonProps: {
+    tags: ["button"],
+    protectedAttributes: set("type", "disabled", "aria-label"),
+  },
+  fieldProps: {
+    tags: ["div"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "dir",
+      "aria-label",
+      "aria-disabled",
+      "aria-readonly",
+      "aria-required",
+      "aria-invalid",
+    ),
+  },
+  segmentProps: {
+    tags: ["span"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "tabindex",
+      "aria-hidden",
+      "aria-label",
+      "aria-valuemin",
+      "aria-valuemax",
+      "aria-valuenow",
+      "aria-valuetext",
+      "aria-disabled",
+      "aria-readonly",
+      "contenteditable",
+      "inputmode",
+      "spellcheck",
+    ),
+  },
+  formValueProps: {
+    tags: ["input"],
+    protectedAttributes: set(
+      "type",
+      "tabindex",
+      "aria-hidden",
+      "name",
+      "form",
+      "value",
+      "min",
+      "max",
+      "step",
+      "disabled",
+      "readonly",
+      "required",
+    ),
+  },
+  startFormValueProps: {
+    tags: ["input"],
+    protectedAttributes: set(
+      "type",
+      "tabindex",
+      "aria-hidden",
+      "name",
+      "form",
+      "value",
+      "min",
+      "max",
+      "disabled",
+      "required",
+    ),
+  },
+  endFormValueProps: {
+    tags: ["input"],
+    protectedAttributes: set(
+      "type",
+      "tabindex",
+      "aria-hidden",
+      "name",
+      "form",
+      "value",
+      "min",
+      "max",
+      "disabled",
+      "required",
+    ),
+  },
+  contextTriggerProps: {
+    tags: ["div"],
+    protectedAttributes: set(),
+  },
+  toolbarProps: {
+    tags: ["div"],
+    protectedAttributes: set("id", "role", "aria-label", "aria-orientation"),
+  },
+  separatorProps: {
+    tags: ["div"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "tabindex",
+      "aria-label",
+      "aria-controls",
+      "aria-orientation",
+      "aria-valuemin",
+      "aria-valuemax",
+      "aria-valuenow",
+      "aria-disabled",
+    ),
+  },
+  primaryPanelProps: {
+    tags: ["section"],
+    protectedAttributes: set("id"),
+  },
+  rootProps: {
+    tags: ["section"],
+    protectedAttributes: set("id", "role", "aria-label", "aria-disabled"),
+  },
+  trackProps: {
+    tags: ["div"],
+    protectedAttributes: set("role", "tabindex", "aria-label", "aria-disabled"),
+  },
+  slideProps: {
+    tags: ["article"],
+    protectedAttributes: set("id", "role", "aria-label"),
+  },
+  formProps: {
+    tags: ["select"],
+    protectedAttributes: set("multiple", "name", "form", "disabled", "required", "tabindex", "aria-hidden"),
+  },
+  menubarProps: {
+    tags: ["div"],
+    protectedAttributes: set("id", "role", "aria-orientation", "aria-label", "dir"),
+  },
+  actionProps: {
+    tags: ["button", "a"],
+    requireButtonType: true,
+    requireAnchorHref: true,
+    protectedAttributes: set("id", "role", "tabindex", "aria-disabled"),
+  },
+  menubarTriggerProps: {
+    tags: ["button"],
+    requireButtonType: true,
+    protectedAttributes: set(
+      "id",
+      "role",
+      "tabindex",
+      "popovertarget",
+      "popovertargetaction",
+      "aria-haspopup",
+      "aria-controls",
+      "aria-expanded",
+      "aria-disabled",
+    ),
+  },
+  navProps: {
+    tags: ["nav"],
+    protectedAttributes: set("id", "aria-label"),
+  },
+  navigationTriggerProps: {
+    tags: ["button"],
+    protectedAttributes: set(
+      "id",
+      "type",
+      "popovertarget",
+      "popovertargetaction",
+      "aria-controls",
+      "aria-expanded",
+    ),
+  },
+  otpInputProps: {
+    tags: ["input"],
+    protectedAttributes: set(
+      "id",
+      "type",
+      "value",
+      "name",
+      "form",
+      "inputmode",
+      "autocomplete",
+      "minlength",
+      "maxlength",
+      "pattern",
+      "aria-label",
+      "aria-invalid",
+      "disabled",
+      "readonly",
+      "required",
+    ),
+  },
+  treeProps: {
+    tags: ["ul"],
+    protectedAttributes: set("id", "role", "tabindex", "aria-label", "aria-activedescendant"),
+  },
+  groupProps: {
+    tags: ["ul"],
+    protectedAttributes: set("role"),
+  },
+  treeItemProps: {
+    tags: ["li"],
+    protectedAttributes: set(
+      "id",
+      "role",
+      "aria-level",
+      "aria-posinset",
+      "aria-setsize",
+      "aria-selected",
+      "aria-expanded",
+      "aria-disabled",
+      "aria-busy",
+      "aria-label",
+      "data-active",
+    ),
   },
 }
 
@@ -276,6 +517,27 @@ function objectBindingPath(attribute: VAttribute): string | null {
     return null
   }
   return expressionPath(attribute.value?.expression ?? null)
+}
+
+function behaviorBindingPaths(attribute: VAttribute): string[] {
+  if (
+    !attribute.directive ||
+    directiveName(attribute) !== "bind" ||
+    attribute.key.argument !== null
+  ) {
+    return []
+  }
+  const expression = attribute.value?.expression ?? null
+  if (
+    expression?.type === "CallExpression" &&
+    expressionPath(expression.callee ?? null)?.split(".").at(-1) === "mergeNagiProps"
+  ) {
+    return (expression.arguments ?? [])
+      .map((argument) => expressionPath(argument))
+      .filter((path): path is string => path !== null)
+  }
+  const path = expressionPath(expression)
+  return path === null ? [] : [path]
 }
 
 function contractName(path: string | null): string | null {
@@ -349,8 +611,9 @@ export const verifiedBindingsRule: Rule.RuleModule = {
         const objectBindings = element.startTag.attributes
           .map((attribute) => ({ attribute, path: objectBindingPath(attribute) }))
           .filter((entry) => entry.path !== null)
-        const behaviorBindings = objectBindings
-          .map((entry) => ({ ...entry, name: contractName(entry.path) }))
+        const behaviorBindings = element.startTag.attributes
+          .flatMap((attribute) => behaviorBindingPaths(attribute)
+            .map((path) => ({ attribute, path, name: contractName(path) })))
           .filter((entry): entry is typeof entry & { name: string } => entry.name !== null)
 
         for (const binding of behaviorBindings) {

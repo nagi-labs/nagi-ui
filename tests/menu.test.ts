@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 
 import { useMenu } from "@nagi-labs/nagi-ui";
 
@@ -68,6 +68,7 @@ function toggleEvent(target: FakeMenu, newState: "open" | "closed") {
 function keyboardEvent(key: string) {
   let prevented = false;
   const event = {
+    type: "keydown",
     key,
     altKey: false,
     ctrlKey: false,
@@ -80,7 +81,7 @@ function keyboardEvent(key: string) {
   return { event, prevented: () => prevented };
 }
 
-test("emits menu-button and active-descendant wiring", () => {
+test("emits menu-button wiring with the container as an empty-menu focus fallback", () => {
   const menu = createMenu();
 
   assert.equal(menu.id, "actions");
@@ -92,33 +93,40 @@ test("emits menu-button and active-descendant wiring", () => {
   assert.equal(menu.menuProps.role, "menu");
   assert.equal(menu.menuProps.tabindex, -1);
   assert.equal(menu.menuProps["aria-labelledby"], "actions-trigger");
-  assert.equal(menu.menuProps["aria-activedescendant"], undefined);
+  assert.equal("aria-activedescendant" in menu.menuProps, false);
 });
 
-test("itemProps supplies stable ids, state, and disabled semantics", () => {
+test("itemProps supplies stable ids, managed-focus wiring, and disabled semantics", () => {
   const menu = createMenu();
 
-  menu.activeKey.value = "duplicate";
+  menu.itemProps(actions[0]).onFocus();
   assert.deepEqual(
     {
       id: menu.itemProps(actions[0]).id,
       role: menu.itemProps(actions[0]).role,
       tabindex: menu.itemProps(actions[0]).tabindex,
-      active: menu.itemProps(actions[0])["data-active"],
     },
     {
       id: "actions-item-duplicate",
       role: "menuitem",
       tabindex: -1,
-      active: "",
     },
   );
-  assert.equal(menu.menuProps["aria-activedescendant"], "actions-item-duplicate");
+  assert.equal(menu.activeKey.value, "duplicate");
+  assert.equal("data-active" in menu.itemProps(actions[0]), false);
   assert.equal(menu.itemProps(actions[1])["aria-disabled"], "true");
 });
 
-test("ArrowDown opens on the first enabled item and focuses the menu", async () => {
+test("ArrowDown opens on and focuses the first enabled native item", async () => {
   const element = fakeMenu();
+  const focused: string[] = [];
+  Object.assign(element, {
+    ownerDocument: {
+      getElementById(id: string) {
+        return { focus() { focused.push(id); } };
+      },
+    },
+  });
   const menu = createMenu();
   const down = keyboardEvent("ArrowDown");
 
@@ -128,9 +136,9 @@ test("ArrowDown opens on the first enabled item and focuses the menu", async () 
   assert.equal(menu.activeKey.value, "duplicate");
 
   menu.menuProps.onToggle(toggleEvent(element, "open"));
-  await Promise.resolve();
-  assert.deepEqual(element.calls, ["focus"]);
-  assert.equal(menu.menuProps["aria-activedescendant"], "actions-item-duplicate");
+  await nextTick();
+  assert.deepEqual(focused, ["actions-item-duplicate"]);
+  assert.deepEqual(element.calls, []);
 });
 
 test("ArrowUp opens on the last enabled item", () => {
@@ -157,7 +165,7 @@ test("keyboard navigation wraps and skips disabled items", () => {
   assert.equal(menu.activeKey.value, "duplicate");
 });
 
-test("typeahead moves active descendant and repeated keys cycle", (t) => {
+test("typeahead moves managed item focus and repeated keys cycle", (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const items = [
     { key: "add", label: "Add" },
@@ -204,13 +212,41 @@ test("Enter selects the active item, closes, and restores trigger focus", async 
   menu.menuProps.onToggle(toggleEvent(element, "open"));
   const enter = keyboardEvent("Enter");
   menu.menuProps.onKeydown(enter.event);
-  await Promise.resolve();
+  await nextTick();
+  await nextTick();
 
   assert.equal(enter.prevented(), true);
   assert.deepEqual(selected, ["duplicate"]);
   assert.equal(menu.open.value, false);
   assert.deepEqual(element.calls, ["hide"]);
   assert.equal(trigger.focused, true);
+});
+
+test("container fallback dispatches one plain anchor click for native menu links", async () => {
+  const selected: string[] = [];
+  const menu = createMenu({ onSelect: (item) => selected.push(item.key) });
+  const element = fakeMenu();
+  element.openState = true;
+  let clicks = 0;
+  let linkProps: ReturnType<typeof menu.itemProps>;
+  const anchor = {
+    click() {
+      clicks += 1;
+      linkProps.onClick({ type: "click" } as unknown as MouseEvent);
+    },
+  };
+  Object.assign(element, {
+    ownerDocument: {
+      getElementById: (id: string) => id === "actions-item-duplicate" ? anchor : null,
+    },
+  });
+  linkProps = menu.itemProps(actions[0], { nativeLink: true });
+  menu.menuProps.onToggle(toggleEvent(element, "open"));
+  menu.menuProps.onKeydown(keyboardEvent("Enter").event);
+  await nextTick();
+  assert.equal(clicks, 1);
+  assert.deepEqual(selected, ["duplicate"]);
+  assert.equal(menu.open.value, false);
 });
 
 test("disabled item click is ignored", () => {
@@ -242,14 +278,30 @@ test("pointer movement updates the active item", () => {
   assert.equal(menu.activeKey.value, "rename");
 });
 
-test("reactive item removal repairs an invalid active key", async () => {
+test("reactive item removal repairs the active key and owned DOM focus", async () => {
   const items = ref<readonly Action[]>(actions);
   const menu = createMenu({ items });
+  const focused: string[] = [];
+  const activeElement = {} as Element;
+  const element = fakeMenu();
+  element.openState = true;
+  Object.assign(element, {
+    contains: (candidate: Element) => candidate === activeElement,
+    ownerDocument: {
+      activeElement,
+      getElementById(id: string) {
+        return { focus() { focused.push(id); } };
+      },
+    },
+  });
+  menu.menuProps.onToggle(toggleEvent(element, "open"));
   menu.activeKey.value = "rename";
 
   items.value = actions.slice(0, 2);
-  await Promise.resolve();
+  await nextTick();
+  await nextTick();
   assert.equal(menu.activeKey.value, "duplicate");
+  assert.equal(focused.at(-1), "actions-item-duplicate");
 });
 
 test("reactive disabled state repairs an invalid active key", async () => {
@@ -264,6 +316,32 @@ test("reactive disabled state repairs an invalid active key", async () => {
   assert.equal(menu.activeKey.value, "duplicate");
 });
 
+test("an open empty fallback promotes focus when an enabled item appears", async () => {
+  const items = ref<readonly Action[]>([]);
+  const menu = createMenu({ items });
+  const focused: string[] = [];
+  const element = fakeMenu();
+  element.openState = true;
+  Object.assign(element, {
+    ownerDocument: {
+      activeElement: element,
+      getElementById(id: string) {
+        return { focus() { focused.push(id); } };
+      },
+    },
+  });
+  menu.menuProps.onToggle(toggleEvent(element, "open"));
+  await nextTick();
+  assert.equal(menu.activeKey.value, null);
+  assert.equal(element.calls.includes("focus"), true);
+
+  items.value = [{ key: "available", label: "Available" }];
+  await nextTick();
+  await nextTick();
+  assert.equal(menu.activeKey.value, "available");
+  assert.equal(focused.at(-1), "actions-item-available");
+});
+
 test("supports falsy item values and empty string keys", () => {
   const selected: number[] = [];
   const menu = useMenu<number, "">({
@@ -276,7 +354,7 @@ test("supports falsy item values and empty string keys", () => {
 
   menu.focusFirst();
   assert.equal(menu.activeKey.value, "");
-  assert.equal(menu.menuProps["aria-activedescendant"], "falsy-item-");
+  assert.equal(menu.itemProps(0).id, "falsy-item-");
   menu.menuProps.onKeydown(keyboardEvent("Enter").event);
   assert.deepEqual(selected, [0]);
 });

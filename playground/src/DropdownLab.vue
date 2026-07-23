@@ -180,6 +180,11 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
       />
     </section>
 
+    <section class="section">
+      <h2 class="title">Controlled submenu close</h2>
+      <DropdownFixture label="Locked submenu actions" reject-submenu-close />
+    </section>
+
     <dl id="documentation" class="list -state">
       <div class="item">
         <dt class="term">show toolbar</dt>

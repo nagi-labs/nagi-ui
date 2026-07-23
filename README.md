@@ -4,7 +4,8 @@
 consumers own the source only when they need to.** The normal path is a
 themeable package component; the same SFC is the source for on-demand
 ownership. Popovers, dialogs, and tooltips are delegated to the platform;
-JS effort is reserved for Menu / Listbox / Combobox / Tabs.
+JS effort is reserved for Menu / Listbox / Combobox / Tabs and advanced
+date/time interaction.
 
 Nagi UI is the reference implementation of the
 [Nagi CSS contract](../nagi-css/CONTRACT.md): no wrapper tags, no Teleport,
@@ -47,15 +48,23 @@ product needs custom dismiss/stack state, gesture sheets, or Motion-level
 orchestration. The customizable-select decision is recorded in
 [`docs/phase3-select-decision.md`](docs/phase3-select-decision.md).
 
-The expanded cross-library benchmark currently places component creation at
-**43 / 54 (79.6%)**: 43 shipped components and 11 adopted backlog slices. The
-narrower Base UI-aligned scope is **31 / 37 (83.8%)**. Native recipes,
+The expanded cross-library benchmark currently has
+**60 / 60 (100%)** shipped components. The narrower Base UI-aligned shipped
+scope is **37 / 37 (100%)**. Native recipes,
 explicit declines, and separate products such as Nagi Grid are not counted;
 see [`docs/expanded-vue-component-catalog.md`](docs/expanded-vue-component-catalog.md)
 and [`docs/base-ui-component-comparison.md`](docs/base-ui-component-comparison.md).
 The latest intent/navigation/range slice and its native-boundary audit are
 recorded in
 [`docs/expanded-catalog-interaction-slice-2.md`](docs/expanded-catalog-interaction-slice-2.md).
+Calendar, RangeCalendar, DateField, DatePicker, DateRangePicker, and TimeField
+are shipped as the advanced path; native date/time inputs remain the stable
+path for simple values.
+The final expanded slice—Autocomplete, Carousel, ContextMenu, Menubar,
+MultiSelect, NavigationMenu, OTPField, Resizable, TagsInput, Toolbar, and
+Tree—is shipped after its full release gate and fourth independent audit. Its
+boundaries and evidence are recorded in
+[`docs/expanded-catalog-completion.md`](docs/expanded-catalog-completion.md).
 
 Package components are available without copying source:
 
@@ -64,14 +73,21 @@ import {
   Accordion,
   Alert,
   AlertDialog,
+  Autocomplete,
   Avatar,
   Badge,
   Breadcrumb,
   Button,
   ButtonGroup,
+  Calendar,
   Card,
+  Carousel,
   Checkbox,
   Combobox,
+  ContextMenu,
+  DateField,
+  DatePicker,
+  DateRangePicker,
   Dialog,
   Disclosure,
   DropdownMenu,
@@ -83,14 +99,20 @@ import {
   Kbd,
   Listbox,
   Meter,
+  Menubar,
+  MultiSelect,
+  NavigationMenu,
   NumberField,
+  OTPField,
   Pagination,
   Popover,
   Progress,
   PreviewCard,
   Radio,
+  RangeCalendar,
   RangeSlider,
   Rating,
+  Resizable,
   Select,
   Separator,
   Skeleton,
@@ -99,10 +121,14 @@ import {
   Stepper,
   Switch,
   Tabs,
+  TagsInput,
   Textarea,
+  TimeField,
+  Toolbar,
   Toast,
   Toggle,
   ToggleGroup,
+  Tree,
   Tooltip,
 } from "@nagi-labs/nagi-ui/components"
 import "@nagi-labs/nagi-ui/default-theme.css"
@@ -121,7 +147,8 @@ For an explicit development-time cascade check, call
 a production observer automatically. `./theme.css` remains a compatibility
 alias, but new code should use `./default-theme.css`.
 
-The component catalog runs at `/catalog.html`; native form controls and the
+The component catalog runs at `/catalog.html`; the date/time family runs at
+`/date-time.html`; native form controls and the
 strengthened Combobox run at `/forms.html`; the Alignment D Tabs matrix runs at
 `/tabs.html`; the recommended Unovis composition runs at `/chart.html`.
 Package/ownership details are in
@@ -178,8 +205,9 @@ adapter, non-interactive flags, and exact boundary are documented in
 ### Phase 2 — Menu DX validation
 
 - [x] Generic `useMenu<Item>()` with typed `itemProps(item)`
-- [x] APG `aria-activedescendant` focus management; disabled skipping,
-  wrapping arrows, Home/End, typeahead, selection, Escape, and Tab behavior
+- [x] Managed focus on each actual `tabindex="-1"` native item; disabled
+  skipping, wrapping arrows, Home/End, typeahead, trusted anchor activation,
+  selection, Escape, and Tab behavior
 - [x] Nagi CSS compliant `packages/core/blueprints/menu/ActionMenu.vue`
 - [x] Unit/type/browser coverage and documented Reka UI DX comparison in
   [`docs/phase2-menu.md`](docs/phase2-menu.md)

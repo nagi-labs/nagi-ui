@@ -104,6 +104,59 @@ test("components entry exposes Accordion and AlertDialog", async () => {
   });
 });
 
+test("components entry exposes the complete date and time family", async () => {
+  await withComponents(async (components) => {
+    for (const name of [
+      "Calendar",
+      "RangeCalendar",
+      "DateField",
+      "DatePicker",
+      "DateRangePicker",
+      "TimeField",
+    ]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+
+    const calendar = await render(components.Calendar as Component, {
+      label: "Arrival calendar",
+      locale: "en-US",
+      timeZone: "UTC",
+      modelValue: "2026-07-23",
+      name: "arrival",
+    });
+    assert.match(calendar, /<table[^>]*role="grid"[^>]*aria-label="Arrival calendar"/u);
+    assert.equal(calendar.match(/role="gridcell"/gu)?.length, 42);
+    assert.match(calendar, /<input[^>]*type="date"[^>]*name="arrival"[^>]*value="2026-07-23"/u);
+
+    const picker = await render(components.DatePicker as Component, {
+      label: "Arrival",
+      locale: "en-US",
+      timeZone: "UTC",
+      modelValue: "2026-07-23",
+    });
+    const popup = picker.match(/popovertarget="([^"]+)"/u)?.[1];
+    assert.ok(popup);
+    assert.ok(picker.includes(`id="${popup}"`));
+    assert.match(picker, /popover[^>]*role="dialog"|role="dialog"[^>]*popover/u);
+
+    const range = await render(components.DateRangePicker as Component, {
+      label: "Stay",
+      locale: "en-US",
+      timeZone: "UTC",
+      modelValue: { start: "2026-07-23", end: "2026-07-25" },
+    });
+    assert.equal(range.match(/role="spinbutton"/gu)?.length, 6);
+    assert.equal(range.match(/aria-selected="true"/gu)?.length, 3);
+
+    const time = await render(components.TimeField as Component, {
+      label: "Start time",
+      modelValue: "13:45",
+      name: "starts",
+    });
+    assert.match(time, /<input[^>]*type="time"[^>]*name="starts"[^>]*value="13:45"/u);
+  });
+});
+
 test("components entry exposes the expanded thin catalog slice", async () => {
   await withComponents(async (components) => {
     for (const name of [
@@ -856,5 +909,111 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     );
     assert.match(badgeWithRichLabel, /class="n-badge -positive"/);
     assert.match(badgeWithRichLabel, /<span>Icon Ready<\/span>/);
+  });
+});
+
+test("components entry exposes the completed expanded catalog with semantic SSR markup", async () => {
+  await withComponents(async (components) => {
+    for (const name of [
+      "Autocomplete",
+      "Carousel",
+      "ContextMenu",
+      "Menubar",
+      "MultiSelect",
+      "NavigationMenu",
+      "OTPField",
+      "Resizable",
+      "TagsInput",
+      "Toolbar",
+      "Tree",
+    ]) {
+      assert.ok(components[name], `${name} is exported from /components`);
+    }
+
+    const choices = [{ key: "jp", label: "Japan" }, { key: "jm", label: "Jamaica" }];
+    const autocomplete = await render(components.Autocomplete as Component, {
+      label: "Destination", items: choices, modelValue: "Ja", name: "destination",
+    });
+    assert.match(autocomplete, /role="combobox"/u);
+    assert.match(autocomplete, /<input[^>]*name="destination"/u);
+    assert.match(autocomplete, /popover/u);
+
+    const multi = await render(components.MultiSelect as Component, {
+      label: "Countries", items: choices, modelValue: ["jp"], name: "countries",
+      "aria-describedby": "countries-help",
+    });
+    assert.match(multi, /role="combobox"/u);
+    assert.match(multi, /<select[^>]*multiple[^>]*name="countries"|<select[^>]*name="countries"[^>]*multiple/u);
+    assert.match(multi, /<option[^>]*value="jp"[^>]*selected/u);
+    assert.match(multi, /<input[^>]*aria-describedby="countries-help"/u);
+
+    const tags = await render(components.TagsInput as Component, {
+      label: "Topics", modelValue: ["vue", "aria"], name: "topics",
+      "aria-describedby": "topics-help",
+    });
+    assert.equal(tags.match(/<option/gu)?.length, 2);
+    assert.match(tags, /<select[^>]*multiple[^>]*name="topics"|<select[^>]*name="topics"[^>]*multiple/u);
+    assert.match(tags, /<input[^>]*aria-describedby="topics-help"/u);
+
+    const otp = await render(components.OTPField as Component, {
+      label: "Verification code", modelValue: "12", name: "code", length: 4,
+      "aria-describedby": "code-help", enterkeyhint: "done",
+    });
+    assert.equal(otp.match(/<input/gu)?.length, 1);
+    const otpInput = otp.match(/<input[^>]*>/u)?.[0] ?? "";
+    assert.match(otpInput, /name="code"/u);
+    assert.match(otpInput, /value="12"/u);
+    assert.match(otpInput, /aria-describedby="code-help"/u);
+    assert.match(otpInput, /enterkeyhint="done"/u);
+    assert.equal(otp.match(/class="cell"/gu)?.length, 4);
+
+    const carousel = await render(components.Carousel as Component, {
+      label: "Highlights", modelValue: 0,
+      items: [{ key: "a", label: "First" }, { key: "b", label: "Second" }],
+    });
+    assert.match(carousel, /role="region"/u);
+    assert.match(carousel, /role="group"[^>]*aria-label="Highlights"|aria-label="Highlights"[^>]*role="group"/u);
+    assert.equal(carousel.match(/aria-label="[12] \/ 2"/gu)?.length, 2);
+
+    const resizable = await renderSlots(components.Resizable as Component, {
+      label: "Panels", modelValue: 50,
+    }, { first: "Editor", second: "Preview" });
+    assert.match(resizable, /role="separator"/u);
+    assert.match(resizable, /aria-valuenow="50"/u);
+
+    const toolbar = await render(components.Toolbar as Component, {
+      label: "Formatting",
+      items: [{ key: "bold", label: "Bold" }, { key: "link", label: "Link" }],
+    });
+    assert.match(toolbar, /role="toolbar"/u);
+    assert.equal(toolbar.match(/tabindex="0"/gu)?.length, 1);
+
+    const context = await render(components.ContextMenu as Component, {
+      items: [{ key: "copy", label: "Copy" }],
+    }, "Context target");
+    assert.match(context, /Context target/u);
+    assert.match(context, /role="menu"/u);
+
+    const menubar = await render(components.Menubar as Component, {
+      label: "Application",
+      items: [{ key: "file", label: "File", items: [{ key: "new", label: "New" }] }],
+    });
+    assert.match(menubar, /role="menubar"/u);
+    assert.match(menubar, /aria-label="Application"/u);
+
+    const navigation = await render(components.NavigationMenu as Component, {
+      label: "Primary",
+      items: [{ key: "about", label: "About", href: "/about" }],
+    });
+    assert.match(navigation, /<nav[^>]*aria-label="Primary"/u);
+    assert.doesNotMatch(navigation, /role="menu(?:bar|item)?"/u);
+
+    const tree = await render(components.Tree as Component, {
+      label: "Files", modelValue: null, expanded: [],
+      items: [{ key: "src", label: "Source", children: [{ key: "app", label: "App" }] }],
+    });
+    assert.match(tree, /role="tree"/u);
+    assert.match(tree, /role="treeitem"/u);
+    assert.match(tree, /aria-expanded="false"/u);
   });
 });

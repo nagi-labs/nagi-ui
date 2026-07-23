@@ -1,5 +1,6 @@
 import {
   getCurrentInstance,
+  nextTick,
   onBeforeUnmount,
   ref,
   toValue,
@@ -15,6 +16,7 @@ import {
   type PopoverTriggerProps,
   type UsePopoverOptions,
 } from "./popover.ts";
+import { modelValueAccepted } from "./model-sync.ts";
 
 export type MenuDirection = "ltr" | "rtl";
 export type MenuCheckedState = boolean | "mixed";
@@ -31,7 +33,7 @@ export interface UseMenuOptions<Item, Key extends string = string> {
   id?: string;
   anchor?: AnchorOptions | true;
   /** Logical reading direction. Descendant submenus inherit it. */
-  dir?: MenuDirection;
+  dir?: MaybeRefOrGetter<MenuDirection | undefined>;
   /** Wrap ArrowUp/ArrowDown at the ends. Defaults to true. */
   loop?: boolean;
   /** Typeahead buffer reset delay. Defaults to 500ms. */
@@ -40,10 +42,14 @@ export interface UseMenuOptions<Item, Key extends string = string> {
   submenuOpenDelay?: number;
   /** Pointer grace period before closing a submenu. Defaults to 300ms. */
   submenuCloseDelay?: number;
+  /** Overrides root-trigger focus restoration for virtual/context triggers. */
+  restoreFocus?: () => void;
 }
 
 export interface MenuActionItemOptions<Item> {
   onSelect?: (item: Item, event?: Event) => void;
+  /** The rendered item is a real anchor; keyboard activation invokes that anchor. */
+  nativeLink?: boolean;
   /** Defaults to true. */
   closeOnSelect?: boolean;
 }
@@ -74,7 +80,6 @@ export interface MenuProps extends PopoverProps {
   tabindex: -1;
   dir: MenuDirection;
   "aria-labelledby": string;
-  readonly "aria-activedescendant": string | undefined;
   onKeydown: (event: KeyboardEvent) => void;
   onPointerenter: () => void;
   onPointerleave: (event?: PointerEvent) => void;
@@ -84,7 +89,7 @@ interface MenuItemBaseProps {
   id: string;
   tabindex: -1;
   "aria-disabled"?: "true";
-  "data-active"?: "";
+  onFocus: () => void;
   onClick: (event: MouseEvent) => void;
   onPointermove: (event?: PointerEvent) => void;
 }
@@ -144,12 +149,13 @@ interface MenuController {
   open: Ref<boolean>;
   keyOf: (item: unknown) => string;
   itemId: (key: string) => string;
-  setActiveKey: (key: string) => void;
+  setActiveKey: (key: string, focus?: boolean) => void;
   focusMenu: () => void;
   focusBoundary: (direction: "first" | "last") => void;
   showFromParent: (direction?: "first" | "last") => void;
   closeBranch: () => void;
-  closeTree: (restoreFocus: boolean) => void;
+  closeTree: (restoreFocus: boolean, afterNativeFocusMove?: boolean) => void;
+  restoreFocus: () => void;
   closeToParent: () => void;
   registerChild: (key: string, child: MenuController) => void;
   unregisterChild: (key: string, child: MenuController) => void;
@@ -168,10 +174,11 @@ type InternalMenuReturn<Item, Key extends string> = UseMenuReturn<Item, Key> & {
 };
 
 /**
- * Attribute-injection menu button using the APG aria-activedescendant focus
- * strategy. DOM focus stays on the current menu container. Item variants only
- * inject behavior and ARIA; groups, labels, separators, and shortcuts remain
- * ordinary visible markup in the caller's SFC.
+ * Attribute-injection menu button using managed focus on the rendered native
+ * item. Keeping DOM focus on the actual button or anchor preserves its trusted
+ * activation behavior; the menu container is only a fallback when no enabled
+ * item exists. Groups, labels, separators, and shortcuts remain ordinary
+ * visible markup in the caller's SFC.
  */
 export function useMenu<Item, Key extends string = string>(
   options: UseMenuOptions<Item, Key>,
@@ -190,7 +197,7 @@ export function useSubmenu<ParentItem, ParentKey extends string, Item, Key exten
   options: UseMenuOptions<Item, Key>,
 ): UseMenuReturn<Item, Key> {
   const parentController = getMenuController(parent);
-  const direction = options.dir ?? parentController.direction;
+  const direction = toValue(options.dir) ?? parentController.direction;
   const anchor =
     options.anchor === undefined || options.anchor === true
       ? ({ area: "inline-end", offset: 4, direction } satisfies AnchorOptions)
@@ -215,12 +222,12 @@ function createMenu<Item, Key extends string>(
   options: UseMenuOptions<Item, Key>,
   parent: MenuParentLink | null,
 ): InternalMenuReturn<Item, Key> {
-  const direction = options.dir ?? parent?.menu.direction ?? "ltr";
+  const direction = () => toValue(options.dir) ?? parent?.menu.direction ?? "ltr";
   const anchor =
     options.anchor === true
-      ? ({ direction } satisfies AnchorOptions)
+      ? ({ direction: direction() } satisfies AnchorOptions)
       : options.anchor
-        ? { ...options.anchor, direction: options.anchor.direction ?? direction }
+        ? { ...options.anchor, direction: options.anchor.direction ?? direction() }
         : undefined;
   const popoverOptions: UsePopoverOptions = {
     ...(options.open ? { open: options.open } : {}),
@@ -233,8 +240,10 @@ function createMenu<Item, Key extends string>(
   const activeKey = ref<Key | null>(null) as Ref<Key | null>;
   const children = new Map<string, MenuController>();
   const activations = new Map<string, Activation>();
+  const nativeLinks = new Set<string>();
 
   let menuElement: HTMLElement | null = null;
+  let focusRevision = 0;
   let initialDirection: "first" | "last" = "first";
   let typeahead = "";
   let typeaheadTimer: ReturnType<typeof setTimeout> | null = null;
@@ -261,24 +270,31 @@ function createMenu<Item, Key extends string>(
     return `${popover.id}-item-${encodeURIComponent(key)}`;
   }
 
-  function setActiveKey(key: string) {
+  function setActiveKey(key: string, focus = true) {
     activeKey.value = key as Key;
     closeChildrenExcept(key);
+    if (focus && popover.open.value) focusMenu();
   }
 
-  function setActive(item: Item | undefined) {
+  function setActive(item: Item | undefined, focus = true) {
     if (item === undefined) {
       activeKey.value = null;
       closeChildrenExcept();
+      if (focus && popover.open.value) focusMenu();
       return;
     }
-    setActiveKey(keyOf(item));
+    setActiveKey(keyOf(item), focus);
   }
 
   function focusMenu() {
-    queueMicrotask(() => {
+    const revision = ++focusRevision;
+    void nextTick(() => {
+      if (revision !== focusRevision) return;
       if (!popover.open.value || !menuElement?.isConnected) return;
-      menuElement.focus({ preventScroll: true });
+      const active = activeKey.value === null
+        ? null
+        : menuElement.ownerDocument?.getElementById(itemId(activeKey.value));
+      (active ?? menuElement).focus({ preventScroll: true });
     });
   }
 
@@ -333,14 +349,32 @@ function createMenu<Item, Key extends string>(
 
   function closeBranch() {
     cancelTimers();
+    ++focusRevision;
     for (const child of children.values()) child.closeBranch();
-    activeKey.value = null;
     popover.hide();
+    // A controlled owner may reject the close request. Keep the active item in
+    // that case so the still-open menu remains keyboard-operable.
+    if (!popover.open.value) activeKey.value = null;
   }
 
-  function closeTree(restoreFocus: boolean) {
-    rootController().closeBranch();
-    if (restoreFocus) queueMicrotask(() => rootTrigger()?.focus({ preventScroll: true }));
+  function closeTree(restoreFocus: boolean, afterNativeFocusMove = false) {
+    const root = rootController();
+    root.closeBranch();
+    void modelValueAccepted(root.open, false).then((accepted) => {
+      if (accepted) {
+        if (restoreFocus) root.restoreFocus();
+        return;
+      }
+      // Tab may have already followed its native traversal before a
+      // controlled owner rejects the close. Restore the deepest menu that
+      // remained open so the visible surface never loses its focus owner.
+      const repair = () => {
+        const owner = controller.open.value ? controller : root;
+        if (owner.open.value) owner.focusMenu();
+      };
+      if (afterNativeFocusMove) setTimeout(repair, 0);
+      else repair();
+    });
   }
 
   function closeToParent() {
@@ -349,8 +383,15 @@ function createMenu<Item, Key extends string>(
       return;
     }
     closeBranch();
-    parent.menu.setActiveKey(parent.itemKey);
-    parent.menu.focusMenu();
+    void modelValueAccepted(popover.open, false).then((accepted) => {
+      if (!accepted) {
+        focusMenu();
+        return;
+      }
+      if (!parent.menu.open.value) return;
+      parent.menu.setActiveKey(parent.itemKey, false);
+      parent.menu.focusMenu();
+    });
   }
 
   function closeChildrenExcept(key?: string) {
@@ -371,10 +412,26 @@ function createMenu<Item, Key extends string>(
 
   function registerAction(item: Item, itemOptions: MenuActionItemOptions<Item> = {}) {
     const key = keyOf(item);
+    if (itemOptions.nativeLink) nativeLinks.add(key);
+    else nativeLinks.delete(key);
     activations.set(key, (event) => {
+      if (itemOptions.nativeLink && event?.type === "keydown" && !isDisabled(item)) {
+        const owner = (event.currentTarget as HTMLElement | null)?.ownerDocument
+          ?? menuElement?.ownerDocument;
+        const anchor = owner?.getElementById(itemId(key)) as HTMLAnchorElement | null;
+        if (anchor && typeof anchor.click === "function") {
+          // Enter on the focused real anchor never reaches this branch; the UA
+          // owns that trusted activation. This fallback covers plain Space and
+          // non-browser callers that invoke the menu container directly.
+          anchor.click();
+          return;
+        }
+      }
       activate(
         item,
-        (event) => (itemOptions.onSelect ?? options.onSelect)?.(item, event),
+        (event) => {
+          (itemOptions.onSelect ?? options.onSelect)?.(item, event);
+        },
         itemOptions.closeOnSelect ?? true,
         event,
       );
@@ -423,7 +480,7 @@ function createMenu<Item, Key extends string>(
   function showFromParent(next: "first" | "last" = "first") {
     cancelTimers();
     if (parent) {
-      parent.menu.setActiveKey(parent.itemKey);
+      parent.menu.setActiveKey(parent.itemKey, false);
       parent.menu.closeChildrenExcept(parent.itemKey);
     }
     initialDirection = next;
@@ -469,8 +526,8 @@ function createMenu<Item, Key extends string>(
   }
 
   function onMenuKeydown(event: KeyboardEvent) {
-    const openKey = direction === "rtl" ? "ArrowLeft" : "ArrowRight";
-    const closeKey = direction === "rtl" ? "ArrowRight" : "ArrowLeft";
+    const openKey = direction() === "rtl" ? "ArrowLeft" : "ArrowRight";
+    const closeKey = direction() === "rtl" ? "ArrowRight" : "ArrowLeft";
     const child = controller.childFor(activeKey.value);
 
     if (event.key === openKey && child) {
@@ -503,16 +560,58 @@ function createMenu<Item, Key extends string>(
         return;
       case "Enter":
       case " ": {
-        handled(event);
-        if (child) {
-          child.showFromParent("first");
+        const target = event.target as HTMLElement | null;
+        const targetItem = target
+          ? items().find((candidate) => target.id === itemId(keyOf(candidate)))
+          : undefined;
+        if (targetItem !== undefined && isDisabled(targetItem)) {
+          handled(event);
+          focusMenu();
+          return;
+        }
+        if (
+          targetItem !== undefined
+          && keyOf(targetItem) !== activeKey.value
+        ) {
+          // Direct focus normally synchronizes activeKey in onFocus. Refuse a
+          // stale/mismatched target instead of activating a different item.
+          handled(event);
+          setActiveKey(keyOf(targetItem));
+          return;
+        }
+        const activationChild = controller.childFor(activeKey.value);
+        if (activationChild) {
+          handled(event);
+          activationChild.showFromParent("first");
           return;
         }
         const item = activeItem();
         if (item !== undefined) {
+          const key = keyOf(item);
+          if (
+            nativeLinks.has(key)
+            && event.key === "Enter"
+            && target?.id === itemId(key)
+          ) {
+            // The real focused anchor receives the trusted keyboard event.
+            // Stop only nested-menu delegation; preserving the default keeps
+            // this exact anchor's browser activation intact.
+            event.stopPropagation();
+            return;
+          }
+          if (
+            nativeLinks.has(key)
+            && event.key === " "
+            && (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+          ) {
+            return;
+          }
+          handled(event);
           const action = activations.get(keyOf(item));
           if (action) action(event);
           else activate(item, (event) => options.onSelect?.(item, event), true, event);
+        } else {
+          handled(event);
         }
         return;
       }
@@ -522,8 +621,16 @@ function createMenu<Item, Key extends string>(
         else closeTree(true);
         return;
       case "Tab":
-        handled(event, false);
-        closeTree(false);
+        if (event.shiftKey) {
+          handled(event);
+          closeTree(true);
+        } else {
+          handled(event, false);
+          // Preserve native forward traversal when close succeeds. If a
+          // controlled owner rejects it, repair focus in the next task, after
+          // the keydown default action has completed.
+          closeTree(false, true);
+        }
         return;
     }
 
@@ -540,8 +647,17 @@ function createMenu<Item, Key extends string>(
       id: itemId(key),
       tabindex: -1,
       ...(disabled ? { "aria-disabled": "true" as const } : {}),
-      ...(activeKey.value === key ? { "data-active": "" as const } : {}),
-      onClick: (event) => onClick(event),
+      onFocus: () => {
+        if (disabled) {
+          focusMenu();
+          return;
+        }
+        setActiveKey(key, false);
+      },
+      onClick: (event) => {
+        if (!disabled) setActiveKey(key, false);
+        onClick(event);
+      },
       onPointermove: () => {
         if (!disabled) setActiveKey(key);
       },
@@ -553,11 +669,8 @@ function createMenu<Item, Key extends string>(
     ...popover.popoverProps,
     role: "menu",
     tabindex: -1,
-    dir: direction,
+    get dir() { return direction(); },
     "aria-labelledby": parent ? parent.menu.itemId(parent.itemKey) : rootTriggerId,
-    get "aria-activedescendant"() {
-      return activeKey.value === null ? undefined : itemId(activeKey.value);
-    },
     onToggle(event) {
       menuElement = event.target as HTMLElement;
       originalOnToggle(event);
@@ -566,9 +679,10 @@ function createMenu<Item, Key extends string>(
         // Keyboard opening chooses the boundary before show(). Do not let a
         // later native toggle event overwrite navigation that already ran.
         if (activeKey.value === null) focusBoundary(initialDirection);
+        else focusMenu();
         initialDirection = "first";
-        focusMenu();
       } else {
+        ++focusRevision;
         clearTypeahead();
         closeChildrenExcept();
         activeKey.value = null;
@@ -595,7 +709,7 @@ function createMenu<Item, Key extends string>(
 
   const controller: MenuController = {
     id: popover.id,
-    direction,
+    get direction() { return direction(); },
     parent,
     open: popover.open,
     keyOf: (item) => keyOf(item as Item),
@@ -606,6 +720,10 @@ function createMenu<Item, Key extends string>(
     showFromParent,
     closeBranch,
     closeTree,
+    restoreFocus() {
+      if (options.restoreFocus) options.restoreFocus();
+      else rootTrigger()?.focus({ preventScroll: true });
+    },
     closeToParent,
     registerChild(key, child) {
       children.set(key, child);
@@ -628,8 +746,18 @@ function createMenu<Item, Key extends string>(
   watch(
     () => enabledItems().map(keyOf),
     (keys) => {
+      const owner = menuElement?.ownerDocument.activeElement ?? null;
+      const ownedFocus = owner === menuElement
+        || (owner !== null && (menuElement?.contains(owner) ?? false));
+      if (activeKey.value === null) {
+        if (keys.length > 0 && popover.open.value && owner === menuElement) {
+          setActive(enabledItems()[0], true);
+        }
+        return;
+      }
       if (activeKey.value !== null && !keys.includes(activeKey.value)) {
-        focusBoundary("first");
+        const next = enabledItems()[0];
+        setActive(next, ownedFocus);
       }
     },
   );
@@ -637,6 +765,7 @@ function createMenu<Item, Key extends string>(
   function dispose() {
     clearTypeahead();
     cancelTimers();
+    ++focusRevision;
     if (parent) parent.menu.unregisterChild(parent.itemKey, controller);
   }
 
@@ -646,7 +775,7 @@ function createMenu<Item, Key extends string>(
     id: popover.id,
     open: popover.open,
     activeKey,
-    direction,
+    get direction() { return direction(); },
     show: popover.show,
     hide: closeBranch,
     focusFirst,

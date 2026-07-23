@@ -68,16 +68,18 @@ to checked. Activating an already-checked radio is idempotent.
 
 ## Menu-tree behavior
 
-- Every level owns one `role="menu"` focus container and one
-  `aria-activedescendant`. DOM focus moves between menu containers, never among
-  individual items.
+- Every level owns one `role="menu"` event-delegation container. DOM focus
+  moves between actual `tabindex="-1"` buttons and anchors; an empty level
+  falls back to its container.
 - The logical inline-end arrow opens a child; the opposite arrow closes one
   level. Under RTL these keys reverse.
 - `Enter` / `Space` on a submenu trigger opens its child. On an action they
   select and close the complete tree.
-- `Escape` closes one child level and restores focus to its parent menu. At the
+- `Escape` closes one child level and restores focus to its parent submenu
+  trigger. At the
   root it closes the tree and restores trigger focus.
-- `Tab` closes the tree without trapping or restoring focus.
+- `Tab` closes the tree and follows native forward traversal; `Shift+Tab`
+  closes and returns to the root trigger.
 - Handled child key events stop propagation, preventing an ancestor menu from
   processing the same keystroke.
 - Moving to another item closes sibling branches. Nested action selection and
@@ -105,8 +107,8 @@ Display-only parts do not need behavior components:
 - separators keep the Element Class Table identity `item` and are selected by
   `[role="separator"]` rather than copying the role into a second class;
 - shortcuts are visible text with `aria-hidden="true"`;
-- open, checked, expanded, disabled, and active styling uses
-  `:popover-open`, `aria-*`, and `data-active`, never runtime state classes.
+- open, checked, expanded, disabled, and focused styling uses
+  `:popover-open`, `aria-*`, and `:focus`, never runtime state classes.
 
 The Blueprint and consuming SFC pass the sibling `nagi-css check` with an
 external, uncommitted config.
@@ -119,7 +121,7 @@ external, uncommitted config.
 | checkbox / radio | one item props call | dedicated item components |
 | submenu tree | `useSubmenu()` plus one trigger props call | Root/Sub/Trigger/Content parts |
 | overlay | nested native popovers | Portal plus positioned content |
-| state selectors | native, ARIA, `data-active` | part-defined data attributes |
+| state selectors | native `:focus` / `:popover-open` and ARIA | part-defined data attributes |
 | structure and styling ownership | one copy-in SFC | distributed across library internals and caller composition |
 
 The tradeoff is explicit: Nagi exposes more wiring at each interactive element,

@@ -41,7 +41,7 @@ safe (`packages/core/src/menu.ts`).
 ## Node vocabulary (seven kinds)
 
 `action` (`variant?: "danger"`, `shortcut?`, `closeOnSelect?`), `link`
-(a real `<a href>` with keyboard navigation under `aria-activedescendant` and
+(a real, managed-focus `<a href tabindex="-1">` with trusted keyboard activation and
 optional framework-neutral `navigate` / `prefetch` callbacks), `checkbox`
 (plain `checked: boolean | "mixed"`), `radio-group` (expands to one selectable
 entry per radio item), `group` (owns its label; groups do not nest),

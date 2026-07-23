@@ -30,9 +30,10 @@ listbox.selectedKeys                 // the selection source of truth (the contr
 
 ## Design decisions
 
-- **Focus strategy is shared with `useMenu`**: DOM focus stays on the
-  `role="listbox"` container, options are `aria-activedescendant` targets.
-  One strategy across list-like components, per CHARTER §7.
+- **Focus strategy is specific to Listbox**: DOM focus stays on the
+  `role="listbox"` container and options are `aria-activedescendant` targets.
+  Menu instead focuses its actual native item because links require trusted
+  anchor activation; the components do not share a focus abstraction.
 - **`aria-selected` here means the committed selection** (visual focus is
   `data-active`). The Combobox popup uses the opposite APG convention —
   `aria-selected` marks the provisional active suggestion. See "Consumer

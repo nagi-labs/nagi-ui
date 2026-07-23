@@ -173,8 +173,8 @@ test("own refuses to overwrite a non-empty target without --force", () => {
 
 test("own rejects unknown components with the available list", () => {
   assert.throws(
-    () => ownComponent("carousel", { packageRoot, targetRoot: tempDir() }),
-    /Unknown component "carousel"/,
+    () => ownComponent("data-grid", { packageRoot, targetRoot: tempDir() }),
+    /Unknown component "data-grid"/,
   );
 });
 

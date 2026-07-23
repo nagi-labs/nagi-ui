@@ -6,6 +6,8 @@
  * files the `own` workflow copies (single-source principle, CHARTER §3).
  */
 export { default as Accordion } from "./blueprints/accordion/Accordion.vue";
+export { default as Autocomplete } from "./blueprints/autocomplete/Autocomplete.vue";
+export type { AutocompleteOption } from "./blueprints/autocomplete/Autocomplete.vue";
 export type { AccordionItem } from "./blueprints/accordion/Accordion.vue";
 export { default as Alert } from "./blueprints/alert/Alert.vue";
 export { default as AlertDialog } from "./blueprints/alert-dialog/AlertDialog.vue";
@@ -16,9 +18,17 @@ export type { BreadcrumbItem } from "./blueprints/breadcrumb/Breadcrumb.vue";
 export { default as Button } from "./blueprints/button/Button.vue";
 export { default as ButtonGroup } from "./blueprints/button-group/ButtonGroup.vue";
 export { default as Card } from "./blueprints/card/Card.vue";
+export { default as Calendar } from "./blueprints/calendar/Calendar.vue";
+export { default as Carousel } from "./blueprints/carousel/Carousel.vue";
+export type { CarouselItem } from "./blueprints/carousel/Carousel.vue";
 export { default as Checkbox } from "./blueprints/checkbox/Checkbox.vue";
 export { default as Combobox } from "./blueprints/combobox/Combobox.vue";
 export type { ComboboxOption } from "./blueprints/combobox/Combobox.vue";
+export { default as ContextMenu } from "./blueprints/context-menu/ContextMenu.vue";
+export type { ContextMenuItem } from "./blueprints/context-menu/ContextMenu.vue";
+export { default as DateField } from "./blueprints/date-field/DateField.vue";
+export { default as DatePicker } from "./blueprints/date-picker/DatePicker.vue";
+export { default as DateRangePicker } from "./blueprints/date-range-picker/DateRangePicker.vue";
 export { default as Dialog } from "./blueprints/dialog/Dialog.vue";
 export { default as Disclosure } from "./blueprints/disclosure/Disclosure.vue";
 export { default as DropdownMenu } from "./blueprints/menu/DropdownMenu.vue";
@@ -31,14 +41,23 @@ export { default as Kbd } from "./blueprints/kbd/Kbd.vue";
 export { default as Listbox } from "./blueprints/listbox/Listbox.vue";
 export type { ListboxOption } from "./blueprints/listbox/Listbox.vue";
 export { default as Meter } from "./blueprints/meter/Meter.vue";
+export { default as Menubar } from "./blueprints/menubar/Menubar.vue";
+export type { MenubarAction, MenubarMenu } from "./blueprints/menubar/Menubar.vue";
+export { default as MultiSelect } from "./blueprints/multi-select/MultiSelect.vue";
+export type { MultiSelectOption } from "./blueprints/multi-select/MultiSelect.vue";
 export { default as NumberField } from "./blueprints/number-field/NumberField.vue";
+export { default as NavigationMenu } from "./blueprints/navigation-menu/NavigationMenu.vue";
+export type { NavigationMenuItem, NavigationMenuLink } from "./blueprints/navigation-menu/NavigationMenu.vue";
+export { default as OTPField } from "./blueprints/otp-field/OTPField.vue";
 export { default as Pagination } from "./blueprints/pagination/Pagination.vue";
 export type { PaginationItem } from "./blueprints/pagination/Pagination.vue";
 export { default as Popover } from "./blueprints/popover/Popover.vue";
 export { default as Progress } from "./blueprints/progress/Progress.vue";
 export { default as PreviewCard } from "./blueprints/preview-card/PreviewCard.vue";
 export { default as Radio } from "./blueprints/radio/Radio.vue";
+export { default as RangeCalendar } from "./blueprints/range-calendar/RangeCalendar.vue";
 export { default as RangeSlider } from "./blueprints/range-slider/RangeSlider.vue";
+export { default as Resizable } from "./blueprints/resizable/Resizable.vue";
 export { default as Rating } from "./blueprints/rating/Rating.vue";
 export type { RatingItem } from "./blueprints/rating/Rating.vue";
 export { default as Select } from "./blueprints/select/Select.vue";
@@ -51,11 +70,17 @@ export { default as Stepper } from "./blueprints/stepper/Stepper.vue";
 export type { StepperItem } from "./blueprints/stepper/Stepper.vue";
 export { default as Switch } from "./blueprints/switch/Switch.vue";
 export { default as Tabs } from "./blueprints/tabs/Tabs.vue";
+export { default as TagsInput } from "./blueprints/tags-input/TagsInput.vue";
 export type { TabsItem } from "./blueprints/tabs/Tabs.vue";
 export { default as Textarea } from "./blueprints/textarea/Textarea.vue";
+export { default as TimeField } from "./blueprints/time-field/TimeField.vue";
+export { default as Toolbar } from "./blueprints/toolbar/Toolbar.vue";
+export type { ToolbarItem } from "./blueprints/toolbar/Toolbar.vue";
 export { default as Toast } from "./blueprints/toast/Toast.vue";
 export { default as Toggle } from "./blueprints/toggle/Toggle.vue";
 export { default as ToggleGroup } from "./blueprints/toggle-group/ToggleGroup.vue";
+export { default as Tree } from "./blueprints/tree/Tree.vue";
+export type { TreeNode } from "./blueprints/tree/Tree.vue";
 export type {
   ToggleGroupItem,
   ToggleGroupValue,

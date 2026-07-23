@@ -28,6 +28,9 @@ export interface DropdownMenuLinkNode {
   key: string;
   label: string;
   href: string;
+  target?: string;
+  rel?: string;
+  download?: string | boolean;
   /** Optional SPA-router activation. The renderer still owns a real `<a href>`. */
   navigate?: () => void | Promise<unknown>;
   /** Optional intent prefetch, called on pointer entry. */

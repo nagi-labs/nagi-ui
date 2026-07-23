@@ -68,6 +68,10 @@ excluded.
 | native elements | Input, Textarea, Checkbox, Radio, Select, Slider, Switch, Meter, Progress | native control remains visible; reset/property synchronization is in a fixed helper (`useNativeCheckbox` for the checkbox-only indeterminate channel) |
 | small native interaction | FileInput, NumberField, Pagination, Rating, ToggleGroup | file state stays entirely native; number stepping/reset uses one fixed binding; pagination and toggle-group keep editable schema policy visible; rating exposes real radios and delegates only native reset ordering |
 | behavior composition | Accordion, AlertDialog, Dialog, Disclosure, Listbox, Popover, Tabs, Toast, Toggle, Tooltip | stable defaults use the public component overload; fixed state-machine mechanisms stay in composables; DOM-linked policy stays owned |
+| date/time behavior | Calendar, RangeCalendar, DateField, DatePicker, DateRangePicker, TimeField | public component overloads hide prop-to-option forwarding; `component-controls` owns only native reset ordering; grids, segments, range anatomy, popup DOM, and documented state attributes remain visible owned source |
+| text/collection behavior | Autocomplete, MultiSelect, TagsInput, OTPField | component overloads hide filtering, normalization, IME/reset ordering, and form synchronization; labels, chips/cells, repeated native form channels, popup DOM, and model-specific policy remain visible owned source |
+| spatial/collection coordination | Carousel, Resizable, Toolbar, Tree | scroll/index synchronization, pointer capture, roving focus, and tree focus repair stay in public composables; ordinary overflow, panels, direct controls, recursive nested rendering, and selection/expansion models remain editable owned source |
+| menu/navigation coordination | ContextMenu, Menubar, NavigationMenu | ContextMenu and Menubar reuse Menu/native Popover while owned source keeps row branches; NavigationMenu retains native nav/link DOM and never receives menu roles |
 | menu renderers | DropdownMenu, DropdownSubmenu, DropdownMenuItem | editable union/schema-to-DOM branches and recursive flattening stay owned; core `useMenu` owns focus/ARIA mechanics |
 | retained reference renderer | ActionMenu | not exported or ownable; kept as the explicit-DOM Phase 2 reference |
 | renderer-specific mechanisms | Avatar, Combobox, Button | image races, native form channels, and focusable-disabled activation stay package dependencies; Combobox's default schema mapping is separately expandable |
@@ -134,6 +138,15 @@ not a permanent ban on every future use.
   Combobox merges `$attrs` with its behavior props through `mergeNagiProps`.
   Consumer attributes, classes, styles, and listeners intentionally target the
   inner native control; root layout changes remain an ownership concern.
+- The date/time family follows the same expansion boundary at higher behavior
+  density. Each SFC calls one public two-argument `useX(props, model)` overload;
+  picker models group their value and open refs in that second argument. One
+  narrow form-control binding owns native reset and custom validity. Calendar
+  arithmetic, roving focus, segment
+  input buffering, controlled-model echo handling, range construction, and
+  native Popover coordination stay in package mechanisms. The SFCs retain
+  their table/segment/popup DOM, visible labels, form inputs, and CSS. Pickers
+  do not compose behavior through package `Calendar` or `DateField` tags.
 
 ## Deliberately visible
 
@@ -144,7 +157,7 @@ not a permanent ban on every future use.
 - schema-to-DOM branches and menu entry flattening, because owners extend them
   together;
 - Toast order, tone and announcement transforms;
-- the native control ref plus a one-line reset helper declaration.
+- the native control ref plus a one-line form-control helper declaration.
 
 ## Ownership invariant
 

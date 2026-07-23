@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import { useMenu, useSubmenu } from "@nagi-labs/nagi-ui";
 
@@ -210,6 +210,66 @@ test("logical arrow keys move focus into and out of an LTR submenu", async () =>
   assert.equal(submenu.open.value, false);
   assert.equal(root.activeKey.value, "share");
   assert.equal(rootElement.calls.includes("focus"), true);
+});
+
+test("a rejected controlled child close keeps focus in the visible child", async () => {
+  const writes: boolean[] = [];
+  const childSource = ref(true);
+  const childOpen = computed({
+    get: () => childSource.value,
+    set: (next) => writes.push(next),
+  });
+  const root = useMenu<Item>({
+    items: rootItems,
+    getKey: (item) => item.key,
+    getTextValue: (item) => item.label,
+    id: "controlled-child-root",
+    defaultOpen: true,
+  });
+  const submenu = useSubmenu(root, rootItems[2], {
+    items: shareItems,
+    getKey: (item) => item.key,
+    getTextValue: (item) => item.label,
+    id: "controlled-child",
+    open: childOpen,
+  });
+  root.submenuTriggerProps(rootItems[2], submenu);
+  const parentElement = fakeMenu();
+  parentElement.openState = true;
+  const childElement = fakeMenu();
+  childElement.openState = true;
+  const focused: string[] = [];
+  Object.assign(parentElement, {
+    ownerDocument: {
+      getElementById(id: string) {
+        return { focus() { focused.push(`parent:${id}`); } };
+      },
+    },
+  });
+  Object.assign(childElement, {
+    ownerDocument: {
+      getElementById(id: string) {
+        return { focus() { focused.push(`child:${id}`); } };
+      },
+    },
+  });
+  root.menuProps.onToggle(toggleEvent(parentElement, "open"));
+  submenu.menuProps.onToggle(toggleEvent(childElement, "open"));
+  submenu.itemProps(shareItems[0]).onFocus();
+  await nextTick();
+  writes.length = 0;
+  focused.length = 0;
+
+  const escape = keyboardEvent("Escape");
+  submenu.menuProps.onKeydown(escape.event);
+  await nextTick();
+  await nextTick();
+  await nextTick();
+  assert.deepEqual(writes, [false]);
+  assert.equal(childSource.value, true);
+  assert.equal(submenu.activeKey.value, "copy");
+  assert.equal(focused.at(-1), "child:controlled-child-item-copy");
+  assert.equal(focused.some((entry) => entry.startsWith("parent:")), false);
 });
 
 test("RTL reverses submenu open and close arrow keys", () => {

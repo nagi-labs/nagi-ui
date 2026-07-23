@@ -63,7 +63,7 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
     text-align: start;
     cursor: pointer;
 
-    &[data-active],
+    &:focus,
     &[aria-expanded="true"] {
       background: var(--nagi-color-surface-active);
       outline: 2px solid var(--nagi-color-focus-ring);

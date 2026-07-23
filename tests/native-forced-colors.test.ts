@@ -61,8 +61,6 @@ test("activedescendant containers keep a real item outline instead of duplicatin
   for (const [file, state] of [
     ["listbox/Listbox.vue", "data-active"],
     ["combobox/Combobox.vue", "aria-selected"],
-    ["menu/DropdownMenuItem.vue", "data-active"],
-    ["menu/DropdownSubmenu.vue", "data-active"],
   ] as const) {
     const source = fs.readFileSync(path.join(blueprints, file), "utf8");
     const stateRule = new RegExp(
@@ -71,5 +69,20 @@ test("activedescendant containers keep a real item outline instead of duplicatin
     );
 
     assert.match(source, stateRule, file);
+  }
+});
+
+test("Menu items use their native focus state instead of a duplicated data attribute", () => {
+  for (const file of [
+    "menu/DropdownMenuItem.vue",
+    "menu/DropdownSubmenu.vue",
+  ] as const) {
+    const source = fs.readFileSync(path.join(blueprints, file), "utf8");
+    assert.match(
+      source,
+      /&:focus[\s\S]{0,220}outline:\s*2px solid var\(--nagi-color-focus-ring\)/u,
+      file,
+    );
+    assert.doesNotMatch(source, /\[data-active\]/u, file);
   }
 });

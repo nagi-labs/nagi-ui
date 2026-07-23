@@ -10,7 +10,7 @@ This does not mean shipping `Chart.vue` as a Nagi component.
 - `@unovis/ts` and `@unovis/vue` are consumer-app dependencies, not Nagi core dependencies or peer dependencies.
 - Data, accessors, scales, axes, legends, animation, and datum tooltips remain Unovis/app vocabulary.
 - Nagi supplies the Card frame, Tooltip/Popover for adjacent controls, series tokens, and a CSS-custom-property bridge.
-- Chart does not increase component progress beyond 43/54 and remains under `Separate products / integration`.
+- Chart does not change the current 60/60 shipped component progress and remains under `Separate products / integration`.
 
 The Vue edition of Unovis uses an API that places `VisLine`, `VisAxis`, and
 other components directly inside `VisXYContainer`, and installs both

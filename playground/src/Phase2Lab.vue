@@ -20,8 +20,8 @@ function select(item: ActionMenuItem) {
   <main class="n-phase2-lab">
     <h1 class="title">Nagi UI — Phase 2 Menu DX</h1>
     <p class="text">
-      DOM focus stays on the menu while <code class="code">itemProps(item)</code>
-      drives the active descendant.
+      DOM focus stays on the actual native item while
+      <code class="code">itemProps(item)</code> coordinates the menu.
     </p>
     <ActionMenu label="Actions" :items="items" @select="select" />
     <p class="text">

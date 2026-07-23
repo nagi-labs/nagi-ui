@@ -7,6 +7,12 @@ They close three visually familiar requests without turning Popover, Slider, or
 Tabs into multi-mode APIs. The package now ships 43 of the 54 adopted slices
 (79.6%).
 
+This is the denominator at the time this slice shipped. The later adoption of
+six date/time candidates expanded the denominator to 60 without changing this
+historical slice's 43 shipped components. Those six were subsequently shipped,
+bringing the release count at that checkpoint to 49/60. The final behavior
+slice subsequently shipped; see `expanded-vue-component-catalog.md`.
+
 ## Product contracts
 
 | Component | Public shape | Browser-owned behavior | Deliberately excluded |

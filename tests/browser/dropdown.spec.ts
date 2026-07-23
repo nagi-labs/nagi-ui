@@ -36,7 +36,7 @@ test("checkbox and radio state changes remain visible in the open menu", async (
   await expect(ltr.root).toBeVisible();
 });
 
-test("native link items follow href with pointer and aria-activedescendant keyboard activation", async ({
+test("native link items follow href with pointer and trusted keyboard activation", async ({
   page,
 }) => {
   const ltr = dropdown(page, "LTR");
@@ -52,15 +52,15 @@ test("native link items follow href with pointer and aria-activedescendant keybo
   await page.goto("/dropdown.html");
   const keyboard = dropdown(page, "LTR");
   await keyboard.trigger.press("ArrowDown");
-  await keyboard.root.press("End");
-  await keyboard.root.press("ArrowUp");
-  await keyboard.root.press("ArrowRight");
-  await keyboard.submenu.press("ArrowDown");
-  await expect(keyboard.submenu.getByRole("menuitem", { name: "Documentation" })).toHaveAttribute(
-    "data-active",
-    "",
-  );
-  await keyboard.submenu.press("Enter");
+  await expect(keyboard.root.getByRole("menuitem", { name: "Duplicate" })).toBeFocused();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowUp");
+  await expect(keyboard.root.getByRole("menuitem", { name: "Share" })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Documentation" })).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#documentation$/);
 });
 
@@ -83,16 +83,17 @@ test("setup-style link adapters keep href while handling navigation and intent p
   await page.goto("/dropdown.html");
   const keyboard = dropdown(page, "LTR");
   await keyboard.trigger.press("ArrowDown");
-  await keyboard.root.press("End");
-  await keyboard.root.press("ArrowUp");
-  await keyboard.root.press("ArrowRight");
-  await keyboard.submenu.press("ArrowDown");
-  await keyboard.submenu.press("ArrowDown");
-  await expect(keyboard.submenu.getByRole("menuitem", { name: "Router adapter" })).toHaveAttribute(
-    "data-active",
-    "",
-  );
-  await keyboard.submenu.press("Enter");
+  await expect(keyboard.root.getByRole("menuitem", { name: "Duplicate" })).toBeFocused();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowUp");
+  await expect(keyboard.root.getByRole("menuitem", { name: "Share" })).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Documentation" })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(keyboard.submenu.getByRole("menuitem", { name: "Router adapter" })).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#router-adapter$/);
   await expect(page.getByTestId("router-navigation-state")).toHaveText("1");
 });
@@ -105,27 +106,53 @@ test("keyboard enters a submenu, returns one level, and nested action closes the
 
   await ltr.trigger.focus();
   await ltr.trigger.press("ArrowDown");
-  await ltr.root.press("End");
-  await ltr.root.press("ArrowUp");
-  await expect(share).toHaveAttribute("data-active", "");
+  await expect(ltr.root.getByRole("menuitem", { name: "Duplicate" })).toBeFocused();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowUp");
+  await expect(share).toBeFocused();
 
-  await ltr.root.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
   await expect(ltr.submenu).toBeVisible();
-  await expect(ltr.submenu).toBeFocused();
+  await expect(ltr.submenu.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
   await expect(share).toHaveAttribute("aria-expanded", "true");
 
-  await ltr.submenu.press("ArrowLeft");
+  await page.keyboard.press("ArrowLeft");
   await expect(ltr.submenu).toBeHidden();
-  await expect(ltr.root).toBeFocused();
-  await expect(share).toHaveAttribute("data-active", "");
+  await expect(share).toBeFocused();
 
-  await ltr.root.press("Enter");
-  await expect(ltr.submenu).toBeFocused();
-  await ltr.submenu.press("Enter");
+  await page.keyboard.press("Enter");
+  await expect(ltr.submenu.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(ltr.submenu).toBeHidden();
   await expect(ltr.root).toBeHidden();
   await expect(page.getByTestId("action-state")).toHaveText("copy-link");
   await expect(ltr.trigger).toBeFocused();
+});
+
+test("a rejected controlled submenu close keeps the visible child as focus owner", async ({
+  page,
+}) => {
+  const section = page
+    .locator(".section")
+    .filter({ has: page.getByRole("heading", { name: "Controlled submenu close", exact: true }) });
+  const trigger = section.getByRole("button", { name: "Locked submenu actions" });
+  const root = section.getByRole("menu").first();
+  const submenu = section.getByRole("menu").nth(1);
+
+  await trigger.press("ArrowDown");
+  await expect(root.getByRole("menuitem", { name: "Duplicate" })).toBeFocused();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowUp");
+  const share = root.getByRole("menuitem", { name: "Share" });
+  await expect(share).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  const copy = submenu.getByRole("menuitem", { name: "Copy link" });
+  await expect(copy).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(submenu).toBeVisible();
+  await expect(copy).toBeFocused();
+  await expect(share).toHaveAttribute("aria-expanded", "true");
 });
 
 test("RTL reverses the submenu arrow and anchors it on inline-end", async ({ page }) => {
@@ -134,13 +161,14 @@ test("RTL reverses the submenu arrow and anchors it on inline-end", async ({ pag
 
   await rtl.trigger.focus();
   await rtl.trigger.press("ArrowDown");
-  await rtl.root.press("End");
-  await rtl.root.press("ArrowUp");
-  await expect(share).toHaveAttribute("data-active", "");
-  await rtl.root.press("ArrowLeft");
+  await expect(rtl.root.getByRole("menuitem", { name: "Duplicate" })).toBeFocused();
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowUp");
+  await expect(share).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
 
   await expect(rtl.submenu).toBeVisible();
-  await expect(rtl.submenu).toBeFocused();
+  await expect(rtl.submenu.getByRole("menuitem", { name: "Copy link" })).toBeFocused();
   const rootBox = await rtl.root.boundingBox();
   const childBox = await rtl.submenu.boundingBox();
   expect(rootBox).not.toBeNull();
@@ -148,9 +176,9 @@ test("RTL reverses the submenu arrow and anchors it on inline-end", async ({ pag
   expect(childBox?.x ?? 0).toBeLessThan(rootBox?.x ?? 0);
   expect((childBox?.x ?? 0) + (childBox?.width ?? 0)).toBeLessThanOrEqual((rootBox?.x ?? 0) + 8);
 
-  await rtl.submenu.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
   await expect(rtl.submenu).toBeHidden();
-  await expect(rtl.root).toBeFocused();
+  await expect(share).toBeFocused();
 });
 
 test("pointer grace keeps the submenu open while crossing from its trigger", async ({ page }) => {
@@ -196,12 +224,9 @@ test("items recompute while open keeps the tree, and submenus register dynamical
   await ltr.trigger.click();
   await ltr.section.getByRole("menuitemcheckbox", { name: "Show advanced" }).click();
   await expect(ltr.section.getByRole("menuitem", { name: "Advanced" })).toBeHidden();
-  await ltr.root.press("End");
-  await ltr.root.press("ArrowUp");
-  await expect(ltr.section.getByRole("menuitem", { name: "Share" })).toHaveAttribute(
-    "data-active",
-    "",
-  );
+  await page.keyboard.press("End");
+  await page.keyboard.press("ArrowUp");
+  await expect(ltr.section.getByRole("menuitem", { name: "Share" })).toBeFocused();
 });
 
 test("light dismiss closes both levels of the native popover tree", async ({ page }) => {

@@ -1,6 +1,6 @@
 # Phase 2 — Menu composable DX validation
 
-Status: Implemented
+Status: Implemented; focus architecture revised 2026-07-23
 
 ## Scope
 
@@ -16,8 +16,8 @@ and combobox filtering remain Phase 3 work.
 
 - The trigger uses native `popovertarget` wiring and exposes
   `aria-haspopup="menu"` plus `aria-controls`.
-- The popup uses `role="menu"`, receives DOM focus, and identifies the visual
-  focus target with `aria-activedescendant`.
+- The popup uses `role="menu"` and delegates key events from the actual focused
+  native item. The container receives focus only when no enabled item exists.
 - Each item has a stable id derived from the menu id and the caller's stable key.
 - `ArrowDown` / `ArrowUp` open from the first / last enabled item.
 - Open-menu navigation supports `ArrowDown`, `ArrowUp`, `Home`, `End`, printable
@@ -30,16 +30,22 @@ and combobox filtering remain Phase 3 work.
 
 ## Focus strategy
 
-The WAI-ARIA APG documents roving `tabindex` and `aria-activedescendant` as
-alternative composite-focus strategies. Nagi UI uses `aria-activedescendant`
-for Menu because it lets DOM focus remain on one user-owned container while
-`itemProps(item)` only injects standard attributes and handlers into repeated
-items.
+Nagi UI uses managed DOM focus on the rendered menu item. Every item receives
+`tabindex="-1"` so the menu remains one tab stop, while Arrow keys, Home/End,
+typeahead, pointer movement, and direct focus all converge on the same
+`activeKey` and actual button or anchor. The menu container keeps
+`tabindex="-1"` only as the empty/all-skipped fallback.
 
-The two strategies are not mixed. Every item receives `tabindex="-1"`; the
-menu container receives `tabindex="-1"` and `aria-activedescendant`.
+This replaced the original container `aria-activedescendant` decision after
+native links exposed a contradiction: a keyboard event whose target is the
+container cannot produce trusted anchor activation. Synthetic modifier clicks,
+hidden clones, `window.open`, and location assignment all reimplement or break
+some combination of ancestor cancellation, router interception, analytics,
+`target`, `rel`, and `download`.
 
-Reference: [WAI-ARIA APG action menu using aria-activedescendant](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/examples/menu-button-actions-active-descendant/).
+The APG link-menu example likewise focuses actual HTML anchors so their browser
+behavior remains available:
+[WAI-ARIA APG Navigation Menu Button Example](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/examples/menu-button-links/).
 
 ## API shape
 
@@ -65,10 +71,9 @@ const menu = useMenu<Action>({
 </div>
 ```
 
-`data-active` is the only additional styling state. It represents the item
-referenced by the container's `aria-activedescendant`; there is no native or
-item-level ARIA selector that CSS can use for that relationship. Open state
-continues to use `:popover-open`, and disabled state uses `aria-disabled`.
+The focused item is styled with native `:focus`; Menu no longer emits
+`data-active`. Open state continues to use `:popover-open`, and disabled state
+uses `aria-disabled`.
 
 ## DX comparison
 
@@ -96,11 +101,26 @@ Comparison source: [Reka UI Dropdown Menu documentation](https://reka-ui.com/doc
 
 ## Invariants and tests
 
-- `activeKey` is `null` or identifies an enabled current item.
-- `aria-activedescendant` is absent when no enabled item exists.
+- `activeKey` is `null` or identifies the enabled item that owns DOM focus.
+- The menu container owns focus only when no enabled item exists.
 - Arrow navigation skips disabled items and obeys the configured loop policy.
 - Repeated printable keys cycle matching items; the buffer resets after the
   configured timeout.
 - Selection happens at most once and disabled activation is a no-op.
-- Browser tests verify focus ownership, visible active state, keyboard
-  selection, disabled skipping, Escape restoration, and Tab escape.
+- A native link's focused Enter event is never canceled or reproduced by core;
+  nested menus stop propagation without preventing its default.
+- Browser tests verify actual-item focus, trusted link interception, dynamic
+  repair, visible focus, disabled skipping, Escape restoration, and both Tab
+  directions.
+
+## Breaking migration from the original Phase 2 focus contract
+
+- Replace Menu selectors such as `[data-active]` with `:focus` (or
+  `:focus-visible` for an additional modality-specific ring).
+- Do not read Menu `aria-activedescendant`; inspect `document.activeElement` or
+  the public `activeKey` when application logic genuinely needs the owner.
+- Tests must send subsequent keys through the focused item/page, not refocus
+  the `role="menu"` container with `locator.press()`.
+- Listbox, Combobox, MultiSelect, and Tree keep their own documented
+  active-descendant/data-active contracts; this migration applies only to
+  Menu and Menu-derived popups.

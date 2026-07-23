@@ -33,11 +33,7 @@ test("keyboard navigation, focus restoration, and dismiss stay intact", async ()
   await expect.element(trigger).toHaveFocus();
   await userEvent.keyboard("{ArrowDown}");
   await expect.element(menu).toBeVisible();
-  await expect.element(menu).toHaveFocus();
-  await expect.element(screen.getByRole("menuitem", { name: "Rename" })).toHaveAttribute(
-    "data-active",
-    "",
-  );
+  await expect.element(screen.getByRole("menuitem", { name: "Rename" })).toHaveFocus();
   assertNagiDom(root);
   await expectOpenedStateAxeClean(root);
 

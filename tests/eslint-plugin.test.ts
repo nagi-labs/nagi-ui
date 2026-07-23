@@ -190,6 +190,70 @@ test("protects native Accordion details and summary wiring", () => {
   )
 })
 
+test("verifies date grid and segmented-field bindings, including merged props", () => {
+  const valid = verify(`
+    <template>
+      <div v-bind="mergeNagiProps(field.fieldProps, attrs)">
+        <span v-for="segment in segments" :key="segment.key" v-bind="field.segmentProps(segment)"></span>
+        <input v-bind="field.formValueProps">
+      </div>
+      <table v-bind="calendar.gridProps">
+        <tbody><tr><td v-for="cell in cells" :key="cell.key" v-bind="calendar.gridCellProps(cell)">
+          <button v-bind="calendar.cellButtonProps(cell)"></button>
+        </td></tr></tbody>
+      </table>
+    </template>
+  `)
+  assert.deepEqual(valid, [])
+
+  const invalid = verify(`
+    <template>
+      <section v-bind="mergeNagiProps(field.fieldProps, attrs)"></section>
+      <div role="grid" v-bind="calendar.gridProps"></div>
+      <button disabled v-bind="calendar.cellButtonProps(cell)"></button>
+      <div v-bind="field.formValueProps"></div>
+    </template>
+  `)
+  assert.deepEqual(
+    invalid.map((message) => message.messageId),
+    ["wrongElement", "protectedOverride", "wrongElement", "protectedOverride", "wrongElement"],
+  )
+})
+
+test("protects expanded-catalog OTP, carousel, Menubar, and NavigationMenu contracts", () => {
+  const valid = verify(`
+    <template>
+      <input v-bind="otp.otpInputProps">
+      <article v-for="slide in slides" :key="slide.key" v-bind="carousel.slideProps(slide)"></article>
+      <button type="button" v-bind="menubar.menubarTriggerProps(menu)"></button>
+      <button v-bind="navigation.navigationTriggerProps(item)"></button>
+    </template>
+  `)
+  assert.deepEqual(valid, [])
+
+  const invalid = verify(`
+    <template>
+      <div v-bind="otp.otpInputProps"></div>
+      <input pattern="wrong" v-bind="otp.otpInputProps">
+      <div v-for="slide in slides" v-bind="carousel.slideProps(slide)"></div>
+      <button aria-expanded="false" v-bind="menubar.menubarTriggerProps(menu)"></button>
+      <a v-bind="navigation.navigationTriggerProps(item)"></a>
+    </template>
+  `)
+  assert.deepEqual(
+    invalid.map((message) => message.messageId),
+    [
+      "wrongElement",
+      "protectedOverride",
+      "missingKey",
+      "wrongElement",
+      "missingButtonType",
+      "protectedOverride",
+      "wrongElement",
+    ],
+  )
+})
+
 test("all shipped Blueprints satisfy verified-bindings", () => {
   const files = fs
     .readdirSync(path.join(repo, "packages/core/blueprints"), { recursive: true })

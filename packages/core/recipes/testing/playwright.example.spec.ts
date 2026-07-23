@@ -41,12 +41,12 @@ test("keyboard navigation, focus restoration, and light dismiss stay intact", as
   await trigger.focus();
   await trigger.press("ArrowDown");
   await expect(menu).toBeVisible();
-  await expect(menu).toBeFocused();
-  await expect(page.getByRole("menuitem", { name: "Rename" })).toHaveAttribute("data-active", "");
+  const rename = page.getByRole("menuitem", { name: "Rename" });
+  await expect(rename).toBeFocused();
   await expectNagiDomClean(page);
   await expectOpenedStateAxeClean(page);
 
-  await menu.press("Enter");
+  await page.keyboard.press("Enter");
   await expect(menu).toBeHidden();
   await expect(trigger).toBeFocused();
   await expect(page.getByTestId("selected-action")).toHaveText("rename");

@@ -24,18 +24,16 @@ export function checkboxOptions(node: DropdownMenuCheckboxNode) {
 
 export function linkOptions(node: DropdownMenuLinkNode) {
   return {
+    nativeLink: true,
     onSelect: (_entry: DropdownMenuEntry, event?: Event) => {
-      // Keyboard activation has no native anchor default action because DOM
-      // focus stays on the aria-activedescendant menu container.
       const pointerEvent = typeof MouseEvent !== "undefined" && event instanceof MouseEvent;
       const modifiedPointer =
         pointerEvent
         && (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
-      if (node.navigate && !modifiedPointer) {
+      const externalContext = Boolean(node.target && node.target !== "_self") || node.download !== undefined;
+      if (node.navigate && !modifiedPointer && !externalContext) {
         event?.preventDefault();
         void node.navigate();
-      } else if (!node.navigate && event?.type === "keydown" && typeof window !== "undefined") {
-        window.location.assign(node.href);
       }
     },
     ...(node.closeOnSelect === undefined ? {} : { closeOnSelect: node.closeOnSelect }),

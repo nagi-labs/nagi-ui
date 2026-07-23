@@ -99,7 +99,7 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
         text-align: start;
         cursor: pointer;
 
-        &[data-active] {
+        &:focus {
           background: var(--nagi-color-surface-active);
           outline: 2px solid var(--nagi-color-focus-ring);
           outline-offset: -2px;

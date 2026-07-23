@@ -1,6 +1,6 @@
 # Cross-library component benchmark and Nagi UI coverage policy
 
-Status: Research and decision baseline (2026-07-21). This document is a
+Status: Research and completed decision baseline (revised 2026-07-23). This document is a
 coverage compass, not an API-compatibility promise and not an implementation
 backlog by itself.
 
@@ -21,23 +21,25 @@ requirements users repeatedly expect around that behavior.
 
 The primary coverage scope is:
 
-- every component Nagi currently ships: **43 / 43** below (31 Base UI-aligned
-  components plus twelve expanded-catalog additions);
-- every component in the Base UI 1.6.0 baseline: **37 / 37**, split between
-  the 26 direct shipped mappings and 11 unshipped capabilities below.
+- shipped adopted components: **60 / 60** across this ledger and the expanded
+  catalog;
+- every component in the Base UI 1.6.0 baseline has a decision, while direct
+  shipped implementation currently stands at **37 / 37**.
 
 PrimeVue's 90+ catalog and every shadcn-vue block are not automatic Nagi scope.
-Data grids, calendars and other product domains should receive their own
-benchmark slice when Nagi chooses to enter that domain.
+Data grids and other product domains should receive their own benchmark slice
+when Nagi chooses to enter that domain. The date/time family now has such a
+focused React Aria-backed slice in the expanded catalog.
 
-For component-creation progress, the adopted implementation set is currently
-37 slices: 31 shipped components plus 6 unbuilt component slices. This is
-**31 / 37 = 83.8%**. `Native/recipe` and `Decline` rows are deliberately not
+For component-creation progress, the adopted Base UI-aligned implementation set
+is 37 slices and all 37 are shipped. This is **37 / 37 = 100%**.
+`Native/recipe` and `Decline` rows are deliberately not
 counted as components to build. This metric tracks Nagi's chosen product, not
 API parity with any reference catalog.
 
 This is specifically the Base UI-aligned metric. The expanded normalized scope
-across Base UI, shadcn-vue, and PrimeVue is **43 / 54 = 79.6%**; see
+across Base UI, shadcn-vue, PrimeVue, and the focused React Aria date/time
+benchmark currently has **60 / 60 = 100%** shipped; see
 [`expanded-vue-component-catalog.md`](expanded-vue-component-catalog.md).
 
 ## Benchmark rule
@@ -136,14 +138,17 @@ This table applies the same four-axis review to every package/ownable component.
 | `ToggleGroup` | [Toggle Group](https://base-ui.com/react/components/toggle-group): single/multiple pressed selection, disabled items and group labeling | [Toggle Group](https://www.shadcn-vue.com/docs/components/toggle-group): repeated pressed controls | [SelectButton](https://primevue.dev/selectbutton/): single/multiple item selection | **Shipped**: flat items schema, single/multiple controlled value, real `button[aria-pressed]` controls and group/item disabled state. Every button remains a native tab stop; no roving-focus state machine or compound item family is added. |
 | `Tooltip` | [Tooltip](https://base-ui.com/react/components/tooltip): hover/focus, delay, positioning and disabled handling | [Tooltip](https://www.shadcn-vue.com/docs/components/tooltip): arbitrary trigger/content with provider coordination | [Tooltip](https://primevue.dev/tooltip/): directive on arbitrary targets with position/delay options | **Shipped**: hover/focus union, delays, controlled state, disabled and positioning. Arbitrary package triggers use the composable or ownership; no mandatory provider or trigger slot carrying behavior props. |
 
-Base UI-aligned shipped audit result: **31 / 31** components reviewed through
-the same platform/Base UI + shadcn-vue + PrimeVue + Nagi translation rule.
+Base UI-aligned shipped implementation result: **37 / 37** adopted slices
+reviewed through the same platform/Base UI + shadcn-vue + PrimeVue + Nagi
+translation rule.
 
 ## Shipped expanded-catalog additions
 
-These twelve components come from repeated shadcn-vue / PrimeVue product signal,
-not from additional Base UI baseline rows. They therefore increase the expanded
-catalog numerator without changing the Base UI-aligned 31 / 37 metric.
+These twelve components came from repeated shadcn-vue / PrimeVue product signal,
+not from additional Base UI baseline rows. At that checkpoint they increased
+the expanded catalog numerator without changing the Base UI-aligned metric.
+The final completion slice moved that metric from 31 / 37 to 37 / 37 after its
+release gate and fourth independent audit passed.
 
 | Nagi component | Platform foundation | Cross-library signal | Nagi decision |
 |---|---|---|---|
@@ -160,29 +165,33 @@ catalog numerator without changing the Base UI-aligned 31 / 37 metric.
 | `Stepper` | Native named navigation, ordered list and buttons with `aria-current="step"` | Both Vue catalogs expose Stepper | **Shipped**: flat items and one required controlled current key. Wizard panels, validation, routing and linear completion remain application policy. |
 | `Textarea` | Native form-associated `<textarea>` | Both Vue catalogs expose Textarea | **Shipped**: label, string model, native attrs, form/reset/validation and no autosize behavior. |
 
-Overall shipped package audit result: **43 / 43** components represented here.
+Package audit result at that checkpoint: **43 / 43** components represented.
+The date/time family then brought the release catalog to **49 / 60**, and the
+independently approved final completion slice brought it to **60 / 60**; see
+the expanded catalog for its detailed boundaries.
 
-## Unshipped Base UI baseline
+## Final Base UI baseline decisions
 
-These 12 rows complete the Base UI 1.6.0 catalog audit. Styled-library
+These 11 rows complete the Base UI 1.6.0 catalog audit. Styled-library
 agreement changes priority, but never bypasses the architectural translation.
 
 | Capability | Base UI | shadcn-vue | PrimeVue | Nagi decision |
 |---|---|---|---|---|
-| Autocomplete | [Autocomplete](https://base-ui.com/react/components/autocomplete) | Combobox is the nearest recipe | [AutoComplete](https://primevue.dev/autocomplete/) | **Defer**: distinct free-form `useAutocomplete`; do not add free-form modes to restricted Combobox. |
+| Autocomplete | [Autocomplete](https://base-ui.com/react/components/autocomplete) | Combobox is the nearest recipe | [AutoComplete](https://primevue.dev/autocomplete/) | **Shipped**: distinct free-form `useAutocomplete`; no free-form mode is added to restricted Combobox. |
 | Checkbox Group | [Checkbox Group](https://base-ui.com/react/components/checkbox-group) | Repeated Checkbox in Field/Form | Repeated Checkbox values | **Native/recipe**: native names plus Fieldset first; add an items schema only if package repetition proves useful. |
-| Context Menu | [Context Menu](https://base-ui.com/react/components/context-menu) | [Context Menu](https://www.shadcn-vue.com/docs/components/context-menu) | [ContextMenu](https://primevue.dev/contextmenu/) | **Defer**: strong common signal but needs a virtual pointer anchor, right-click/long-press policy and mobile browser tests. Reuse menu schema/core. |
+| Context Menu | [Context Menu](https://base-ui.com/react/components/context-menu) | [Context Menu](https://www.shadcn-vue.com/docs/components/context-menu) | [ContextMenu](https://primevue.dev/contextmenu/) | **Shipped**: Menu core plus per-session coordinates, right-click ordering, and cancellable long-press policy over native auto popover. |
 | Drawer | [Drawer](https://base-ui.com/react/components/drawer) | [Drawer](https://www.shadcn-vue.com/docs/components/drawer) | [Drawer](https://primevue.dev/drawer/) | **Decline** gesture/snap parity. A static edge panel is positioned Dialog; Vaul-class interrupted gestures should use another library. |
 | Field | [Field](https://base-ui.com/react/components/field) | [Field](https://www.shadcn-vue.com/docs/components/field) | FloatLabel/IftaLabel/Form are adjacent products | **Native/recipe**: shipped controls already own label/id. Add a helper only if repeated description/error wiring demonstrably reduces failures; no compound Field family. |
 | Form | [Form](https://base-ui.com/react/components/form) | [Form](https://www.shadcn-vue.com/docs/components/form) | PrimeVue Forms add-on | **Native/recipe**: native validation, server errors and `assertNagiDom()` integration. Nagi does not become a schema/form-state framework. |
-| Menubar | [Menubar](https://base-ui.com/react/components/menubar) | [Menubar](https://www.shadcn-vue.com/docs/components/menubar) | [Menubar](https://primevue.dev/menubar/) | **Defer**: strong common signal. Add a dedicated horizontal roving-focus coordinator over Menu; never use menu roles for ordinary site navigation. |
-| Navigation Menu | [Navigation Menu](https://base-ui.com/react/components/navigation-menu) | [Navigation Menu](https://www.shadcn-vue.com/docs/components/navigation-menu) | Menubar/MegaMenu are adjacent products | **Defer**: native `<nav>` and links first; hover/focus panel coordination is an independent navigation primitive. |
-| OTP Field | [OTP Field](https://base-ui.com/react/components/otp-field) | [Pin Input](https://www.shadcn-vue.com/docs/components/pin-input) | [InputOtp](https://primevue.dev/inputotp/) | **Defer**: strong common signal but mobile paste, password-manager and one-real-input behavior need a focused slice. |
+| Menubar | [Menubar](https://base-ui.com/react/components/menubar) | [Menubar](https://www.shadcn-vue.com/docs/components/menubar) | [Menubar](https://primevue.dev/menubar/) | **Shipped**: a dedicated horizontal roving-focus coordinator remains distinct from each Menu popup. |
+| Navigation Menu | [Navigation Menu](https://base-ui.com/react/components/navigation-menu) | [Navigation Menu](https://www.shadcn-vue.com/docs/components/navigation-menu) | Menubar/MegaMenu are adjacent products | **Shipped**: native `<nav>` and links with independent hover/focus/activation panel coordination and no menu roles. |
+| OTP Field | [OTP Field](https://base-ui.com/react/components/otp-field) | [Pin Input](https://www.shadcn-vue.com/docs/components/pin-input) | [InputOtp](https://primevue.dev/inputotp/) | **Shipped**: one real input preserves paste, mobile keyboard, password-manager, form, and reset ownership. |
 | Scroll Area | [Scroll Area](https://base-ui.com/react/components/scroll-area) | [Scroll Area](https://www.shadcn-vue.com/docs/components/scroll-area) | [ScrollArea](https://primevue.dev/scrollarea/) | **Native/recipe** despite strong demand: prefer `overflow: auto`, `scrollbar-*` CSS and platform scrollbars; do not add synchronized custom-thumb behavior for parity alone. |
-| Toolbar | [Toolbar](https://base-ui.com/react/components/toolbar) | No direct Toolbar component | [Toolbar](https://primevue.dev/toolbar/) | **Defer**: attribute-injection `useToolbar` for arbitrary owned controls; avoid a ToolbarButton/ToolbarLink family. |
+| Toolbar | [Toolbar](https://base-ui.com/react/components/toolbar) | No direct Toolbar component | [Toolbar](https://primevue.dev/toolbar/) | **Shipped**: attribute-injection `useToolbar` coordinates arbitrary owned controls without a ToolbarButton/ToolbarLink family. |
 
-Base UI catalog result: **37 / 37 represented** (26 direct shipped mappings +
-11 unshipped decisions). Nagi's additional shipped products include Alert,
+Base UI catalog result: **37 / 37 represented** (32 direct shipped mappings
+and five Native/recipe or Decline decisions).
+Nagi's additional shipped products include Alert,
 Badge, Card, standalone Listbox and the cross-library Stepper.
 
 ## First strengthening result
@@ -244,9 +253,11 @@ event ordering, disabled-summary suppression and fixed alert-dialog dismiss
 policy live in `@nagi-labs/nagi-ui/component-controls`. The SFCs retain the
 editable schema mapping, labels, action tone/event, IDREFs, DOM and CSS. The
 package catalog was then 27 components. The Base UI-aligned implementation set
-was 73.0% complete at that point, while later catalog slices move the current
-Base UI-aligned metric to 83.8% and the cross-library set to 79.6%. Full
-rationale and browser contracts are recorded in
+was 73.0% complete at that point. Later shipped slices moved the current
+Base UI-aligned metric to 31/37 = 83.8%, while the date/time family moved the
+expanded shipped set to 49/60 = 81.7%. The independently approved final slice
+subsequently completed both metrics at 37/37 and 60/60. Full rationale and
+browser contracts are recorded in
 [`base-ui-alignment-d3-accordion-alert-dialog.md`](base-ui-alignment-d3-accordion-alert-dialog.md).
 
 ## Capabilities that do not survive translation
