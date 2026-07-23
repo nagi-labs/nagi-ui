@@ -26,7 +26,9 @@ const items = [
       component hydrated: <span class="value" :data-hydrated="hydrated">{{ hydrated }}</span>
     </p>
     <NativePopoverDropdown label="Actions" :items="items" @select="picked = $event" />
-    <p class="text">picked: <span class="value" :data-pick="picked">{{ picked }}</span></p>
+    <p class="text">
+      picked: <span class="value" :data-pick="picked">{{ picked }}</span>
+    </p>
   </div>
 </template>
 

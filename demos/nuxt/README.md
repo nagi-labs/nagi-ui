@@ -16,6 +16,29 @@ vp install --frozen-lockfile
 vp run dev      # http://localhost:3000
 ```
 
+## Quality checks
+
+```sh
+vp run fmt
+vp run fmt:check
+vp run lint
+vp run typecheck
+vp run check
+vp run build
+```
+
+This isolated demo has no framework-independent TypeScript directory:
+`nuxt.config.ts`, the Vue SFCs, and the external proof SFC all depend on Nuxt or
+Vue-generated types. Oxc therefore performs syntax and correctness linting
+without `--type-check`, while `nuxi typecheck` remains the authoritative
+Nuxt/Vue SFC type check. If a standalone TypeScript directory with its own
+`tsconfig.json` is added later, lint that directory separately with
+`oxlint <dir> --ignore-path .gitignore --type-check --tsconfig=<config>` before
+the Nuxt-only lint pass. This focused demo has no separate test task, so `check`
+ends with Nuxt type checking and the production build remains an explicit gate.
+The isolated workspace disables pnpm's global virtual store so Oxc and Nuxt
+native optional binaries are always linked for the current operating system.
+
 What to look for:
 
 - `app.vue` mounts the component with `:hydrate-after="8000"`, so its client JS

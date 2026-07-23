@@ -1,5 +1,7 @@
 packages: []
 
+enableGlobalVirtualStore: false
+
 allowBuilds:
   "@parcel/watcher": true
   esbuild: true
