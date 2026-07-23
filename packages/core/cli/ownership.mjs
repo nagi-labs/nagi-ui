@@ -81,7 +81,9 @@ const MARKER_RE = /^(?:<!--|\/\/) @nagi-source ([a-z0-9-]+)\/([^@\s]+)@(\S+?)(?:
 
 export function markerLine(file, component, version) {
   const marker = `@nagi-source ${component}/${file}@${version}`
-  return file.endsWith(".vue") ? `<!-- ${marker} -->\n` : `// ${marker}\n`
+  return file.endsWith(".vue") || file.endsWith(".md")
+    ? `<!-- ${marker} -->\n`
+    : `// ${marker}\n`
 }
 
 export function parseMarker(line) {
@@ -126,7 +128,7 @@ function walk(root) {
   return fs
     .readdirSync(root, { recursive: true })
     .map(String)
-    .filter((file) => file.endsWith(".vue") || file.endsWith(".ts"))
+    .filter((file) => file.endsWith(".vue") || file.endsWith(".ts") || file.endsWith(".md"))
     .map((file) => path.join(root, file))
 }
 

@@ -10,6 +10,7 @@ import { createDiffCommand } from "./commands/diff.mjs"
 import { createListCommand } from "./commands/list.mjs"
 import { createOwnCommand } from "./commands/own.mjs"
 import { createSetupCommand } from "./commands/setup.mjs"
+import { createStatusCommand } from "./commands/status.mjs"
 import { createThemeCommand } from "./commands/theme.mjs"
 import { packageVersion } from "./ownership.mjs"
 
@@ -26,6 +27,7 @@ export {
   setupProject,
   validateSetupOptions,
 } from "./setup.mjs"
+export { inspectProjectStatus } from "./status.mjs"
 export { checkThemeFiles } from "./theme.mjs"
 
 const localPackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
@@ -49,13 +51,14 @@ export function createNagiCommand({
     meta: {
       name: "nagi-ui",
       version: packageVersion(localPackageRoot),
-      description: "Set up integrations and own Nagi UI Blueprint source",
+      description: "Set up, inspect, and own Nagi UI Blueprint source",
     },
     subCommands: {
       setup: createSetupCommand(context),
       list: createListCommand(context),
       own: createOwnCommand(context),
       diff: createDiffCommand(context),
+      status: createStatusCommand(context),
       theme: createThemeCommand(context),
     },
   })

@@ -9,6 +9,7 @@ fixed by this implementation under the CHARTER section 3 maintenance contract.
 vp exec nagi-ui list
 vp exec nagi-ui own dropdown-menu [--dir src/components/nagi] [--force]
 vp exec nagi-ui diff [--dir src/components/nagi]
+vp exec nagi-ui status [theme.css...] [--dir src/components/nagi]
 ```
 
 `nagi-ui list` prints the available component names and is the machine-readable
@@ -17,19 +18,27 @@ duplicate that growing registry as a static list; package-export/ownership
 parity is enforced by `tests/cli.test.ts`.
 
 The binary ships with `@nagi-labs/nagi-ui`. `packages/core/cli/nagi-ui.mjs`
-defines the `setup`, `list`, `own`, and `diff` subcommands through `citty`;
-ownership and setup logic live in focused sibling modules. Because the package
-distributes raw SFC source, `own` copies **the exact files the package itself
-consumes**. There is no separate build artifact that can drift from the source,
-which preserves the single-source principle. Framework setup is documented
-separately in `docs/setup-integrations.md`.
+defines the `setup`, `list`, `own`, `diff`, `status`, and `theme` subcommands
+through `citty`; ownership and setup logic live in focused sibling modules.
+Because the package distributes raw SFC source, `own` copies **the exact files
+the package itself consumes**. There is no separate build artifact that can
+drift from the source, which preserves the single-source principle. Framework
+setup is documented separately in `docs/setup-integrations.md`.
+
+`status` is the read-only overview. It reports the installed and directly
+declared package version, statically detected default-theme imports (or checks
+explicit replacement-theme CSS), and an aggregate of the same per-file
+ownership states as `diff`. It exits nonzero only for confirmed failures:
+an unavailable package, an incomplete or unreadable explicit theme, or
+`drifted`/`unknown-source` ownership. An unresolved implicit theme and ordinary
+local `modified` ownership remain informational.
 
 ## Fixed metadata format
 
 The first line of every owned file is a machine-readable marker:
 
 ```text
-<!-- @nagi-source dropdown-menu/DropdownMenu.vue@0.4.0 -->   (.vue)
+<!-- @nagi-source dropdown-menu/DropdownMenu.vue@0.4.0 -->   (.vue / .md)
 // @nagi-source dropdown-menu/dropdown-schema.ts@0.4.0       (.ts)
 ```
 
@@ -93,4 +102,5 @@ includes this complete maintenance loop.
   temporary directories. Citty subcommand routing also covers multi-component
   ownership and enum validation.
 - A manual in-repository end-to-end run owns `dropdown-menu` into a temporary
-  directory and then runs `diff`, which reports four `clean` files and exits 0.
+  directory and then runs `diff`, which reports every registered file as
+  `clean` and exits 0.

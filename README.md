@@ -142,6 +142,22 @@ CI:
 vp exec nagi-ui theme check src/styles/nagi-theme.css
 ```
 
+Inspect package installation, theme evidence, and owned-source drift together:
+
+```sh
+vp exec nagi-ui status
+vp exec nagi-ui status src/styles/nagi-theme.css
+```
+
+These are independent axes, not destructive migration stages: a theme continues
+to apply after a component is owned, and package components can remain beside
+owned ones. With no CSS argument, `status` detects a static
+`default-theme.css`/`theme.css` import; if it cannot prove the active theme, it
+reports `unresolved` instead of guessing. Pass all CSS files that make up a
+replacement theme to validate its token coverage. Confirmed package, theme, or
+owned-source problems produce a nonzero exit code; ordinary local `modified`
+owned files do not.
+
 For an explicit development-time cascade check, call
 `warnMissingNagiThemeTokens(document.documentElement)`. Nagi UI does not install
 a production observer automatically. `./theme.css` remains a compatibility

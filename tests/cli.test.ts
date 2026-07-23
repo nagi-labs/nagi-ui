@@ -9,6 +9,7 @@ import {
   components,
   detectSetupDefaults,
   diffOwned,
+  inspectProjectStatus,
   main,
   markerLine,
   ownComponent,
@@ -38,6 +39,12 @@ test("markers round-trip for vue and ts files", () => {
     file: "dropdown-schema.ts",
     version: "1.2.3",
   });
+
+  const markdown = markerLine("EXTENDING.md", "context-menu", "1.2.3");
+  assert.equal(
+    markdown,
+    "<!-- @nagi-source context-menu/EXTENDING.md@1.2.3 -->\n",
+  );
 
   assert.equal(parseMarker("<!-- not a marker -->"), null);
 });
@@ -136,6 +143,70 @@ test("theme check reports missing and unknown replacement-theme tokens", async (
   assert.ok(warnings.some((message) => message.includes("--nagi-color-foucs-ring")));
 });
 
+test("status reports package, default theme, and locally modified ownership independently", () => {
+  const cwd = tempDir();
+  fs.writeFileSync(
+    path.join(cwd, "package.json"),
+    JSON.stringify({ dependencies: { "@nagi-labs/nagi-ui": "^0.4.0" } }),
+  );
+  fs.mkdirSync(path.join(cwd, "src"), { recursive: true });
+  fs.writeFileSync(
+    path.join(cwd, "src/main.ts"),
+    'import "@nagi-labs/nagi-ui/default-theme.css";\n',
+  );
+  fs.writeFileSync(
+    path.join(cwd, "src/commented.ts"),
+    '/* import "@nagi-labs/nagi-ui/default-theme.css"; */\n',
+  );
+  const targetRoot = path.join(cwd, "src/components/nagi");
+  ownComponent("listbox", { packageRoot, targetRoot });
+  fs.appendFileSync(path.join(targetRoot, "listbox/Listbox.vue"), "\n<!-- local edit -->\n");
+
+  const status = inspectProjectStatus({ cwd, packageRoot });
+  assert.deepEqual(status.package.declaration, {
+    section: "dependencies",
+    specifier: "^0.4.0",
+  });
+  assert.equal(status.package.status, "installed");
+  assert.equal(status.theme.status, "default-detected");
+  assert.deepEqual(status.theme.imports, ["src/main.ts"]);
+  assert.equal(status.own.status, "modified");
+  assert.equal(status.own.components.length, 1);
+  assert.equal(status.own.components[0]?.component, "listbox");
+  assert.equal(status.exitCode, 0, "a local ownership modification is expected");
+});
+
+test("status validates an explicit replacement theme and gates confirmed problems", () => {
+  const cwd = tempDir();
+  const incomplete = path.join(cwd, "theme.css");
+  fs.writeFileSync(incomplete, ":root { --nagi-color-accent: hotpink; }\n");
+
+  let status = inspectProjectStatus({
+    cwd,
+    packageRoot,
+    themeFiles: [incomplete],
+  });
+  assert.equal(status.theme.status, "replacement-incomplete");
+  assert.ok(status.theme.missing.length > 0);
+  assert.equal(status.exitCode, 1);
+
+  status = inspectProjectStatus({
+    cwd,
+    packageRoot,
+    themeFiles: [path.join(packageRoot, "theme/default-theme.css")],
+  });
+  assert.equal(status.theme.status, "replacement-complete");
+  assert.equal(status.exitCode, 0);
+});
+
+test("status reports unavailable comparisons when the package cannot be resolved", () => {
+  const status = inspectProjectStatus({ cwd: tempDir(), packageRoot: null });
+  assert.equal(status.package.status, "missing");
+  assert.equal(status.theme.status, "unresolved");
+  assert.equal(status.own.status, "unavailable");
+  assert.equal(status.exitCode, 1);
+});
+
 test("the shipped default theme passes the replacement-theme CI gate", async () => {
   const theme = path.join(packageRoot, "theme/default-theme.css");
   assert.deepEqual(checkThemeFiles([theme]).missing, []);
@@ -207,6 +278,17 @@ test("diff reports clean, modified, and drifted owned sources", () => {
   assert.equal(entries.find((entry) => entry.file === owned)?.status, "drifted");
 });
 
+test("diff checks every registered owned file, including Markdown guidance", () => {
+  const targetRoot = tempDir();
+  ownComponent("context-menu", { packageRoot, targetRoot });
+  const entries = diffOwned(targetRoot, { packageRoot });
+  assert.equal(entries.length, components["context-menu"].files.length);
+  assert.equal(
+    entries.find((entry) => entry.marker.file === "EXTENDING.md")?.status,
+    "clean",
+  );
+});
+
 test("diff gates only on drifted and unknown-source, not on local modification", async () => {
   const repo = path.join(import.meta.dirname, "..");
   const targetRoot = tempDir();
@@ -226,6 +308,37 @@ test("diff gates only on drifted and unknown-source, not on local modification",
     fs.readFileSync(owned, "utf8").replace(`@${stampedVersion}`, `@${stampedVersion}-old`),
   );
   assert.equal(await main(["diff", "--dir", targetRoot], repo), 1, "drifted fails the gate");
+});
+
+test("status command summarizes owned components and reuses diff gating", async () => {
+  const repo = path.join(import.meta.dirname, "..");
+  const targetRoot = tempDir();
+  const theme = path.join(packageRoot, "theme/default-theme.css");
+  const logs: string[] = [];
+  const io = {
+    log(message: unknown) {
+      logs.push(String(message));
+    },
+    warn() {},
+  };
+  ownComponent("listbox", { packageRoot, targetRoot });
+
+  assert.equal(await main(["status", theme, "--dir", targetRoot], repo, io), 0);
+  assert.match(logs.join("\n"), /theme\s+replacement-complete/);
+  assert.match(logs.join("\n"), /own\s+clean/);
+  assert.match(logs.join("\n"), /listbox/);
+
+  const owned = path.join(targetRoot, "listbox/Listbox.vue");
+  const stampedVersion = parseMarker(
+    fs.readFileSync(owned, "utf8").split("\n", 1)[0] as string,
+  )?.version;
+  fs.appendFileSync(owned, "\n<!-- local edit -->\n");
+  fs.writeFileSync(
+    owned,
+    fs.readFileSync(owned, "utf8").replace(`@${stampedVersion}`, `@${stampedVersion}-old`),
+  );
+  assert.equal(await main(["status", theme, "--dir", targetRoot], repo, io), 1);
+  assert.match(logs.join("\n"), /own\s+drifted/);
 });
 
 test("diff flags markers that no longer match a shipped source", () => {

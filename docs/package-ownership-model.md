@@ -20,6 +20,19 @@ import "@nagi-labs/nagi-ui/default-theme.css"
 vp exec nagi-ui own dropdown-menu
 ```
 
+At any point, inspect the package, theme, and ownership axes together:
+
+```sh
+vp exec nagi-ui status
+vp exec nagi-ui status src/styles/nagi-theme.css
+```
+
+They are not irreversible `package -> theme -> own` stages. Theme selection is
+orthogonal to source ownership, and package and owned components may coexist.
+The first form detects a static default-theme import; the second validates the
+listed CSS files as a complete replacement theme. An undetectable theme is
+reported as `unresolved`, not assumed to be missing.
+
 Conceptually, the latter copies a complete source set like this into the
 consumer repository:
 
