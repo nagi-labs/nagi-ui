@@ -1,0 +1,18 @@
+/**
+ * Opt-in Nagi theme bridge for consumer-owned Unovis charts.
+ * Apply `data-nagi-unovis` to an owned wrapper around the Unovis components.
+ */
+[data-nagi-unovis] {
+  --vis-font-family: inherit;
+  --vis-color0: var(--nagi-color-series-1);
+  --vis-color1: var(--nagi-color-series-2);
+  --vis-color2: var(--nagi-color-series-3);
+  --vis-color3: var(--nagi-color-series-4);
+  --vis-color4: var(--nagi-color-series-5);
+  --vis-color5: var(--nagi-color-series-6);
+  --vis-axis-domain-color: var(--nagi-color-border-muted);
+  --vis-axis-grid-color: var(--nagi-color-border-muted);
+  --vis-axis-label-color: var(--nagi-color-text-muted);
+  --vis-axis-tick-color: var(--nagi-color-border-muted);
+  --vis-axis-tick-label-color: var(--nagi-color-text-muted);
+}

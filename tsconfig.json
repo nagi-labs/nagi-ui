@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "exactOptionalPropertyTypes": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true,
+    "target": "ES2024",
+    "verbatimModuleSyntax": true
+  },
+  "include": [
+    "packages/core/src/**/*.ts",
+    "packages/eslint-plugin-nagi-ui/src/**/*.ts",
+    "tests/types/**/*.ts"
+  ]
+}

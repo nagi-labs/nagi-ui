@@ -1,0 +1,72 @@
+/**
+ * Nagi UI default theme — semantic tokens (CHARTER §3,
+ * docs/package-ownership-model.md).
+ *
+ * Blueprints intentionally do not embed fallback values. Import this file for
+ * the complete default appearance, or provide every required token in a
+ * custom theme and validate it with `nagi-ui theme check`.
+ */
+:root {
+  /* Nagi CSS standard semantic scales, namespaced for Nagi UI. */
+  --n-space-1: 0.2rem;
+  --n-space-2: 0.25rem;
+  --n-space-3: 0.35rem;
+  --n-space-4: 0.4rem;
+  --n-space-5: 0.5rem;
+  --n-space-6: 0.65rem;
+  --n-space-7: 0.75rem;
+  --n-space-8: 1rem;
+  --n-radius-1: 0.35rem;
+  --n-radius-2: 0.5rem;
+  --n-radius-3: 0.65rem;
+  --n-border-width-1: 1px;
+  --n-border-width-2: 2px;
+  --n-font-size-1: 0.55rem;
+  --n-font-size-2: 0.75rem;
+  --n-font-size-3: 0.875rem;
+  --n-font-size-4: 1rem;
+  --n-font-size-5: 1.125rem;
+  --n-font-size-6: 1.4rem;
+  --n-shadow-1: 0 1px 2px rgb(22 48 60 / 0.12);
+  --n-shadow-2: 0 6px 18px rgb(22 48 60 / 0.16);
+  --n-shadow-3: 0 14px 36px rgb(22 48 60 / 0.2);
+  --n-z-dropdown: 1000;
+  --n-z-sticky: 1100;
+  --n-z-modal: 1200;
+  --n-z-toast: 1300;
+
+  --nagi-color-accent: #16768b;
+  --nagi-color-border: #b9cbd1;
+  --nagi-color-border-muted: #c8d8dd;
+  --nagi-color-danger: #aa3443;
+  --nagi-color-focus-ring: #75adba;
+  --nagi-color-series-1: #16768b;
+  --nagi-color-series-2: #9c4668;
+  --nagi-color-series-3: #8a5a00;
+  --nagi-color-series-4: #3f6f32;
+  --nagi-color-series-5: #5c5caf;
+  --nagi-color-series-6: #aa4638;
+  --nagi-color-success: #18794e;
+  --nagi-color-surface: #fff;
+  --nagi-color-surface-accent: #e5f1f4;
+  --nagi-color-surface-active: #e5f1f4;
+  --nagi-color-surface-danger: #fbeaec;
+  --nagi-color-surface-success: #e7f5ed;
+  --nagi-color-surface-warning: #fff4d6;
+  --nagi-color-text: #17323b;
+  --nagi-color-text-disabled: #91a1a6;
+  --nagi-color-text-muted: #50676f;
+  --nagi-color-warning: #8a5a00;
+  --nagi-font-size-icon: 0.78rem;
+  --nagi-font-size-label: 0.72rem;
+  --nagi-radius-control: 0.55rem;
+  --nagi-radius-item: 0.4rem;
+  --nagi-radius-overlay: 0.65rem;
+  --nagi-shadow-focus: 0 0 0 2px rgb(117 173 186 / 0.35);
+  --nagi-shadow-overlay: 0 14px 36px rgb(22 48 60 / 0.2);
+  --nagi-size-control: 2rem;
+  --nagi-space-control: 0.5rem 0.75rem;
+  --nagi-space-item: 0.35rem 0.55rem;
+  --nagi-space-item-gap: 0.55rem;
+  --nagi-space-surface-inset: 0.4rem;
+}

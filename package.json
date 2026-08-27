@@ -1,0 +1,47 @@
+{
+  "name": "nagi-ui-workspace",
+  "version": "0.1.0",
+  "description": "Workspace for Nagi UI, a native-first Vue component library.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nagi-labs/nagi-ui.git"
+  },
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "oxlint packages/core/src packages/eslint-plugin-nagi-ui/src tests/types --ignore-path .gitignore --type-check --tsconfig=tsconfig.json && oxlint packages/core/blueprints playground/src demos/NativePopoverDropdown.vue --ignore-path .gitignore && oxlint packages/core/cli packages/core/components.ts packages/core/nagi-css-preset.mjs packages/core/theme packages/core/recipes/testing tests/*.test.ts tests/browser playground/vite.config.ts playwright.config.ts eslint.nagi.config.mjs --ignore-path .gitignore",
+    "lint:fix": "oxlint packages/core/src packages/eslint-plugin-nagi-ui/src tests/types --ignore-path .gitignore --type-check --tsconfig=tsconfig.json --fix && oxlint packages/core/blueprints playground/src demos/NativePopoverDropdown.vue --ignore-path .gitignore --fix && oxlint packages/core/cli packages/core/components.ts packages/core/nagi-css-preset.mjs packages/core/theme packages/core/recipes/testing tests/*.test.ts tests/browser playground/vite.config.ts playwright.config.ts eslint.nagi.config.mjs --ignore-path .gitignore --fix",
+    "lint:typed": "oxlint packages/core/src packages/eslint-plugin-nagi-ui/src tests/types --ignore-path .gitignore --type-check --tsconfig=tsconfig.json",
+    "lint:vue": "oxlint packages/core/blueprints playground/src demos/NativePopoverDropdown.vue --ignore-path .gitignore",
+    "lint:runtime": "oxlint packages/core/cli packages/core/components.ts packages/core/nagi-css-preset.mjs packages/core/theme packages/core/recipes/testing tests/*.test.ts tests/browser playground/vite.config.ts playwright.config.ts eslint.nagi.config.mjs --ignore-path .gitignore",
+    "test": "node --test tests/*.test.ts",
+    "test:integration": "eslint --config eslint.nagi.config.mjs packages/core/blueprints",
+    "test:browser": "playwright test",
+    "typecheck": "tsc --noEmit -p tsconfig.json && vue-tsc --noEmit -p tsconfig.vue.json",
+    "typecheck:ts": "tsc --noEmit -p tsconfig.json",
+    "typecheck:vue": "vue-tsc --noEmit -p tsconfig.vue.json"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@nagi-labs/nagi-ui": "workspace:*",
+    "@playwright/test": "1.61.1",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "@unovis/ts": "^1.6.7",
+    "@unovis/vue": "^1.6.7",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "eslint": "^9.39.5",
+    "oxlint": "^1.75.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "tslib": "^2.8.1",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "vite": "^8.1.4",
+    "vue": "^3.5.0",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^3.3.8"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "packageManager": "pnpm@11.1.3"
+}

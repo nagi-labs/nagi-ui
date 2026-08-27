@@ -1,0 +1,28 @@
+{
+  "name": "eslint-plugin-nagi-ui",
+  "version": "0.1.0",
+  "description": "ESLint rules for Nagi UI component contracts.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nagi-labs/nagi-ui.git",
+    "directory": "packages/eslint-plugin-nagi-ui"
+  },
+  "homepage": "https://github.com/nagi-labs/nagi-ui#readme",
+  "keywords": ["eslint", "vue", "nagi-ui"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "type": "module",
+  "exports": "./src/index.ts",
+  "files": [
+    "src"
+  ],
+  "peerDependencies": {
+    "eslint": ">=9.0.0",
+    "vue-eslint-parser": ">=10.0.0"
+  }
+}

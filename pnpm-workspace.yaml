@@ -1,0 +1,12 @@
+packages:
+  - "packages/*"
+packageExtensions:
+  # Vue's declarations publicly import this type package, but compiler-core
+  # publishes it as a devDependency. Inject it into the isolated dependency
+  # graph so TypeScript can resolve the declaration from pnpm's real path.
+  "@vue/compiler-core@*":
+    dependencies:
+      "@babel/types": "^7.29.7"
+allowBuilds:
+  # Unovis pulls maplibre-gl transitively; its published postinstall is empty.
+  maplibre-gl: false

@@ -1,0 +1,12 @@
+node_modules/
+.pnpm-store/
+coverage/
+.sandbox/
+*.log
+.DS_Store
+.playwright-cli/
+playwright-report/
+test-results/
+dist/
+dist-ssr/
+.claude/settings.local.json
