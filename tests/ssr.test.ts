@@ -19,11 +19,13 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 test("SSR emits the full popover wiring as plain attributes", async () => {
   // No configFile and a tmp cacheDir: vite must not write into the repo
   // (sandboxed test runs only get tmp-dir write access).
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -102,5 +104,6 @@ ${blueprintHtml}
     console.log(`zero-JS artifact: ${artifactPath}`)
   } finally {
     await server.close()
+    fs.rmSync(cacheDir, { recursive: true, force: true })
   }
 })

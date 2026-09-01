@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type StyleValue } from "vue";
 
-import {
-  type ToastItem,
-  type ToastManager,
-} from "@nagi-labs/nagi-ui";
+import { type ToastItem, type ToastManager } from "@nagi-labs/nagi-ui";
 import { useToastRenderer } from "@nagi-labs/nagi-ui/component-controls";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
     manager?: ToastManager;
     duration?: number;
     limit?: number;
@@ -46,7 +49,12 @@ defineExpose({
 </script>
 
 <template>
-  <div class="n-toast">
+  <div
+    class="n-toast"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
     <div class="unit -announcements">
       <p
         v-for="item in notifier.toasts.value"
@@ -59,7 +67,10 @@ defineExpose({
       </p>
     </div>
 
-    <div class="unit" v-bind="notifier.regionProps">
+    <div
+      class="unit"
+      v-bind="notifier.regionProps"
+    >
       <ol class="list">
         <li
           v-for="item in visibleToasts"
@@ -68,8 +79,18 @@ defineExpose({
           :data-tone="item.tone"
           v-bind="notifier.toastItemProps"
         >
-          <div v-if="item.title" class="title">{{ item.title }}</div>
-          <p v-if="item.description" class="text">{{ item.description }}</p>
+          <div
+            v-if="item.title"
+            class="title"
+          >
+            {{ item.title }}
+          </div>
+          <p
+            v-if="item.description"
+            class="text"
+          >
+            {{ item.description }}
+          </p>
           <div class="actions">
             <button
               v-if="item.action"

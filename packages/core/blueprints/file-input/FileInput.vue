@@ -1,37 +1,48 @@
 <script setup lang="ts">
+import { computed, useAttrs } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    name?: string;
-    form?: string;
-    accept?: string;
-    multiple?: boolean;
-    disabled?: boolean;
-    required?: boolean;
-  }>(),
-  {
-    multiple: false,
-    disabled: false,
-    required: false,
-  },
+const {
+  label,
+  multiple = false,
+  disabled = false,
+  required = false,
+} = defineProps<{
+  label: string;
+  multiple?: boolean;
+  disabled?: boolean;
+  required?: boolean;
+}>();
+const attrs = useAttrs();
+const inputProps = computed(() =>
+  mergeElementProps(attrs, { type: "file", multiple, disabled, required }),
 );
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+}>();
 </script>
 
 <template>
   <label class="n-file-input">
     <span class="unit">{{ label }}</span>
     <input
-      v-bind="$attrs"
       class="input"
-      type="file"
-      :name="name"
-      :form="form"
-      :accept="accept"
-      :multiple="multiple"
-      :disabled="disabled"
-      :required="required"
+      v-bind="inputProps"
+      @blur="emit('blur', $event)"
+      @change="emit('change', $event)"
+      @click="emit('click', $event)"
+      @focus="emit('focus', $event)"
+      @input="emit('input', $event)"
+      @invalid="emit('invalid', $event)"
     />
   </label>
 </template>

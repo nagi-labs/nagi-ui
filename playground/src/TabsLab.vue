@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Tabs, type TabsItem } from "@nagi-labs/nagi-ui/components";
+import { NTabs, type TabsItem } from "@nagi-labs/nagi-ui/components";
 
 const automaticItems: readonly TabsItem[] = [
   { key: "overview", label: "Overview", content: "A summary of recent account activity." },
@@ -75,8 +75,8 @@ function resetDynamicTabs() {
     <section class="section -automatic">
       <h2 class="title">Automatic horizontal LTR</h2>
       <p class="text">Arrow focus activates immediately and skips disabled tabs.</p>
-      <button class="button" type="button" data-testid="before-tabs">Before tabs</button>
-      <Tabs
+      <button class="button" type="button" id="before-tabs">Before tabs</button>
+      <n-tabs
         class="n-tabs"
         v-model:selected="automaticSelected"
         label="Account sections"
@@ -87,9 +87,9 @@ function resetDynamicTabs() {
             <p class="text">{{ item.content }}</p>
           </article>
         </template>
-      </Tabs>
-      <button class="button" type="button" data-testid="after-tabs">After tabs</button>
-      <output class="output" data-testid="automatic-state">
+      </n-tabs>
+      <button class="button" type="button" id="after-tabs">After tabs</button>
+      <output class="output" id="automatic-state">
         {{ automaticSelected ?? "none" }}
       </output>
     </section>
@@ -97,7 +97,7 @@ function resetDynamicTabs() {
     <section class="section -manual">
       <h2 class="title">Manual vertical</h2>
       <p class="text">Arrow focus moves independently; Enter or Space activates.</p>
-      <Tabs
+      <n-tabs
         class="n-tabs"
         v-model:selected="manualSelected"
         label="Profile sections"
@@ -105,26 +105,26 @@ function resetDynamicTabs() {
         activation-mode="manual"
         orientation="vertical"
       />
-      <output class="output" data-testid="manual-state">{{ manualSelected ?? "none" }}</output>
+      <output class="output" id="manual-state">{{ manualSelected ?? "none" }}</output>
     </section>
 
     <section class="section -rtl" dir="rtl">
       <h2 class="title">Automatic horizontal RTL</h2>
       <p class="text">Horizontal arrows follow logical reading direction.</p>
-      <Tabs
+      <n-tabs
         class="n-tabs"
         v-model:selected="rtlSelected"
         label="RTL sections"
         :items="rtlItems"
         dir="rtl"
       />
-      <output class="output" data-testid="rtl-state">{{ rtlSelected ?? "none" }}</output>
+      <output class="output" id="rtl-state">{{ rtlSelected ?? "none" }}</output>
     </section>
 
     <section class="section -dynamic">
       <h2 class="title">Dynamic collection</h2>
       <p class="text">Removing or disabling the selected tab repairs selection and focus.</p>
-      <Tabs
+      <n-tabs
         class="n-tabs"
         v-model:selected="dynamicSelected"
         label="Dynamic sections"
@@ -142,13 +142,13 @@ function resetDynamicTabs() {
       <dl class="list -state">
         <div class="item">
           <dt class="term">selected</dt>
-          <dd class="definition" data-testid="dynamic-state">
+          <dd class="definition" id="dynamic-state">
             {{ dynamicSelected ?? "none" }}
           </dd>
         </div>
         <div class="item">
           <dt class="term">items</dt>
-          <dd class="definition" data-testid="dynamic-items-state">
+          <dd class="definition" id="dynamic-items-state">
             {{ dynamicItems.map((item) => `${item.key}${item.disabled ? ":disabled" : ""}`).join(",") || "none" }}
           </dd>
         </div>

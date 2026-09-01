@@ -49,7 +49,7 @@ function focusSelf(): FocusEvent {
   return { target, currentTarget: target } as FocusEvent;
 }
 
-test("shipped Listbox overload maps its schema and named behavior props", () => {
+test("[LST-SEM-01][LST-SEM-02][LST-STATE-01] shipped Listbox overload maps its schema and named behavior props", () => {
   const selected = ref<readonly string[]>([]);
   const listbox = useListbox({
     items: fruits,
@@ -66,7 +66,7 @@ test("shipped Listbox overload maps its schema and named behavior props", () => 
   assert.deepEqual(selected.value, ["apple"]);
 });
 
-test("single mode: focus lands on the first enabled option and arrows keep selection on focus", () => {
+test("[LST-INT-01] single mode: focus lands on the first enabled option and arrows keep selection on focus", () => {
   const listbox = createListbox();
   listbox.listboxProps.onFocus(focusSelf());
   assert.equal(listbox.activeKey.value, "apple");
@@ -82,7 +82,7 @@ test("single mode: focus lands on the first enabled option and arrows keep selec
   assert.deepEqual([...listbox.selectedKeys.value], ["apple"]);
 });
 
-test("single mode: controlled ref stays the source of truth and change events fire", () => {
+test("[LST-STATE-02] single mode: controlled ref stays the source of truth and change events fire", () => {
   const selected = ref<readonly string[]>(["date"]);
   const changes: (readonly string[])[] = [];
   const listbox = createListbox({
@@ -101,7 +101,7 @@ test("single mode: controlled ref stays the source of truth and change events fi
   assert.equal(listbox.isSelected(fruits[2] as Fruit), true);
 });
 
-test("multiple mode: arrows move focus without selecting; Space and Shift+Arrow select", () => {
+test("[LST-INT-02] multiple mode: arrows move focus without selecting; Space and Shift+Arrow select", () => {
   const listbox = createListbox({ mode: "multiple" });
   listbox.listboxProps.onFocus(focusSelf());
 
@@ -173,7 +173,7 @@ test("filtering out the active option parks focus without touching the selection
   assert.equal(listbox.optionProps(fruits[2] as Fruit)["aria-selected"], "true");
 });
 
-test("emits only standard attributes with stable ids", () => {
+test("[LST-SEM-01][LST-SEM-02][LST-STATE-01][LST-FOCUS-01] emits only standard attributes with stable ids", () => {
   const single = createListbox({ id: "fruits" });
   assert.equal(single.listboxProps.role, "listbox");
   assert.equal(single.listboxProps.tabindex, 0);
@@ -196,7 +196,7 @@ test("emits only standard attributes with stable ids", () => {
   assert.equal(multiple.listboxProps["aria-multiselectable"], "true");
 });
 
-test("horizontal orientation follows reading direction", () => {
+test("[LST-INT-03] horizontal orientation follows reading direction", () => {
   const rtl = createListbox({ orientation: "horizontal", dir: "rtl" });
   rtl.listboxProps.onFocus(focusSelf());
   rtl.listboxProps.onKeydown(keydown("ArrowLeft"));

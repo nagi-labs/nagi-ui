@@ -10,7 +10,10 @@ export interface BreadcrumbItem {
 </script>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+import { computed, useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -23,6 +26,8 @@ const props = withDefaults(
     separator: "/",
   },
 );
+const attrs = useAttrs();
+const navProps = computed(() => mergeElementProps(attrs, { "aria-label": props.label }));
 
 const currentIndex = computed(() => {
   const explicit = props.items.findIndex((item) => item.current);
@@ -31,10 +36,21 @@ const currentIndex = computed(() => {
 </script>
 
 <template>
-  <nav class="n-breadcrumb" :aria-label="label">
+  <nav
+    class="n-breadcrumb"
+    v-bind="navProps"
+  >
     <ol class="list">
-      <li v-for="(item, index) in items" :key="item.key" class="item">
-        <span v-if="index > 0" class="icon" aria-hidden="true">
+      <li
+        v-for="(item, index) in items"
+        :key="item.key"
+        class="item"
+      >
+        <span
+          v-if="index > 0"
+          class="icon"
+          aria-hidden="true"
+        >
           {{ separator }}
         </span>
         <a

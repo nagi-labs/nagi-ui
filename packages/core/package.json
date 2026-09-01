@@ -2,36 +2,21 @@
   "name": "@nagi-labs/nagi-ui",
   "version": "0.1.0",
   "description": "Native-first, accessible Vue components with ejectable source blueprints.",
+  "keywords": [
+    "accessibility",
+    "components",
+    "design-system",
+    "vue"
+  ],
+  "homepage": "https://github.com/nagi-labs/nagi-ui#readme",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nagi-labs/nagi-ui.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/nagi-labs/nagi-ui#readme",
-  "keywords": ["vue", "components", "accessibility", "design-system"],
-  "publishConfig": {
-    "access": "public"
-  },
-  "engines": {
-    "node": ">=22.18.0"
-  },
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./component-controls": "./src/component-controls.ts",
-    "./components": "./components.ts",
-    "./nagi-css-preset": "./nagi-css-preset.mjs",
-    "./default-theme.css": "./theme/default-theme.css",
-    "./theme.css": "./theme/default-theme.css",
-    "./blueprints/*": "./blueprints/*",
-    "./recipes/control-expansion.md": "./recipes/control-expansion.md",
-    "./recipes/unovis/theme.css": "./recipes/unovis/theme.css",
-    "./recipes/unovis/README.md": "./recipes/unovis/README.md",
-    "./package.json": "./package.json"
-  },
   "bin": {
-    "nagi-ui": "./cli/nagi-ui.mjs"
+    "nagi-ui": "cli/nagi-ui.mjs"
   },
   "files": [
     "src",
@@ -39,19 +24,55 @@
     "cli",
     "components.ts",
     "nagi-css-preset.mjs",
+    "style-compiler.mjs",
+    "style-compiler.d.ts",
     "recipes",
     "theme"
   ],
+  "type": "module",
   "sideEffects": [
     "**/*.vue",
     "**/*.css"
   ],
-  "peerDependencies": {
-    "vue": ">=3.5.0"
+  "exports": {
+    ".": "./src/index.ts",
+    "./component-controls": "./src/component-controls.ts",
+    "./test": "./src/test/index.ts",
+    "./components": "./components.ts",
+    "./nagi-css-preset": "./nagi-css-preset.mjs",
+    "./style-compiler": {
+      "types": "./style-compiler.d.ts",
+      "default": "./style-compiler.mjs"
+    },
+    "./style-axes.css": "./theme/style-axes.css",
+    "./base.css": "./theme/base.css",
+    "./default-theme.css": "./theme/default-theme.css",
+    "./styles.css": "./theme/styles.css",
+    "./theme.css": "./theme/default-theme.css",
+    "./blueprints/*": "./blueprints/*",
+    "./recipes/control-expansion.md": "./recipes/control-expansion.md",
+    "./recipes/unovis/theme.css": "./recipes/unovis/theme.css",
+    "./recipes/unovis/README.md": "./recipes/unovis/README.md",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
     "@internationalized/date": "^3.12.2",
     "citty": "^0.2.2"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.50.0",
+    "vue": ">=3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.18.0"
   }
 }

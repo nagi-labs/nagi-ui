@@ -6,10 +6,12 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
+import { createElementRegistry } from "./element-registry.ts";
 import type { WritableRef } from "./model-sync.ts";
 
 export interface TreeEntry<Item, Key extends string = string> {
@@ -42,6 +44,7 @@ export interface UseTreeOptions<Item, Key extends string = string> {
 }
 
 export interface TreeProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "tree";
   tabindex: 0;
@@ -52,6 +55,7 @@ export interface TreeProps {
 }
 
 export interface TreeItemProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "treeitem";
   "aria-level": number;
@@ -81,6 +85,7 @@ export interface TreeBinding<Item, Key extends string = string> {
   focusOwner: (event: Event) => void;
   activate: (item: Item) => void;
   toggle: (item: Item) => void;
+  toggleFromControl: (item: Item, event: Event) => void;
 }
 
 interface TreeComponentItem {
@@ -91,9 +96,15 @@ interface TreeComponentItem {
   readonly hasChildren?: boolean;
   readonly children?: readonly TreeComponentItem[];
 }
+
+interface TreeEntrySnapshot<Key extends string> {
+  key: Key;
+  disabled: boolean;
+}
 export interface TreeComponentProps<Item extends TreeComponentItem> {
   readonly items: readonly Item[];
   readonly label: string;
+  readonly id?: string | undefined;
 }
 export interface TreeComponentModel {
   selected: Ref<string | null>;
@@ -108,7 +119,8 @@ function createTree<Item, Key extends string>(
   const instance = getCurrentInstance();
   const id = options.id ?? (instance ? useId() : `nagi-tree-${treeCount++}`);
   const activeKey = ref<Key | null>(null) as Ref<Key | null>;
-  let ownerDocument: Document | null = typeof document === "undefined" ? null : document;
+  let treeElement: HTMLElement | null = null;
+  const itemElements = createElementRegistry<Key>();
   let typeahead = "";
   let typeaheadTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -160,7 +172,7 @@ function createTree<Item, Key extends string>(
     const entry = entryMap.value.get(key);
     if (!entry || entry.disabled) return;
     activeKey.value = key;
-    if (scroll) queueMicrotask(() => ownerDocument?.getElementById(itemId(key))?.scrollIntoView({ block: "nearest" }));
+    if (scroll) queueMicrotask(() => itemElements.get(key)?.scrollIntoView({ block: "nearest" }));
   }
 
   function writeExpanded(next: readonly Key[]) {
@@ -217,18 +229,25 @@ function createTree<Item, Key extends string>(
 
   function focusOwner(event: Event) {
     const target = event.currentTarget as HTMLElement | null;
-    ownerDocument = target?.ownerDocument ?? ownerDocument;
-    target?.closest<HTMLElement>("[role='tree']")?.focus({ preventScroll: true });
+    (treeElement ?? target?.closest<HTMLElement>("[role='tree']"))?.focus({ preventScroll: true });
+  }
+
+  function toggleFromControl(item: Item, event: Event) {
+    focusOwner(event);
+    activate(item);
+    toggle(item);
   }
 
   const treeProps: TreeProps = {
+    ref: (element) => {
+      treeElement = element as HTMLElement | null;
+    },
     id,
     role: "tree",
     tabindex: 0,
     get "aria-label"() { return toValue(options.label); },
     get "aria-activedescendant"() { return activeKey.value ? itemId(activeKey.value) : undefined; },
-    onFocus(event) {
-      ownerDocument = (event.currentTarget as HTMLElement | null)?.ownerDocument ?? ownerDocument;
+    onFocus() {
       if (activeKey.value !== null) return;
       const candidates = enabledEntries();
       const target = candidates.find((entry) => entry.key === options.selected.value) ?? candidates[0];
@@ -265,24 +284,29 @@ function createTree<Item, Key extends string>(
     },
   };
 
-  watch(
-    () => visibleEntries.value.map((entry) => ({ key: entry.key, disabled: entry.disabled })),
-    (current, previous = []) => {
-      if (current.some((entry) => entry.key === activeKey.value && !entry.disabled)) return;
-      const previousKey = activeKey.value;
-      const repairFocus = previousKey !== null
-        && ownerDocument?.activeElement?.id === id;
-      let index = current.findIndex((entry) => entry.key === previousKey);
-      if (index === -1) index = previous.findIndex((entry) => entry.key === previousKey);
-      const enabled = current.filter((entry) => !entry.disabled);
-      const next = current.slice(Math.max(0, index)).find((entry) => !entry.disabled)
-        ?? current.slice(0, Math.max(0, index)).toReversed().find((entry) => !entry.disabled)
-        ?? enabled[0];
-      if (next) setActive(next.key, repairFocus);
-      else activeKey.value = null;
-    },
-    { flush: "sync", immediate: true },
-  );
+  function collectionSnapshot(): readonly TreeEntrySnapshot<Key>[] {
+    return visibleEntries.value.map((entry) => ({ key: entry.key, disabled: entry.disabled }));
+  }
+
+  function reconcileCollection(
+    current: readonly TreeEntrySnapshot<Key>[],
+    previous: readonly TreeEntrySnapshot<Key>[] = [],
+  ) {
+    itemElements.prune(current.map((entry) => entry.key));
+    if (current.some((entry) => entry.key === activeKey.value && !entry.disabled)) return;
+    const previousKey = activeKey.value;
+    const repairFocus = treeElement?.matches(":focus") === true;
+    let index = current.findIndex((entry) => entry.key === previousKey);
+    if (index === -1) index = previous.findIndex((entry) => entry.key === previousKey);
+    const enabled = current.filter((entry) => !entry.disabled);
+    const next = current.slice(Math.max(0, index)).find((entry) => !entry.disabled)
+      ?? current.slice(0, Math.max(0, index)).reverse().find((entry) => !entry.disabled)
+      ?? enabled[0];
+    if (next) setActive(next.key, repairFocus);
+    else activeKey.value = null;
+  }
+
+  watch(collectionSnapshot, reconcileCollection, { flush: "sync", immediate: true });
 
   if (instance) {
     onBeforeUnmount(() => {
@@ -302,6 +326,7 @@ function createTree<Item, Key extends string>(
     treeItemProps(item) {
       const entry = entryFor(item);
       return {
+        ref: itemElements.refFor(entry.key),
         id: itemId(entry.key),
         role: "treeitem",
         "aria-level": entry.level,
@@ -332,6 +357,7 @@ function createTree<Item, Key extends string>(
     focusOwner,
     activate,
     toggle,
+    toggleFromControl,
   };
 }
 
@@ -359,5 +385,6 @@ export function useTree<Item, Key extends string = string>(
     selected: model.selected as Ref<Key | null>,
     expanded: model.expanded as Ref<readonly Key[]>,
     label: () => props.label,
+    ...(props.id ? { id: props.id } : {}),
   }) as unknown as TreeBinding<Item, Key>;
 }

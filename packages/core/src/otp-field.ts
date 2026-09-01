@@ -57,6 +57,7 @@ export interface OTPFieldBinding {
 
 export interface OTPFieldComponentProps {
   readonly label: string;
+  readonly id?: string | undefined;
   /** Normalized to an integer from 1 through 256. */
   readonly length: number;
   readonly kind: OTPFieldKind;
@@ -111,14 +112,16 @@ function createOTPField(options: UseOTPFieldOptions): OTPFieldBinding {
     options.value.value === normalize(options.value.value)
     && Array.from(options.value.value).length === length());
 
+  function reconcileNormalizedValue([value]: readonly [string, number, OTPFieldKind]) {
+    const normalized = normalize(value);
+    if (normalized === value) return;
+    revision += 1;
+    void requestModelValue(options.value, normalized);
+  }
+
   watch(
     [() => options.value.value, length, kind],
-    ([value]) => {
-      const normalized = normalize(value);
-      if (normalized === value) return;
-      revision += 1;
-      void requestModelValue(options.value, normalized);
-    },
+    reconcileNormalizedValue,
     { flush: "sync", immediate: true },
   );
 
@@ -169,6 +172,7 @@ export function useOTPField(
   const props = optionsOrProps as OTPFieldComponentProps;
   return createOTPField({
     value,
+    ...(props.id === undefined ? {} : { id: props.id }),
     label: () => props.label,
     length: () => props.length,
     kind: () => props.kind,

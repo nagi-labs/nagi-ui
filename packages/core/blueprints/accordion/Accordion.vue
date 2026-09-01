@@ -12,6 +12,9 @@ export interface AccordionItem {
 
 <script setup lang="ts">
 import { useAccordion } from "@nagi-labs/nagi-ui/component-controls";
+import type { StyleValue } from "vue";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -20,6 +23,12 @@ const props = withDefaults(
     multiple?: boolean;
     /** Initial keys used only when `v-model:open-keys` is absent. */
     defaultOpenKeys?: readonly string[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
+    ariaLabel?: string;
+    ariaDescribedby?: string;
   }>(),
   {
     multiple: false,
@@ -32,7 +41,15 @@ const accordion = useAccordion(props, openKeys);
 </script>
 
 <template>
-  <div class="n-accordion">
+  <div
+    class="n-accordion"
+    :id="id"
+    :class="props.class"
+    v-bind="props.style ? { style: props.style } : undefined"
+    :title="title"
+    :aria-label="ariaLabel"
+    :aria-describedby="ariaDescribedby"
+  >
     <details
       v-for="item in items"
       :key="item.key"
@@ -43,11 +60,24 @@ const accordion = useAccordion(props, openKeys);
         class="summary"
         v-bind="accordion.summaryProps(item.disabled)"
       >
-        <slot name="summary" :item="item" :summary="item.summary">{{ item.summary }}</slot>
+        <slot
+          name="summary"
+          :item="item"
+          :summary="item.summary"
+          >{{ item.summary }}</slot
+        >
       </summary>
       <section class="section">
-        <slot name="panel" :item="item">
-          <p v-if="item.content" class="text">{{ item.content }}</p>
+        <slot
+          name="panel"
+          :item="item"
+        >
+          <p
+            v-if="item.content"
+            class="text"
+          >
+            {{ item.content }}
+          </p>
         </slot>
       </section>
     </details>

@@ -92,7 +92,7 @@ void contextBinding.contextTriggerProps;
 void contextBinding.triggerProps;
 
 // @ts-expect-error Carousel's component overload requires a numeric model.
-useCarousel({ items: options, label: "Slides", previousLabel: "Previous", nextLabel: "Next", loop: false, disabled: false }, ref("0"));
+useCarousel({ items: options, label: "Slides", landmark: false, previousLabel: "Previous", nextLabel: "Next", loop: false, disabled: false }, ref("0"));
 
 useMenubar({
   menus: [{ key: "main", label: "Main", items: options }],

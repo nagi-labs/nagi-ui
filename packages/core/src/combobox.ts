@@ -3,11 +3,14 @@ import {
   getCurrentInstance,
   nextTick,
   onBeforeUnmount,
+  reactive,
   ref,
+  shallowRef,
   toValue,
   useId,
   watch,
   type CSSProperties,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
@@ -56,6 +59,8 @@ export interface UseComboboxOptions<Item, Key extends string = string> {
 }
 
 export interface ComboboxInputProps {
+  /** Complete Behavior API wiring; registers the local native input. */
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "combobox";
   readonly value: string;
@@ -79,6 +84,8 @@ export interface ComboboxInputProps {
 export interface ComboboxPopupProps extends PopoverProps {}
 
 export interface ComboboxListboxProps {
+  /** Complete Behavior API wiring; registered locally instead of rediscovered from `document`. */
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "listbox";
 }
@@ -99,6 +106,8 @@ export interface UseComboboxReturn<Item, Key extends string = string> {
   inputValue: Ref<string>;
   selectedKey: Ref<Key | null>;
   activeKey: Ref<Key | null>;
+  /** Locally registered input for form adapters and focus restoration. */
+  inputElement: Readonly<Ref<HTMLInputElement | null>>;
   visibleItems: ComputedRef<readonly Item[]>;
   show: () => void;
   hide: () => void;
@@ -118,6 +127,7 @@ interface ComboboxComponentItem {
 
 interface ComboboxComponentProps<Item extends ComboboxComponentItem> {
   readonly items: readonly Item[];
+  readonly id?: string | undefined;
   readonly loading: boolean;
   readonly disabled: boolean;
   readonly readOnly: boolean;
@@ -239,8 +249,9 @@ function createCombobox<Item, Key extends string = string>(
     options.anchor === undefined || options.anchor === true ? {} : options.anchor,
   );
 
-  let inputElement: HTMLInputElement | null = null;
+  const inputElement = shallowRef<HTMLInputElement | null>(null);
   let popupElement: HTMLElement | null = null;
+  let listboxElement: HTMLElement | null = null;
   let detachAnchor: (() => void) | null = null;
   let composing = false;
 
@@ -250,21 +261,39 @@ function createCombobox<Item, Key extends string = string>(
       typeof HTMLInputElement !== "undefined" &&
       candidate instanceof HTMLInputElement
     ) {
-      inputElement = candidate;
+      inputElement.value = candidate;
     }
+  }
+
+  function setInput(element: Element | ComponentPublicInstance | null) {
+    inputElement.value = element as HTMLInputElement | null;
+    syncAnchor(popover.open.value);
   }
 
   function syncAnchor(isOpen: boolean) {
     detachAnchor?.();
     detachAnchor = null;
-    if (!isOpen || anchor.native || !inputElement || !popupElement) return;
-    detachAnchor = anchor.attach(inputElement, popupElement);
+    if (!isOpen || anchor.native || !inputElement.value || !popupElement) return;
+    detachAnchor = anchor.attach(inputElement.value, popupElement);
   }
 
   function scrollActive() {
-    if (activeKey.value === null || typeof document === "undefined") return;
-    const element = document.getElementById(optionId(activeKey.value));
-    queueMicrotask(() => element?.scrollIntoView({ block: "nearest" }));
+    const key = activeKey.value;
+    const currentListbox = listboxElement;
+    if (key === null || !currentListbox) return;
+    queueMicrotask(() => {
+      if (listboxElement !== currentListbox || activeKey.value !== key) return;
+      const targetId = optionId(key);
+      const element = Array.from(
+        currentListbox.querySelectorAll<HTMLElement>('[role="option"]'),
+      ).find((candidate) => candidate.id === targetId);
+      element?.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  function setListbox(element: Element | ComponentPublicInstance | null) {
+    listboxElement = element as HTMLElement | null;
+    if (listboxElement && activeKey.value !== null) scrollActive();
   }
 
   function setActive(item: Item | undefined) {
@@ -394,12 +423,14 @@ function createCombobox<Item, Key extends string = string>(
     },
   };
 
-  const listboxProps: ComboboxListboxProps = {
+  const listboxProps = reactive<ComboboxListboxProps>({
+    ref: setListbox,
     id,
     role: "listbox",
-  };
+  });
 
-  const inputProps: ComboboxInputProps = {
+  const inputProps = reactive<ComboboxInputProps>({
+    ref: setInput,
     id: inputId,
     role: "combobox",
     get value() {
@@ -441,13 +472,17 @@ function createCombobox<Item, Key extends string = string>(
       recordInput(event);
     },
     onBlur(event) {
-      const target = event.currentTarget;
+      const target = event.currentTarget as HTMLInputElement;
       queueMicrotask(() => {
-        if (typeof document === "undefined" || document.activeElement === target) return;
+        const root = target.getRootNode();
+        const active = "activeElement" in root
+          ? (root as Document | ShadowRoot).activeElement
+          : null;
+        if (active === target) return;
         hide();
       });
     },
-  };
+  });
 
   function optionProps(item: Item): ComboboxOptionProps {
     const key = keyOf(item);
@@ -472,26 +507,36 @@ function createCombobox<Item, Key extends string = string>(
     };
   }
 
+  function reconcileCollection(
+    [keys, openWhenEmpty]: readonly [readonly Key[], boolean],
+  ) {
+    if (activeKey.value !== null && !keys.includes(activeKey.value)) setActive(undefined);
+    if (keys.length === 0 && !openWhenEmpty && popover.open.value) hide();
+  }
+
+  function reconcileInteractionMode(
+    [disabled, readOnly]: readonly [boolean, boolean],
+  ) {
+    if ((disabled || readOnly) && popover.open.value) hide();
+  }
+
+  function syncInputFromSelection(key: Key | null) {
+    if (key === null) return;
+    const item = allItems().find((candidate) => keyOf(candidate) === key);
+    if (item !== undefined) writeInputValue(options.getTextValue(item));
+  }
+
   watch(
     () => [enabledItems().map(keyOf), opensWhenEmpty()] as const,
-    ([keys, openWhenEmpty]) => {
-      if (activeKey.value !== null && !keys.includes(activeKey.value)) setActive(undefined);
-      if (keys.length === 0 && !openWhenEmpty && popover.open.value) hide();
-    },
+    reconcileCollection,
   );
 
   watch(
     () => [componentDisabled(), componentReadOnly()] as const,
-    ([disabled, readOnly]) => {
-      if ((disabled || readOnly) && popover.open.value) hide();
-    },
+    reconcileInteractionMode,
   );
 
-  watch(selectedKey, (key) => {
-    if (key === null) return;
-    const item = allItems().find((candidate) => keyOf(candidate) === key);
-    if (item !== undefined) writeInputValue(options.getTextValue(item));
-  });
+  watch(selectedKey, syncInputFromSelection);
 
   if (instance) {
     onBeforeUnmount(() => {
@@ -507,6 +552,7 @@ function createCombobox<Item, Key extends string = string>(
     inputValue,
     selectedKey,
     activeKey,
+    inputElement,
     visibleItems,
     show,
     hide,
@@ -524,6 +570,11 @@ export function useCombobox<Item, Key extends string = string>(
 ): UseComboboxReturn<Item, Key>;
 export function useCombobox<Item extends ComboboxComponentItem>(
   props: ComboboxComponentProps<Item>,
+  inputValue: Ref<string>,
+  selected: Ref<string | null>,
+): UseComboboxReturn<Item>;
+export function useCombobox<Item extends ComboboxComponentItem>(
+  props: ComboboxComponentProps<Item>,
   input: Readonly<Ref<HTMLInputElement | null>>,
   inputValue: Ref<string>,
   selected: Ref<string | null>,
@@ -533,16 +584,24 @@ export function useCombobox<Item extends ComboboxComponentItem>(
  */
 export function useCombobox(
   optionsOrProps: UseComboboxOptions<unknown> | ComboboxComponentProps<ComboboxComponentItem>,
-  input?: Readonly<Ref<HTMLInputElement | null>>,
-  inputValue?: Ref<string>,
+  inputOrInputValue?: Readonly<Ref<HTMLInputElement | null>> | Ref<string>,
+  inputValueOrSelected?: Ref<string> | Ref<string | null>,
   selected?: Ref<string | null>,
 ): unknown {
-  if (input === undefined || inputValue === undefined || selected === undefined) {
+  if (inputOrInputValue === undefined || inputValueOrSelected === undefined) {
     return createCombobox(optionsOrProps as UseComboboxOptions<unknown>);
   }
 
+  const inputValue = selected === undefined
+    ? inputOrInputValue as Ref<string>
+    : inputValueOrSelected as Ref<string>;
+  const selectedKey = selected === undefined
+    ? inputValueOrSelected as Ref<string | null>
+    : selected;
+
   const props = optionsOrProps as ComboboxComponentProps<ComboboxComponentItem>;
   const behavior = createCombobox<ComboboxComponentItem>({
+    ...(props.id === undefined ? {} : { id: props.id }),
     getKey: (item) => item.key,
     getTextValue: (item) => item.label,
     isDisabled: (item) => item.disabled ?? false,
@@ -552,9 +611,9 @@ export function useCombobox(
     openWhenEmpty: true,
     items: () => (props.loading ? [] : props.items),
     inputValue,
-    selected,
+    selected: selectedKey,
   });
-  const nativeBinding = useNativeCombobox(props, input, behavior);
+  const nativeBinding = useNativeCombobox(props, behavior.inputElement, behavior);
 
   return {
     ...behavior,

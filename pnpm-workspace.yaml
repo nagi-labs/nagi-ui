@@ -1,5 +1,6 @@
 packages:
   - "packages/*"
+  - "site"
 packageExtensions:
   # Vue's declarations publicly import this type package, but compiler-core
   # publishes it as a devDependency. Inject it into the isolated dependency
@@ -9,4 +10,9 @@ packageExtensions:
       "@babel/types": "^7.29.7"
 allowBuilds:
   # Unovis pulls maplibre-gl transitively; its published postinstall is empty.
+  # Nuxt/Vite uses esbuild's platform binary during generation.
+  esbuild: true
   maplibre-gl: false
+minimumReleaseAgeExclude:
+  - '@nagi-labs/eslint-plugin-nagi-css@0.1.0'
+  - '@nagi-labs/nagi-css-core@0.1.0'

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nagi Definition contract mutations</title>
+    <style>
+      .carousel {
+        max-inline-size: 24rem;
+      }
+
+      .viewport {
+        overflow: auto;
+      }
+
+      .slides {
+        display: flex;
+      }
+
+      .slide {
+        box-sizing: border-box;
+        flex: 0 0 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Looks like a button semantically, but violates the native-element guarantee. -->
+    <div
+      role="button"
+      tabindex="0"
+      type="button"
+      aria-label="Mutated non-native button"
+      data-scope="button"
+      data-part="root"
+    >Mutated non-native button</div>
+
+    <!-- Claims focusable-disabled state but still reaches the consumer activation handler. -->
+    <button
+      type="button"
+      aria-disabled="true"
+      data-scope="button"
+      data-part="root"
+      id="mutated-disabled-button"
+    >Mutated focusable disabled</button>
+    <output role="status" aria-label="Mutated disabled activations" id="mutated-disabled-count">0</output>
+
+    <!-- Keeps Button anatomy while dropping its declared public style axes. -->
+    <button
+      type="button"
+      data-scope="button"
+      data-part="root"
+    >Mutated unstyled button</button>
+
+    <!-- Keeps ARIA semantics but drops the viewport's structural identity. -->
+    <section
+      class="carousel"
+      role="region"
+      aria-label="Mutated anatomy carousel"
+      aria-roledescription="carousel"
+      data-scope="carousel"
+      data-part="root"
+    >
+      <div
+        class="viewport"
+        role="group"
+        aria-label="Mutated anatomy slides"
+        aria-roledescription="slides"
+        data-scope="carousel"
+        tabindex="0"
+      >
+        <div class="slides">
+          <article class="slide" role="group" aria-roledescription="slide" aria-label="Anatomy Alpha, 1 / 2" data-scope="carousel" data-part="slide"></article>
+          <article class="slide" role="group" aria-roledescription="slide" aria-label="Anatomy Beta, 2 / 2" data-scope="carousel" data-part="slide"></article>
+        </div>
+      </div>
+      <button type="button" aria-label="Previous slide" disabled>‹</button>
+      <output role="status">1 / 2</output>
+      <button type="button" aria-label="Next slide">›</button>
+    </section>
+
+    <!-- Preserves the declared DOM but the next action no longer updates the model. -->
+    <section
+      class="carousel"
+      role="region"
+      aria-label="Mutated interaction carousel"
+      aria-roledescription="carousel"
+      data-scope="carousel"
+      data-part="root"
+    >
+      <div
+        class="viewport"
+        role="group"
+        aria-label="Mutated interaction slides"
+        aria-roledescription="slides"
+        data-scope="carousel"
+        data-part="viewport"
+        tabindex="0"
+      >
+        <div class="slides">
+          <article class="slide" role="group" aria-roledescription="slide" aria-label="Interaction Alpha, 1 / 2" data-scope="carousel" data-part="slide"></article>
+          <article class="slide" role="group" aria-roledescription="slide" aria-label="Interaction Beta, 2 / 2" data-scope="carousel" data-part="slide"></article>
+        </div>
+      </div>
+      <button type="button" aria-label="Previous slide" disabled>‹</button>
+      <output role="status">1 / 2</output>
+      <button type="button" aria-label="Next slide">›</button>
+    </section>
+    <output role="status" aria-label="Mutated interaction model">0</output>
+
+    <!-- A valid-looking Combobox whose active IDREF no longer resolves. -->
+    <div data-scope="combobox" data-part="root">
+      <label for="mutated-combobox-input">Mutated stale framework</label>
+      <input
+        id="mutated-combobox-input"
+        data-scope="combobox"
+        data-part="input"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded="true"
+        aria-controls="mutated-combobox-list"
+        aria-activedescendant="removed-option"
+      />
+      <div data-scope="combobox" data-part="popup" popover>
+        <ul id="mutated-combobox-list" data-scope="combobox" data-part="listbox" role="listbox">
+          <li id="remaining-option" data-scope="combobox" data-part="option" role="option" aria-selected="false">Remaining</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- The active option exists, but the implementation moved real DOM focus into it. -->
+    <div data-scope="combobox" data-part="root">
+      <label for="mutated-focus-combobox-input">Mutated focus framework</label>
+      <input
+        id="mutated-focus-combobox-input"
+        data-scope="combobox"
+        data-part="input"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded="true"
+        aria-controls="mutated-focus-combobox-list"
+        aria-activedescendant="mutated-focus-option"
+      />
+      <div data-scope="combobox" data-part="popup" popover>
+        <ul id="mutated-focus-combobox-list" data-scope="combobox" data-part="listbox" role="listbox">
+          <li id="mutated-focus-option" tabindex="0" data-scope="combobox" data-part="option" role="option" aria-selected="true">Focused option</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- The role is equivalent, but the required native Dialog surface was replaced. -->
+    <div data-scope="dialog" data-part="root">
+      <button id="mutated-dialog-trigger" data-scope="dialog" data-part="trigger" type="button">Open mutated fake dialog</button>
+      <div
+        id="mutated-dialog-surface"
+        data-scope="dialog"
+        data-part="surface"
+        role="dialog"
+        aria-labelledby="mutated-dialog-title"
+        aria-describedby="mutated-dialog-description"
+        hidden
+      >
+        <h2 id="mutated-dialog-title" data-scope="dialog" data-part="title">Mutated fake dialog</h2>
+        <p id="mutated-dialog-description" data-scope="dialog" data-part="description">Not a native dialog.</p>
+        <button data-scope="dialog" data-part="close" type="button">Close fake dialog</button>
+      </div>
+    </div>
+
+    <!-- Native and named, but opened non-modally against the modal-default profile. -->
+    <div data-scope="dialog" data-part="root">
+      <button id="mutated-nonmodal-trigger" data-scope="dialog" data-part="trigger" type="button">Open mutated non-modal dialog</button>
+      <dialog
+        id="mutated-nonmodal-dialog"
+        data-scope="dialog"
+        data-part="surface"
+        aria-labelledby="mutated-nonmodal-title"
+        aria-describedby="mutated-nonmodal-description"
+      >
+        <h2 id="mutated-nonmodal-title" data-scope="dialog" data-part="title">Mutated non-modal dialog</h2>
+        <p id="mutated-nonmodal-description" data-scope="dialog" data-part="description">Opened with show instead of showModal.</p>
+        <button id="mutated-nonmodal-close" data-scope="dialog" data-part="close" type="button">Close mutated non-modal dialog</button>
+      </dialog>
+    </div>
+
+    <!-- Native state changes, but close restoration is deliberately redirected. -->
+    <div data-scope="dialog" data-part="root">
+      <button id="mutated-restoration-trigger" data-scope="dialog" data-part="trigger" type="button">Open mutated restoration dialog</button>
+      <dialog
+        id="mutated-restoration-dialog"
+        data-scope="dialog"
+        data-part="surface"
+        aria-labelledby="mutated-restoration-title"
+      >
+        <h2 id="mutated-restoration-title" data-scope="dialog" data-part="title">Mutated restoration dialog</h2>
+        <button id="mutated-restoration-close" data-scope="dialog" data-part="close" type="button">Close mutated restoration dialog</button>
+      </dialog>
+    </div>
+    <button id="mutated-wrong-focus" type="button">Wrong restoration target</button>
+
+    <!-- Preserves behavior-facing DOM while removing native scroll-snap styling. -->
+    <section
+      class="carousel"
+      role="region"
+      aria-label="Mutated style carousel"
+      aria-roledescription="carousel"
+      data-scope="carousel"
+      data-part="root"
+    >
+      <div
+        class="viewport"
+        role="group"
+        aria-label="Mutated style slides"
+        aria-roledescription="slides"
+        data-scope="carousel"
+        data-part="viewport"
+        tabindex="0"
+      >
+        <div class="slides">
+          <article class="slide" role="group" aria-roledescription="slide" aria-label="Style Alpha, 1 / 2" data-scope="carousel" data-part="slide"></article>
+          <article class="slide" role="group" aria-roledescription="slide" aria-label="Style Beta, 2 / 2" data-scope="carousel" data-part="slide"></article>
+        </div>
+      </div>
+      <button type="button" aria-label="Previous slide" disabled>‹</button>
+      <output role="status">1 / 2</output>
+      <button type="button" aria-label="Next slide">›</button>
+    </section>
+
+    <script>
+      const disabledButton = document.querySelector("#mutated-disabled-button");
+      const count = document.querySelector("#mutated-disabled-count");
+      disabledButton?.addEventListener("click", () => {
+        count.textContent = String(Number(count.textContent) + 1);
+      });
+      document.querySelector("#mutated-dialog-trigger")?.addEventListener("click", () => {
+        document.querySelector("#mutated-dialog-surface")?.removeAttribute("hidden");
+      });
+      const nonmodalDialog = document.querySelector("#mutated-nonmodal-dialog");
+      document.querySelector("#mutated-nonmodal-trigger")?.addEventListener("click", () => {
+        nonmodalDialog?.show();
+      });
+      document.querySelector("#mutated-nonmodal-close")?.addEventListener("click", () => {
+        nonmodalDialog?.close();
+      });
+      const restorationTrigger = document.querySelector("#mutated-restoration-trigger");
+      const restorationDialog = document.querySelector("#mutated-restoration-dialog");
+      restorationTrigger?.addEventListener("click", () => restorationDialog?.showModal());
+      document.querySelector("#mutated-restoration-close")?.addEventListener("click", () => {
+        restorationDialog?.close();
+        document.querySelector("#mutated-wrong-focus")?.focus();
+      });
+    </script>
+  </body>
+</html>

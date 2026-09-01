@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import {
-  useDialog,
-  vDialogClose,
-  type DialogClosedBy,
-} from "@nagi-labs/nagi-ui";
+import type { StyleValue } from "vue";
+import { useDialog, vDialogClose, type DialogClosedBy } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
     triggerLabel: string;
     title: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     description?: string;
     closeLabel?: string;
     modal?: boolean;
@@ -20,6 +20,7 @@ const props = withDefaults(
     closedby: "any",
   },
 );
+defineOptions({ inheritAttrs: false });
 
 const open = defineModel<boolean>("open", { default: false });
 const dialog = useDialog(props, open);
@@ -30,22 +31,56 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 </script>
 
 <template>
-  <div class="n-dialog">
-    <button class="button -trigger" type="button" v-bind="dialog.triggerProps">
+  <div
+    data-scope="dialog"
+    data-part="root"
+    class="n-dialog"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
+    <button
+      data-scope="dialog"
+      data-part="trigger"
+      class="button -trigger"
+      type="button"
+      v-bind="dialog.triggerProps"
+    >
       {{ triggerLabel }}
     </button>
     <dialog
       class="dialog"
+      data-scope="dialog"
+      data-part="surface"
       :aria-labelledby="titleId"
       :aria-describedby="description || $slots.description ? descriptionId : undefined"
       v-bind="dialog.dialogProps"
     >
       <header class="header">
-        <h2 :id="titleId" class="title">
-          <slot name="title" :title="title">{{ title }}</slot>
+        <h2
+          data-scope="dialog"
+          data-part="title"
+          :id="titleId"
+          class="title"
+        >
+          <slot
+            name="title"
+            :title="title"
+            >{{ title }}</slot
+          >
         </h2>
-        <p v-if="description || $slots.description" :id="descriptionId" class="text">
-          <slot name="description" :description="description">{{ description }}</slot>
+        <p
+          v-if="description || $slots.description"
+          data-scope="dialog"
+          data-part="description"
+          :id="descriptionId"
+          class="text"
+        >
+          <slot
+            name="description"
+            :description="description"
+            >{{ description }}</slot
+          >
         </p>
       </header>
       <section class="section">
@@ -55,6 +90,8 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         <slot name="actions" />
         <button
           v-dialog-close="dialog.id"
+          data-scope="dialog"
+          data-part="close"
           class="button -close"
           type="button"
         >

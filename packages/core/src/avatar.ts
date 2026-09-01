@@ -5,6 +5,7 @@ import {
   ref,
   toValue,
   watch,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
 } from "vue";
 
@@ -45,16 +46,18 @@ export function useAvatar(options: UseAvatarOptions) {
     failed.value = true;
   }
 
-  watch(
-    () => toValue(options.src),
-    () => {
-      failed.value = false;
-      void nextTick(detectMissedError);
-    },
-    { flush: "sync" },
-  );
+  function setImage(element: Element | ComponentPublicInstance | null) {
+    image.value = element instanceof HTMLImageElement ? element : null;
+  }
+
+  function reconcileImageSource() {
+    failed.value = false;
+    void nextTick(detectMissedError);
+  }
+
+  watch(() => toValue(options.src), reconcileImageSource, { flush: "sync" });
 
   onMounted(detectMissedError);
 
-  return { fallbackText, hasImage, image, onImageError };
+  return { fallbackText, hasImage, setImage, onImageError };
 }

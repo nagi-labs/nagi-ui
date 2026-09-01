@@ -5,7 +5,12 @@
  */
 export { useAccordion } from "./accordion.ts";
 export { useAvatar } from "./avatar.ts";
-export { useButton } from "./button.ts";
+export {
+  useButton,
+  type ButtonBindingProps,
+  type ButtonControl,
+  type ButtonControlProps,
+} from "./button.ts";
 export { useCalendarNativeForm, useRangeCalendarNativeForm } from "./calendar.ts";
 export { useDateFieldNativeForm } from "./date-field.ts";
 export { useDatePickerNativeForm, useDateRangePickerNativeForm } from "./date-picker.ts";
@@ -30,4 +35,4 @@ export {
   type WritableModelValue,
   type WritableRef,
 } from "./model-sync.ts";
-export { useToastRenderer } from "./toast.ts";
+export { useToastRenderer } from "./toast-renderer.ts";

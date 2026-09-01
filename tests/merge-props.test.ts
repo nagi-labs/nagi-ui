@@ -2,12 +2,13 @@ import assert from "node:assert/strict"
 import test from "node:test"
 
 import {
-  mergeNagiProps,
-  NagiPropConflictError,
+  mergeElementProps,
+  ElementPropConflictError,
+  withoutClassToken,
 } from "@nagi-labs/nagi-ui"
 
 test("merges class and style through Vue normalization", () => {
-  const merged = mergeNagiProps(
+  const merged = mergeElementProps(
     { class: "button primary", style: { color: "red", padding: "4px" } },
     { class: ["primary", { active: true }], style: [{ color: "blue" }, "margin: 1px"] },
   )
@@ -20,9 +21,17 @@ test("merges class and style through Vue normalization", () => {
   })
 })
 
+test("removes a Blueprint root class without dropping consumer variants", () => {
+  assert.equal(
+    withoutClassToken(["n-button", "-destructive", { tracked: true }], "n-button"),
+    "-destructive tracked",
+  )
+  assert.equal(withoutClassToken("n-button n-button", "n-button"), undefined)
+})
+
 test("composes Vue event handlers in source order", () => {
   const calls: string[] = []
-  const merged = mergeNagiProps(
+  const merged = mergeElementProps(
     { onClick: (value: string) => calls.push(`nagi:${value}`) },
     {
       onClick: [
@@ -36,8 +45,29 @@ test("composes Vue event handlers in source order", () => {
   assert.deepEqual(calls, ["nagi:save", "consumer:save", "analytics:save"])
 })
 
+test("stops composed event handlers after stopImmediatePropagation", () => {
+  const calls: string[] = []
+  const event = {
+    stopImmediatePropagation() {
+      calls.push("native-stop")
+    },
+  } as MouseEvent
+  const merged = mergeElementProps(
+    {
+      onClickCapture(value: MouseEvent) {
+        calls.push("behavior")
+        value.stopImmediatePropagation()
+      },
+    },
+    { onClickCapture: () => calls.push("consumer") },
+  )
+
+  merged.onClickCapture(event)
+  assert.deepEqual(calls, ["behavior", "native-stop"])
+})
+
 test("merges and de-duplicates token-list ARIA relationships", () => {
-  const merged = mergeNagiProps(
+  const merged = mergeElementProps(
     { "aria-describedby": "hint shared", "aria-controls": "menu" },
     { "aria-describedby": "shared error", "aria-controls": "preview menu" },
   )
@@ -47,20 +77,20 @@ test("merges and de-duplicates token-list ARIA relationships", () => {
 })
 
 test("allows equal semantic attributes and rejects overrides", () => {
-  assert.equal(mergeNagiProps({ role: "menu" }, { role: "menu" }).role, "menu")
+  assert.equal(mergeElementProps({ role: "menu" }, { role: "menu" }).role, "menu")
 
   assert.throws(
-    () => mergeNagiProps({ role: "menu" }, { role: "listbox" }),
-    (error) => error instanceof NagiPropConflictError && error.key === "role",
+    () => mergeElementProps({ role: "menu" }, { role: "listbox" }),
+    (error) => error instanceof ElementPropConflictError && error.key === "role",
   )
   assert.throws(
-    () => mergeNagiProps({ popovertarget: "actions" }, { popovertarget: "other" }),
-    NagiPropConflictError,
+    () => mergeElementProps({ popovertarget: "actions" }, { popovertarget: "other" }),
+    ElementPropConflictError,
   )
 })
 
 test("undefined does not override behavior wiring", () => {
-  const merged = mergeNagiProps(
+  const merged = mergeElementProps(
     { id: "actions", "aria-haspopup": "menu" },
     { id: undefined, "aria-haspopup": undefined },
   )
@@ -76,7 +106,7 @@ test("keeps source getters live", () => {
       return expanded ? "true" : "false"
     },
   }
-  const merged = mergeNagiProps(behavior, { class: "trigger" })
+  const merged = mergeElementProps(behavior, { class: "trigger" })
 
   assert.equal(merged["aria-expanded"], "false")
   expanded = true
@@ -89,7 +119,7 @@ test("does not mutate source objects", () => {
   const behaviorSnapshot = { ...behavior }
   const localSnapshot = { ...local }
 
-  mergeNagiProps(behavior, local)
+  mergeElementProps(behavior, local)
 
   assert.deepEqual(behavior, behaviorSnapshot)
   assert.deepEqual(local, localSnapshot)

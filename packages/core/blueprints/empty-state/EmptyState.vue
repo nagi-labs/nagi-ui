@@ -1,17 +1,33 @@
 <script setup lang="ts">
+import { useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
 defineProps<{
   title: string;
   description?: string;
 }>();
+const attrs = useAttrs();
 </script>
 
 <template>
-  <div class="n-empty-state">
+  <div
+    class="n-empty-state"
+    v-bind="attrs"
+  >
     <div class="unit">
       <div class="title">{{ title }}</div>
-      <div v-if="description" class="text">{{ description }}</div>
+      <div
+        v-if="description"
+        class="text"
+      >
+        {{ description }}
+      </div>
     </div>
-    <div v-if="$slots.default" class="actions">
+    <div
+      v-if="$slots.default"
+      class="actions"
+    >
       <slot />
     </div>
   </div>

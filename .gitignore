@@ -10,3 +10,14 @@ test-results/
 dist/
 dist-ssr/
 .claude/settings.local.json
+
+# APM dependencies and generated agent integrations. Human-authored files in
+# these directories remain tracked; only paths materialized by APM are ignored.
+apm_modules/
+AGENTS.md
+CLAUDE.md
+.agents/skills/nagi-css/
+.claude/rules/project.md
+.claude/skills/nagi-css/
+.github/instructions/project.instructions.md
+.github/copilot-instructions.md

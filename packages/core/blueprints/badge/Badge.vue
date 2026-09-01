@@ -1,19 +1,29 @@
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    label: string;
-    tone?: "neutral" | "accent" | "success" | "warning" | "danger";
-  }>(),
-  { tone: "neutral" },
-);
+import { computed, useAttrs } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
+
+const { label, tone = "neutral" } = defineProps<{
+  label: string;
+  tone?: "neutral" | "accent" | "success" | "warning" | "danger";
+}>();
+
+const attrs = useAttrs();
+const badgeProps = computed(() => mergeElementProps(attrs, { "data-tone": tone }));
 </script>
 
 <template>
   <span
     class="n-badge"
-    :data-tone="tone"
+    v-bind="badgeProps"
   >
-    <slot name="label" :label="label">{{ label }}</slot>
+    <slot
+      name="label"
+      :label="label"
+      >{{ label }}</slot
+    >
   </span>
 </template>
 

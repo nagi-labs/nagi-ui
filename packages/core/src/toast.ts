@@ -1,14 +1,13 @@
 import {
   getCurrentInstance,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
   readonly,
   shallowRef,
   useId,
-  watch,
+  type ComponentPublicInstance,
   type Ref,
 } from "vue"
+
+import { useToastDocumentCoordinator } from "./toast-document-coordinator.ts"
 
 export type ToastId = string
 export type ToastTone = "neutral" | "accent" | "success" | "warning" | "danger"
@@ -360,6 +359,7 @@ export interface UseToastOptions extends CreateToastManagerOptions {
 }
 
 export interface ToastRegionProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void
   id: string
   popover: "manual"
   role: "region"
@@ -375,6 +375,7 @@ export interface ToastRegionProps {
 export interface UseToastReturn {
   id: string
   manager: ToastManager
+  regionElement: Readonly<Ref<HTMLElement | null>>
   toasts: Readonly<Ref<readonly ToastItem[]>>
   add: ToastManager["add"]
   update: ToastManager["update"]
@@ -389,24 +390,6 @@ export interface UseToastReturn {
   regionProps: ToastRegionProps
 }
 
-export interface ToastRendererItemProps {
-  "data-nagi-toast-item": ""
-}
-
-export interface UseToastRendererReturn extends UseToastReturn {
-  /** Spread on each direct notification item; used only for focus repair. */
-  toastItemProps: ToastRendererItemProps
-}
-
-const toastFocusOrigins = new WeakMap<Document, HTMLElement>()
-
-function openToastRegions(document: Document): HTMLElement[] {
-  const modal = document.querySelector<HTMLDialogElement>("dialog:modal")
-  return [...document.querySelectorAll<HTMLElement>(
-    '[popover="manual"][role="region"][aria-keyshortcuts~="F6"]:popover-open',
-  )].filter((region) => !modal || modal.contains(region))
-}
-
 export function useToast(options: UseToastOptions = {}): UseToastReturn {
   const instance = getCurrentInstance()
   if (!instance) {
@@ -419,157 +402,17 @@ export function useToast(options: UseToastOptions = {}): UseToastReturn {
       ...(options.duration === undefined ? {} : { duration: options.duration }),
       ...(options.limit === undefined ? {} : { limit: options.limit }),
     })
-  let pointerInside = false
-  let focusInside = false
-  let documentHidden = false
-  let focusBeforeShortcut: HTMLElement | null = null
-
-  function resolve(): HTMLElement | null {
-    if (typeof document === "undefined") return null
-    return document.getElementById(id)
-  }
-
-  function syncPauseState() {
-    if (pointerInside || focusInside || documentHidden) manager.pause()
-    else manager.resume()
-  }
-
-  function syncRegion() {
-    const region = resolve()
-    if (!region) return
-    if (manager.toasts.value.length > 0) {
-      if (!region.matches(":popover-open")) region.showPopover()
-    } else if (region.matches(":popover-open")) {
-      region.hidePopover()
-    }
-  }
-
-  function restoreFocus() {
-    const sharedTarget = typeof document === "undefined"
-      ? undefined
-      : toastFocusOrigins.get(document)
-    if (typeof document !== "undefined") toastFocusOrigins.delete(document)
-    const target = sharedTarget ?? focusBeforeShortcut
-    focusBeforeShortcut = null
-    if (target?.isConnected) target.focus({ preventScroll: true })
-  }
-
-  function onDocumentKeydown(event: KeyboardEvent) {
-    if (
-      event.key !== "F6"
-      || event.defaultPrevented
-      || event.shiftKey
-      || event.ctrlKey
-      || event.altKey
-      || event.metaKey
-    ) {
-      return
-    }
-    const regions = openToastRegions(document)
-    if (regions.length === 0) return
-    const active = document.activeElement
-    const activeIndex = regions.findIndex((region) => region.contains(active))
-    event.preventDefault()
-    if (activeIndex >= 0) {
-      const nextRegion = regions[activeIndex + 1]
-      if (nextRegion) {
-        nextRegion.focus({ preventScroll: true })
-        return
-      }
-      restoreFocus()
-      return
-    }
-    if (active instanceof HTMLElement && active !== document.body) {
-      focusBeforeShortcut = active
-      toastFocusOrigins.set(document, active)
-    }
-    regions[0]?.focus({ preventScroll: true })
-  }
-
-  // Re-promotion per CHARTER §7: top-layer peers opened later cover or close
-  // the manual popover. Re-show from the model, while ignoring other Toast
-  // regions so multiple explicit managers cannot promote each other forever.
-  function onDocumentToggle(event: Event) {
-    const target = event.target
-    if (!(target instanceof HTMLElement)) return
-    const region = resolve()
-    if (!region || target === region) return
-    if ((event as ToggleEvent).newState !== "open") return
-    if (target.getAttribute("aria-keyshortcuts")?.split(/\s+/).includes("F6")) return
-    const isTopLayerPeer = target.tagName === "DIALOG" || target.hasAttribute("popover")
-    if (!isTopLayerPeer || manager.toasts.value.length === 0) return
-    if (region.matches(":popover-open")) region.hidePopover()
-    region.showPopover()
-  }
-
-  const stopWatching = watch(manager.toasts, async (next, previous) => {
-    if (previous.length === 0 && next.length > 0 && typeof document !== "undefined") {
-      const active = document.activeElement
-      const region = resolve()
-      if (active instanceof HTMLElement && active !== document.body && !region?.contains(active)) {
-        focusBeforeShortcut = active
-      }
-    }
-    await nextTick()
-    syncRegion()
-  })
-
-  function mount() {
-    documentHidden = document.hidden
-    document.addEventListener("toggle", onDocumentToggle, true)
-    document.addEventListener("keydown", onDocumentKeydown)
-    document.addEventListener("visibilitychange", onVisibilityChange)
-    syncPauseState()
-    syncRegion()
-  }
-
-  function onVisibilityChange() {
-    documentHidden = document.hidden
-    syncPauseState()
-  }
-
-  function unmount() {
-    document.removeEventListener("toggle", onDocumentToggle, true)
-    document.removeEventListener("keydown", onDocumentKeydown)
-    document.removeEventListener("visibilitychange", onVisibilityChange)
-    stopWatching()
-    manager.resume()
-    if (ownsManager) manager.dispose()
-  }
-
-  onMounted(mount)
-  onBeforeUnmount(unmount)
-
-  const regionProps: ToastRegionProps = {
+  const coordinator = useToastDocumentCoordinator({
     id,
-    popover: "manual",
-    role: "region",
-    "aria-label": options.label ?? "Notifications",
-    "aria-keyshortcuts": "F6",
-    tabindex: -1,
-    onFocusin() {
-      focusInside = true
-      syncPauseState()
-    },
-    onFocusout(event) {
-      const region = resolve()
-      if (event.relatedTarget instanceof Node && region?.contains(event.relatedTarget)) return
-      focusInside = false
-      syncPauseState()
-    },
-    onPointerenter() {
-      pointerInside = true
-      syncPauseState()
-    },
-    onPointerleave() {
-      pointerInside = false
-      syncPauseState()
-    },
-  }
+    label: options.label ?? "Notifications",
+    manager,
+    ownsManager,
+  })
 
   return {
     id,
     manager,
+    regionElement: coordinator.regionElement,
     toasts: manager.toasts,
     add: manager.add,
     update: manager.update,
@@ -584,53 +427,7 @@ export function useToast(options: UseToastOptions = {}): UseToastReturn {
     dismiss(toastId) {
       manager.close(toastId)
     },
-    restoreFocus,
-    regionProps,
-  }
-}
-
-/** Adds the fixed focus-repair contract used by the package Toast renderer. */
-export function useToastRenderer(options: UseToastOptions = {}): UseToastRendererReturn {
-  const notifier = useToast(options)
-
-  watch(notifier.toasts, async (next) => {
-    if (typeof document === "undefined") return
-    const region = document.getElementById(notifier.id)
-    const active = document.activeElement
-    if (!region || !(active instanceof HTMLElement) || !region.contains(active)) return
-
-    const focusedItem = active.closest<HTMLElement>("[data-nagi-toast-item]")
-    if (!focusedItem) {
-      if (next.length === 0) {
-        await nextTick()
-        notifier.restoreFocus()
-      }
-      return
-    }
-
-    const previousItems = [
-      ...region.querySelectorAll<HTMLElement>("[data-nagi-toast-item]"),
-    ]
-    const focusedIndex = previousItems.indexOf(focusedItem)
-    await nextTick()
-    if (active.isConnected && region.contains(active)) return
-
-    const remainingItems = [
-      ...region.querySelectorAll<HTMLElement>("[data-nagi-toast-item]"),
-    ]
-    if (remainingItems.length === 0) {
-      notifier.restoreFocus()
-      return
-    }
-
-    const nextItem = remainingItems[
-      Math.min(Math.max(focusedIndex, 0), remainingItems.length - 1)
-    ]
-    nextItem?.querySelector<HTMLElement>("button")?.focus({ preventScroll: true })
-  }, { flush: "pre" })
-
-  return {
-    ...notifier,
-    toastItemProps: { "data-nagi-toast-item": "" },
+    restoreFocus: coordinator.restoreFocus,
+    regionProps: coordinator.regionProps,
   }
 }

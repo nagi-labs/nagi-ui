@@ -13,6 +13,7 @@ const props = defineProps<{
   menu: UseMenuReturn<DropdownMenuEntry>;
   node: DropdownMenuSubmenuNode;
 }>();
+defineOptions({ inheritAttrs: false });
 
 const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
   items: () => menuEntries(props.node.items),
@@ -23,18 +24,38 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
 </script>
 
 <template>
-  <li class="n-dropdown-submenu" role="none">
+  <li
+    class="n-dropdown-submenu"
+    data-scope="dropdown-menu"
+    data-part="submenu-root"
+    role="none"
+  >
     <button
       class="button"
+      data-scope="dropdown-menu"
+      data-part="submenu-trigger"
       type="button"
       v-bind="menu.submenuTriggerProps(submenuEntry(node), submenu)"
     >
-      <span class="icon" aria-hidden="true"></span>
+      <span
+        class="icon"
+        aria-hidden="true"
+      ></span>
       <span class="text">{{ node.label }}</span>
-      <span class="icon -submenu" aria-hidden="true">›</span>
+      <span
+        class="icon -submenu"
+        aria-hidden="true"
+        >›</span
+      >
     </button>
 
-    <ul class="list -submenu" popover v-bind="submenu.menuProps">
+    <ul
+      class="list -submenu"
+      data-scope="dropdown-menu"
+      data-part="submenu"
+      popover
+      v-bind="submenu.menuProps"
+    >
       <DropdownMenuItem
         v-for="child in node.items"
         :key="child.key"

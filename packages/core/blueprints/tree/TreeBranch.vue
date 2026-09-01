@@ -3,7 +3,7 @@ import type { TreeBinding } from "@nagi-labs/nagi-ui";
 
 import type { TreeNode } from "./Tree.vue";
 
-defineOptions({ name: "TreeBranch" });
+defineOptions({ name: "TreeBranch", inheritAttrs: false });
 const props = defineProps<{
   nodes: readonly TreeNode[];
   tree: TreeBinding<TreeNode, string>;
@@ -27,9 +27,15 @@ const props = defineProps<{
         tabindex="-1"
         :aria-label="`${tree.expanded.value.includes(node.key) ? collapseLabel : expandLabel} ${node.label}`"
         :disabled="node.disabled || node.loading"
-        @click.stop="(event) => { tree.focusOwner(event); tree.activate(node); tree.toggle(node); }"
-      >{{ tree.expanded.value.includes(node.key) ? '−' : '+' }}</button>
-      <span v-else class="unit -spacer" aria-hidden="true"></span>
+        @click.stop="tree.toggleFromControl(node, $event)"
+      >
+        {{ tree.expanded.value.includes(node.key) ? "−" : "+" }}
+      </button>
+      <span
+        v-else
+        class="unit -spacer"
+        aria-hidden="true"
+      ></span>
       <span class="text">{{ node.label }}</span>
     </div>
     <ul
@@ -54,9 +60,16 @@ const props = defineProps<{
   list-style: none;
   cursor: default;
 
-  &[data-active] { outline: 2px solid var(--nagi-color-focus-ring); outline-offset: calc(-1 * var(--n-border-width-2)); }
-  &[aria-selected="true"] { background: var(--nagi-color-surface-accent); }
-  &[aria-disabled="true"] { color: var(--nagi-color-text-disabled); }
+  &[data-active] {
+    outline: 2px solid var(--nagi-color-focus-ring);
+    outline-offset: calc(-1 * var(--n-border-width-2));
+  }
+  &[aria-selected="true"] {
+    background: var(--nagi-color-surface-accent);
+  }
+  &[aria-disabled="true"] {
+    color: var(--nagi-color-text-disabled);
+  }
 
   > .row {
     display: flex;
@@ -64,7 +77,8 @@ const props = defineProps<{
     align-items: center;
     min-block-size: var(--nagi-size-control);
 
-    > .button, > .unit.-spacer {
+    > .button,
+    > .unit.-spacer {
       display: grid;
       place-items: center;
       inline-size: var(--nagi-size-control);
@@ -85,6 +99,8 @@ const props = defineProps<{
 }
 
 @media (forced-colors: active) {
-  .n-tree-branch[data-active] { outline: 2px solid Highlight; }
+  .n-tree-branch[data-active] {
+    outline: 2px solid Highlight;
+  }
 }
 </style>

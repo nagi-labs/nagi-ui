@@ -4,9 +4,11 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
+import { createElementRegistry } from "./element-registry.ts";
 
 export type ToolbarOrientation = "horizontal" | "vertical";
 export type ToolbarDirection = "ltr" | "rtl";
@@ -31,6 +33,7 @@ export interface ToolbarProps {
 }
 
 export interface ToolbarItemProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   tabindex: 0 | -1;
   onFocus: (event: FocusEvent) => void;
@@ -46,6 +49,11 @@ export interface ToolbarBinding<Item, Key extends string = string> {
 interface ToolbarComponentItem {
   readonly key: string;
   readonly disabled?: boolean;
+}
+
+interface ToolbarItemSnapshot<Key extends string> {
+  key: Key;
+  disabled: boolean;
 }
 
 export interface ToolbarComponentProps<Item extends ToolbarComponentItem> {
@@ -64,19 +72,19 @@ function createToolbar<Item, Key extends string>(
   const instance = getCurrentInstance();
   const id = options.id ?? (instance ? useId() : `nagi-toolbar-${toolbarCount++}`);
   const activeKey = ref<Key | null>(null) as Ref<Key | null>;
-  let ownerDocument: Document | null = typeof document === "undefined" ? null : document;
+  const itemElements = createElementRegistry<Key>();
 
   const items = () => toValue(options.items);
   const disabled = (item: Item) => options.isDisabled?.(item) ?? false;
   const enabled = () => items().filter((item) => !disabled(item));
   const keyOf = (item: Item) => options.getKey(item);
   const itemId = (item: Item) => `${id}-item-${encodeURIComponent(keyOf(item))}`;
-  const itemIdForKey = (key: Key) => `${id}-item-${encodeURIComponent(key)}`;
 
   function focus(item: Item | undefined) {
     if (!item) return;
     activeKey.value = keyOf(item);
-    queueMicrotask(() => ownerDocument?.getElementById(itemId(item))?.focus({ preventScroll: true }));
+    const key = keyOf(item);
+    queueMicrotask(() => itemElements.get(key)?.focus({ preventScroll: true }));
   }
 
   function focusFirst() {
@@ -123,30 +131,45 @@ function createToolbar<Item, Key extends string>(
     },
   };
 
-  watch(() => items().map((item) => ({ key: keyOf(item), disabled: disabled(item) })), (current, previousSnapshot = []) => {
+  function collectionSnapshot(): readonly ToolbarItemSnapshot<Key>[] {
+    return items().map((item) => ({ key: keyOf(item), disabled: disabled(item) }));
+  }
+
+  function reconcileCollection(
+    current: readonly ToolbarItemSnapshot<Key>[],
+    previousSnapshot: readonly ToolbarItemSnapshot<Key>[] = [],
+  ) {
     if (current.some((item) => item.key === activeKey.value && !item.disabled)) return;
     const previousKey = activeKey.value;
-    const ownedFocus = previousKey !== null && ownerDocument?.activeElement?.id === itemIdForKey(previousKey);
+    const previousElement = previousKey === null ? null : itemElements.get(previousKey);
+    const previousRoot = previousElement?.getRootNode();
+    const ownedFocus = previousElement !== null
+      && previousRoot !== undefined
+      && "activeElement" in previousRoot
+      && (previousRoot as Document | ShadowRoot).activeElement === previousElement;
     let priorIndex = current.findIndex((item) => item.key === previousKey);
     if (priorIndex === -1) priorIndex = previousSnapshot.findIndex((item) => item.key === previousKey);
     const next = current.slice(Math.max(0, priorIndex)).find((item) => !item.disabled)
-      ?? current.slice(0, Math.max(0, priorIndex)).toReversed().find((item) => !item.disabled)
+      ?? current.slice(0, Math.max(0, priorIndex)).reverse().find((item) => !item.disabled)
       ?? current.find((item) => !item.disabled);
     activeKey.value = next?.key ?? null;
+    itemElements.prune(current.map((item) => item.key));
     if (ownedFocus && next) {
-      queueMicrotask(() => ownerDocument?.getElementById(itemIdForKey(next.key))?.focus({ preventScroll: true }));
+      queueMicrotask(() => itemElements.get(next.key)?.focus({ preventScroll: true }));
     }
-  }, { flush: "sync", immediate: true });
+  }
+
+  watch(collectionSnapshot, reconcileCollection, { flush: "sync", immediate: true });
 
   return {
     activeKey,
     toolbarProps,
     itemProps(item) {
       return {
+        ref: itemElements.refFor(keyOf(item)),
         id: itemId(item),
         get tabindex() { return activeKey.value === keyOf(item) && !disabled(item) ? 0 : -1; },
-        onFocus(event) {
-          ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
+        onFocus() {
           if (!disabled(item)) activeKey.value = keyOf(item);
         },
       };

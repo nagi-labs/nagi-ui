@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { useMenu, type MenuDirection } from "@nagi-labs/nagi-ui";
 
 import DropdownMenuItem from "./DropdownMenuItem.vue";
@@ -8,10 +9,14 @@ const props = withDefaults(
   defineProps<{
     label: string;
     items: readonly DropdownMenuNode[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     dir?: MenuDirection;
   }>(),
   { dir: "ltr" },
 );
+defineOptions({ inheritAttrs: false });
 
 const menu = useMenu<DropdownMenuEntry>({
   items: () => menuEntries(props.items),
@@ -24,14 +29,42 @@ const menu = useMenu<DropdownMenuEntry>({
 </script>
 
 <template>
-  <div class="n-dropdown-menu">
-    <button class="button -trigger" type="button" v-bind="menu.triggerProps">
+  <div
+    class="n-dropdown-menu"
+    data-scope="dropdown-menu"
+    data-part="root"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
+    <button
+      class="button -trigger"
+      data-scope="dropdown-menu"
+      data-part="trigger"
+      type="button"
+      v-bind="menu.triggerProps"
+    >
       {{ label }}
-      <span class="icon -trigger" aria-hidden="true">⌄</span>
+      <span
+        class="icon -trigger"
+        aria-hidden="true"
+        >⌄</span
+      >
     </button>
 
-    <ul class="list" popover v-bind="menu.menuProps">
-      <DropdownMenuItem v-for="node in items" :key="node.key" :menu="menu" :node="node" />
+    <ul
+      class="list"
+      data-scope="dropdown-menu"
+      data-part="menu"
+      popover
+      v-bind="menu.menuProps"
+    >
+      <DropdownMenuItem
+        v-for="node in items"
+        :key="node.key"
+        :menu="menu"
+        :node="node"
+      />
     </ul>
   </div>
 </template>

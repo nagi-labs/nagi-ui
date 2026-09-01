@@ -1,17 +1,23 @@
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    legend: string;
-    disabled?: boolean;
-  }>(),
-  { disabled: false },
-);
+import { computed, useAttrs } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
+
+const { legend, disabled = false } = defineProps<{
+  legend: string;
+  disabled?: boolean;
+}>();
+
+const attrs = useAttrs();
+const fieldsetProps = computed(() => mergeElementProps(attrs, { disabled }));
 </script>
 
 <template>
   <fieldset
     class="n-fieldset"
-    :disabled="disabled"
+    v-bind="fieldsetProps"
   >
     <legend class="legend">{{ legend }}</legend>
     <div class="unit">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId } from "vue";
+import { computed, ref, useId, type StyleValue } from "vue";
 
 import { useNumberField } from "@nagi-labs/nagi-ui/component-controls";
 
@@ -9,16 +9,35 @@ const props = withDefaults(
   defineProps<{
     label: string;
     id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
+    tabindex?: number;
     name?: string;
     form?: string;
+    autocomplete?: string;
+    autofocus?: boolean;
+    enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+    inputmode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
+    list?: string;
+    maxlength?: number;
+    minlength?: number;
     min?: number;
     max?: number;
+    pattern?: string;
+    placeholder?: string;
     step?: number;
     disabled?: boolean;
     readOnly?: boolean;
     required?: boolean;
     decrementLabel?: string;
     incrementLabel?: string;
+    ariaLabel?: string;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
+    ariaDetails?: string;
+    ariaErrormessage?: string;
+    ariaInvalid?: "true" | "false" | "grammar" | "spelling";
   }>(),
   {
     step: 1,
@@ -33,11 +52,27 @@ const props = withDefaults(
 const model = defineModel<number | null>({ default: null });
 const input = ref<HTMLInputElement | null>(null);
 const generatedId = useId();
-const {
-  value: inputValue,
-  decrement,
-  increment,
-} = useNumberField(input, model);
+const { value: inputValue, decrement, increment } = useNumberField(input, model);
+
+const emit = defineEmits<{
+  beforeinput: [event: InputEvent];
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  compositionend: [event: CompositionEvent];
+  compositionstart: [event: CompositionEvent];
+  compositionupdate: [event: CompositionEvent];
+  copy: [event: ClipboardEvent];
+  cut: [event: ClipboardEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+  keydown: [event: KeyboardEvent];
+  keypress: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+  paste: [event: ClipboardEvent];
+  select: [event: Event];
+}>();
 
 const decrementDisabled = computed(
   () =>
@@ -55,7 +90,11 @@ const incrementDisabled = computed(
 
 <template>
   <div class="n-number-field">
-    <label class="label" :for="id ?? generatedId">{{ label }}</label>
+    <label
+      class="label"
+      :for="id ?? generatedId"
+      >{{ label }}</label
+    >
     <div class="unit">
       <button
         class="button -decrement"
@@ -67,20 +106,55 @@ const incrementDisabled = computed(
         −
       </button>
       <input
-        v-bind="$attrs"
-        :id="id ?? generatedId"
         ref="input"
         v-model="inputValue"
         class="input"
+        :class="props.class"
+        :style="props.style"
         type="number"
+        :id="id ?? generatedId"
+        :title="title"
+        :tabindex="tabindex"
         :name="name"
         :form="form"
+        :autocomplete="autocomplete"
+        :autofocus="autofocus"
+        :enterkeyhint="enterkeyhint"
+        :inputmode="inputmode"
+        :list="list"
+        :maxlength="maxlength"
+        :minlength="minlength"
         :min="min"
         :max="max"
+        :pattern="pattern"
+        :placeholder="placeholder"
         :step="step"
         :disabled="disabled"
         :readonly="readOnly"
         :required="required"
+        :aria-label="ariaLabel"
+        :aria-labelledby="ariaLabelledby"
+        :aria-describedby="ariaDescribedby"
+        :aria-details="ariaDetails"
+        :aria-errormessage="ariaErrormessage"
+        :aria-invalid="ariaInvalid"
+        @beforeinput="emit('beforeinput', $event)"
+        @blur="emit('blur', $event)"
+        @change="emit('change', $event)"
+        @click="emit('click', $event)"
+        @compositionend="emit('compositionend', $event)"
+        @compositionstart="emit('compositionstart', $event)"
+        @compositionupdate="emit('compositionupdate', $event)"
+        @copy="emit('copy', $event)"
+        @cut="emit('cut', $event)"
+        @focus="emit('focus', $event)"
+        @input="emit('input', $event)"
+        @invalid="emit('invalid', $event)"
+        @keydown="emit('keydown', $event)"
+        @keypress="emit('keypress', $event)"
+        @keyup="emit('keyup', $event)"
+        @paste="emit('paste', $event)"
+        @select="emit('select', $event)"
       />
       <button
         class="button -increment"

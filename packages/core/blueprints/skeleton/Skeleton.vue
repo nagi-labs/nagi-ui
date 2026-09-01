@@ -1,9 +1,23 @@
 <script setup lang="ts">
+import { computed, useAttrs } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+
 defineOptions({ inheritAttrs: false });
+
+const attrs = useAttrs();
+const skeletonProps = computed(() =>
+  mergeElementProps(attrs, {
+    "aria-hidden": "true",
+  }),
+);
 </script>
 
 <template>
-  <span v-bind="$attrs" class="n-skeleton" aria-hidden="true"></span>
+  <span
+    class="n-skeleton"
+    v-bind="skeletonProps"
+  ></span>
 </template>
 
 <style scoped>

@@ -2,9 +2,11 @@ import {
   computed,
   getCurrentInstance,
   nextTick,
+  reactive,
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
@@ -15,9 +17,13 @@ export interface UseCarouselOptions<Item> {
   items: MaybeRefOrGetter<readonly Item[]>;
   index: WritableRef<number>;
   label: MaybeRefOrGetter<string>;
+  slidesLabel?: MaybeRefOrGetter<string | undefined>;
+  carouselRoleDescription?: MaybeRefOrGetter<string | undefined>;
+  slidesRoleDescription?: MaybeRefOrGetter<string | undefined>;
+  slideRoleDescription?: MaybeRefOrGetter<string | undefined>;
+  landmark?: MaybeRefOrGetter<boolean | undefined>;
   previousLabel?: MaybeRefOrGetter<string | undefined>;
   nextLabel?: MaybeRefOrGetter<string | undefined>;
-  trackLabel?: MaybeRefOrGetter<string | undefined>;
   formatAnnouncement?: (position: number | null, count: number) => string;
   formatSlideLabel?: (item: Item, position: number, count: number) => string;
   loop?: MaybeRefOrGetter<boolean | undefined>;
@@ -27,31 +33,39 @@ export interface UseCarouselOptions<Item> {
 
 export interface CarouselRootProps {
   id: string;
-  role: "region";
+  role: "group" | "region";
   "aria-label": string;
-  "aria-disabled"?: "true" | undefined;
+  "aria-roledescription": string;
+  "data-disabled"?: "" | undefined;
 }
 
-export interface CarouselTrackProps {
+export interface CarouselViewportProps {
+  /** Vue template ref callback; it does not render a DOM attribute. */
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   role: "group";
-  tabindex: 0 | -1;
   "aria-label": string;
-  "aria-disabled"?: "true" | undefined;
+  "aria-roledescription": string;
+  tabindex: 0 | -1;
+  onFocus: () => void;
   onScroll: (event: Event) => void;
   onPointerdown: () => void;
   onWheel: () => void;
-  onKeydown: (event: KeyboardEvent) => void;
 }
 
 export interface CarouselSlideProps {
-  id: string;
   role: "group";
-  "aria-label": string;
+  "aria-roledescription": string;
+  "aria-labelledby": string;
+}
+
+export interface CarouselSlideLabelProps {
+  id: string;
 }
 
 export interface CarouselButtonProps {
   type: "button";
   "aria-label": string;
+  "aria-disabled": "true" | undefined;
   disabled: boolean;
   onClick: () => void;
 }
@@ -62,20 +76,26 @@ export interface CarouselBinding<Item> {
   count: ComputedRef<number>;
   announcement: ComputedRef<string>;
   rootProps: CarouselRootProps;
-  trackProps: CarouselTrackProps;
+  viewportProps: CarouselViewportProps;
   previousButtonProps: CarouselButtonProps;
   nextButtonProps: CarouselButtonProps;
   slideProps: (item: Item, index: number) => CarouselSlideProps;
-  setTrack: (element: Element | null) => void;
+  slideLabelProps: (index: number) => CarouselSlideLabelProps;
+  slidePosition: (item: Item, index: number) => string;
   goTo: (index: number) => void;
 }
 
 export interface CarouselComponentProps<Item> {
   readonly items: readonly Item[];
+  readonly id?: string | undefined;
   readonly label: string;
+  readonly slidesLabel?: string | undefined;
+  readonly carouselRoleDescription: string;
+  readonly slidesRoleDescription: string;
+  readonly slideRoleDescription: string;
+  readonly landmark: boolean;
   readonly previousLabel: string;
   readonly nextLabel: string;
-  readonly trackLabel?: string | undefined;
   readonly formatAnnouncement?: ((position: number | null, count: number) => string) | undefined;
   readonly formatSlideLabel?: ((item: Item, position: number, count: number) => string) | undefined;
   readonly loop: boolean;
@@ -83,16 +103,26 @@ export interface CarouselComponentProps<Item> {
 }
 
 let carouselCount = 0;
+const carouselRootSelector = '[data-scope="carousel"][data-part="root"]';
+const slideSelector = '[data-scope="carousel"][data-part="slide"]';
+
+function localizedRoleDescription(
+  value: MaybeRefOrGetter<string | undefined> | undefined,
+  fallback: string,
+): string {
+  return toValue(value)?.trim() || fallback;
+}
 
 function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBinding<Item> {
   const instance = getCurrentInstance();
   const id = options.id ?? (instance ? useId() : `nagi-carousel-${carouselCount++}`);
-  let track: HTMLElement | null = null;
+  let viewport: HTMLElement | null = null;
   let programmaticTarget: number | null = null;
 
   const items = () => toValue(options.items);
   const count = computed(() => items().length);
   const disabled = () => toValue(options.disabled) ?? false;
+  const landmark = () => toValue(options.landmark) ?? false;
   const loop = () => toValue(options.loop) ?? false;
 
   function normalized(candidate: number): number {
@@ -105,46 +135,168 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
   const defaultPositionLabel = (position: number | null, total: number) =>
     position === null ? "" : `${position} / ${total}`;
 
+  function slides(currentViewport: HTMLElement | null = viewport): HTMLElement[] {
+    if (!currentViewport) return [];
+    const candidates = Array.from(
+      currentViewport.querySelectorAll<HTMLElement>(slideSelector),
+    ).filter(
+      (slide) =>
+        slide.closest<HTMLElement>(carouselRootSelector)?.id === id,
+    );
+    return candidates.filter(
+      (slide) =>
+        !candidates.some(
+          (possibleOwner) => possibleOwner !== slide && possibleOwner.contains(slide),
+        ),
+    ).slice(0, count.value);
+  }
+
+  function slideAt(index: number, currentViewport: HTMLElement | null = viewport) {
+    return slides(currentViewport)[index] ?? null;
+  }
+
+  function setViewport(element: Element | ComponentPublicInstance | null) {
+    viewport = element as HTMLElement | null;
+    if (!viewport || count.value === 0 || currentIndex.value === 0) return;
+    const initialIndex = currentIndex.value;
+    programmaticTarget = initialIndex;
+    void nextTick(() => {
+      slideAt(initialIndex)?.scrollIntoView({
+        block: "nearest",
+        inline: "start",
+      });
+    });
+  }
+
   function goTo(candidate: number) {
     if (disabled() || count.value === 0) return;
     const current = currentIndex.value;
     const next = normalized(candidate);
-    programmaticTarget = track && next !== current ? next : null;
+    programmaticTarget = viewport && next !== current ? next : null;
     void requestModelValue(options.index, next).then((wasAccepted) => {
       const accepted = currentIndex.value;
       if (wasAccepted) return;
       programmaticTarget = accepted;
-      const slide = track?.children.item(accepted) as HTMLElement | null;
-      slide?.scrollIntoView({ block: "nearest", inline: "start" });
+      slideAt(accepted)?.scrollIntoView({ block: "nearest", inline: "start" });
     });
   }
 
   function buttonProps(delta: -1 | 1): CarouselButtonProps {
-    return {
+    const atBoundary = () => !loop() && (
+      delta < 0 ? currentIndex.value <= 0 : currentIndex.value >= count.value - 1
+    );
+    return reactive<CarouselButtonProps>({
       type: "button",
       get "aria-label"() {
         return toValue(delta < 0 ? options.previousLabel : options.nextLabel)
           ?? (delta < 0 ? "Previous slide" : "Next slide");
       },
       get disabled() {
-        if (disabled() || count.value === 0) return true;
-        if (loop()) return count.value < 2;
-        return delta < 0 ? currentIndex.value <= 0 : currentIndex.value >= count.value - 1;
+        return disabled() || count.value < 2;
+      },
+      get "aria-disabled"() {
+        return !disabled() && count.value >= 2 && atBoundary() ? "true" as const : undefined;
       },
       onClick: () => goTo(currentIndex.value + delta),
-    };
+    });
   }
 
-  watch([count, currentIndex], () => {
-    const currentTrack = track;
-    if (!currentTrack) return;
+  function reconcileViewportPosition() {
+    const currentViewport = viewport;
+    if (!currentViewport) return;
     const next = currentIndex.value;
     programmaticTarget = next;
     void nextTick(() => {
-      if (track !== currentTrack) return;
-      (currentTrack.children.item(next) as HTMLElement | null)?.scrollIntoView({ block: "nearest", inline: "start" });
+      if (viewport !== currentViewport) return;
+      slideAt(next, currentViewport)?.scrollIntoView({ block: "nearest", inline: "start" });
     });
-  }, { flush: "sync", immediate: true });
+  }
+
+  watch([count, currentIndex], reconcileViewportPosition, { flush: "sync", immediate: true });
+
+  const rootProps = reactive<CarouselRootProps>({
+    id,
+    get role() { return landmark() ? "region" : "group"; },
+    get "aria-label"() { return toValue(options.label); },
+    get "aria-roledescription"() {
+      return localizedRoleDescription(options.carouselRoleDescription, "carousel");
+    },
+    get "data-disabled"() { return disabled() ? "" : undefined; },
+  });
+  const viewportProps = reactive<CarouselViewportProps>({
+    ref: setViewport,
+    role: "group",
+    get "aria-label"() { return toValue(options.slidesLabel) ?? toValue(options.label); },
+    get "aria-roledescription"() {
+      return localizedRoleDescription(options.slidesRoleDescription, "slides");
+    },
+    get tabindex() { return disabled() ? -1 : 0; },
+    onFocus() {
+      const currentViewport = viewport;
+      if (!currentViewport || count.value === 0) return;
+      const accepted = currentIndex.value;
+      programmaticTarget = accepted;
+      void nextTick(() => {
+        if (viewport !== currentViewport) return;
+        slideAt(accepted, currentViewport)?.scrollIntoView({
+          block: "nearest",
+          inline: "start",
+        });
+      });
+    },
+    onScroll(event) {
+      viewport = event.currentTarget as HTMLElement;
+      const renderedSlides = slides(viewport);
+      if (renderedSlides.length === 0) return;
+      if (disabled()) {
+        const accepted = currentIndex.value;
+        programmaticTarget = accepted;
+        void nextTick(() => {
+          slideAt(accepted)?.scrollIntoView({
+            block: "nearest",
+            inline: "start",
+          });
+        });
+        return;
+      }
+      const viewportRect = viewport.getBoundingClientRect?.();
+      const view = viewport.ownerDocument?.defaultView;
+      const direction = view?.getComputedStyle(viewport).direction ?? "ltr";
+      const firstOffset = renderedSlides[0]?.offsetLeft ?? 0;
+      const start = Math.abs(viewport.scrollLeft);
+      let closest = 0;
+      let distance = Number.POSITIVE_INFINITY;
+      renderedSlides.forEach((element, index) => {
+        const childRect = element.getBoundingClientRect?.();
+        const nextDistance = viewportRect && childRect
+          ? Math.abs(direction === "rtl"
+            ? viewportRect.right - childRect.right
+            : childRect.left - viewportRect.left)
+          : Math.abs(Math.abs(element.offsetLeft - firstOffset) - start);
+        if (nextDistance < distance) {
+          closest = index;
+          distance = nextDistance;
+        }
+      });
+      if (programmaticTarget !== null) {
+        if (closest === programmaticTarget) programmaticTarget = null;
+        return;
+      }
+      if (closest !== currentIndex.value) {
+        void requestModelValue(options.index, closest).then((wasAccepted) => {
+          const accepted = currentIndex.value;
+          if (wasAccepted) return;
+          programmaticTarget = accepted;
+          slideAt(accepted)?.scrollIntoView({
+            block: "nearest",
+            inline: "start",
+          });
+        });
+      }
+    },
+    onPointerdown() { programmaticTarget = null; },
+    onWheel() { programmaticTarget = null; },
+  });
 
   return {
     index: options.index,
@@ -154,105 +306,20 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
       count.value === 0 ? null : currentIndex.value + 1,
       count.value,
     )),
-    rootProps: {
-      id,
-      role: "region",
-      get "aria-label"() { return toValue(options.label); },
-      get "aria-disabled"() { return disabled() ? "true" : undefined; },
-    },
-    trackProps: {
-      role: "group",
-      get tabindex() { return disabled() ? -1 : 0; },
-      get "aria-label"() { return toValue(options.trackLabel) ?? toValue(options.label); },
-      get "aria-disabled"() { return disabled() ? "true" : undefined; },
-      onScroll(event) {
-        track = event.currentTarget as HTMLElement;
-        if (track.children.length === 0) return;
-        if (disabled()) {
-          const accepted = currentIndex.value;
-          programmaticTarget = accepted;
-          void nextTick(() => {
-            (track?.children.item(accepted) as HTMLElement | null)?.scrollIntoView({
-              block: "nearest",
-              inline: "start",
-            });
-          });
-          return;
-        }
-        const trackRect = track.getBoundingClientRect?.();
-        const view = track.ownerDocument?.defaultView;
-        const direction = view?.getComputedStyle(track).direction ?? "ltr";
-        const firstOffset = (track.children.item(0) as HTMLElement | null)?.offsetLeft ?? 0;
-        const start = Math.abs(track.scrollLeft);
-        let closest = 0;
-        let distance = Number.POSITIVE_INFINITY;
-        Array.from(track.children).forEach((child, index) => {
-          const element = child as HTMLElement;
-          const childRect = element.getBoundingClientRect?.();
-          const nextDistance = trackRect && childRect
-            ? Math.abs(direction === "rtl"
-              ? trackRect.right - childRect.right
-              : childRect.left - trackRect.left)
-            : Math.abs(Math.abs(element.offsetLeft - firstOffset) - start);
-          if (nextDistance < distance) {
-            closest = index;
-            distance = nextDistance;
-          }
-        });
-        if (programmaticTarget !== null) {
-          if (closest === programmaticTarget) programmaticTarget = null;
-          return;
-        }
-        if (closest !== currentIndex.value) {
-          void requestModelValue(options.index, closest).then((wasAccepted) => {
-            const accepted = currentIndex.value;
-            if (wasAccepted) return;
-            programmaticTarget = accepted;
-            (track?.children.item(accepted) as HTMLElement | null)?.scrollIntoView({
-              block: "nearest",
-              inline: "start",
-            });
-          });
-        }
-      },
-      onPointerdown() { programmaticTarget = null; },
-      onWheel() { programmaticTarget = null; },
-      onKeydown(event) {
-        if (disabled()) return;
-        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-          event.preventDefault();
-          const element = event.currentTarget as HTMLElement | null;
-          const direction = element?.ownerDocument.defaultView?.getComputedStyle(element).direction ?? "ltr";
-          const forwardKey = direction === "rtl" ? "ArrowLeft" : "ArrowRight";
-          goTo(currentIndex.value + (event.key === forwardKey ? 1 : -1));
-        } else if (event.key === "Home" || event.key === "End") {
-          event.preventDefault();
-          goTo(event.key === "Home" ? 0 : count.value - 1);
-        }
-      },
-    },
+    rootProps,
+    viewportProps,
     previousButtonProps: buttonProps(-1),
     nextButtonProps: buttonProps(1),
-    slideProps(item, index) {
+    slideProps(_item, index) {
       return {
-        id: `${id}-slide-${index + 1}`,
         role: "group",
-        "aria-label": (options.formatSlideLabel
-          ?? ((_, position, total) => defaultPositionLabel(position, total)))(item, index + 1, count.value),
+        "aria-roledescription": localizedRoleDescription(options.slideRoleDescription, "slide"),
+        "aria-labelledby": `${id}-slide-${index + 1}-label`,
       };
     },
-    setTrack(element) {
-      track = element as HTMLElement | null;
-      if (!track || count.value === 0 || currentIndex.value === 0) return;
-      const initialIndex = currentIndex.value;
-      programmaticTarget = initialIndex;
-      void nextTick(() => {
-        (track?.children.item(initialIndex) as HTMLElement | null)?.scrollIntoView({
-          block: "nearest",
-          inline: "start",
-        });
-      });
-    },
+    slideLabelProps: (index) => ({ id: `${id}-slide-${index + 1}-label` }),
+    slidePosition: (item, index) => (options.formatSlideLabel
+      ?? ((_, position, total) => defaultPositionLabel(position, total)))(item, index + 1, count.value),
     goTo,
   };
 }
@@ -271,10 +338,15 @@ export function useCarousel<Item>(
   return createCarousel({
     items: () => props.items,
     index,
+    ...(props.id ? { id: props.id } : {}),
     label: () => props.label,
+    slidesLabel: () => props.slidesLabel,
+    carouselRoleDescription: () => props.carouselRoleDescription,
+    slidesRoleDescription: () => props.slidesRoleDescription,
+    slideRoleDescription: () => props.slideRoleDescription,
+    landmark: () => props.landmark,
     previousLabel: () => props.previousLabel,
     nextLabel: () => props.nextLabel,
-    trackLabel: () => props.trackLabel,
     ...(props.formatAnnouncement ? { formatAnnouncement: props.formatAnnouncement } : {}),
     ...(props.formatSlideLabel ? { formatSlideLabel: props.formatSlideLabel } : {}),
     loop: () => props.loop,

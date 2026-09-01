@@ -1,24 +1,52 @@
 <script setup lang="ts">
+import { useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
 defineProps<{
   title?: string;
   description?: string;
 }>();
+const attrs = useAttrs();
 </script>
 
 <template>
-  <div class="n-card">
-    <header v-if="title || description || $slots.title || $slots.description" class="header">
-      <div v-if="title || $slots.title" class="title">
-        <slot name="title" :title="title">{{ title }}</slot>
+  <div
+    class="n-card"
+    v-bind="attrs"
+  >
+    <header
+      v-if="title || description || $slots.title || $slots.description"
+      class="header"
+    >
+      <div
+        v-if="title || $slots.title"
+        class="title"
+      >
+        <slot
+          name="title"
+          :title="title"
+          >{{ title }}</slot
+        >
       </div>
-      <div v-if="description || $slots.description" class="text">
-        <slot name="description" :description="description">{{ description }}</slot>
+      <div
+        v-if="description || $slots.description"
+        class="text"
+      >
+        <slot
+          name="description"
+          :description="description"
+          >{{ description }}</slot
+        >
       </div>
     </header>
     <div class="unit">
       <slot />
     </div>
-    <div v-if="$slots.footer" class="unit -secondary">
+    <div
+      v-if="$slots.footer"
+      class="unit -secondary"
+    >
       <slot name="footer" />
     </div>
   </div>

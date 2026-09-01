@@ -1,32 +1,41 @@
 <script setup lang="ts">
-import { useId } from "vue";
+import { computed, useAttrs, useId } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-withDefaults(
-  defineProps<{
-    label: string;
-    id?: string;
-    value?: number;
-    max?: number;
-  }>(),
-  { max: 1 },
-);
+const {
+  label,
+  id,
+  value,
+  max = 1,
+} = defineProps<{
+  label: string;
+  id?: string;
+  value?: number;
+  max?: number;
+}>();
 
+const attrs = useAttrs();
 const generatedId = useId();
 const labelId = `${generatedId}-label`;
+const progressProps = computed(() =>
+  mergeElementProps({ "aria-labelledby": labelId }, attrs, { id: id ?? generatedId, value, max }),
+);
 </script>
 
 <template>
   <div class="n-progress">
-    <label :id="labelId" class="label" :for="id ?? generatedId">{{ label }}</label>
+    <label
+      :id="labelId"
+      class="label"
+      :for="id ?? generatedId"
+      >{{ label }}</label
+    >
     <progress
-      v-bind="$attrs"
       class="progress"
-      :id="id ?? generatedId"
-      :aria-labelledby="labelId"
-      :value="value"
-      :max="max"
+      v-bind="progressProps"
     >
       {{ value === undefined ? label : `${value} / ${max}` }}
     </progress>

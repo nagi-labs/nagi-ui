@@ -133,7 +133,13 @@ export type DropdownMenuEntry =
     };
 
 export function actionEntry(node: DropdownMenuActionNode): DropdownMenuEntry {
-  return { kind: "action", key: node.key, label: node.label, disabled: node.disabled ?? false, node };
+  return {
+    kind: "action",
+    key: node.key,
+    label: node.label,
+    disabled: node.disabled ?? false,
+    node,
+  };
 }
 
 export function linkEntry(node: DropdownMenuLinkNode): DropdownMenuEntry {

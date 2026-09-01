@@ -16,11 +16,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 test("Avatar SSR keeps image and fallback semantics deterministic", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-avatar-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-avatar-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -69,5 +71,6 @@ test("Avatar SSR keeps image and fallback semantics deterministic", async () => 
     assert.doesNotMatch(decorativeHtml, /role="img"/);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });

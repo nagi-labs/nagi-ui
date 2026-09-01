@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { useTooltip, type AnchorArea } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
     triggerLabel: string;
     text: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     openDelay?: number;
     closeDelay?: number;
     disabled?: boolean;
@@ -19,6 +23,7 @@ const props = withDefaults(
     offset: 4,
   },
 );
+defineOptions({ inheritAttrs: false });
 
 const open = defineModel<boolean>("open", { default: false });
 const tooltip = useTooltip(props, open);
@@ -27,11 +32,25 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
 </script>
 
 <template>
-  <span class="n-tooltip">
-    <button class="button" type="button" :disabled="disabled" v-bind="tooltip.triggerProps">
+  <span
+    class="n-tooltip"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
+    <button
+      class="button"
+      type="button"
+      :disabled="disabled"
+      v-bind="tooltip.triggerProps"
+    >
       {{ triggerLabel }}
     </button>
-    <span class="unit" popover="hint" v-bind="tooltip.tooltipProps">
+    <span
+      class="unit"
+      popover="hint"
+      v-bind="tooltip.tooltipProps"
+    >
       {{ text }}
     </span>
   </span>

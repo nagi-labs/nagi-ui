@@ -193,7 +193,7 @@ test("protects native Accordion details and summary wiring", () => {
 test("verifies date grid and segmented-field bindings, including merged props", () => {
   const valid = verify(`
     <template>
-      <div v-bind="mergeNagiProps(field.fieldProps, attrs)">
+      <div v-bind="mergeElementProps(field.fieldProps, attrs)">
         <span v-for="segment in segments" :key="segment.key" v-bind="field.segmentProps(segment)"></span>
         <input v-bind="field.formValueProps">
       </div>
@@ -208,7 +208,7 @@ test("verifies date grid and segmented-field bindings, including merged props", 
 
   const invalid = verify(`
     <template>
-      <section v-bind="mergeNagiProps(field.fieldProps, attrs)"></section>
+      <section v-bind="mergeElementProps(field.fieldProps, attrs)"></section>
       <div role="grid" v-bind="calendar.gridProps"></div>
       <button disabled v-bind="calendar.cellButtonProps(cell)"></button>
       <div v-bind="field.formValueProps"></div>

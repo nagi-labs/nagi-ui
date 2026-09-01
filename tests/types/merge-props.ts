@@ -1,6 +1,6 @@
-import { mergeNagiProps, type MergedNagiProps } from "@nagi-labs/nagi-ui"
+import { mergeElementProps, type MergedElementProps } from "@nagi-labs/nagi-ui"
 
-const merged = mergeNagiProps(
+const merged = mergeElementProps(
   { id: "actions", role: "menu" as const, onClick: (_event: MouseEvent) => undefined },
   { class: "menu", "aria-labelledby": "actions-label" },
 )
@@ -11,7 +11,7 @@ const className: string = merged.class
 const labelledBy: string = merged["aria-labelledby"]
 merged.onClick(new MouseEvent("click"))
 
-type Explicit = MergedNagiProps<[
+type Explicit = MergedElementProps<[
   { popovertarget: string },
   { class: string },
 ]>

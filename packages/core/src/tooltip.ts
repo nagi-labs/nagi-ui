@@ -6,6 +6,7 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type CSSProperties,
   type MaybeRefOrGetter,
   type Ref,
@@ -37,6 +38,8 @@ interface TooltipComponentProps {
 }
 
 export interface TooltipTriggerProps {
+  /** Complete Behavior API wiring; registers the local trigger. */
+  ref: (element: Element | ComponentPublicInstance | null) => void
   readonly "aria-describedby": string | undefined
   style?: CSSProperties
   onPointerenter: (event: PointerEvent) => void
@@ -46,6 +49,8 @@ export interface TooltipTriggerProps {
 }
 
 export interface TooltipProps {
+  /** Complete Behavior API wiring; registers the local hint surface. */
+  ref: (element: Element | ComponentPublicInstance | null) => void
   id: string
   role: "tooltip"
   style?: CSSProperties
@@ -109,10 +114,18 @@ export function useTooltip(
   let triggerFocused = false
 
   function resolve(): HintElement | null {
-    if (element?.isConnected) return element
-    if (typeof document === "undefined") return null
-    element = document.getElementById(id) as HintElement | null
-    return element
+    return element?.isConnected ? element : null
+  }
+
+  function setTrigger(elementOrComponent: Element | ComponentPublicInstance | null) {
+    triggerElement = elementOrComponent as HTMLElement | null
+    const target = resolve()
+    if (target && open.value) syncAnchor(target, true)
+  }
+
+  function setTooltip(elementOrComponent: Element | ComponentPublicInstance | null) {
+    element = elementOrComponent as HintElement | null
+    if (element) apply(open.value)
   }
 
   const anchor = options.anchor
@@ -124,21 +137,14 @@ export function useTooltip(
   let detachAnchor: (() => void) | null = null
 
   function resolveTrigger(): HTMLElement | null {
-    if (triggerElement?.isConnected) return triggerElement
-    if (typeof document === "undefined") return null
-    triggerElement = Array.from(
-      document.querySelectorAll<HTMLElement>("[aria-describedby]"),
-    ).find((candidate) =>
-      candidate.getAttribute("aria-describedby")?.split(/\s+/).includes(id),
-    ) ?? null
-    return triggerElement
+    return triggerElement?.isConnected ? triggerElement : null
   }
 
   function syncAnchor(target: HintElement, isOpen: boolean) {
     if (!anchor || anchor.native) return
     detachAnchor?.()
     detachAnchor = null
-    if (!isOpen || typeof document === "undefined") return
+    if (!isOpen) return
     const trigger = resolveTrigger()
     if (trigger) detachAnchor = anchor.attach(trigger, target)
   }
@@ -188,14 +194,16 @@ export function useTooltip(
   }
 
   watch(open, (next) => apply(next), { flush: "sync" })
-  watch(disabled, (next) => {
+  function reconcileDisabledState(next: boolean) {
     if (!next) return
     clearTimer()
     triggerHovered = false
     tooltipHovered = false
     triggerFocused = false
     open.value = false
-  }, { flush: "sync", immediate: true })
+  }
+
+  watch(disabled, reconcileDisabledState, { flush: "sync", immediate: true })
 
   if (instance) {
     onMounted(() => apply(open.value))
@@ -218,6 +226,7 @@ export function useTooltip(
       open.value = false
     },
     triggerProps: {
+      ref: setTrigger,
       get "aria-describedby"() {
         return disabled() ? undefined : id
       },
@@ -246,6 +255,7 @@ export function useTooltip(
       },
     },
     tooltipProps: {
+      ref: setTooltip,
       id,
       role: "tooltip",
       ...(anchor ? { style: anchor.positionedStyle } : {}),

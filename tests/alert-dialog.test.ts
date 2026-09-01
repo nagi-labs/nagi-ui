@@ -20,11 +20,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 async function withAlertDialog(run: (component: Component) => Promise<void>) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-alert-dialog-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-alert-dialog-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -37,10 +39,11 @@ async function withAlertDialog(run: (component: Component) => Promise<void>) {
     await run(component);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 
-test("AlertDialog SSR owns an alertdialog name, description, and explicit actions", async () => {
+test("[ALD-DIALOG-SEM-01][ALD-DIALOG-SEM-02][ALD-DIALOG-SEM-03][ALD-FOCUS-01] AlertDialog SSR owns an alertdialog name, description, and explicit actions", async () => {
   await withAlertDialog(async (alertDialog) => {
     const html = normalizeSsrHtml(await renderToString(
       createSSRApp({
@@ -54,7 +57,7 @@ test("AlertDialog SSR owns an alertdialog name, description, and explicit action
       }),
     ));
 
-    assert.match(html, /^<div class="n-alert-dialog">/);
+    assert.match(html, /^<div class="n-alert-dialog"[^>]*>/);
     assert.match(html, /<button class="button -trigger" type="button"[^>]*>Delete account<\/button>/);
 
     const dialog = html.match(/<dialog[^>]*>/)?.[0] ?? "";

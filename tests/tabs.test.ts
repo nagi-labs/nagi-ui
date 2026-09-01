@@ -84,6 +84,7 @@ interface FakeTabList {
   id: string;
   members: Set<unknown>;
   contains: (node: unknown) => boolean;
+  getRootNode: () => FakeDocument;
 }
 
 interface FakeDocument {
@@ -97,6 +98,7 @@ interface FakeTabElement {
   focusCalls: number;
   focus: (options?: FocusOptions) => void;
   closest: (selector: string) => FakeTabList | null;
+  matches: (selector: string) => boolean;
 }
 
 function fakeTabDom(id: string, keys: readonly string[]) {
@@ -106,6 +108,9 @@ function fakeTabDom(id: string, keys: readonly string[]) {
     members: new Set(),
     contains(node) {
       return this.members.has(node);
+    },
+    getRootNode() {
+      return document;
     },
   };
   const document: FakeDocument = {
@@ -126,12 +131,27 @@ function fakeTabDom(id: string, keys: readonly string[]) {
       closest(selector) {
         return selector === '[role="tablist"]' ? list : null;
       },
+      matches(selector) {
+        return selector === ":focus" && document.activeElement === this;
+      },
     };
     elements.set(elementId, element);
     list.members.add(element);
   }
 
   return { document, elements, list };
+}
+
+function registerTabsDom(
+  result: ReturnType<typeof createTabs>,
+  items: readonly TabItem[],
+  dom: ReturnType<typeof fakeTabDom>,
+) {
+  result.tablistProps.ref(dom.list as unknown as Element);
+  for (const item of items) {
+    const element = dom.elements.get(`${result.id}-tab-${encodeURIComponent(item.key)}`);
+    result.tabProps(item).ref(element as unknown as Element);
+  }
 }
 
 function focusEvent(element: FakeTabElement): FocusEvent {
@@ -229,6 +249,7 @@ test("manual activation moves roving focus without selecting until Space or Ente
 test("automatic activation selects both keyboard and directly focused tabs", () => {
   const result = createTabs({ activationMode: "automatic" });
   const dom = fakeTabDom(result.id, tabs.map((item) => item.key));
+  registerTabsDom(result, tabs, dom);
   const overview = dom.elements.get("account-tabs-tab-overview") as FakeTabElement;
   const security = dom.elements.get("account-tabs-tab-security") as FakeTabElement;
 
@@ -338,6 +359,7 @@ test("external selection does not steal manual roving focus while the tablist ha
   const selected = ref<string | null>("overview");
   const result = createTabs({ selected });
   const dom = fakeTabDom(result.id, tabs.map((item) => item.key));
+  registerTabsDom(result, tabs, dom);
   const security = dom.elements.get("account-tabs-tab-security") as FakeTabElement;
 
   result.tabProps(tabs[2] as TabItem).onFocus(focusEvent(security));
@@ -365,6 +387,7 @@ test("removing or disabling the active selection repairs model and DOM focus", a
     onSelectionChange: (key) => changes.push(key),
   });
   const dom = fakeTabDom(result.id, ["a", "b", "c"]);
+  registerTabsDom(result, items.value, dom);
   const b = dom.elements.get("dynamic-tabs-tab-b") as FakeTabElement;
   const c = dom.elements.get("dynamic-tabs-tab-c") as FakeTabElement;
   const a = dom.elements.get("dynamic-tabs-tab-a") as FakeTabElement;
@@ -409,6 +432,7 @@ test("focus repair uses the calculated fallback while a model proxy still expose
   }));
   const result = createTabs({ id: "proxy-tabs", items, selected });
   const dom = fakeTabDom(result.id, ["a", "b", "c"]);
+  registerTabsDom(result, items.value, dom);
   const b = dom.elements.get("proxy-tabs-tab-b") as FakeTabElement;
   const c = dom.elements.get("proxy-tabs-tab-c") as FakeTabElement;
 
@@ -424,6 +448,7 @@ test("focus repair uses the calculated fallback while a model proxy still expose
 test("focusout keeps in-list focus and resets roving target after leaving", () => {
   const result = createTabs();
   const dom = fakeTabDom(result.id, tabs.map((item) => item.key));
+  registerTabsDom(result, tabs, dom);
   const overview = dom.elements.get("account-tabs-tab-overview") as FakeTabElement;
   const security = dom.elements.get("account-tabs-tab-security") as FakeTabElement;
 

@@ -39,7 +39,7 @@ const IGNORED_DIRECTORIES = new Set([
   "node_modules",
 ])
 const DEFAULT_THEME_IMPORT =
-  /(?:^|\n)\s*(?:import\s+(?:[^"'\n]+?\s+from\s+)?|@import\s+(?:url\(\s*)?)["']@nagi-labs\/nagi-ui\/(?:default-theme|theme)\.css["']/u
+  /(?:^|\n)\s*(?:import\s+(?:[^"'\n]+?\s+from\s+)?|@import\s+(?:url\(\s*)?)["']@nagi-labs\/nagi-ui\/(?:default-theme|styles|theme)\.css["']/u
 const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//gu
 const STATUS_PRIORITY = {
   clean: 0,

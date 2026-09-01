@@ -15,7 +15,9 @@ interface FakeMenu {
   isConnected: boolean;
   openState: boolean;
   calls: string[];
+  items: HTMLElement[];
   matches: (selector: string) => boolean;
+  querySelectorAll: <ElementType extends Element = Element>(selector: string) => ElementType[];
   showPopover: () => void;
   hidePopover: () => void;
   focus: () => void;
@@ -43,8 +45,12 @@ function fakeMenu(): FakeMenu {
     isConnected: true,
     openState: false,
     calls: [],
+    items: [],
     matches(selector) {
       return selector === ":popover-open" && this.openState;
+    },
+    querySelectorAll() {
+      return this.items;
     },
     showPopover() {
       this.openState = true;
@@ -81,7 +87,7 @@ function keyboardEvent(key: string) {
   return { event, prevented: () => prevented };
 }
 
-test("emits menu-button wiring with the container as an empty-menu focus fallback", () => {
+test("[MNU-MENU-SEM-01] emits menu-button wiring with the container as an empty-menu focus fallback", () => {
   const menu = createMenu();
 
   assert.equal(menu.id, "actions");
@@ -89,6 +95,7 @@ test("emits menu-button wiring with the container as an empty-menu focus fallbac
   assert.equal(menu.triggerProps.popovertarget, "actions");
   assert.equal(menu.triggerProps["aria-controls"], "actions");
   assert.equal(menu.triggerProps["aria-haspopup"], "menu");
+  assert.equal(menu.triggerProps["aria-expanded"], "false");
   assert.equal(menu.menuProps.id, "actions");
   assert.equal(menu.menuProps.role, "menu");
   assert.equal(menu.menuProps.tabindex, -1);
@@ -117,22 +124,20 @@ test("itemProps supplies stable ids, managed-focus wiring, and disabled semantic
   assert.equal(menu.itemProps(actions[1])["aria-disabled"], "true");
 });
 
-test("ArrowDown opens on and focuses the first enabled native item", async () => {
+test("[MNU-MENU-SEM-01][MNU-POP-STATE-01] ArrowDown opens on and focuses the first enabled native item", async () => {
   const element = fakeMenu();
   const focused: string[] = [];
-  Object.assign(element, {
-    ownerDocument: {
-      getElementById(id: string) {
-        return { focus() { focused.push(id); } };
-      },
-    },
-  });
+  element.items.push({
+    id: "actions-item-duplicate",
+    focus() { focused.push(this.id); },
+  } as unknown as HTMLElement);
   const menu = createMenu();
   const down = keyboardEvent("ArrowDown");
 
   menu.triggerProps.onKeydown(down.event);
   assert.equal(down.prevented(), true);
   assert.equal(menu.open.value, true);
+  assert.equal(menu.triggerProps["aria-expanded"], "true");
   assert.equal(menu.activeKey.value, "duplicate");
 
   menu.menuProps.onToggle(toggleEvent(element, "open"));
@@ -185,30 +190,20 @@ test("typeahead moves managed item focus and repeated keys cycle", (t) => {
   assert.equal(menu.activeKey.value, "duplicate");
 });
 
-test("Enter selects the active item, closes, and restores trigger focus", async (t) => {
+test("Enter selects the active item, closes, and restores trigger focus", async () => {
   const selected: string[] = [];
   const element = fakeMenu();
   element.openState = true;
   const trigger = {
+    isConnected: true,
     focused: false,
-    getAttribute: (name: string) => (name === "popovertarget" ? "actions" : null),
     focus() {
       this.focused = true;
     },
   };
-  const original = Object.getOwnPropertyDescriptor(globalThis, "document");
-  Object.defineProperty(globalThis, "document", {
-    configurable: true,
-    value: {
-      getElementById: (id: string) => (id === "actions" ? element : trigger),
-    },
-  });
-  t.after(() => {
-    if (original) Object.defineProperty(globalThis, "document", original);
-    else Reflect.deleteProperty(globalThis, "document");
-  });
 
   const menu = createMenu({ onSelect: (item) => selected.push(item.key) });
+  menu.triggerProps.ref(trigger as unknown as HTMLElement);
   menu.menuProps.onToggle(toggleEvent(element, "open"));
   const enter = keyboardEvent("Enter");
   menu.menuProps.onKeydown(enter.event);
@@ -230,16 +225,13 @@ test("container fallback dispatches one plain anchor click for native menu links
   let clicks = 0;
   let linkProps: ReturnType<typeof menu.itemProps>;
   const anchor = {
+    id: "actions-item-duplicate",
     click() {
       clicks += 1;
       linkProps.onClick({ type: "click" } as unknown as MouseEvent);
     },
   };
-  Object.assign(element, {
-    ownerDocument: {
-      getElementById: (id: string) => id === "actions-item-duplicate" ? anchor : null,
-    },
-  });
+  element.items.push(anchor as unknown as HTMLElement);
   linkProps = menu.itemProps(actions[0], { nativeLink: true });
   menu.menuProps.onToggle(toggleEvent(element, "open"));
   menu.menuProps.onKeydown(keyboardEvent("Enter").event);
@@ -289,11 +281,12 @@ test("reactive item removal repairs the active key and owned DOM focus", async (
     contains: (candidate: Element) => candidate === activeElement,
     ownerDocument: {
       activeElement,
-      getElementById(id: string) {
-        return { focus() { focused.push(id); } };
-      },
     },
   });
+  element.items.push({
+    id: "actions-item-duplicate",
+    focus() { focused.push(this.id); },
+  } as unknown as HTMLElement);
   menu.menuProps.onToggle(toggleEvent(element, "open"));
   menu.activeKey.value = "rename";
 
@@ -325,9 +318,6 @@ test("an open empty fallback promotes focus when an enabled item appears", async
   Object.assign(element, {
     ownerDocument: {
       activeElement: element,
-      getElementById(id: string) {
-        return { focus() { focused.push(id); } };
-      },
     },
   });
   menu.menuProps.onToggle(toggleEvent(element, "open"));
@@ -335,6 +325,10 @@ test("an open empty fallback promotes focus when an enabled item appears", async
   assert.equal(menu.activeKey.value, null);
   assert.equal(element.calls.includes("focus"), true);
 
+  element.items.push({
+    id: "actions-item-available",
+    focus() { focused.push(this.id); },
+  } as unknown as HTMLElement);
   items.value = [{ key: "available", label: "Available" }];
   await nextTick();
   await nextTick();

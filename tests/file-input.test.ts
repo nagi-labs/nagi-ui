@@ -20,11 +20,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 test("FileInput renders a visible native file control and targets attrs at it", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-file-input-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-file-input-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -47,7 +49,7 @@ test("FileInput renders a visible native file control and targets attrs at it", 
           capture: "environment",
           webkitdirectory: "",
           "aria-describedby": "attachment-help",
-          "data-track": "attachment-picker",
+          "data-track": "upload",
           class: "consumer-control",
           style: "max-inline-size: 28rem",
         }),
@@ -69,13 +71,14 @@ test("FileInput renders a visible native file control and targets attrs at it", 
     assert.match(control, /disabled/u);
     assert.match(control, /required/u);
     assert.match(control, /capture="environment"/u);
-    assert.match(control, /\swebkitdirectory(?:\s|>)/u);
+    assert.match(control, /\swebkitdirectory(?:="true")?(?:\s|>)/u);
     assert.match(control, /aria-describedby="attachment-help"/u);
-    assert.match(control, /data-track="attachment-picker"/u);
-    assert.match(control, /style="max-inline-size:28rem;"/u);
+    assert.match(control, /data-track="upload"/u);
+    assert.match(control, /style="max-inline-size:\s*28rem;?"/u);
     assert.equal(html.match(/<input/gu)?.length, 1);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
@@ -84,7 +87,8 @@ test("FileInput leaves file state, chooser, and reset policy with the browser", 
 
   assert.match(source, /defineOptions\(\{ inheritAttrs: false \}\)/u);
   assert.match(source, /label: string/u);
-  assert.match(source, /<input[\s\S]*v-bind="\$attrs"[\s\S]*type="file"/u);
+  assert.doesNotMatch(source, /v-bind="\$attrs"/u);
+  assert.match(source, /mergeElementProps\(attrs,/u);
   assert.match(source, /&::file-selector-button/u);
   assert.match(
     source,
@@ -103,9 +107,9 @@ test("FileInput leaves file state, chooser, and reset policy with the browser", 
   assert.doesNotMatch(source, /<slot\b|defineModel\b|modelValue|v-model/u);
   assert.doesNotMatch(
     source,
-    /\b(?:ref|reactive|computed|watch|watchEffect|onMounted|onUpdated)\s*[<(]/u,
+    /\b(?:ref|reactive|watch|watchEffect|onMounted|onUpdated)\s*[<(]/u,
   );
-  assert.doesNotMatch(source, /\b(?:FileList|FileReader|FormData)\b|\.files\b|@change\b/u);
+  assert.doesNotMatch(source, /\b(?:FileList|FileReader|FormData)\b|\.files\b/u);
   assert.doesNotMatch(source, /\b(?:document|window|ResizeObserver)\b/iu);
   assert.doesNotMatch(source, /display:\s*none|opacity:\s*0|clip-path|sr-only/iu);
   assert.doesNotMatch(source, /var\([^\n,]+,/u, "theme token fallbacks are forbidden");

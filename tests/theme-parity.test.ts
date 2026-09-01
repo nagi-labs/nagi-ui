@@ -7,6 +7,7 @@ import { nagiThemeTokens } from "../packages/core/theme/tokens.mjs";
 
 const repo = path.join(import.meta.dirname, "..");
 const themePath = path.join(repo, "packages/core/theme/default-theme.css");
+const basePath = path.join(repo, "packages/core/theme/base.css");
 const blueprintRoot = path.join(repo, "packages/core/blueprints");
 const unovisBridgePath = path.join(
   repo,
@@ -41,6 +42,15 @@ function shippedTokenUses(): { file: string; token: string }[] {
   }
   return uses;
 }
+
+test("base styles consume public tokens without fallback values or control resets", () => {
+  const source = fs.readFileSync(basePath, "utf8");
+  assert.match(source, /:where\(a:any-link\):focus-visible/u);
+  assert.match(source, /:where\(button, input, select, textarea\)/u);
+  assert.doesNotMatch(source, /var\(--n(?:agi)?-[a-z0-9-]+\s*,/u);
+  assert.doesNotMatch(source, /appearance\s*:\s*none/u);
+  assert.doesNotMatch(source, /text-decoration\s*:\s*none/u);
+});
 
 test("default theme, public manifest, and shipped token-consumer vocabulary stay identical", () => {
   const tokens = themeTokens();

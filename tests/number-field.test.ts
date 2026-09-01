@@ -20,11 +20,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 test("NumberField renders one native number input and two explicit step actions", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-number-field-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-number-field-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -50,7 +52,7 @@ test("NumberField renders one native number input and two explicit step actions"
           incrementLabel: "Add one guest",
           inputmode: "numeric",
           autocomplete: "off",
-          "aria-describedby": "guest-help",
+          ariaDescribedby: "guest-help",
           class: "consumer-control",
         }),
       }),
@@ -86,15 +88,18 @@ test("NumberField renders one native number input and two explicit step actions"
     assert.equal(html.match(/<input/gu)?.length, 1);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
 test("NumberField disables both step actions when the native input is readonly", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-number-field-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-number-field-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -124,6 +129,7 @@ test("NumberField disables both step actions when the native input is readonly",
     assert.doesNotMatch(control, /value="null"/u);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
@@ -137,7 +143,7 @@ test("NumberField keeps browser-owned behavior behind one fixed binding", () => 
     /> \.button\s*\{[^}]*inline-size:\s*var\(--nagi-size-control\)/su,
   );
   assert.match(source, /> \.input\s*\{[^}]*min-inline-size:\s*4ch/su);
-  assert.match(source, /<input[\s\S]*v-bind="\$attrs"[\s\S]*type="number"/u);
+  assert.doesNotMatch(source, /v-bind="\$attrs"/u);
   assert.match(source, /:name="name"[\s\S]*:form="form"/u);
   assert.match(source, /:min="min"[\s\S]*:max="max"[\s\S]*:step="step"/u);
   assert.match(source, /:disabled="disabled"[\s\S]*:readonly="readOnly"[\s\S]*:required="required"/u);
@@ -147,7 +153,7 @@ test("NumberField keeps browser-owned behavior behind one fixed binding", () => 
   assert.doesNotMatch(source, /\.(?:stepUp|stepDown|valueAsNumber)\b/u);
   assert.doesNotMatch(source, /useNativeFormReset|setTimeout|queueMicrotask/u);
   assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|onUpdated)\s*\(/u);
-  assert.doesNotMatch(source, /\b(?:document|window|Event|ResizeObserver)\b/u);
+  assert.doesNotMatch(source, /\b(?:document|window|ResizeObserver)\b/u);
   assert.doesNotMatch(source, /locale|formatter|parser|scrub|gesture/iu);
   assert.doesNotMatch(source, /\.zone\b/u);
   assert.doesNotMatch(source, /\bmargin\s*:/u, "surface owns no external margin");

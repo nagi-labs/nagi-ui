@@ -84,11 +84,11 @@ consumer should own**, rather than the state machine.
 
 After ownership, continue passing standard props to `usePopover`, `useMenu`,
 and related composables, leaving keyboard, focus, and dismiss responsibilities
-in core/the UA. Keep running `nagi-ui diff`, Nagi UI lint, Nagi CSS lint, and
-real-browser tests so upstream accessibility and browser fixes can be merged.
-To preserve the base for a three-way merge, commit the unchanged source
-immediately after `own`. See the
-[package-first / own-on-demand model](./package-ownership-model.md).
+in core/the UA. Keep running Nagi UI lint, Nagi CSS lint, conformance
+contracts, and real-browser tests so upstream accessibility and browser fixes
+can be adopted deliberately. To preserve the base for comparison, commit the
+unchanged source immediately after `own`. See the
+[ownership model](./package-ownership-model.md).
 
 Conversely, if post-ownership changes require Teleport, a custom focus trap,
 custom light dismiss, a `data-state` that duplicates native state, or an

@@ -4,9 +4,11 @@ import {
   nextTick,
   onBeforeUnmount,
   ref,
+  shallowRef,
   toValue,
   useId,
-  watchEffect,
+  watch,
+  type ComponentPublicInstance,
   type CSSProperties,
   type ComputedRef,
   type MaybeRefOrGetter,
@@ -14,6 +16,7 @@ import {
 } from "vue";
 
 import { createAnchorPair } from "./anchor.ts";
+import { createElementRegistry } from "./element-registry.ts";
 import { useNativeFormReset } from "./native-form.ts";
 import { modelValueAccepted, type WritableRef } from "./model-sync.ts";
 import { usePopover, type PopoverProps } from "./popover.ts";
@@ -38,6 +41,7 @@ export interface UseMultiSelectOptions<Item, Key extends string = string> {
 }
 
 export interface MultiSelectInputProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "combobox";
   value: string;
@@ -59,6 +63,7 @@ export interface MultiSelectInputProps {
 }
 
 export interface MultiSelectOptionProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "option";
   "aria-selected": "true" | "false";
@@ -69,6 +74,7 @@ export interface MultiSelectOptionProps {
 }
 
 export interface MultiSelectFormProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   multiple: true;
   name?: string | undefined;
   form?: string | undefined;
@@ -83,6 +89,8 @@ export interface MultiSelectBinding<Item, Key extends string = string> {
   selected: Ref<readonly Key[]>;
   inputValue: Ref<string>;
   activeKey: Ref<Key | null>;
+  inputElement: Readonly<Ref<HTMLInputElement | null>>;
+  formElement: Readonly<Ref<HTMLSelectElement | null>>;
   visibleItems: ComputedRef<readonly Item[]>;
   popupProps: PopoverProps & { style?: CSSProperties };
   listboxProps: { id: string; role: "listbox"; "aria-multiselectable": "true" };
@@ -103,6 +111,7 @@ interface MultiSelectComponentItem {
 
 export interface MultiSelectComponentProps<Item extends MultiSelectComponentItem> {
   readonly items: readonly Item[];
+  readonly id?: string | undefined;
   readonly label: string;
   readonly name?: string | undefined;
   readonly form?: string | undefined;
@@ -114,8 +123,8 @@ export interface MultiSelectComponentProps<Item extends MultiSelectComponentItem
 
 export interface MultiSelectComponentModel {
   selected: Ref<readonly string[]>;
-  formControl: Readonly<Ref<HTMLSelectElement | null>>;
-  inputControl: Readonly<Ref<HTMLInputElement | null>>;
+  formControl?: Readonly<Ref<HTMLSelectElement | null>>;
+  inputControl?: Readonly<Ref<HTMLInputElement | null>>;
 }
 
 let multiSelectCount = 0;
@@ -130,10 +139,12 @@ function createMultiSelect<Item, Key extends string>(
   const invalid = ref(false);
   const popover = usePopover({ ...(options.open ? { open: options.open } : {}), id: `${id}-popup` });
   const anchor = createAnchorPair(id, {});
-  let inputElement: HTMLInputElement | null = null;
+  const inputElement = shallowRef<HTMLInputElement | null>(null);
+  const formElement = shallowRef<HTMLSelectElement | null>(null);
   let popupElement: HTMLElement | null = null;
   let detachAnchor: (() => void) | null = null;
-  const currentInput = () => options.inputControl?.value ?? inputElement;
+  const optionElements = createElementRegistry<Key>();
+  const currentInput = () => options.inputControl?.value ?? inputElement.value;
 
   const items = () => toValue(options.items);
   const keyOf = (item: Item) => options.getKey(item);
@@ -148,11 +159,20 @@ function createMultiSelect<Item, Key extends string>(
   const enabled = () => visibleItems.value.filter((item) => !itemDisabled(item));
   const optionId = (key: Key) => `${id}-option-${encodeURIComponent(key)}`;
 
+  function setInput(element: Element | ComponentPublicInstance | null) {
+    inputElement.value = element as HTMLInputElement | null;
+    syncAnchor(popover.open.value);
+  }
+
+  function setFormControl(element: Element | ComponentPublicInstance | null) {
+    formElement.value = element as HTMLSelectElement | null;
+  }
+
   function syncAnchor(open: boolean) {
     detachAnchor?.();
     detachAnchor = null;
-    if (!open || anchor.native || !inputElement || !popupElement) return;
-    detachAnchor = anchor.attach(inputElement, popupElement);
+    if (!open || anchor.native || !inputElement.value || !popupElement) return;
+    detachAnchor = anchor.attach(inputElement.value, popupElement);
   }
 
   function write(next: readonly Key[]) {
@@ -165,7 +185,7 @@ function createMultiSelect<Item, Key extends string>(
 
   function clearQuery() {
     inputValue.value = "";
-    if (inputElement) inputElement.value = "";
+    if (inputElement.value) inputElement.value.value = "";
   }
 
   function commit(next: readonly Key[], clearOnAccept = false): boolean {
@@ -210,8 +230,7 @@ function createMultiSelect<Item, Key extends string>(
       activeKey.value = keyOf(candidate);
       const key = keyOf(candidate);
       queueMicrotask(() => {
-        const document = currentInput()?.ownerDocument;
-        document?.getElementById(optionId(key))?.scrollIntoView({ block: "nearest" });
+        optionElements.get(key)?.scrollIntoView({ block: "nearest" });
       });
     }
   }
@@ -229,6 +248,7 @@ function createMultiSelect<Item, Key extends string>(
   };
 
   const inputProps: MultiSelectInputProps = {
+    ref: setInput,
     id: `${id}-input`,
     role: "combobox",
     get value() { return inputValue.value; },
@@ -244,17 +264,17 @@ function createMultiSelect<Item, Key extends string>(
     get readonly() { return readOnly(); },
     style: anchor.anchorStyle,
     onInput(event) {
-      inputElement = event.currentTarget as HTMLInputElement;
+      inputElement.value = event.currentTarget as HTMLInputElement;
       if (disabled() || readOnly()) return;
-      inputValue.value = inputElement.value;
+      inputValue.value = inputElement.value.value;
       popover.show();
     },
     onClick(event) {
-      inputElement = event.currentTarget as HTMLInputElement;
+      inputElement.value = event.currentTarget as HTMLInputElement;
       if (!disabled() && !readOnly()) popover.show();
     },
     onKeydown(event) {
-      inputElement = event.currentTarget as HTMLInputElement;
+      inputElement.value = event.currentTarget as HTMLInputElement;
       if (disabled() || readOnly() || event.isComposing || event.keyCode === 229) return;
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
@@ -277,8 +297,11 @@ function createMultiSelect<Item, Key extends string>(
     onBlur(event) {
       const target = event.currentTarget;
       queueMicrotask(() => {
-        const document = (target as HTMLElement).ownerDocument;
-        if (document.activeElement !== target) popover.hide();
+        const root = (target as HTMLElement).getRootNode();
+        const active = "activeElement" in root
+          ? (root as Document | ShadowRoot).activeElement
+          : null;
+        if (active !== target) popover.hide();
       });
     },
   };
@@ -291,6 +314,7 @@ function createMultiSelect<Item, Key extends string>(
   }
 
   const formProps: MultiSelectFormProps = {
+    ref: setFormControl,
     multiple: true,
     get name() { return toValue(options.name); },
     get form() { return toValue(options.form); },
@@ -305,28 +329,64 @@ function createMultiSelect<Item, Key extends string>(
     },
   };
 
-  if (options.formControl) {
+  const resetControl = options.formControl ?? formElement;
+  if (options.formControl || instance) {
     const initial = [...options.selected.value];
-    useNativeFormReset(options.formControl, () => reset(initial));
+    useNativeFormReset(resetControl, () => reset(initial));
   }
 
-  watchEffect(() => {
-    if (!(toValue(options.required) ?? false) || disabled() || readOnly() || options.selected.value.length > 0) {
-      invalid.value = false;
-    }
-    if (disabled() || readOnly() || !popover.open.value) {
-      if (disabled() || readOnly()) popover.hide();
+  function reconcileValidity(
+    [required, isDisabled, isReadOnly, selectionCount]: readonly [boolean, boolean, boolean, number],
+  ) {
+    if (!required || isDisabled || isReadOnly || selectionCount > 0) invalid.value = false;
+  }
+
+  function reconcileInteractionMode(
+    [isDisabled, isReadOnly, isOpen]: readonly [boolean, boolean, boolean],
+  ) {
+    if (isDisabled || isReadOnly) {
+      if (isOpen) popover.hide();
       activeKey.value = null;
-      return;
+    } else if (!isOpen) {
+      activeKey.value = null;
     }
-    const keys = enabled().map(keyOf);
-    if (activeKey.value !== null && !keys.includes(activeKey.value)) activeKey.value = null;
-  }, { flush: "sync" });
+  }
+
+  function reconcileCollection(
+    [visibleKeys, enabledKeys]: readonly [readonly Key[], readonly Key[]],
+  ) {
+    optionElements.prune(visibleKeys);
+    if (activeKey.value !== null && !enabledKeys.includes(activeKey.value)) {
+      activeKey.value = null;
+    }
+  }
+
+  watch(
+    () => [
+      toValue(options.required) ?? false,
+      disabled(),
+      readOnly(),
+      options.selected.value.length,
+    ] as const,
+    reconcileValidity,
+    { flush: "sync", immediate: true },
+  );
+  watch(
+    () => [disabled(), readOnly(), popover.open.value] as const,
+    reconcileInteractionMode,
+    { flush: "sync", immediate: true },
+  );
+  watch(
+    () => [visibleItems.value.map(keyOf), enabled().map(keyOf)] as const,
+    reconcileCollection,
+    { flush: "sync", immediate: true },
+  );
 
   if (instance) {
     onBeforeUnmount(() => {
       detachAnchor?.();
       detachAnchor = null;
+      optionElements.clear();
     });
   }
 
@@ -334,16 +394,20 @@ function createMultiSelect<Item, Key extends string>(
     selected: options.selected,
     inputValue,
     activeKey,
+    inputElement,
+    formElement,
     visibleItems,
     popupProps,
     listboxProps: { id: `${id}-listbox`, role: "listbox", "aria-multiselectable": "true" },
     inputProps,
     optionProps(item) {
+      const key = keyOf(item);
       return {
-        id: optionId(keyOf(item)),
+        ref: optionElements.refFor(key),
+        id: optionId(key),
         role: "option",
         "aria-selected": isSelected(item) ? "true" : "false",
-        ...(activeKey.value === keyOf(item) ? { "data-active": "" as const } : {}),
+        ...(activeKey.value === key ? { "data-active": "" as const } : {}),
         ...(itemDisabled(item) ? { "aria-disabled": "true" as const } : {}),
         onPointerdown(event) { event.preventDefault(); },
         onClick(event) {
@@ -374,6 +438,7 @@ export function useMultiSelect(
   if (!model) return createMultiSelect(optionsOrProps as UseMultiSelectOptions<unknown>);
   const props = optionsOrProps as MultiSelectComponentProps<MultiSelectComponentItem>;
   return createMultiSelect({
+    ...(props.id === undefined ? {} : { id: props.id }),
     items: () => props.items,
     selected: model.selected,
     getKey: (item) => item.key,
@@ -386,7 +451,7 @@ export function useMultiSelect(
     disabled: () => props.disabled,
     readOnly: () => props.readOnly,
     required: () => props.required,
-    formControl: model.formControl,
-    inputControl: model.inputControl,
+    ...(model.formControl ? { formControl: model.formControl } : {}),
+    ...(model.inputControl ? { inputControl: model.inputControl } : {}),
   }) as unknown as MultiSelectBinding<unknown>;
 }

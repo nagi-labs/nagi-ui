@@ -1,29 +1,48 @@
 <script setup lang="ts">
-import { ref, useId } from "vue";
+import { computed, ref, useAttrs, useId } from "vue";
 
-import { useNativeRadioReset } from "@nagi-labs/nagi-ui";
+import { mergeElementProps, useNativeRadioReset } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    value: string;
-    id?: string;
-    name?: string;
-    disabled?: boolean;
-    required?: boolean;
-    form?: string;
-  }>(),
-  {
-    disabled: false,
-    required: false,
-  },
-);
+const {
+  label,
+  value,
+  id,
+  disabled = false,
+  required = false,
+} = defineProps<{
+  label: string;
+  value: string;
+  id?: string;
+  disabled?: boolean;
+  required?: boolean;
+}>();
 
+const attrs = useAttrs();
 const model = defineModel<string | null>({ default: null });
 const generatedId = useId();
 const input = ref<HTMLInputElement | null>(null);
+const inputProps = computed(() =>
+  mergeElementProps(attrs, {
+    type: "radio",
+    id: id ?? generatedId,
+    value,
+    disabled,
+    required,
+  }),
+);
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+  keydown: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+}>();
 
 useNativeRadioReset(input, model);
 </script>
@@ -33,17 +52,22 @@ useNativeRadioReset(input, model);
     <input
       ref="input"
       v-model="model"
-      v-bind="$attrs"
       class="input"
-      type="radio"
-      :id="id ?? generatedId"
-      :value="value"
-      :name="name"
-      :disabled="disabled"
-      :required="required"
-      :form="form"
+      v-bind="inputProps"
+      @blur="emit('blur', $event)"
+      @change="emit('change', $event)"
+      @click="emit('click', $event)"
+      @focus="emit('focus', $event)"
+      @input="emit('input', $event)"
+      @invalid="emit('invalid', $event)"
+      @keydown="emit('keydown', $event)"
+      @keyup="emit('keyup', $event)"
     />
-    <label class="label" :for="id ?? generatedId">{{ label }}</label>
+    <label
+      class="label"
+      :for="id ?? generatedId"
+      >{{ label }}</label
+    >
   </div>
 </template>
 

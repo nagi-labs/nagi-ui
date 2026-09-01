@@ -4,6 +4,10 @@ This document is the architecture contract for Nagi UI. Changes to public
 behavior or component structure must preserve these principles or update this
 document with the reason the boundary changed.
 
+The product concept — Nagi UI as a system for building and maintaining the
+component library an application owns — is defined in [CONCEPT.md](CONCEPT.md).
+This charter governs how the canonical components are implemented.
+
 ## Native platform first
 
 Use HTML elements and platform behavior before implementing a JavaScript state
@@ -20,6 +24,41 @@ families, `asChild`, render props, Teleport, or portals as its normal
 composition model. Vue attribute injection and composables attach behavior to
 the elements visible in the template.
 
+Nagi does not avoid abstraction. It confines behavioral abstraction to narrow
+composables so rendered DOM, structural decisions, and styling remain visible
+in an ordinary Vue SFC. Accessibility is not guaranteed merely by choosing a
+composable instead of a primitive component: either model can be misassembled
+or restyled incorrectly. Nagi's boundary exists to keep the owned source local,
+traceable from rendered DOM, and editable without adopting a second component
+composition language.
+
+A composable may own behavior that is difficult to implement correctly in each
+Blueprint, such as keyboard navigation, focus coordination, ID relationships,
+native/model synchronization, or dismiss behavior. It must not become a hidden
+renderer or a compound-component API expressed through another syntax. Keep
+the following in the SFC whenever they are meaningful to an owner:
+
+- the native elements and their nesting;
+- structural branches and content placement;
+- static semantics and attributes whose meaning is local to the Blueprint;
+- component styling and token use.
+
+Complexity alone does not decide this boundary. A short selection transition,
+activation policy, or navigation adapter belongs in a narrow public composable
+or helper when it is reusable independently of the rendered structure. Keep
+template-only derivations—slot names, keys, structural branches, and event
+forwarding—beside the markup. Fixed implementation glue that is unsafe or not
+useful to assemble independently belongs in `component-controls`, not in the
+public headless API.
+
+Treat a composable API as too broad when understanding or changing the rendered
+structure requires reconstructing it from prop getters, slot-prop protocols,
+registries, or opaque context objects. A developer should be able to start from
+an element in browser developer tools, find the corresponding markup in the
+owned SFC, and understand the structural decision there. Reading the composable
+may be necessary to understand complex behavior, but not to discover the basic
+DOM that the component renders.
+
 Avoid custom focus traps and custom top-layer stacks when the browser already
 owns those mechanisms.
 
@@ -32,11 +71,24 @@ Invest JavaScript where the platform has no complete equivalent, including
 Menu, Listbox, Combobox, Tabs, Tree, advanced date/time interaction, and
 coordinated composite widgets.
 
-## Package first, own on demand
+## Own-first, package for light use
 
-The normal path is a themeable package component. Each component's canonical
-SFC is also the source copied by `nagi-ui own`; package and ownership versions
-must never be separate implementations.
+Nagi UI's primary model is source ownership: for full adoption, an application
+owns its component library and Nagi UI provides the canonical implementations,
+verification, and tooling to maintain it. The package remains available as a
+convenience tier for evaluation and light use, but it is not the primary design
+constraint.
+
+This replaces the earlier package-first rule. Libraries grow flexible public
+APIs because their consumers cannot edit the implementation; here the
+verification stack exists so that editing the implementation is safe, which
+removes the reason to grow those APIs. Configuration belongs in the API;
+structural customization belongs in owned source.
+
+Each component's canonical SFC is simultaneously the package implementation and
+the source that ownership copies; the two must never be separate
+implementations. The Blueprint is therefore a reference implementation in the
+literal sense.
 
 Customization follows this order:
 
@@ -45,8 +97,11 @@ Customization follows this order:
 3. a few content-only slots;
 4. source ownership for DOM, behavior, or product-specific integration.
 
-Package and owned components may coexist. Owned source is maintained through
-source metadata, `nagi-ui diff`, Nagi CSS, and consumer integration tests.
+Package and owned components may coexist. After ownership, the local repository
+is the source of truth. Divergence is managed through `@nagi-source` provenance
+metadata, git history, and executable verification — conformance contracts,
+verified bindings, and Nagi CSS — not through central drift tracking or deep
+behavior vendoring.
 
 ## API boundaries
 

@@ -33,10 +33,10 @@ test("free-form autocomplete commits suggestions without rejecting arbitrary tex
   await expect(page.getByRole("option", { name: "Jamaica" })).toBeVisible();
   await input.press("ArrowDown");
   await input.press("Enter");
-  await expect(page.getByTestId("autocomplete-model")).toHaveText("Jamaica");
+  await expect(page.locator("#autocomplete-model")).toHaveText("Jamaica");
 
   await input.fill("Moon base");
-  await expect(page.getByTestId("autocomplete-model")).toHaveText("Moon base");
+  await expect(page.locator("#autocomplete-model")).toHaveText("Moon base");
 });
 
 test("autocomplete preserves IME composition and rolls a controlled rejection back", async ({ page }) => {
@@ -48,7 +48,7 @@ test("autocomplete preserves IME composition and rolls a controlled rejection ba
   });
   await expect(accepted).toHaveValue("日本");
   await accepted.evaluate((element) => element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true })));
-  await expect(page.getByTestId("autocomplete-model")).toHaveText("日本");
+  await expect(page.locator("#autocomplete-model")).toHaveText("日本");
 
   const locked = page.getByRole("combobox", { name: "Locked destination" });
   await locked.evaluate((element: HTMLInputElement) => {
@@ -66,22 +66,22 @@ test("collection and OTP fields submit repeated native values and reset", async 
   await expect(multi).toHaveAttribute("aria-describedby", "countries-help");
   await multi.click();
   await page.getByRole("option", { name: "Jamaica" }).click();
-  await expect(page.getByTestId("multi-model")).toHaveText("jp,jm");
+  await expect(page.locator("#multi-model")).toHaveText("jp,jm");
 
   const tags = page.getByRole("textbox", { name: "Topics", exact: true });
   await expect(tags).toHaveAttribute("aria-describedby", "topics-help");
   await tags.fill("aria");
   await tags.press("Enter");
-  await expect(page.getByTestId("tags-model")).toHaveText("vue,aria");
+  await expect(page.locator("#tags-model")).toHaveText("vue,aria");
 
   const otp = page.getByRole("textbox", { name: "Verification code", exact: true });
   await expect(otp).toHaveAttribute("aria-describedby", "otp-help");
   await expect(otp).toHaveAttribute("enterkeyhint", "done");
   await otp.fill("12a34");
-  await expect(page.getByTestId("otp-model")).toHaveText("1234");
+  await expect(page.locator("#otp-model")).toHaveText("1234");
 
   await page.getByRole("button", { name: "Submit expanded form" }).click();
-  await expect(page.getByTestId("submission")).toHaveText(JSON.stringify({
+  await expect(page.locator("#submission")).toHaveText(JSON.stringify({
     destination: "Custom destination",
     countries: ["jp", "jm"],
     topics: ["vue", "aria"],
@@ -89,16 +89,16 @@ test("collection and OTP fields submit repeated native values and reset", async 
   }));
 
   await page.getByRole("button", { name: "Reset expanded form" }).click();
-  await expect(page.getByTestId("multi-model")).toHaveText("jp");
-  await expect(page.getByTestId("tags-model")).toHaveText("vue");
-  await expect(page.getByTestId("otp-model")).toHaveText("12");
+  await expect(page.locator("#multi-model")).toHaveText("jp");
+  await expect(page.locator("#tags-model")).toHaveText("vue");
+  await expect(page.locator("#otp-model")).toHaveText("12");
 });
 
 test("required collection channels block empty submission and disabled channels are omitted", async ({ page }) => {
   await page.locator("#expanded-form").getByRole("button", { name: "Remove Japan" }).click();
   await page.getByRole("textbox", { name: "Verification code", exact: true }).fill("");
   await page.getByRole("button", { name: "Submit expanded form" }).click();
-  await expect(page.getByTestId("submission")).toHaveText("No submission yet");
+  await expect(page.locator("#submission")).toHaveText("No submission yet");
   expect(await page.locator('select[name="countries"]').evaluate(
     (control: HTMLSelectElement) => control.checkValidity(),
   )).toBe(false);
@@ -126,7 +126,7 @@ test("OTP exact-length validation preserves valid characters after invalid raw i
   await otp.fill("12");
   expect(await otp.evaluate((control: HTMLInputElement) => control.checkValidity())).toBe(false);
   await otp.fill("١٢٣٤");
-  await expect(page.getByTestId("otp-model")).toHaveText("١٢٣٤");
+  await expect(page.locator("#otp-model")).toHaveText("١٢٣٤");
   expect(await otp.evaluate((control: HTMLInputElement) => control.checkValidity())).toBe(true);
 });
 
@@ -157,16 +157,16 @@ test("TagsInput preserves IME composition and splits pasted values", async ({ pa
   await input.evaluate((element) => element.dispatchEvent(new KeyboardEvent("keydown", {
     bubbles: true, key: "Enter", keyCode: 229, isComposing: true,
   })));
-  await expect(page.getByTestId("tags-model")).toHaveText("vue");
+  await expect(page.locator("#tags-model")).toHaveText("vue");
   await input.press("Enter");
-  await expect(page.getByTestId("tags-model")).toHaveText("vue,日本語");
+  await expect(page.locator("#tags-model")).toHaveText("vue,日本語");
 
   await input.evaluate((element) => {
     const clipboard = new DataTransfer();
     clipboard.setData("text/plain", "forms, keyboard");
     element.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, clipboardData: clipboard }));
   });
-  await expect(page.getByTestId("tags-model")).toHaveText("vue,日本語,forms,keyboard");
+  await expect(page.locator("#tags-model")).toHaveText("vue,日本語,forms,keyboard");
 });
 
 test("required controlled TagsInput keeps visible invalidity after a rejected addition", async ({ page }) => {
@@ -185,21 +185,21 @@ test("required controlled TagsInput keeps visible invalidity after a rejected ad
 test("external Carousel index owns the complete smooth-scroll transition", async ({ page }) => {
   const region = page.getByRole("region", { name: "Release highlights", exact: true });
   await page.getByRole("button", { name: "Show third release" }).click();
-  await expect(page.getByTestId("carousel-model")).toHaveText("2");
+  await expect(page.locator("#carousel-model")).toHaveText("2");
   await page.waitForTimeout(400);
-  await expect(page.getByTestId("carousel-model")).toHaveText("2");
-  await expect.poll(() => region.locator(".track").evaluate(
-    (track: HTMLElement) => Math.round(track.scrollLeft / track.clientWidth),
+  await expect(page.locator("#carousel-model")).toHaveText("2");
+  await expect.poll(() => region.locator(".unit.-viewport").evaluate(
+    (viewport: HTMLElement) => Math.round(viewport.scrollLeft / viewport.clientWidth),
   )).toBe(2);
 });
 
-test("toolbar, carousel, and separator expose complete keyboard paths including RTL", async ({ page }) => {
+test("[CAR-SEM-01][CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-05][CAR-SEM-06][CAR-INT-01][CAR-INT-02][CAR-INT-03][CAR-FOCUS-01][CAR-FOCUS-02][CAR-ANAT-01] carousel exposes adopted semantics without an invented group keyboard pattern", async ({ page }) => {
   const toolbar = page.getByRole("toolbar", { name: "Formatting", exact: true });
   await toolbar.getByRole("button", { name: "Bold" }).focus();
   await page.keyboard.press("ArrowRight");
   await expect(toolbar.getByRole("button", { name: "Add link" })).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("action")).toHaveText("toolbar:link");
+  await expect(page.locator("#action")).toHaveText("toolbar:link");
 
   const rtl = page.getByRole("toolbar", { name: "RTL formatting" });
   await rtl.getByRole("button", { name: "Bold" }).focus();
@@ -207,40 +207,55 @@ test("toolbar, carousel, and separator expose complete keyboard paths including 
   await expect(rtl.getByRole("button", { name: "Add link" })).toBeFocused();
 
   const carouselRegion = page.getByRole("region", { name: "Release highlights", exact: true });
-  await carouselRegion.getByRole("button", { name: "Next slide" }).click();
-  await expect(page.getByTestId("carousel-model")).toHaveText("1");
-  await expect(carouselRegion.getByRole("group", { name: "2 / 3" })).toBeVisible();
-  await expect.poll(() => carouselRegion.locator(".track").evaluate(
-    (track: HTMLElement) => Math.round(track.scrollLeft / track.clientWidth),
+  await expect(carouselRegion).toHaveAttribute("aria-roledescription", "carousel");
+  const nextSlide = carouselRegion.getByRole("button", { name: "Next slide" });
+  await nextSlide.click();
+  await expect(nextSlide).toBeFocused();
+  await expect(page.locator("#carousel-model")).toHaveText("1");
+  const secondSlide = carouselRegion.getByRole("group", { name: /Second release.*2 \/ 3/ });
+  await expect(secondSlide).toBeVisible();
+  await expect(secondSlide).toHaveAttribute("aria-roledescription", "slide");
+  await expect(secondSlide.locator("..")).toHaveClass(/-slides/);
+  const carouselViewport = carouselRegion.getByRole("group", { name: "Release highlights", exact: true });
+  await expect(carouselViewport).toHaveAttribute("aria-roledescription", "slides");
+  await expect(carouselViewport).toHaveAttribute("data-scope", "carousel");
+  await expect(carouselViewport).toHaveAttribute("data-part", "viewport");
+  await expect(carouselViewport).toHaveAttribute("tabindex", "0");
+  await carouselViewport.focus();
+  await expect(carouselViewport).toBeFocused();
+  await expect.poll(() => carouselRegion.locator(".unit.-viewport").evaluate(
+    (viewport: HTMLElement) => Math.round(viewport.scrollLeft / viewport.clientWidth),
   )).toBe(1);
-  await carouselRegion.locator(".track").evaluate((track: HTMLElement) => {
-    track.scrollLeft = track.scrollWidth;
-    track.dispatchEvent(new Event("scroll"));
+  await carouselRegion.locator(".unit.-viewport").evaluate((viewport: HTMLElement) => {
+    viewport.scrollLeft = viewport.scrollWidth;
+    viewport.dispatchEvent(new Event("scroll"));
   });
-  await expect(page.getByTestId("carousel-model")).toHaveText("2");
+  await expect(page.locator("#carousel-model")).toHaveText("2");
 
-  const localizedTrack = page.getByRole("group", { name: "記事一覧" });
+  const localizedRoot = page.getByRole("group", { name: "注目記事", exact: true });
+  await expect(localizedRoot).toHaveAttribute("aria-roledescription", "カルーセル");
   await expect(page.getByText("3件中2件目", { exact: true })).toBeVisible();
-  await expect(page.getByRole("group", { name: "3件中2件目の記事" })).toBeVisible();
-  await expect.poll(() => localizedTrack.evaluate(
-    (track: HTMLElement) => Math.round(track.scrollLeft / track.clientWidth),
+  const localizedSlide = localizedRoot.getByRole("group", {
+    name: /Second release.*3件中2件目の記事/,
+  });
+  await expect(localizedSlide).toBeVisible();
+  await expect(localizedSlide).toHaveAttribute("aria-roledescription", "スライド");
+  const localizedViewport = localizedRoot.getByRole("group", { name: "記事一覧", exact: true });
+  await expect(localizedViewport).toHaveAttribute("aria-roledescription", "スライド一覧");
+  await expect.poll(() => localizedViewport.evaluate(
+    (viewport: HTMLElement) => Math.round(viewport.scrollLeft / viewport.clientWidth),
   )).toBe(1);
-
-  const rtlTrack = page.getByRole("group", { name: "RTL highlights" });
-  await rtlTrack.focus();
-  await rtlTrack.press("ArrowLeft");
-  await expect(page.getByTestId("rtl-carousel-model")).toHaveText("2");
 
   const separator = page.getByRole("separator", { name: "Workspace panels", exact: true });
   await separator.focus();
   await separator.press("ArrowRight");
   await expect(separator).toHaveAttribute("aria-valuenow", "51");
   await separator.press("Home");
-  await expect(page.getByTestId("resizable-model")).toHaveText("10");
+  await expect(page.locator("#resizable-model")).toHaveText("10");
   await separator.press("Enter");
-  await expect(page.getByTestId("resizable-model")).toHaveText("51");
+  await expect(page.locator("#resizable-model")).toHaveText("51");
   await separator.press("Enter");
-  await expect(page.getByTestId("resizable-model")).toHaveText("10");
+  await expect(page.locator("#resizable-model")).toHaveText("10");
   const bounds = await separator.boundingBox();
   expect(bounds).not.toBeNull();
   if (bounds) {
@@ -248,13 +263,13 @@ test("toolbar, carousel, and separator expose complete keyboard paths including 
     await page.mouse.down();
     await page.mouse.move(bounds.x + 120, bounds.y + bounds.height / 2);
     await page.mouse.up();
-    await expect(page.getByTestId("resizable-model")).not.toHaveText("10");
+    await expect(page.locator("#resizable-model")).not.toHaveText("10");
   }
 
   const rtlSeparator = page.getByRole("separator", { name: "RTL workspace panels" });
   await rtlSeparator.focus();
   await rtlSeparator.press("ArrowLeft");
-  await expect(page.getByTestId("rtl-resizable-model")).toHaveText("51");
+  await expect(page.locator("#rtl-resizable-model")).toHaveText("51");
 
   const verticalSeparator = page.getByRole("separator", { name: "Vertical workspace panels" });
   const verticalBefore = Number(await verticalSeparator.getAttribute("aria-valuenow"));
@@ -263,21 +278,25 @@ test("toolbar, carousel, and separator expose complete keyboard paths including 
   await expect(verticalSeparator).toHaveAttribute("aria-valuenow", String(verticalBefore + 1));
 });
 
-test("dynamic toolbar focus repair, disabled carousel rollback, and narrow splitters stay continuous", async ({ page }) => {
+test("[CAR-STATE-03] dynamic toolbar focus repair, disabled carousel rollback, and narrow splitters stay continuous", async ({ page }) => {
   const toolbar = page.getByRole("toolbar", { name: "Formatting", exact: true });
   await toolbar.getByRole("button", { name: "Bold" }).focus();
-  await page.getByTestId("remove-active-toolbar-item").evaluate((element: HTMLElement) => element.click());
+  await page.locator("#remove-active-toolbar-item").evaluate((element: HTMLElement) => element.click());
   await expect(toolbar.getByRole("button", { name: "Add link" })).toBeFocused();
 
-  const disabledTrack = page.getByRole("region", { name: "Disabled release highlights" }).locator(".track");
-  await expect(disabledTrack).toHaveAttribute("tabindex", "-1");
-  await expect(disabledTrack).toHaveAttribute("aria-disabled", "true");
-  await disabledTrack.evaluate((track: HTMLElement) => {
-    track.scrollLeft = track.clientWidth;
-    track.dispatchEvent(new Event("scroll"));
+  const disabledRoot = page.getByRole("region", { name: "Disabled release highlights" });
+  const disabledViewport = disabledRoot.getByRole("group", { name: "Disabled release highlights", exact: true });
+  await expect(disabledRoot).toHaveAttribute("data-disabled", "");
+  await expect(disabledRoot).not.toHaveAttribute("aria-disabled");
+  await expect(disabledViewport).toHaveAttribute("aria-roledescription", "slides");
+  await expect(disabledViewport).toHaveAttribute("tabindex", "-1");
+  await expect(disabledViewport).not.toHaveAttribute("aria-disabled");
+  await disabledViewport.evaluate((viewport: HTMLElement) => {
+    viewport.scrollLeft = viewport.clientWidth;
+    viewport.dispatchEvent(new Event("scroll"));
   });
-  await expect(page.getByTestId("disabled-carousel-model")).toHaveText("0");
-  await expect.poll(() => disabledTrack.evaluate((track: HTMLElement) => Math.round(track.scrollLeft))).toBe(0);
+  await expect(page.locator("#disabled-carousel-model")).toHaveText("0");
+  await expect.poll(() => disabledViewport.evaluate((viewport: HTMLElement) => Math.round(viewport.scrollLeft))).toBe(0);
 
   await page.setViewportSize({ width: 320, height: 900 });
   for (const splitter of await page.locator(".n-resizable").all()) {
@@ -304,7 +323,7 @@ test("context menu uses pointer coordinates, selects, light-dismisses, and cance
   await expect(menu).toBeVisible();
   await expect(menu).toHaveCSS("position", "fixed");
   await menu.getByRole("menuitem", { name: "Rename" }).click();
-  await expect(page.getByTestId("action")).toHaveText("context:rename");
+  await expect(page.locator("#action")).toHaveText("context:rename");
   await expect(menu).toBeHidden();
 
   await target.click({ button: "right" });
@@ -333,7 +352,7 @@ test("context menu uses pointer coordinates, selects, light-dismisses, and cance
   })));
   await expect(menu).toBeVisible();
   await target.evaluate((element) => element.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 })));
-  await expect(page.getByTestId("action")).not.toHaveText("context-target-activated");
+  await expect(page.locator("#action")).not.toHaveText("context-target-activated");
 });
 
 test("context menu keyboard links use one trusted click with native interception, target, and focus", async ({ page }) => {
@@ -369,14 +388,14 @@ test("context menu keyboard links use one trusted click with native interception
   await expect(page.locator("body")).toHaveAttribute("data-context-clicks", "1");
   await expect(page.locator("body")).toHaveAttribute("data-observed-control", "true");
   await expect(page.locator("body")).toHaveAttribute("data-observed-uncancelled", "true");
-  await expect(page.getByTestId("action")).not.toHaveText("context-router");
+  await expect(page.locator("#action")).not.toHaveText("context-router");
   expect(new URL(page.url()).hash).not.toBe("#context-link");
   page.off("popup", countPopup);
 
   await target.press("Shift+F10");
   await expect(menu.getByRole("menuitem", { name: "Copy" })).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("action")).toHaveText("context-router");
+  await expect(page.locator("#action")).toHaveText("context-router");
   await expect(target).toBeFocused();
   expect(new URL(page.url()).hash).not.toBe("#context-link");
 
@@ -423,7 +442,7 @@ test("menubar, site navigation, and tree retain their distinct keyboard semantic
   await expect(fileMenu.getByRole("menuitem", { name: "New file" })).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("action")).toHaveText("menubar:open");
+  await expect(page.locator("#action")).toHaveText("menubar:open");
   await expect(menubar.getByRole("menuitem", { name: "File" })).toBeFocused();
 
   const navigation = page.getByRole("navigation", { name: "Primary navigation", exact: true });
@@ -458,9 +477,9 @@ test("menubar, site navigation, and tree retain their distinct keyboard semantic
 
   await products.click();
   await navigationLink.hover();
-  await expect(page.getByTestId("action")).toHaveText("navigation-prefetch");
+  await expect(page.locator("#action")).toHaveText("navigation-prefetch");
   await navigationLink.evaluate((element: HTMLAnchorElement) => element.click());
-  await expect(page.getByTestId("action")).toHaveText("navigation-router");
+  await expect(page.locator("#action")).toHaveText("navigation-router");
   await expect(navigationLink).toBeHidden();
   await expect(products).toBeFocused();
   expect(new URL(page.url()).hash).not.toBe("#ui");
@@ -476,14 +495,14 @@ test("menubar, site navigation, and tree retain their distinct keyboard semantic
     group: element.parentElement?.getAttribute("role"),
     owner: element.parentElement?.parentElement?.getAttribute("role"),
   }))).toEqual({ group: "group", owner: "treeitem" });
-  await expect(page.getByTestId("tree-expanded")).toHaveText("fruit");
+  await expect(page.locator("#tree-expanded")).toHaveText("fruit");
   await tree.press("ArrowRight");
   await tree.press("Enter");
-  await expect(page.getByTestId("tree-model")).toHaveText("apple");
+  await expect(page.locator("#tree-model")).toHaveText("apple");
   await apple.hover();
   await expect(tree).toHaveAttribute("aria-activedescendant", await apple.getAttribute("id") ?? "");
   await apple.click();
-  await expect(page.getByTestId("tree-model")).toHaveText("apple");
+  await expect(page.locator("#tree-model")).toHaveText("apple");
   await expect(tree).toHaveAttribute("aria-activedescendant", await apple.getAttribute("id") ?? "");
 
   await page.getByRole("button", { name: "Remove fruit branch" }).click();
@@ -502,7 +521,7 @@ test("menubar and navigation repair open owners after dynamic removal and follow
   await menubar.getByRole("menuitem", { name: "File" }).focus();
   await page.keyboard.press("ArrowDown");
   await expect(page.getByRole("menu", { name: "File" })).toBeVisible();
-  await page.getByTestId("remove-active-menubar-menu").evaluate((element: HTMLElement) => element.click());
+  await page.locator("#remove-active-menubar-menu").evaluate((element: HTMLElement) => element.click());
   await expect(menubar.getByRole("menuitem", { name: "Edit" })).toHaveAttribute("aria-expanded", "true");
   await expect(page.getByRole("menu", { name: "Edit" })).toBeVisible();
   await expectNagiDomClean(page);
@@ -510,9 +529,9 @@ test("menubar and navigation repair open owners after dynamic removal and follow
   const navigation = page.getByRole("navigation", { name: "Primary navigation", exact: true });
   await navigation.getByRole("button", { name: "Products" }).hover();
   await expect(navigation.getByRole("link", { name: /Nagi UI/u })).toBeVisible();
-  await page.getByTestId("remove-active-navigation-item").evaluate((element: HTMLElement) => element.click());
+  await page.locator("#remove-active-navigation-item").evaluate((element: HTMLElement) => element.click());
   await expect(navigation.getByRole("button", { name: "Products" })).toHaveCount(0);
-  await expect(navigation.locator(".popup")).toBeHidden();
+  await expect(navigation.locator(".unit.-popup")).toBeHidden();
   await expectNagiDomClean(page);
 });
 
@@ -545,7 +564,7 @@ test("controlled overlay close rejection keeps the actual native surface operabl
 
   await page.getByRole("button", { name: "Externally open navigation" }).click();
   const navigation = page.getByRole("navigation", { name: "Locked navigation" });
-  const popup = navigation.locator(".popup");
+  const popup = navigation.locator(".unit.-popup");
   await expect(popup).toBeVisible();
   const trigger = navigation.getByRole("button", { name: "Products" });
   await trigger.click();
@@ -558,9 +577,9 @@ test("controlled overlay close rejection keeps the actual native surface operabl
 
 test("rejected overlay opens never commit a native toggle or suppress a touch click", async ({ page }) => {
   const menubar = page.getByRole("menubar", { name: "Locked application" });
-  const menubarPopup = menubar.locator("xpath=..").locator(".popup");
+  const menubarPopup = menubar.locator("xpath=..").locator(".list.-popup");
   const navigation = page.getByRole("navigation", { name: "Locked navigation" });
-  const navigationPopup = navigation.locator(".popup");
+  const navigationPopup = navigation.locator(".unit.-popup");
   for (const popup of [menubarPopup, navigationPopup]) {
     await popup.evaluate((element: HTMLElement) => {
       element.dataset.transitions = "";
@@ -581,7 +600,7 @@ test("rejected overlay opens never commit a native toggle or suppress a touch cl
   await expect(navigationPopup).toHaveAttribute("data-transitions", "");
 
   const touchTarget = page.getByRole("button", { name: "Locked context target" });
-  const contextPopup = touchTarget.locator("xpath=../..").locator(".popup");
+  const contextPopup = touchTarget.locator("xpath=../..").locator(".list.-popup");
   await contextPopup.evaluate((element: HTMLElement) => {
     element.dataset.transitions = "";
     for (const type of ["beforetoggle", "toggle"]) {
@@ -643,9 +662,9 @@ test("ContextMenu external close terminates a long press and fallback anchors fo
   await page.getByRole("button", { name: "Externally open context menu" }).click();
   const lockedMenu = page.getByRole("menu", { name: "Locked context menu" });
   const contextRoot = lockedMenu.locator("xpath=..");
-  const anchor = contextRoot.locator(".anchor");
+  const anchor = contextRoot.locator(".unit.-positioner");
   const before = Number.parseFloat(await anchor.evaluate((element: HTMLElement) => element.style.top));
-  await contextRoot.locator(".content").evaluate((element: HTMLElement) => {
+  await contextRoot.locator(".unit.-target").evaluate((element: HTMLElement) => {
     element.style.transform = "translateY(40px)";
   });
   await expect.poll(async () => Number.parseFloat(
@@ -698,7 +717,7 @@ test("expanded components are axe-clean in open interactive states", async ({ pa
 
   const menubar = page.getByRole("menubar", { name: "Application", exact: true });
   await menubar.getByRole("menuitem", { name: "File" }).click();
-  await expect(menubar.locator("xpath=..").locator(".popup")).toBeVisible();
+  await expect(menubar.locator("xpath=..").locator(".list.-popup")).toBeVisible();
   await expectAxeClean(page);
   await expectNagiDomClean(page);
 
@@ -708,9 +727,9 @@ test("expanded components are axe-clean in open interactive states", async ({ pa
   await expectNagiDomClean(page);
 });
 
-test("carousel and focus indicators respect reduced motion and forced colors", async ({ page }) => {
+test("[CAR-STYLE-01] carousel and focus indicators respect reduced motion and forced colors", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" });
-  await expect(page.getByRole("region", { name: "Release highlights", exact: true }).locator(".track"))
+  await expect(page.getByRole("region", { name: "Release highlights", exact: true }).locator(".unit.-viewport"))
     .toHaveCSS("scroll-behavior", "auto");
   const toolbar = page.getByRole("toolbar", { name: "Formatting", exact: true });
   const bold = toolbar.getByRole("button", { name: "Bold" });

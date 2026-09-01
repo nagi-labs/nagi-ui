@@ -10,23 +10,38 @@ export interface TreeNode {
 </script>
 
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { useTree } from "@nagi-labs/nagi-ui";
 
 import TreeBranch from "./TreeBranch.vue";
 
-const props = withDefaults(defineProps<{
-  items: readonly TreeNode[];
-  label: string;
-  expandLabel?: string;
-  collapseLabel?: string;
-}>(), { expandLabel: "Expand", collapseLabel: "Collapse" });
+const props = withDefaults(
+  defineProps<{
+    items: readonly TreeNode[];
+    label: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
+    expandLabel?: string;
+    collapseLabel?: string;
+  }>(),
+  { expandLabel: "Expand", collapseLabel: "Collapse" },
+);
+defineOptions({ inheritAttrs: false });
 const selected = defineModel<string | null>({ default: null });
 const expanded = defineModel<readonly string[]>("expanded", { default: () => [] });
 const tree = useTree(props, { selected, expanded });
 </script>
 
 <template>
-  <ul v-bind="tree.treeProps" class="n-tree">
+  <ul
+    v-bind="tree.treeProps"
+    class="n-tree"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
     <TreeBranch
       :nodes="items"
       :tree="tree"
@@ -46,10 +61,14 @@ const tree = useTree(props, { selected, expanded });
   color: var(--nagi-color-text);
   list-style: none;
 
-  &:focus-visible { box-shadow: var(--nagi-shadow-focus); }
+  &:focus-visible {
+    box-shadow: var(--nagi-shadow-focus);
+  }
 }
 
 @media (forced-colors: active) {
-  .n-tree:focus-visible { outline: 2px solid Highlight; }
+  .n-tree:focus-visible {
+    outline: 2px solid Highlight;
+  }
 }
 </style>

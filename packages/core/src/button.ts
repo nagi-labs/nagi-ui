@@ -1,14 +1,18 @@
-import { toValue, type MaybeRefOrGetter } from "vue";
+import { reactive, toValue, type MaybeRefOrGetter } from "vue";
 
-interface ButtonComponentProps {
+export interface ButtonControlProps {
   readonly disabled: boolean;
   readonly focusableWhenDisabled: boolean;
 }
 
-interface ButtonBindingProps {
+export interface ButtonBindingProps {
   readonly disabled: boolean;
   readonly "aria-disabled": "true" | undefined;
   readonly onClickCapture: (event: MouseEvent) => void;
+}
+
+export interface ButtonControl {
+  readonly buttonProps: ButtonBindingProps;
 }
 
 /** Suppresses activation while keeping an aria-disabled button focusable. */
@@ -23,11 +27,11 @@ export function useFocusableDisabled(disabled: MaybeRefOrGetter<boolean>) {
 }
 
 /** Connects the package Button's focusable-disabled contract. */
-export function useButton(props: ButtonComponentProps) {
+export function useButton(props: ButtonControlProps): ButtonControl {
   const focusableDisabled = () => props.disabled && props.focusableWhenDisabled;
   const activation = useFocusableDisabled(focusableDisabled);
 
-  const buttonProps: ButtonBindingProps = {
+  const buttonProps = reactive<ButtonBindingProps>({
     get disabled() {
       return props.disabled && !props.focusableWhenDisabled;
     },
@@ -35,7 +39,7 @@ export function useButton(props: ButtonComponentProps) {
       return focusableDisabled() ? "true" as const : undefined;
     },
     onClickCapture: activation.onClick,
-  };
+  });
 
   return { buttonProps };
 }

@@ -1,22 +1,48 @@
 <script setup lang="ts">
-defineProps<{
+import { useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
+const { prefix, suffix } = defineProps<{
   prefix?: string;
   suffix?: string;
 }>();
+
+const attrs = useAttrs();
 </script>
 
 <template>
-  <div class="n-input-group">
-    <span v-if="prefix || $slots.prefix" class="unit -prefix">
-      <slot name="prefix" :prefix="prefix">{{ prefix }}</slot>
+  <div
+    class="n-input-group"
+    v-bind="attrs"
+  >
+    <span
+      v-if="prefix || $slots.prefix"
+      class="unit -prefix"
+    >
+      <slot
+        name="prefix"
+        :prefix="prefix"
+        >{{ prefix }}</slot
+      >
     </span>
     <div class="unit -control">
       <slot />
     </div>
-    <span v-if="suffix || $slots.suffix" class="unit -suffix">
-      <slot name="suffix" :suffix="suffix">{{ suffix }}</slot>
+    <span
+      v-if="suffix || $slots.suffix"
+      class="unit -suffix"
+    >
+      <slot
+        name="suffix"
+        :suffix="suffix"
+        >{{ suffix }}</slot
+      >
     </span>
-    <div v-if="$slots.action" class="unit -action">
+    <div
+      v-if="$slots.action"
+      class="unit -action"
+    >
       <slot name="action" />
     </div>
   </div>

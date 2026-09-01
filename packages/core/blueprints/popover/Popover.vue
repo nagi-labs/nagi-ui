@@ -1,15 +1,20 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { usePopover, type AnchorArea } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
     triggerLabel: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     disabled?: boolean;
     area?: AnchorArea;
     offset?: number;
   }>(),
   { disabled: false, area: "block-end", offset: 4 },
 );
+defineOptions({ inheritAttrs: false });
 
 const open = defineModel<boolean>("open", { default: false });
 const popover = usePopover(props, open);
@@ -18,16 +23,31 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
 </script>
 
 <template>
-  <div class="n-popover">
+  <div
+    class="n-popover"
+    data-scope="popover"
+    data-part="root"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
     <button
       class="button"
+      data-scope="popover"
+      data-part="trigger"
       type="button"
       :disabled="disabled"
       v-bind="popover.triggerProps"
     >
       {{ triggerLabel }}
     </button>
-    <div class="unit" popover v-bind="popover.popoverProps">
+    <div
+      class="unit"
+      data-scope="popover"
+      data-part="surface"
+      popover
+      v-bind="popover.popoverProps"
+    >
       <slot />
     </div>
   </div>

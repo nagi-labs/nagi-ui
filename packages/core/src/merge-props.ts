@@ -8,7 +8,7 @@ type UnionToIntersection<Union> = (
   ? Intersection
   : never
 
-export type MergedNagiProps<Sources extends readonly object[]> = UnionToIntersection<
+export type MergedElementProps<Sources extends readonly object[]> = UnionToIntersection<
   Sources[number]
 >
 
@@ -21,14 +21,14 @@ const tokenListAriaAttributes = new Set([
 ])
 
 /** A non-composable attribute was supplied with two different meanings. */
-export class NagiPropConflictError extends Error {
+export class ElementPropConflictError extends Error {
   readonly key: string
 
   constructor(key: string) {
     super(
-      `Conflicting Nagi prop "${key}". Move the intended value to one source instead of overriding behavior wiring.`,
+      `Conflicting element prop "${key}". Move the intended value to one source instead of overriding behavior wiring.`,
     )
-    this.name = "NagiPropConflictError"
+    this.name = "ElementPropConflictError"
     this.key = key
   }
 }
@@ -45,7 +45,7 @@ function collectHandlers(value: unknown, key: string): EventHandler[] {
   if (Array.isArray(value)) {
     return value.flatMap((entry) => collectHandlers(entry, key))
   }
-  throw new TypeError(`Nagi event prop "${key}" must contain only functions.`)
+  throw new TypeError(`Element event prop "${key}" must contain only functions.`)
 }
 
 function mergeTokenList(key: string, values: readonly unknown[]): string | undefined {
@@ -55,7 +55,7 @@ function mergeTokenList(key: string, values: readonly unknown[]): string | undef
   for (const value of values) {
     if (value == null || value === "") continue
     if (typeof value !== "string") {
-      throw new TypeError(`Nagi token-list prop "${key}" must be a string.`)
+      throw new TypeError(`Element token-list prop "${key}" must be a string.`)
     }
     for (const token of value.trim().split(/\s+/)) {
       if (token && !seen.has(token)) {
@@ -90,13 +90,44 @@ function mergeValue(key: string, values: readonly unknown[]): unknown {
     if (handlers.length === 0) return undefined
     if (handlers.length === 1) return handlers[0]
     return (...args: never[]) => {
+      const event = args[0] as
+        | (Event & { stopImmediatePropagation: () => void })
+        | undefined
+      let immediatePropagationStopped = false
+
+      if (event && typeof event.stopImmediatePropagation === "function") {
+        const stopImmediatePropagation = event.stopImmediatePropagation
+        event.stopImmediatePropagation = () => {
+          immediatePropagationStopped = true
+          stopImmediatePropagation.call(event)
+        }
+
+        try {
+          for (const handler of handlers) {
+            handler(...args)
+            if (immediatePropagationStopped) break
+          }
+        } finally {
+          event.stopImmediatePropagation = stopImmediatePropagation
+        }
+        return
+      }
+
       for (const handler of handlers) handler(...args)
     }
   }
 
   const first = defined[0]
   if (defined.every((value) => Object.is(value, first))) return first
-  throw new NagiPropConflictError(key)
+  throw new ElementPropConflictError(key)
+}
+
+/** Remove a root class already supplied statically by a Blueprint. */
+export function withoutClassToken(value: unknown, token: string): string | undefined {
+  const classes = normalizeClass(value)
+    .split(/\s+/)
+    .filter((className) => className && className !== token)
+  return classes.length > 0 ? [...new Set(classes)].join(" ") : undefined
 }
 
 /**
@@ -105,13 +136,13 @@ function mergeValue(key: string, values: readonly unknown[]): unknown {
  *
  * Composable values are class, style, Vue event handlers, and ARIA IDREF
  * token lists. Every other duplicate must be equal; different values throw a
- * NagiPropConflictError. Source order is event execution and token order.
+ * ElementPropConflictError. Source order is event execution and token order.
  * Getters remain live so aria-expanded / aria-activedescendant do not freeze
  * when the merged object is created in setup().
  */
-export function mergeNagiProps<const Sources extends readonly object[]>(
+export function mergeElementProps<const Sources extends readonly object[]>(
   ...sources: Sources
-): MergedNagiProps<Sources> {
+): MergedElementProps<Sources> {
   const sourceRecords = sources as readonly Record<string, unknown>[]
   const keys = new Set(sourceRecords.flatMap((source) => Object.keys(source)))
   const merged: Record<string, unknown> = {}
@@ -129,5 +160,5 @@ export function mergeNagiProps<const Sources extends readonly object[]>(
     })
   }
 
-  return merged as MergedNagiProps<Sources>
+  return merged as MergedElementProps<Sources>
 }

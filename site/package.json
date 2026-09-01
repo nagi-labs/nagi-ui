@@ -1,0 +1,32 @@
+{
+  "name": "nagi-ui-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "eslint . && oxlint . --ignore-path .gitignore",
+    "typecheck": "nuxt typecheck",
+    "generate": "nuxt generate",
+    "check": "vp run lint && vp run typecheck && vp run generate",
+    "prepare": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nagi-labs/nagi-ui": "workspace:*",
+    "nuxt": "^3.16.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@nagi-labs/eslint-plugin-nagi-css": "0.1.0",
+    "@typescript-eslint/parser": "^8.63.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-vue": "^10.7.0",
+    "oxfmt": "^0.60.0",
+    "oxlint": "^1.75.0",
+    "shiki": "^4.4.3",
+    "typescript": "^5.9.3",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^3.3.8"
+  }
+}

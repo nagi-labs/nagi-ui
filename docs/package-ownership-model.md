@@ -1,42 +1,74 @@
-# Package-first, own-on-demand
+# Ownership model
 
-Use Nagi UI components from the package by default:
+Nagi UI supports two adoption tiers. See [CONCEPT.md](../CONCEPT.md) for the
+full product concept.
+
+## Light use: the package
+
+Install and use the canonical components directly:
 
 ```ts
-import { DropdownMenu } from "@nagi-labs/nagi-ui/components"
-import "@nagi-labs/nagi-ui/default-theme.css"
+import { NDropdownMenu } from "@nagi-labs/nagi-ui/components"
+import "@nagi-labs/nagi-ui/styles.css"
 ```
 
-Customization follows four levels:
+The package is a convenience for evaluation and for products that do not need
+structural customization. Within package use, customization follows:
 
 1. semantic theme tokens;
 2. stable component props and item schemas;
-3. declared content-only slots;
-4. local source ownership.
+3. declared content-only slots.
 
-Own a component when the application needs to change its DOM structure,
-specialized elements, or behavior integration:
+The package API is deliberately small. Nagi UI does not grow compound
+component families, render props, or a rendering DSL to express structures the
+API was not designed for. When the API is no longer the right boundary, the
+intended path is ownership, not a broader API.
+
+## Full adoption: own the source
+
+Owning the component source is Nagi UI's primary model. The current CLI copies
+a canonical Blueprint and its registered companions into the application:
 
 ```sh
 vp exec nagi-ui own dropdown-menu
 ```
 
-The command copies the canonical SFC and its relative source dependencies. The
-package component and owned source come from the same implementation.
+The package component and the owned source come from the same implementation —
+the Blueprint is a reference implementation in the literal sense. The planned
+workspace workflow (`nagi-ui init` / `add`, bundling each component's source
+with its definition, tests, and scenarios) is described in
+[CONCEPT.md](../CONCEPT.md); the `own` command is today's mechanism for the
+source-copy step.
 
-Owned files contain `@nagi-source` metadata. Compare them with the installed
-package version using:
+## Maintaining owned source
 
-```sh
-vp exec nagi-ui diff dropdown-menu
-```
+Owned files carry `@nagi-source` provenance metadata recording the component
+and version they are based on. After ownership, the local repository is the
+source of truth. Nagi UI deliberately does not centrally track downstream
+divergence or automate upstream synchronization. Divergence is managed with:
 
-The CLI reports `clean`, `modified`, `drifted`, or `unknown-source`.
-Local modifications are expected; drift means the installed upstream source
-changed and should be reviewed.
+- provenance metadata plus git history as the baseline for comparison;
+- release notes reviewed against the recorded upstream version;
+- executable verification that the component still satisfies its guarantees.
 
-Package and owned components may coexist, and the same theme applies to both.
-After ownership, the application is responsible for merging upstream changes
-and running keyboard, focus, form, accessibility, Nagi CSS, and integration
-tests. Copying source is an explicit maintenance tradeoff, not an automatic
-migration stage.
+Verification is the load-bearing part. Structural changes are expected; the
+question is whether the component still behaves like the component it claims
+to be. The experimental shared [conformance contracts](conformance-contracts.md)
+keep the reusable minimum behavior and accessibility invariants upstream while
+allowing the owned DOM to change. Owned Blueprints also remain covered by
+`verified-bindings`, Nagi CSS checks, and the application's own keyboard,
+focus, form, and integration tests.
+
+Behavior composables (`useDialog`, `useTabs`, and the
+`component-controls` entrypoint) remain stable package dependencies of owned
+Blueprints. Every dependency referenced by an ownable Blueprint must be either
+a stable public export or part of the ownership bundle. A behavior dependency
+can change through a package upgrade even when the owned SFC is textually
+unchanged — that is exactly what the conformance contracts are for.
+
+Attribute destinations in owned Blueprints follow the
+[attribute forwarding policy](attribute-forwarding.md).
+
+Copying source is an explicit maintenance tradeoff, not an automatic migration
+stage. The goal is not to prevent divergence; it is to make divergence explicit
+and testable.

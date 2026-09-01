@@ -1,42 +1,63 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useResizable } from "@nagi-labs/nagi-ui";
+import { computed, useAttrs } from "vue";
+import { mergeElementProps, useResizable } from "@nagi-labs/nagi-ui";
 
-const props = withDefaults(defineProps<{
-  label?: string;
-  orientation?: "horizontal" | "vertical";
-  dir?: "ltr" | "rtl";
-  min?: number;
-  max?: number;
-  step?: number;
-  disabled?: boolean;
-}>(), {
-  label: "Resize panels",
-  orientation: "horizontal",
-  dir: "ltr",
-  min: 10,
-  max: 90,
-  step: 1,
-  disabled: false,
-});
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    orientation?: "horizontal" | "vertical";
+    dir?: "ltr" | "rtl";
+    min?: number;
+    max?: number;
+    step?: number;
+    disabled?: boolean;
+  }>(),
+  {
+    label: "Resize panels",
+    orientation: "horizontal",
+    dir: "ltr",
+    min: 10,
+    max: 90,
+    step: 1,
+    disabled: false,
+  },
+);
 
 const model = defineModel<number>({ default: 50 });
 const resizable = useResizable(props, model);
-const style = computed(() => ({
+const layoutStyle = computed(() => ({
   "--local-first-basis": resizable.firstBasis.value,
   "--local-second-basis": resizable.secondBasis.value,
 }));
+const attrs = useAttrs();
+const divProps = computed(() =>
+  mergeElementProps(attrs, {
+    style: layoutStyle.value,
+    dir: props.dir,
+  }),
+);
 </script>
 
 <template>
   <div
     class="n-resizable"
     :data-orientation="orientation"
-    :dir="dir"
-    :style="style"
+    v-bind="divProps"
   >
-    <section v-bind="resizable.primaryPanelProps" class="section -first"><slot name="first" /></section>
-    <div v-bind="resizable.separatorProps" class="unit -separator"><span class="seg -handle"></span></div>
+    <section
+      v-bind="resizable.primaryPanelProps"
+      class="section -first"
+    >
+      <slot name="first" />
+    </section>
+    <div
+      v-bind="resizable.separatorProps"
+      class="unit -separator"
+    >
+      <span class="seg -handle"></span>
+    </div>
     <section class="section -second"><slot name="second" /></section>
   </div>
 </template>
@@ -55,8 +76,12 @@ const style = computed(() => ({
     padding: var(--nagi-space-surface-inset);
     overflow: auto;
   }
-  > .section.-first { flex: 0 0 max(0px, calc(var(--local-first-basis) - var(--nagi-space-item-gap) / 2)); }
-  > .section.-second { flex: 0 0 max(0px, calc(var(--local-second-basis) - var(--nagi-space-item-gap) / 2)); }
+  > .section.-first {
+    flex: 0 0 max(0px, calc(var(--local-first-basis) - var(--nagi-space-item-gap) / 2));
+  }
+  > .section.-second {
+    flex: 0 0 max(0px, calc(var(--local-second-basis) - var(--nagi-space-item-gap) / 2));
+  }
   > .unit.-separator {
     display: grid;
     flex: 0 0 var(--nagi-space-item-gap);
@@ -65,8 +90,15 @@ const style = computed(() => ({
     cursor: col-resize;
     touch-action: none;
 
-    > .seg.-handle { inline-size: 2px; block-size: var(--nagi-size-control); background: var(--nagi-color-border); }
-    &:focus-visible { outline: none; box-shadow: var(--nagi-shadow-focus); }
+    > .seg.-handle {
+      inline-size: 2px;
+      block-size: var(--nagi-size-control);
+      background: var(--nagi-color-border);
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--nagi-shadow-focus);
+    }
   }
 
   &[data-orientation="vertical"] {
@@ -74,12 +106,17 @@ const style = computed(() => ({
     flex-direction: column;
     > .unit.-separator {
       cursor: row-resize;
-      > .seg.-handle { inline-size: var(--nagi-size-control); block-size: 2px; }
+      > .seg.-handle {
+        inline-size: var(--nagi-size-control);
+        block-size: 2px;
+      }
     }
   }
 }
 
 @media (forced-colors: active) {
-  .n-resizable > .unit.-separator:focus-visible { outline: 2px solid Highlight; }
+  .n-resizable > .unit.-separator:focus-visible {
+    outline: 2px solid Highlight;
+  }
 }
 </style>

@@ -1,0 +1,523 @@
+lockfile_version: '1'
+generated_at: '2026-08-28T10:37:18.084157+00:00'
+apm_version: 0.28.0
+dependencies:
+- repo_url: nagi-labs/nagi-css
+  name: nagi-css
+  host: github.com
+  resolved_commit: afc9447ca094319819017ea0163951b718c9847c
+  resolved_ref: afc9447ca094319819017ea0163951b718c9847c
+  version: unknown
+  package_type: skill_bundle
+  deployed_files:
+  - .agents/skills/nagi-css
+  - .agents/skills/nagi-css/SKILL.md
+  - .agents/skills/nagi-css/agents/openai.yaml
+  - .agents/skills/nagi-css/references/check-conformance.md
+  - .agents/skills/nagi-css/references/component-library-boundaries.md
+  - .agents/skills/nagi-css/references/configuration.md
+  - .agents/skills/nagi-css/references/contract.md
+  - .agents/skills/nagi-css/references/edit-existing.md
+  - .agents/skills/nagi-css/references/naming-flow.md
+  - .agents/skills/nagi-css/references/patterns/component-slot.md
+  - .agents/skills/nagi-css/references/patterns/data-table.md
+  - .agents/skills/nagi-css/references/patterns/dialog.md
+  - .agents/skills/nagi-css/references/patterns/dynamic-class.md
+  - .agents/skills/nagi-css/references/patterns/form.md
+  - .agents/skills/nagi-css/references/patterns/loading-error-empty.md
+  - .agents/skills/nagi-css/references/patterns/page-shell.md
+  - .agents/skills/nagi-css/references/patterns/recursive-component.md
+  - .agents/skills/nagi-css/references/patterns/tabs.md
+  - .agents/skills/nagi-css/references/patterns/teleport.md
+  - .agents/skills/nagi-css/references/patterns/tree-list.md
+  - .agents/skills/nagi-css/references/patterns/ui-library-boundary.md
+  - .agents/skills/nagi-css/references/write-from-scratch.md
+  - .claude/skills/nagi-css
+  - .claude/skills/nagi-css/SKILL.md
+  - .claude/skills/nagi-css/agents/openai.yaml
+  - .claude/skills/nagi-css/references/check-conformance.md
+  - .claude/skills/nagi-css/references/component-library-boundaries.md
+  - .claude/skills/nagi-css/references/configuration.md
+  - .claude/skills/nagi-css/references/contract.md
+  - .claude/skills/nagi-css/references/edit-existing.md
+  - .claude/skills/nagi-css/references/naming-flow.md
+  - .claude/skills/nagi-css/references/patterns/component-slot.md
+  - .claude/skills/nagi-css/references/patterns/data-table.md
+  - .claude/skills/nagi-css/references/patterns/dialog.md
+  - .claude/skills/nagi-css/references/patterns/dynamic-class.md
+  - .claude/skills/nagi-css/references/patterns/form.md
+  - .claude/skills/nagi-css/references/patterns/loading-error-empty.md
+  - .claude/skills/nagi-css/references/patterns/page-shell.md
+  - .claude/skills/nagi-css/references/patterns/recursive-component.md
+  - .claude/skills/nagi-css/references/patterns/tabs.md
+  - .claude/skills/nagi-css/references/patterns/teleport.md
+  - .claude/skills/nagi-css/references/patterns/tree-list.md
+  - .claude/skills/nagi-css/references/patterns/ui-library-boundary.md
+  - .claude/skills/nagi-css/references/write-from-scratch.md
+  deployed_file_hashes:
+    .agents/skills/nagi-css/SKILL.md: sha256:a96437f128600f0be42cd37a0673a7e2be82384da00a28fa40c5546a9b2bf323
+    .agents/skills/nagi-css/agents/openai.yaml: sha256:bf0d6be1828c877d782e059fd3b59d9ee0b0d1deb51ca46df48337f12ad11372
+    .agents/skills/nagi-css/references/check-conformance.md: sha256:2be8518ac1e71489b468a9d108f99e774f06ec5c2465c4749319259308ddb98b
+    .agents/skills/nagi-css/references/component-library-boundaries.md: sha256:a8d6678fb375e94362cfbf630a3dd1b3e2381fb8499506460d94f9c8ea386b70
+    .agents/skills/nagi-css/references/configuration.md: sha256:c1fba3677d9eead3458f0bc1f1e72487f2378c43c06f09d24fc16b91ab746152
+    .agents/skills/nagi-css/references/contract.md: sha256:ab9cc2dbf0fe83bdca6a7eaec926d2f67fed0c829e1700d8af9f563f8b90dce8
+    .agents/skills/nagi-css/references/edit-existing.md: sha256:7ad6dcbcebd72dc5d20c5e524342c8027347ab2218c3270f56c0e0cd4a0c83cd
+    .agents/skills/nagi-css/references/naming-flow.md: sha256:393cd00e4fe6a6949ed9baec34c803b9a003ad10260fd89762dd58bd162a0df1
+    .agents/skills/nagi-css/references/patterns/component-slot.md: sha256:29355952e65a1ede483b9f1653ee90c0e08fae94da78a1c9a849419c496fa626
+    .agents/skills/nagi-css/references/patterns/data-table.md: sha256:e9f9fe6d9ef4bc9349b1e689e860ed90dd882214f34e6b207aa0adb5db1af41b
+    .agents/skills/nagi-css/references/patterns/dialog.md: sha256:4cda349949bb5a3fba31b798e5f965315544739f99e25c881d31dcfb72d089da
+    .agents/skills/nagi-css/references/patterns/dynamic-class.md: sha256:1aae8197a7f8ed2b32f474f02ea5130eeab4cdacfbd7f70f669d75fbb2176ac4
+    .agents/skills/nagi-css/references/patterns/form.md: sha256:65bc5a67835af8b7f65a98a8f27513628aa4f0bb357f49399c0bf8c004549369
+    .agents/skills/nagi-css/references/patterns/loading-error-empty.md: sha256:97a21422fe04fbbf93c980532d3ed6a9e8fe96f52f1f4d5b85a45e1c996ce816
+    .agents/skills/nagi-css/references/patterns/page-shell.md: sha256:f4fc305c97baeae1d49d0db0c6955b846b58932724708d07dc3ba1fa723d3e91
+    .agents/skills/nagi-css/references/patterns/recursive-component.md: sha256:1ae75cb272338b0357076ec92143a21b1bb3c15cb26634291e079a5f5280426e
+    .agents/skills/nagi-css/references/patterns/tabs.md: sha256:328c7dd08143db01dfd861d6f3062aa7808b844a3af77ffa89f472bfd5fdc19e
+    .agents/skills/nagi-css/references/patterns/teleport.md: sha256:6724082ac58d24551708d2df5e7f4d621cc0338e5b5097f22ee841464350b6cd
+    .agents/skills/nagi-css/references/patterns/tree-list.md: sha256:c6a9ad048a3b4f2bb5169c6db9d57d4bc842c34f39b7ff07cda82aa0b10ad0e5
+    .agents/skills/nagi-css/references/patterns/ui-library-boundary.md: sha256:d7cf48d44ac907b0f22d76cb65f999913f7a48d9b879912162c529b750dee590
+    .agents/skills/nagi-css/references/write-from-scratch.md: sha256:a0678fd4a12d49ec13864873f008a7bc3150befcca12ebfee371846fd21f5397
+    .claude/skills/nagi-css/SKILL.md: sha256:a96437f128600f0be42cd37a0673a7e2be82384da00a28fa40c5546a9b2bf323
+    .claude/skills/nagi-css/agents/openai.yaml: sha256:bf0d6be1828c877d782e059fd3b59d9ee0b0d1deb51ca46df48337f12ad11372
+    .claude/skills/nagi-css/references/check-conformance.md: sha256:2be8518ac1e71489b468a9d108f99e774f06ec5c2465c4749319259308ddb98b
+    .claude/skills/nagi-css/references/component-library-boundaries.md: sha256:a8d6678fb375e94362cfbf630a3dd1b3e2381fb8499506460d94f9c8ea386b70
+    .claude/skills/nagi-css/references/configuration.md: sha256:c1fba3677d9eead3458f0bc1f1e72487f2378c43c06f09d24fc16b91ab746152
+    .claude/skills/nagi-css/references/contract.md: sha256:ab9cc2dbf0fe83bdca6a7eaec926d2f67fed0c829e1700d8af9f563f8b90dce8
+    .claude/skills/nagi-css/references/edit-existing.md: sha256:7ad6dcbcebd72dc5d20c5e524342c8027347ab2218c3270f56c0e0cd4a0c83cd
+    .claude/skills/nagi-css/references/naming-flow.md: sha256:393cd00e4fe6a6949ed9baec34c803b9a003ad10260fd89762dd58bd162a0df1
+    .claude/skills/nagi-css/references/patterns/component-slot.md: sha256:29355952e65a1ede483b9f1653ee90c0e08fae94da78a1c9a849419c496fa626
+    .claude/skills/nagi-css/references/patterns/data-table.md: sha256:e9f9fe6d9ef4bc9349b1e689e860ed90dd882214f34e6b207aa0adb5db1af41b
+    .claude/skills/nagi-css/references/patterns/dialog.md: sha256:4cda349949bb5a3fba31b798e5f965315544739f99e25c881d31dcfb72d089da
+    .claude/skills/nagi-css/references/patterns/dynamic-class.md: sha256:1aae8197a7f8ed2b32f474f02ea5130eeab4cdacfbd7f70f669d75fbb2176ac4
+    .claude/skills/nagi-css/references/patterns/form.md: sha256:65bc5a67835af8b7f65a98a8f27513628aa4f0bb357f49399c0bf8c004549369
+    .claude/skills/nagi-css/references/patterns/loading-error-empty.md: sha256:97a21422fe04fbbf93c980532d3ed6a9e8fe96f52f1f4d5b85a45e1c996ce816
+    .claude/skills/nagi-css/references/patterns/page-shell.md: sha256:f4fc305c97baeae1d49d0db0c6955b846b58932724708d07dc3ba1fa723d3e91
+    .claude/skills/nagi-css/references/patterns/recursive-component.md: sha256:1ae75cb272338b0357076ec92143a21b1bb3c15cb26634291e079a5f5280426e
+    .claude/skills/nagi-css/references/patterns/tabs.md: sha256:328c7dd08143db01dfd861d6f3062aa7808b844a3af77ffa89f472bfd5fdc19e
+    .claude/skills/nagi-css/references/patterns/teleport.md: sha256:6724082ac58d24551708d2df5e7f4d621cc0338e5b5097f22ee841464350b6cd
+    .claude/skills/nagi-css/references/patterns/tree-list.md: sha256:c6a9ad048a3b4f2bb5169c6db9d57d4bc842c34f39b7ff07cda82aa0b10ad0e5
+    .claude/skills/nagi-css/references/patterns/ui-library-boundary.md: sha256:d7cf48d44ac907b0f22d76cb65f999913f7a48d9b879912162c529b750dee590
+    .claude/skills/nagi-css/references/write-from-scratch.md: sha256:a0678fd4a12d49ec13864873f008a7bc3150befcca12ebfee371846fd21f5397
+  content_hash: sha256:d9e80dbe20c028c8f3412256ddbba83ae8628ec5cbd1a2ddf3abb8275a79ea33
+  skill_subset:
+  - nagi-css
+deployments:
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: null
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:a96437f128600f0be42cd37a0673a7e2be82384da00a28fa40c5546a9b2bf323
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:bf0d6be1828c877d782e059fd3b59d9ee0b0d1deb51ca46df48337f12ad11372
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/check-conformance.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:2be8518ac1e71489b468a9d108f99e774f06ec5c2465c4749319259308ddb98b
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/component-library-boundaries.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:a8d6678fb375e94362cfbf630a3dd1b3e2381fb8499506460d94f9c8ea386b70
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/configuration.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:c1fba3677d9eead3458f0bc1f1e72487f2378c43c06f09d24fc16b91ab746152
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/contract.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:ab9cc2dbf0fe83bdca6a7eaec926d2f67fed0c829e1700d8af9f563f8b90dce8
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/edit-existing.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:7ad6dcbcebd72dc5d20c5e524342c8027347ab2218c3270f56c0e0cd4a0c83cd
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/naming-flow.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:393cd00e4fe6a6949ed9baec34c803b9a003ad10260fd89762dd58bd162a0df1
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/component-slot.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:29355952e65a1ede483b9f1653ee90c0e08fae94da78a1c9a849419c496fa626
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/data-table.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:e9f9fe6d9ef4bc9349b1e689e860ed90dd882214f34e6b207aa0adb5db1af41b
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/dialog.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:4cda349949bb5a3fba31b798e5f965315544739f99e25c881d31dcfb72d089da
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/dynamic-class.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:1aae8197a7f8ed2b32f474f02ea5130eeab4cdacfbd7f70f669d75fbb2176ac4
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/form.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:65bc5a67835af8b7f65a98a8f27513628aa4f0bb357f49399c0bf8c004549369
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/loading-error-empty.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:97a21422fe04fbbf93c980532d3ed6a9e8fe96f52f1f4d5b85a45e1c996ce816
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/page-shell.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:f4fc305c97baeae1d49d0db0c6955b846b58932724708d07dc3ba1fa723d3e91
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/recursive-component.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:1ae75cb272338b0357076ec92143a21b1bb3c15cb26634291e079a5f5280426e
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/tabs.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:328c7dd08143db01dfd861d6f3062aa7808b844a3af77ffa89f472bfd5fdc19e
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/teleport.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:6724082ac58d24551708d2df5e7f4d621cc0338e5b5097f22ee841464350b6cd
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/tree-list.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:c6a9ad048a3b4f2bb5169c6db9d57d4bc842c34f39b7ff07cda82aa0b10ad0e5
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/patterns/ui-library-boundary.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:d7cf48d44ac907b0f22d76cb65f999913f7a48d9b879912162c529b750dee590
+- kind: project-relative
+  target: agent-skills
+  value: .agents/skills/nagi-css/references/write-from-scratch.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:a0678fd4a12d49ec13864873f008a7bc3150befcca12ebfee371846fd21f5397
+- kind: project-relative
+  target: claude
+  value: .claude/rules/project.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:7c3f7c7d93582f4691be2cfa64d0470c34dc0dc60306990863b3b5c8f2b707bc
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:a96437f128600f0be42cd37a0673a7e2be82384da00a28fa40c5546a9b2bf323
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:bf0d6be1828c877d782e059fd3b59d9ee0b0d1deb51ca46df48337f12ad11372
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/check-conformance.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:2be8518ac1e71489b468a9d108f99e774f06ec5c2465c4749319259308ddb98b
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/component-library-boundaries.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:a8d6678fb375e94362cfbf630a3dd1b3e2381fb8499506460d94f9c8ea386b70
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/configuration.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:c1fba3677d9eead3458f0bc1f1e72487f2378c43c06f09d24fc16b91ab746152
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/contract.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:ab9cc2dbf0fe83bdca6a7eaec926d2f67fed0c829e1700d8af9f563f8b90dce8
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/edit-existing.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:7ad6dcbcebd72dc5d20c5e524342c8027347ab2218c3270f56c0e0cd4a0c83cd
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/naming-flow.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:393cd00e4fe6a6949ed9baec34c803b9a003ad10260fd89762dd58bd162a0df1
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/component-slot.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:29355952e65a1ede483b9f1653ee90c0e08fae94da78a1c9a849419c496fa626
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/data-table.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:e9f9fe6d9ef4bc9349b1e689e860ed90dd882214f34e6b207aa0adb5db1af41b
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/dialog.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:4cda349949bb5a3fba31b798e5f965315544739f99e25c881d31dcfb72d089da
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/dynamic-class.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:1aae8197a7f8ed2b32f474f02ea5130eeab4cdacfbd7f70f669d75fbb2176ac4
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/form.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:65bc5a67835af8b7f65a98a8f27513628aa4f0bb357f49399c0bf8c004549369
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/loading-error-empty.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:97a21422fe04fbbf93c980532d3ed6a9e8fe96f52f1f4d5b85a45e1c996ce816
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/page-shell.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:f4fc305c97baeae1d49d0db0c6955b846b58932724708d07dc3ba1fa723d3e91
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/recursive-component.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:1ae75cb272338b0357076ec92143a21b1bb3c15cb26634291e079a5f5280426e
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/tabs.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:328c7dd08143db01dfd861d6f3062aa7808b844a3af77ffa89f472bfd5fdc19e
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/teleport.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:6724082ac58d24551708d2df5e7f4d621cc0338e5b5097f22ee841464350b6cd
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/tree-list.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:c6a9ad048a3b4f2bb5169c6db9d57d4bc842c34f39b7ff07cda82aa0b10ad0e5
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/patterns/ui-library-boundary.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:d7cf48d44ac907b0f22d76cb65f999913f7a48d9b879912162c529b750dee590
+- kind: project-relative
+  target: claude
+  value: .claude/skills/nagi-css/references/write-from-scratch.md
+  runtime: null
+  scope: project
+  owners:
+  - nagi-labs/nagi-css
+  active_owner: nagi-labs/nagi-css
+  content_hash: sha256:a0678fd4a12d49ec13864873f008a7bc3150befcca12ebfee371846fd21f5397
+- kind: project-relative
+  target: copilot
+  value: .github/instructions/project.instructions.md
+  runtime: null
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: sha256:3b153dfd60605f6074cc5e90318402ee949c43c0c5b0f8a62c428c06a135cd74
+local_deployed_files:
+- .claude/rules/project.md
+- .github/instructions/project.instructions.md
+local_deployed_file_hashes:
+  .claude/rules/project.md: sha256:7c3f7c7d93582f4691be2cfa64d0470c34dc0dc60306990863b3b5c8f2b707bc
+  .github/instructions/project.instructions.md: sha256:3b153dfd60605f6074cc5e90318402ee949c43c0c5b0f8a62c428c06a135cd74

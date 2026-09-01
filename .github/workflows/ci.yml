@@ -14,10 +14,20 @@ jobs:
         with:
           node-version: "24"
           cache: true
+      - name: Restore and audit agent configuration
+        run: |
+          ./scripts/setup-apm.sh
+          apm install --frozen
+          apm compile --clean
+          apm compile --validate
+          apm audit --ci --no-policy
       - run: vp install --frozen-lockfile
       - run: vp run lint
       - run: vp run test:integration
       - run: vp run test
+      - run: vp run audit:definitions
+      - run: vp run audit:templates
+      - run: vp run audit:slot-format
       - run: vp run typecheck:vue
       - run: vp exec playwright install --with-deps chromium
       - run: vp run test:browser

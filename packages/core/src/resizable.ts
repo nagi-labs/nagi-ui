@@ -104,12 +104,14 @@ function createResizable(options: UseResizableOptions): ResizableBinding {
     }
   }
 
+  function reconcileBounds() {
+    const next = currentValue.value;
+    if (!Object.is(options.value.value, next)) void requestModelValue(options.value, next);
+  }
+
   watch(
     [() => options.value.value, minimum, maximum],
-    () => {
-      const next = currentValue.value;
-      if (!Object.is(options.value.value, next)) void requestModelValue(options.value, next);
-    },
+    reconcileBounds,
     { flush: "sync", immediate: true },
   );
 

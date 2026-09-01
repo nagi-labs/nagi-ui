@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { VisAxis, VisLine, VisXYContainer } from "@unovis/vue";
 
-import { Button, Card } from "@nagi-labs/nagi-ui/components";
+import { NButton, NCard } from "@nagi-labs/nagi-ui/components";
 
 interface WeeklyActivity {
   week: string;
@@ -42,18 +42,18 @@ const formatUsers = (value: number | Date) =>
       </p>
     </header>
 
-    <Button
+    <n-button
       class="n-button"
-      data-testid="chart-theme-toggle"
+      id="chart-theme-toggle"
       :aria-pressed="dark"
       @click="dark = !dark"
     >
       {{ dark ? "Use light chart theme" : "Use dark chart theme" }}
-    </Button>
+    </n-button>
 
     <section class="section" :class="{ '-dark': dark }" aria-labelledby="chart-heading">
       <h2 id="chart-heading" class="title">Recommended composition</h2>
-      <Card
+      <n-card
         class="n-card"
         title="Weekly active users"
         description="Current and previous six-week periods"
@@ -124,7 +124,7 @@ const formatUsers = (value: number | Date) =>
             </tbody>
           </table>
         </figure>
-      </Card>
+      </n-card>
     </section>
   </main>
 </template>

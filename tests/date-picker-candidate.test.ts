@@ -14,7 +14,7 @@ function flatten<T>(weeks: readonly (readonly T[])[]): readonly T[] {
   return weeks.flatMap((week) => week);
 }
 
-test("DatePicker shares one ISO model between field and calendar and closes after selection", () => {
+test("[DTP-STATE-01][DTP-INT-01] DatePicker shares one ISO model between field and calendar and closes after selection", () => {
   const scope = effectScope();
   scope.run(() => {
     const value = ref<string | null>("2026-07-23");
@@ -96,7 +96,7 @@ test("DateRangePicker closes only after the second valid calendar endpoint", () 
   scope.stop();
 });
 
-test("pickers reject controlled unavailable dates and manually entered unavailable spans", () => {
+test("[DTP-STATE-02] pickers reject controlled unavailable dates and manually entered unavailable spans", () => {
   const scope = effectScope();
   scope.run(() => {
     const dateValue = ref<string | null>("2026-07-15");

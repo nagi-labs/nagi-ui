@@ -111,6 +111,7 @@ test("every public package component has an ownership registry entry", () => {
   const publicComponents = Array.from(
     source.matchAll(/export \{ default as ([A-Za-z0-9]+) \}/g),
     (match) => (match[1] as string)
+      .replace(/^N(?=[A-Z])/u, "")
       .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
       .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
       .toLowerCase(),
@@ -152,7 +153,7 @@ test("status reports package, default theme, and locally modified ownership inde
   fs.mkdirSync(path.join(cwd, "src"), { recursive: true });
   fs.writeFileSync(
     path.join(cwd, "src/main.ts"),
-    'import "@nagi-labs/nagi-ui/default-theme.css";\n',
+    'import "@nagi-labs/nagi-ui/styles.css";\n',
   );
   fs.writeFileSync(
     path.join(cwd, "src/commented.ts"),

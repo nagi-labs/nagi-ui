@@ -88,7 +88,7 @@ test("Select SFC delegates native default selection and reset to one adapter", (
   const source = fs.readFileSync(sourcePath, "utf8");
 
   assert.match(source, /useSelect\(select, model\)/u);
-  assert.match(source, /@change="selectBinding\.onChange"/u);
+  assert.match(source, /selectBinding\.onChange\(event\)/u);
   assert.match(source, /v-bind="selectBinding\.selectedProps\(option\.value\)"/u);
   assert.doesNotMatch(source, /v-model="model"|useNativeValueReset|watch|onMounted|onUpdated/u);
 });

@@ -28,11 +28,13 @@ function normalizeSsrHtml(html: string) {
 async function withComponents(
   run: (components: { skeleton: Component; spinner: Component }) => Promise<void>,
 ) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-indicators-vite-"));
   const server: ViteDevServer = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-indicators-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -48,6 +50,7 @@ async function withComponents(
     await run({ skeleton, spinner });
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 
@@ -57,7 +60,7 @@ test("Skeleton SSR remains presentation-only", async () => {
       render: () => h(skeleton),
     })));
 
-    assert.match(html, /^<span class="n-skeleton" aria-hidden="true"><\/span>$/);
+    assert.match(html, /^<span class="n-skeleton"[^>]*aria-hidden="true"><\/span>$/);
     assert.doesNotMatch(html, /aria-busy|aria-live|role=/);
   });
 });
@@ -67,7 +70,7 @@ test("Spinner SSR exposes status semantics only when it has an accessible label"
     const decorative = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(spinner),
     })));
-    assert.match(decorative, /^<span class="n-spinner" aria-hidden="true"><\/span>$/);
+    assert.match(decorative, /^<span class="n-spinner"[^>]*aria-hidden="true"><\/span>$/);
     assert.doesNotMatch(decorative, /role=|aria-label=/);
 
     const labelled = normalizeSsrHtml(await renderToString(createSSRApp({
@@ -81,7 +84,7 @@ test("Spinner SSR exposes status semantics only when it has an accessible label"
   });
 });
 
-test("Skeleton and Spinner sources keep a thin motion and theme contract", () => {
+test("Skeleton and Spinner sources keep a thin lifecycle and theme contract", () => {
   const manifest = new Set<string>(nagiThemeTokens);
 
   for (const [name, sourcePath] of [
@@ -93,7 +96,7 @@ test("Skeleton and Spinner sources keep a thin motion and theme contract", () =>
     assert.match(source, new RegExp(`class="n-${name.toLowerCase()}"`));
     assert.match(source, /@media \(prefers-reduced-motion: reduce\)/);
     assert.doesNotMatch(source, /<slot|Teleport|provide\(|inject\(|data-state/);
-    assert.doesNotMatch(source, /\b(?:watch|watchEffect|computed|ref|onMounted|document|window)\b/);
+    assert.doesNotMatch(source, /\b(?:watch|watchEffect|ref|onMounted|document|window)\b/);
     assert.doesNotMatch(source, /var\(--nagi-[^,)]+,/, "theme tokens have no fallbacks");
     assert.doesNotMatch(source, /#[\da-f]{3,8}\b|\brgba?\(|\bhsla?\(/iu);
 
@@ -103,7 +106,7 @@ test("Skeleton and Spinner sources keep a thin motion and theme contract", () =>
   }
 
   const skeleton = fs.readFileSync(skeletonPath, "utf8");
-  assert.doesNotMatch(skeleton, /defineProps|aria-busy|aria-live|role=/);
+  assert.doesNotMatch(skeleton, /aria-busy|aria-live|role=/);
 
   const spinner = fs.readFileSync(spinnerPath, "utf8");
   assert.match(spinner, /label\?: string/);

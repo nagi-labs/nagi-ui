@@ -1,8 +1,23 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { datePickerContract } from "../../packages/core/src/test/date-picker-contract.ts";
+import { datePickerDefinition } from "../../packages/core/blueprints/date-picker/date-picker.definition.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/date-time.html");
+});
+
+datePickerContract({
+  definition: datePickerDefinition,
+  url: "/date-time.html",
+  triggerName: "Choose picked date",
+  fieldName: "Picked date",
+  calendarName: "Picked date calendar",
+  selectedDateName: "Friday, July 24, 2026",
+  nextDateName: "Saturday, July 25, 2026",
+  initialValue: "2026-07-24",
+  committedValue: "2026-07-25",
+  openStatusName: "Picked date open state",
 });
 
 test("calendar grids move roving focus and enforce unavailable dates", async ({ page }) => {
@@ -16,24 +31,24 @@ test("calendar grids move roving focus and enforce unavailable dates", async ({ 
   await expect(grid.getByRole("gridcell", { selected: true })).toContainText("25");
 });
 
-test("segmented fields edit ISO values and reset through native forms", async ({ page }) => {
+test("[DTP-INT-01] segmented fields edit ISO values and reset through native forms", async ({ page }) => {
   const date = page.getByRole("group", { name: "Field date" });
   const day = date.getByRole("spinbutton", { name: "Day" });
   await day.focus();
   await day.press("Delete");
   await day.press("2");
   await day.press("8");
-  await expect(page.getByTestId("date-model")).toHaveText("2026-07-28");
+  await expect(page.locator("#date-model")).toHaveText("2026-07-28");
 
   const time = page.getByRole("group", { name: "Field time" });
   const minute = time.getByRole("spinbutton", { name: "Minute" });
   await minute.focus();
   await minute.press("ArrowUp");
-  await expect(page.getByTestId("time-model")).toHaveText("13:46");
+  await expect(page.locator("#time-model")).toHaveText("13:46");
 
   await page.getByRole("button", { name: "Reset dates" }).click();
-  await expect(page.getByTestId("date-model")).toHaveText("2026-07-23");
-  await expect(page.getByTestId("time-model")).toHaveText("13:45");
+  await expect(page.locator("#date-model")).toHaveText("2026-07-23");
+  await expect(page.locator("#time-model")).toHaveText("13:45");
 
   const emptyDate = page.locator(".n-date-field").filter({ hasText: "Initially empty date" });
   const emptyYear = emptyDate.getByRole("spinbutton", { name: "Year" });
@@ -43,7 +58,7 @@ test("segmented fields edit ISO values and reset through native forms", async ({
   await expect(emptyDate.locator(".field")).toHaveAttribute("aria-invalid", "true");
   await page.getByRole("button", { name: "Reset dates" }).click();
   await expect(emptyYear).toHaveText("yyyy");
-  await expect(page.getByTestId("empty-date-model")).toHaveText("");
+  await expect(page.locator("#empty-date-model")).toHaveText("");
 });
 
 test("pickers use native popovers, commit selections, and submit ISO FormData", async ({ page }) => {
@@ -67,7 +82,7 @@ test("pickers use native popovers, commit selections, and submit ISO FormData", 
   await expect(rangeDialog).toBeHidden();
 
   await page.getByRole("button", { name: "Submit dates" }).click();
-  await expect(page.getByTestId("submission")).toHaveText(JSON.stringify({
+  await expect(page.locator("#submission")).toHaveText(JSON.stringify({
     fieldDate: "2026-07-23",
     fieldTime: "13:45",
     pickedDate: "2026-07-28",
@@ -79,7 +94,7 @@ test("pickers use native popovers, commit selections, and submit ISO FormData", 
   }));
 });
 
-test("picker Escape restores focus and invalid typed ranges block native submission", async ({ page }) => {
+test("[DTP-STATE-02] picker Escape restores focus and invalid typed ranges block native submission", async ({ page }) => {
   const trigger = page.getByRole("button", { name: "Choose picked date" });
   await trigger.click();
   await page.keyboard.press("Escape");
@@ -93,7 +108,7 @@ test("picker Escape restores focus and invalid typed ranges block native submiss
   await startDay.press("3");
   await startDay.press("0");
   await page.getByRole("button", { name: "Submit dates" }).click();
-  await expect(page.getByTestId("submission")).toHaveText("No submission yet");
+  await expect(page.locator("#submission")).toHaveText("No submission yet");
   await expect(range.locator(".field.-start input[type=date]")).toHaveJSProperty("validationMessage", "Choose an available date range.");
 });
 
@@ -125,7 +140,7 @@ test("initially controlled-open picker focuses its date, light dismisses, and re
   await day.press("Delete");
   await day.press("2");
   await day.press("8");
-  await expect(page.getByTestId("qa-controlled-date")).toHaveText("2026-07-23");
+  await expect(page.locator("#qa-controlled-date")).toHaveText("2026-07-23");
   await expect(day).toHaveText("23");
 
   const readonlyDate = page.locator(".n-calendar").filter({
@@ -151,7 +166,7 @@ test("initially controlled-open picker focuses its date, light dismisses, and re
   await partialRange.getByRole("button", { name: "Monday, July 20, 2026" }).click();
   await expect(partialRange.getByRole("alert")).toContainText("Choose an available date range.");
   await page.getByRole("button", { name: "Submit dates" }).click();
-  await expect(page.getByTestId("submission")).toHaveText("No submission yet");
+  await expect(page.locator("#submission")).toHaveText("No submission yet");
   await expect(partialRange.locator("input[type=date]").first()).toHaveJSProperty(
     "validationMessage",
     "Choose an available date range.",

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-import { Combobox, type ComboboxOption } from "@nagi-labs/nagi-ui/components";
+import { NCombobox, type ComboboxOption } from "@nagi-labs/nagi-ui/components";
 
 const frameworks: readonly ComboboxOption[] = [
   { key: "vue", label: "Vue" },
@@ -26,7 +26,7 @@ const selected = ref<string | null>("vue");
 
     <section class="section">
       <h2 class="title">Framework</h2>
-      <Combobox
+      <n-combobox
         v-model="inputValue"
         v-model:selected="selected"
         label="Framework"
@@ -38,11 +38,11 @@ const selected = ref<string | null>("vue");
     <dl class="list -state">
       <div class="item">
         <dt class="term">input</dt>
-        <dd class="definition" data-testid="input-state">{{ inputValue || "empty" }}</dd>
+        <dd class="definition" id="input-state">{{ inputValue || "empty" }}</dd>
       </div>
       <div class="item">
         <dt class="term">selected</dt>
-        <dd class="definition" data-testid="selected-state">{{ selected ?? "none" }}</dd>
+        <dd class="definition" id="selected-state">{{ selected ?? "none" }}</dd>
       </div>
     </dl>
 

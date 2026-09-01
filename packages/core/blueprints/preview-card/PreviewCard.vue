@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import {
-  mergeNagiProps,
-  usePreviewCard,
-  type AnchorArea,
-} from "@nagi-labs/nagi-ui";
+import { usePreviewCard, type AnchorArea } from "@nagi-labs/nagi-ui";
+import type { StyleValue } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
     href: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     label: string;
     title: string;
     description?: string;
@@ -18,6 +18,27 @@ const props = withDefaults(
     disabled?: boolean;
     area?: AnchorArea;
     offset?: number;
+    target?: "_self" | "_blank" | "_parent" | "_top";
+    rel?: string;
+    download?: string | boolean;
+    hreflang?: string;
+    media?: string;
+    ping?: string;
+    referrerpolicy?:
+      | "no-referrer"
+      | "no-referrer-when-downgrade"
+      | "origin"
+      | "origin-when-cross-origin"
+      | "same-origin"
+      | "strict-origin"
+      | "strict-origin-when-cross-origin"
+      | "unsafe-url";
+    type?: string;
+    ariaLabel?: string;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
+    ariaDetails?: string;
+    ariaErrormessage?: string;
   }>(),
   {
     openDelay: 600,
@@ -27,6 +48,12 @@ const props = withDefaults(
     offset: 8,
   },
 );
+const emit = defineEmits<{
+  pointerenter: [event: PointerEvent];
+  pointerleave: [event: PointerEvent];
+  focus: [event: FocusEvent];
+  blur: [event: FocusEvent];
+}>();
 
 const open = defineModel<boolean>("open", { default: false });
 const preview = usePreviewCard(props, open);
@@ -35,20 +62,53 @@ defineExpose({ show: preview.show, hide: preview.hide });
 </script>
 
 <template>
-  <span class="n-preview-card">
+  <span
+    class="n-preview-card"
+    :class="props.class"
+    :style="props.style"
+  >
     <a
       class="link"
       :href="href"
-      v-bind="mergeNagiProps(preview.triggerProps, $attrs)"
+      v-bind="preview.triggerProps"
+      @pointerenter="emit('pointerenter', $event)"
+      @pointerleave="emit('pointerleave', $event)"
+      @focus="emit('focus', $event)"
+      @blur="emit('blur', $event)"
+      :target="target"
+      :rel="rel"
+      :download="download === true ? '' : download || undefined"
+      :hreflang="hreflang"
+      :media="media"
+      :ping="ping"
+      :referrerpolicy="referrerpolicy"
+      :type="type"
+      :aria-label="ariaLabel"
+      :aria-labelledby="ariaLabelledby"
+      :aria-describedby="ariaDescribedby"
+      :aria-details="ariaDetails"
+      :aria-errormessage="ariaErrormessage"
+      :title="title"
     >
       {{ label }}
     </a>
-    <span class="unit" popover v-bind="preview.previewProps">
+    <span
+      class="unit"
+      popover
+      v-bind="preview.previewProps"
+    >
       <span class="item -metadata">
         <span class="title">{{ title }}</span>
-        <span v-if="description" class="text">{{ description }}</span>
+        <span
+          v-if="description"
+          class="text"
+          >{{ description }}</span
+        >
       </span>
-      <span v-if="$slots.default" class="item -extra">
+      <span
+        v-if="$slots.default"
+        class="item -extra"
+      >
         <slot />
       </span>
     </span>

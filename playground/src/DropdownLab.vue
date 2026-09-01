@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Button, DropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
+import { NButton, NDropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
 import DropdownFixture, { type DropdownSort } from "./DropdownFixture.vue";
 
 const lastAction = ref("none");
@@ -141,32 +141,45 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
   <main class="n-dropdown-lab">
     <h1 class="title">Nagi UI — complete Dropdown</h1>
     <p class="text">
-      The schema-driven Blueprint (items as data) appears beside the explicit-DOM fixture.
-      Both use the same useMenu and useSubmenu behavior.
+      The schema-driven Blueprint (items as data) appears beside the explicit-DOM fixture. Both use
+      the same useMenu and useSubmenu behavior.
     </p>
 
     <section class="section">
       <h2 class="title">LTR</h2>
-      <DropdownMenu label="File actions" :items="items" />
+      <n-dropdown-menu
+        label="File actions"
+        :items="items"
+      />
     </section>
 
-    <section class="section" dir="rtl">
+    <section
+      class="section"
+      dir="rtl"
+    >
       <h2 class="title">RTL</h2>
-      <DropdownMenu label="RTL actions" :items="items" dir="rtl" />
+      <n-dropdown-menu
+        label="RTL actions"
+        :items="items"
+        dir="rtl"
+      />
     </section>
 
     <section class="section -themed">
       <h2 class="title">Themed</h2>
-      <DropdownMenu label="Themed actions" :items="items" />
+      <n-dropdown-menu
+        label="Themed actions"
+        :items="items"
+      />
     </section>
 
     <section class="section">
       <h2 class="title">Buttons</h2>
       <div class="row -buttons">
-        <Button>Cancel</Button>
-        <Button variant="accent">Save</Button>
-        <Button variant="danger">Delete</Button>
-        <Button disabled>Disabled</Button>
+        <n-button>Cancel</n-button>
+        <n-button class="save-action">Save</n-button>
+        <n-button class="delete-action">Delete</n-button>
+        <n-button disabled>Disabled</n-button>
       </div>
     </section>
 
@@ -182,41 +195,94 @@ const items = computed<readonly DropdownMenuNode[]>(() => [
 
     <section class="section">
       <h2 class="title">Controlled submenu close</h2>
-      <DropdownFixture label="Locked submenu actions" reject-submenu-close />
+      <DropdownFixture
+        label="Locked submenu actions"
+        reject-submenu-close
+      />
     </section>
 
-    <dl id="documentation" class="list -state">
+    <dl
+      id="documentation"
+      class="list -state"
+    >
       <div class="item">
         <dt class="term">show toolbar</dt>
-        <dd class="definition" data-testid="toolbar-state">{{ showToolbar }}</dd>
+        <dd
+          class="definition"
+          id="toolbar-state"
+        >
+          {{ showToolbar }}
+        </dd>
       </div>
       <div class="item">
         <dt class="term">sort by</dt>
-        <dd class="definition" data-testid="sort-state">{{ sortBy }}</dd>
+        <dd
+          class="definition"
+          id="sort-state"
+        >
+          {{ sortBy }}
+        </dd>
       </div>
       <div class="item">
         <dt class="term">verbose</dt>
-        <dd class="definition" data-testid="verbose-state">{{ verbose }}</dd>
+        <dd
+          class="definition"
+          id="verbose-state"
+        >
+          {{ verbose }}
+        </dd>
       </div>
       <div class="item">
         <dt class="term">last action</dt>
-        <dd class="definition" data-testid="action-state">{{ lastAction }}</dd>
+        <dd
+          class="definition"
+          id="action-state"
+        >
+          {{ lastAction }}
+        </dd>
       </div>
       <div class="item">
         <dt class="term">router navigations</dt>
-        <dd class="definition" data-testid="router-navigation-state">{{ routerNavigations }}</dd>
+        <dd
+          class="definition"
+          id="router-navigation-state"
+        >
+          {{ routerNavigations }}
+        </dd>
       </div>
       <div class="item">
         <dt class="term">link prefetches</dt>
-        <dd class="definition" data-testid="link-prefetch-state">{{ linkPrefetches }}</dd>
+        <dd
+          class="definition"
+          id="link-prefetch-state"
+        >
+          {{ linkPrefetches }}
+        </dd>
       </div>
     </dl>
 
-    <button id="after-dropdown" class="button" type="button">After dropdown</button>
+    <button
+      id="after-dropdown"
+      class="button"
+      type="button"
+    >
+      After dropdown
+    </button>
   </main>
 </template>
 
 <style scoped>
+.n-button.save-action {
+  --button-tone: accent;
+  --button-appearance: solid;
+}
+
+.n-button.delete-action {
+  --button-tone: danger;
+  --button-appearance: outlined;
+  --button-shape: rounded;
+}
+
 .n-dropdown-lab {
   min-block-size: 100vh;
   padding: 2rem;

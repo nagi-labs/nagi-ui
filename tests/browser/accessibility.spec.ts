@@ -68,7 +68,7 @@ test("Unovis recipe is axe-clean with its chart summary and data table", async (
   ).toBeVisible()
   await expectAxeClean(page)
 
-  await page.getByTestId("chart-theme-toggle").click()
+  await page.locator("#chart-theme-toggle").click()
   await expectAxeClean(page)
 })
 

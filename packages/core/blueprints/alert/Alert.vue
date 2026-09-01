@@ -1,5 +1,10 @@
 <script setup lang="ts">
-withDefaults(
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+import { computed, useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(
   defineProps<{
     title: string;
     tone?: "neutral" | "accent" | "success" | "warning" | "danger";
@@ -7,19 +12,28 @@ withDefaults(
   }>(),
   { tone: "neutral", role: "status" },
 );
+const attrs = useAttrs();
+const sectionProps = computed(() => mergeElementProps(attrs, { role: props.role }));
 </script>
 
 <template>
   <section
     class="n-alert"
+    v-bind="sectionProps"
     :data-tone="tone"
-    :role="role"
   >
-    <span v-if="$slots.icon" class="icon">
+    <span
+      v-if="$slots.icon"
+      class="icon"
+    >
       <slot name="icon" />
     </span>
     <h2 class="title">
-      <slot name="title" :title="title">{{ title }}</slot>
+      <slot
+        name="title"
+        :title="title"
+        >{{ title }}</slot
+      >
     </h2>
     <div class="unit">
       <slot />

@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import { computed, ref, useId } from "vue";
+import type { StyleValue } from "vue";
 
 import { useRangeSlider } from "@nagi-labs/nagi-ui/component-controls";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
     label: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
+    ariaLabel?: string;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
     lowerLabel?: string;
     upperLabel?: string;
     lowerId?: string;
@@ -35,11 +45,35 @@ const lowerInput = ref<HTMLInputElement | null>(null);
 const upperInput = ref<HTMLInputElement | null>(null);
 const generatedLowerId = useId();
 const generatedUpperId = useId();
-const { lowerValue, upperValue, railProps } = useRangeSlider(
-  lowerInput,
-  upperInput,
-  model,
-);
+const fieldsetProps = computed(() => ({
+  class: props.class,
+  style: props.style,
+  id: props.id,
+  title: props.title,
+  "aria-label": props.ariaLabel,
+  "aria-labelledby": props.ariaLabelledby,
+  "aria-describedby": props.ariaDescribedby,
+  disabled: props.disabled,
+}));
+const { lowerValue, upperValue, railProps } = useRangeSlider(lowerInput, upperInput, model);
+const lowerInputProps = computed(() => ({
+  id: props.lowerId ?? generatedLowerId,
+  name: props.lowerName,
+  form: props.form,
+  min: props.min,
+  max: props.max,
+  step: props.step,
+  "aria-valuemax": upperValue.value,
+}));
+const upperInputProps = computed(() => ({
+  id: props.upperId ?? generatedUpperId,
+  name: props.upperName,
+  form: props.form,
+  min: props.min,
+  max: props.max,
+  step: props.step,
+  "aria-valuemin": lowerValue.value,
+}));
 const trackStyle = computed(() => {
   const span = props.max - props.min;
   const position = (value: number) => {
@@ -54,16 +88,35 @@ const trackStyle = computed(() => {
 </script>
 
 <template>
-  <fieldset class="n-range-slider" :disabled="disabled">
+  <fieldset
+    class="n-range-slider"
+    v-bind="fieldsetProps"
+  >
     <legend class="legend">{{ label }}</legend>
     <div class="unit">
       <div class="item -lower">
-        <label class="label" :for="lowerId ?? generatedLowerId">{{ lowerLabel }}</label>
-        <output class="output" :for="lowerId ?? generatedLowerId">{{ lowerValue }}</output>
+        <label
+          class="label"
+          :for="lowerId ?? generatedLowerId"
+          >{{ lowerLabel }}</label
+        >
+        <output
+          class="output"
+          :for="lowerId ?? generatedLowerId"
+          >{{ lowerValue }}</output
+        >
       </div>
       <div class="item -upper">
-        <label class="label" :for="upperId ?? generatedUpperId">{{ upperLabel }}</label>
-        <output class="output" :for="upperId ?? generatedUpperId">{{ upperValue }}</output>
+        <label
+          class="label"
+          :for="upperId ?? generatedUpperId"
+          >{{ upperLabel }}</label
+        >
+        <output
+          class="output"
+          :for="upperId ?? generatedUpperId"
+          >{{ upperValue }}</output
+        >
       </div>
       <div class="item -wide">
         <span
@@ -73,30 +126,18 @@ const trackStyle = computed(() => {
           v-bind="railProps"
         ></span>
         <input
-          :id="lowerId ?? generatedLowerId"
           ref="lowerInput"
           v-model.number="lowerValue"
           class="input -lower"
           type="range"
-          :name="lowerName"
-          :form="form"
-          :min="min"
-          :max="max"
-          :step="step"
-          :aria-valuemax="upperValue"
+          v-bind="lowerInputProps"
         />
         <input
-          :id="upperId ?? generatedUpperId"
           ref="upperInput"
           v-model.number="upperValue"
           class="input -upper"
           type="range"
-          :name="upperName"
-          :form="form"
-          :min="min"
-          :max="max"
-          :step="step"
-          :aria-valuemin="lowerValue"
+          v-bind="upperInputProps"
         />
       </div>
     </div>

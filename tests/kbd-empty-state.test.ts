@@ -19,13 +19,15 @@ function normalizeSsrHtml(html: string): string {
 }
 
 async function withBlueprints(
-  run: (components: { Kbd: Component; EmptyState: Component }) => Promise<void>,
+  run: (components: { NKbd: Component; NEmptyState: Component }) => Promise<void>,
 ) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-presentational-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: repo,
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-presentational-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -41,6 +43,7 @@ async function withBlueprints(
     await run({ Kbd: kbd.default as Component, EmptyState: emptyState.default as Component });
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 

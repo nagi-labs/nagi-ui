@@ -60,7 +60,7 @@ test("Calendar emits a locale week grid and selects ISO dates", () => {
   scope.stop();
 });
 
-test("Calendar keyboard movement keeps one eligible roving target and blocks constraints", () => {
+test("[DTP-CAL-INT-01][DTP-CAL-FOCUS-01] Calendar keyboard movement keeps one eligible roving target and blocks constraints", () => {
   const scope = effectScope();
   scope.run(() => {
     const value = ref<string | null>("2026-07-23");
@@ -128,7 +128,7 @@ test("Calendar keeps Gregorian values and accessible labels aligned in non-Grego
   scope.stop();
 });
 
-test("Calendar repairs roving focus after reactive constraints and bounds Home within its week", async () => {
+test("[DTP-CAL-INT-01][DTP-CAL-FOCUS-01] Calendar repairs roving focus and bounds Home/End within its week", async () => {
   const scope = effectScope();
   scope.run(() => {
     const value = ref<string | null>("2026-07-23");
@@ -146,8 +146,12 @@ test("Calendar repairs roving focus after reactive constraints and bounds Home w
     unavailableDates.value = ["2026-07-19", "2026-07-20"];
     const thursday = cells.find((cell) => cell.value === "2026-07-23") as CalendarCell;
     calendar.cellButtonProps(thursday).onKeydown(keyEvent("Home").event);
-    const monday = cells.find((cell) => cell.value === "2026-07-21") as CalendarCell;
-    assert.equal(calendar.cellButtonProps(monday).tabindex, 0);
+    const firstAvailable = cells.find((cell) => cell.value === "2026-07-21") as CalendarCell;
+    assert.equal(calendar.cellButtonProps(firstAvailable).tabindex, 0);
+
+    calendar.cellButtonProps(thursday).onKeydown(keyEvent("End").event);
+    const saturday = cells.find((cell) => cell.value === "2026-07-25") as CalendarCell;
+    assert.equal(calendar.cellButtonProps(saturday).tabindex, 0);
   });
   scope.stop();
 });
@@ -167,13 +171,22 @@ test("Calendar restores DOM and roving focus when an all-blocked grid becomes pa
   const current = flatten(calendar.weeks.value)
     .find((cell) => cell.value === "2026-07-23") as CalendarCell;
   const currentProps = calendar.cellButtonProps(current);
-  const ownerDocument = {
-    activeElement: { id: currentProps.id },
-    getElementById(id: string) {
-      return { focus() { focusedIds.push(id); } };
-    },
-  } as unknown as Document;
-  currentProps.onFocus({ currentTarget: { ownerDocument } } as unknown as FocusEvent);
+  currentProps.ref({
+    id: currentProps.id,
+    isConnected: true,
+    matches: () => true,
+    focus() { focusedIds.push(currentProps.id); },
+  } as unknown as HTMLElement);
+  const saturday = flatten(calendar.weeks.value)
+    .find((cell) => cell.value === "2026-07-25") as CalendarCell;
+  const saturdayProps = calendar.cellButtonProps(saturday);
+  saturdayProps.ref({
+    id: saturdayProps.id,
+    isConnected: true,
+    matches: () => false,
+    focus() { focusedIds.push(saturdayProps.id); },
+  } as unknown as HTMLElement);
+  currentProps.onFocus({ currentTarget: {} } as unknown as FocusEvent);
 
   mode.value = "blocked";
   assert.equal(
@@ -193,7 +206,7 @@ test("Calendar restores DOM and roving focus when an all-blocked grid becomes pa
   scope.stop();
 });
 
-test("Calendar month buttons traverse unavailable months and stop only at min/max boundaries", () => {
+test("[DTP-CAL-INT-01] Calendar month buttons traverse unavailable months and stop only at min/max boundaries", () => {
   const scope = effectScope();
   scope.run(() => {
     const august = Array.from({ length: 31 }, (_, index) =>
@@ -233,7 +246,7 @@ test("Calendar month buttons traverse unavailable months and stop only at min/ma
   scope.stop();
 });
 
-test("Calendar paging does not display a month outside min/max boundaries", () => {
+test("[DTP-CAL-INT-01] Calendar paging does not display a month outside min/max boundaries", () => {
   const scope = effectScope();
   scope.run(() => {
     const maximum = useCalendar({

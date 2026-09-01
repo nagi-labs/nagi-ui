@@ -7,44 +7,83 @@ export interface MultiSelectOption {
 </script>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { mergeNagiProps, useMultiSelect } from "@nagi-labs/nagi-ui";
+import { computed, type StyleValue } from "vue";
+import { useMultiSelect } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<{
-  label: string;
-  items: readonly MultiSelectOption[];
-  name?: string;
-  form?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  readOnly?: boolean;
-  required?: boolean;
-  removeLabel?: string;
-  emptyText?: string;
-}>(), {
-  placeholder: "Filter options",
-  disabled: false,
-  readOnly: false,
-  required: false,
-  removeLabel: "Remove",
-  emptyText: "No options",
-});
+const props = withDefaults(
+  defineProps<{
+    label: string;
+    items: readonly MultiSelectOption[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    name?: string;
+    form?: string;
+    placeholder?: string;
+    inputmode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
+    enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+    autocapitalize?: "none" | "off" | "on" | "sentences" | "words" | "characters";
+    autocorrect?: "on" | "off";
+    autofocus?: boolean;
+    dirname?: string;
+    list?: string;
+    size?: number;
+    spellcheck?: boolean;
+    tabindex?: number;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
+    ariaDetails?: string;
+    ariaErrormessage?: string;
+    ariaPlaceholder?: string;
+    title?: string;
+    disabled?: boolean;
+    readOnly?: boolean;
+    required?: boolean;
+    removeLabel?: string;
+    emptyText?: string;
+  }>(),
+  {
+    placeholder: "Filter options",
+    disabled: false,
+    readOnly: false,
+    required: false,
+    removeLabel: "Remove",
+    emptyText: "No options",
+  },
+);
+const emit = defineEmits<{
+  input: [event: Event];
+  click: [event: MouseEvent];
+  keydown: [event: KeyboardEvent];
+  blur: [event: FocusEvent];
+}>();
 
 const selected = defineModel<readonly string[]>({ default: () => [] });
-const formControl = ref<HTMLSelectElement | null>(null);
-const inputControl = ref<HTMLInputElement | null>(null);
-const select = useMultiSelect(props, { selected, formControl, inputControl });
-const selectedItems = computed(() => selected.value.map((key) =>
-  props.items.find((item) => item.key === key) ?? { key, label: key }));
+const select = useMultiSelect(props, { selected });
+const selectedItems = computed(() =>
+  selected.value.map((key) => props.items.find((item) => item.key === key) ?? { key, label: key }),
+);
 </script>
 
 <template>
-  <div class="n-multi-select">
-    <label class="label" :for="select.inputProps.id">{{ label }}</label>
+  <div
+    class="n-multi-select"
+    :class="props.class"
+    :style="props.style"
+  >
+    <label
+      class="label"
+      :for="select.inputProps.id"
+      >{{ label }}</label
+    >
     <div class="field">
-      <span v-for="(item, index) in selectedItems" :key="item.key" class="unit -chip">
+      <span
+        v-for="item in selectedItems"
+        :key="item.key"
+        class="unit -chip"
+      >
         <span class="text">{{ item.label }}</span>
         <button
           v-if="!disabled && !readOnly"
@@ -52,33 +91,74 @@ const selectedItems = computed(() => selected.value.map((key) =>
           type="button"
           :aria-label="`${removeLabel} ${item.label}`"
           @click="select.remove(item.key)"
-        >×</button>
+        >
+          ×
+        </button>
       </span>
       <input
-        ref="inputControl"
-        v-bind="mergeNagiProps(select.inputProps, $attrs)"
+        v-bind="select.inputProps"
+        @input="emit('input', $event)"
+        @click="emit('click', $event)"
+        @keydown="emit('keydown', $event)"
+        @blur="emit('blur', $event)"
         class="input"
         type="text"
+        :inputmode="inputmode"
+        :enterkeyhint="enterkeyhint"
+        :autocapitalize="autocapitalize"
+        :autocorrect="autocorrect"
+        :autofocus="autofocus"
+        :dirname="dirname"
+        :list="list"
+        :size="size"
+        :spellcheck="spellcheck"
+        :tabindex="tabindex"
+        :aria-labelledby="ariaLabelledby"
+        :aria-describedby="ariaDescribedby"
+        :aria-details="ariaDetails"
+        :aria-errormessage="ariaErrormessage"
+        :aria-placeholder="ariaPlaceholder"
+        :title="title"
       />
     </div>
-    <select ref="formControl" v-bind="select.formProps" class="select -form-value">
+    <select
+      v-bind="select.formProps"
+      class="select -form-value"
+    >
       <option
         v-for="item in selectedItems"
         :key="item.key"
         :value="item.key"
         :selected="selected.includes(item.key)"
-      >{{ item.label }}</option>
+      >
+        {{ item.label }}
+      </option>
     </select>
-    <div v-bind="select.popupProps" class="unit -popup" popover>
-      <ul v-bind="select.listboxProps" class="list">
+    <div
+      v-bind="select.popupProps"
+      class="unit -popup"
+      popover
+    >
+      <ul
+        v-bind="select.listboxProps"
+        class="list"
+      >
         <li
           v-for="item in select.visibleItems.value"
           :key="item.key"
           v-bind="select.optionProps(item)"
           class="item"
-        >{{ item.label }}</li>
+        >
+          {{ item.label }}
+        </li>
       </ul>
-      <p v-if="select.visibleItems.value.length === 0" class="text -empty" role="status">{{ emptyText }}</p>
+      <p
+        v-if="select.visibleItems.value.length === 0"
+        class="text -empty"
+        role="status"
+      >
+        {{ emptyText }}
+      </p>
     </div>
   </div>
 </template>
@@ -90,7 +170,11 @@ const selectedItems = computed(() => selected.value.map((key) =>
   inline-size: min(18rem, 100%);
   min-inline-size: 0;
   color: var(--nagi-color-text);
-  > .label { color: var(--nagi-color-text-muted); font-size: var(--nagi-font-size-label); font-weight: 650; }
+  > .label {
+    color: var(--nagi-color-text-muted);
+    font-size: var(--nagi-font-size-label);
+    font-weight: 650;
+  }
   > .field {
     display: flex;
     flex-wrap: wrap;
@@ -101,28 +185,91 @@ const selectedItems = computed(() => selected.value.map((key) =>
     border: var(--n-border-width-1) solid var(--nagi-color-border);
     border-radius: var(--nagi-radius-control);
     background: var(--nagi-color-surface);
-    &:focus-within { border-color: var(--nagi-color-focus-ring); box-shadow: var(--nagi-shadow-focus); }
-    &:has(> .input[aria-invalid="true"]) { border-color: var(--nagi-color-danger); }
-    > .unit.-chip {
-      display: inline-flex; align-items: center; border-radius: var(--nagi-radius-item); background: var(--nagi-color-surface-accent);
-      > .text { padding-inline: var(--nagi-space-item); }
-      > .button { min-inline-size: var(--nagi-size-control); min-block-size: var(--nagi-size-control); border: 0; background: transparent; color: inherit; cursor: pointer; }
+    &:focus-within {
+      border-color: var(--nagi-color-focus-ring);
+      box-shadow: var(--nagi-shadow-focus);
     }
-    > .input { flex: 1 1 8rem; min-block-size: var(--nagi-size-control); border: 0; outline: 0; background: transparent; color: inherit; font: inherit; }
+    &:has(> .input[aria-invalid="true"]) {
+      border-color: var(--nagi-color-danger);
+    }
+    > .unit.-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--nagi-radius-item);
+      background: var(--nagi-color-surface-accent);
+      > .text {
+        padding-inline: var(--nagi-space-item);
+      }
+      > .button {
+        min-inline-size: var(--nagi-size-control);
+        min-block-size: var(--nagi-size-control);
+        border: 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+      }
+    }
+    > .input {
+      flex: 1 1 8rem;
+      min-block-size: var(--nagi-size-control);
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
   }
-  > .select.-form-value { position: absolute; inline-size: 1px; block-size: 1px; clip-path: inset(50%); overflow: hidden; }
+  > .select.-form-value {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+  }
   > .unit.-popup {
-    inline-size: min(18rem, calc(100vw - 1rem)); min-inline-size: 0; max-block-size: 15rem; margin: 0; padding: var(--nagi-space-surface-inset); overflow: auto;
-    border: var(--n-border-width-1) solid var(--nagi-color-border); border-radius: var(--nagi-radius-overlay); background: var(--nagi-color-surface); box-shadow: var(--nagi-shadow-overlay); color: inherit;
-    > .list { margin: 0; padding: 0; list-style: none; }
-    > .list > .item { min-block-size: var(--nagi-size-control); padding: var(--nagi-space-item); border-radius: var(--nagi-radius-item); cursor: pointer; }
-    > .list > .item[aria-selected="true"] { background: var(--nagi-color-surface-accent); }
-    > .list > .item[data-active] { outline: 2px solid var(--nagi-color-focus-ring); outline-offset: calc(-1 * var(--n-border-width-2)); }
-    > .list > .item[aria-disabled="true"] { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
-    > .text.-empty { margin: 0; color: var(--nagi-color-text-muted); }
+    inline-size: min(18rem, calc(100vw - 1rem));
+    min-inline-size: 0;
+    max-block-size: 15rem;
+    margin: 0;
+    padding: var(--nagi-space-surface-inset);
+    overflow: auto;
+    border: var(--n-border-width-1) solid var(--nagi-color-border);
+    border-radius: var(--nagi-radius-overlay);
+    background: var(--nagi-color-surface);
+    box-shadow: var(--nagi-shadow-overlay);
+    color: inherit;
+    > .list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    > .list > .item {
+      min-block-size: var(--nagi-size-control);
+      padding: var(--nagi-space-item);
+      border-radius: var(--nagi-radius-item);
+      cursor: pointer;
+    }
+    > .list > .item[aria-selected="true"] {
+      background: var(--nagi-color-surface-accent);
+    }
+    > .list > .item[data-active] {
+      outline: 2px solid var(--nagi-color-focus-ring);
+      outline-offset: calc(-1 * var(--n-border-width-2));
+    }
+    > .list > .item[aria-disabled="true"] {
+      color: var(--nagi-color-text-disabled);
+      cursor: not-allowed;
+    }
+    > .text.-empty {
+      margin: 0;
+      color: var(--nagi-color-text-muted);
+    }
   }
 }
 @media (forced-colors: active) {
-  .n-multi-select > .field:focus-within, .n-multi-select > .unit.-popup > .list > .item[data-active] { outline: 2px solid Highlight; }
+  .n-multi-select > .field:focus-within,
+  .n-multi-select > .unit.-popup > .list > .item[data-active] {
+    outline: 2px solid Highlight;
+  }
 }
 </style>

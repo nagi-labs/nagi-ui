@@ -1,13 +1,16 @@
 import {
   getCurrentInstance,
+  onScopeDispose,
   ref,
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
 
+import { createElementRegistry } from "./element-registry.ts";
 import type { MenuDirection } from "./menu.ts";
 
 export type ListboxSelectionMode = "single" | "multiple";
@@ -53,6 +56,7 @@ export interface ListboxProps {
 }
 
 export interface ListboxOptionProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "option";
   "aria-selected": "true" | "false";
@@ -91,7 +95,7 @@ let listboxCount = 0;
 
 /**
  * Attribute-injection listbox using the APG aria-activedescendant focus
- * strategy shared with useMenu: DOM focus stays on the listbox container and
+ * strategy: DOM focus stays on the listbox container while
  * options are ordinary caller-owned elements.
  *
  * Selection model: single mode follows focus (arrows select, like a native
@@ -115,6 +119,7 @@ function createListbox<Item, Key extends string = string>(
 
   let typeahead = "";
   let typeaheadTimer: ReturnType<typeof setTimeout> | null = null;
+  const optionElements = createElementRegistry<Key>();
 
   function items(): readonly Item[] {
     return toValue(options.items);
@@ -138,6 +143,10 @@ function createListbox<Item, Key extends string = string>(
 
   function setActive(item: Item | undefined) {
     activeKey.value = item === undefined ? null : keyOf(item);
+    if (item !== undefined) {
+      const key = keyOf(item);
+      queueMicrotask(() => optionElements.get(key)?.scrollIntoView({ block: "nearest" }));
+    }
   }
 
   function activeItem(): Item | undefined {
@@ -319,16 +328,23 @@ function createListbox<Item, Key extends string = string>(
     setActive(firstSelected ?? enabled[0]);
   }
 
-  watch(
-    () => enabledItems().map(keyOf),
-    (keys) => {
-      if (activeKey.value !== null && !keys.includes(activeKey.value)) {
-        // The active option left the list: park visual focus on the first
-        // enabled option without touching the selection.
-        setActive(enabledItems()[0]);
-      }
-    },
-  );
+  function reconcileCollection(keys: readonly Key[]) {
+    optionElements.prune(items().map(keyOf));
+    if (activeKey.value !== null && !keys.includes(activeKey.value)) {
+      // The active option left the list: park visual focus on the first
+      // enabled option without touching the selection.
+      setActive(enabledItems()[0]);
+    }
+  }
+
+  watch(() => enabledItems().map(keyOf), reconcileCollection);
+
+  if (instance) {
+    onScopeDispose(() => {
+      clearTypeahead();
+      optionElements.clear();
+    });
+  }
 
   const listboxProps: ListboxProps = {
     id,
@@ -347,6 +363,7 @@ function createListbox<Item, Key extends string = string>(
     const key = keyOf(item);
     const disabled = isDisabled(item);
     return {
+      ref: optionElements.refFor(key),
       id: optionId(key),
       role: "option",
       "aria-selected": isSelected(item) ? "true" : "false",

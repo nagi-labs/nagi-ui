@@ -14,7 +14,7 @@ import "@nagi-labs/nagi-ui/recipes/unovis/theme.css"
 ```
 
 ```vue
-<Card title="Weekly activity" description="Current and previous period">
+<n-card title="Weekly activity" description="Current and previous period">
   <figure class="n-card-content" data-nagi-unovis>
     <VisXYContainer
       class="unovis-xy-container"
@@ -32,7 +32,7 @@ import "@nagi-labs/nagi-ui/recipes/unovis/theme.css"
     </VisXYContainer>
     <figcaption class="figcaption">Current period finishes at 184 users.</figcaption>
   </figure>
-</Card>
+</n-card>
 ```
 
 The chart data, accessors, scales, axes, animation, legend and datum tooltip
@@ -47,17 +47,13 @@ Unovis owns the DOM below its Vue component roots. Declare those roots in the
 consumer's Nagi CSS config and do not descend into their generated SVG/classes:
 
 ```js
-import nagiUi, { nagiUiComponents } from "@nagi-labs/nagi-ui/nagi-css-preset"
-
-const componentClasses = Object.fromEntries(
-  nagiUiComponents.map((component) => [component, null]),
-)
+import nagiUi from "@nagi-labs/nagi-ui/nagi-css-preset"
 
 export default {
   semantic: {
     ...nagiUi,
     componentClasses: {
-      ...componentClasses,
+      ...nagiUi.componentClasses,
       VisXYContainer: "unovis-xy-container",
       VisLine: "unovis-line",
       VisAxis: "unovis-axis",

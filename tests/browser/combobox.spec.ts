@@ -4,15 +4,15 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/combobox.html");
 });
 
-test("typing filters while the committed selection survives", async ({ page }) => {
+test("[CMB-POP-SEM-01][CMB-POP-STATE-01] typing filters while the committed selection survives", async ({ page }) => {
   const input = page.getByRole("combobox", { name: "Framework" });
   await input.fill("a");
 
   const listbox = page.getByRole("listbox", { name: "Framework" });
   await expect(listbox).toBeVisible();
   await expect(listbox.getByRole("option")).toHaveCount(3);
-  await expect(page.getByTestId("input-state")).toHaveText("a");
-  await expect(page.getByTestId("selected-state")).toHaveText("vue");
+  await expect(page.locator("#input-state")).toHaveText("a");
+  await expect(page.locator("#selected-state")).toHaveText("vue");
   await expect(input).toHaveAttribute("aria-expanded", "true");
 });
 
@@ -28,10 +28,10 @@ test("Arrow navigation keeps DOM focus on the input and skips disabled suggestio
   await expect(angular).toHaveAttribute("aria-selected", "true");
   const activeId = await angular.getAttribute("id");
   await expect(input).toHaveAttribute("aria-activedescendant", activeId ?? "");
-  await expect(page.getByTestId("selected-state")).toHaveText("vue");
+  await expect(page.locator("#selected-state")).toHaveText("vue");
 });
 
-test("Escape cancels provisional navigation without changing text or selection", async ({
+test("[CMB-POP-INT-01] Escape cancels provisional navigation without changing text or selection", async ({
   page,
 }) => {
   const input = page.getByRole("combobox", { name: "Framework" });
@@ -41,7 +41,7 @@ test("Escape cancels provisional navigation without changing text or selection",
 
   await expect(page.getByRole("listbox", { name: "Framework" })).toBeHidden();
   await expect(input).toHaveValue("s");
-  await expect(page.getByTestId("selected-state")).toHaveText("vue");
+  await expect(page.locator("#selected-state")).toHaveText("vue");
   await expect(input).not.toHaveAttribute("aria-activedescendant", /.+/);
 });
 
@@ -53,18 +53,18 @@ test("Enter and pointer selection commit the option and close the popup", async 
   await input.press("ArrowDown");
   await input.press("Enter");
   await expect(input).toHaveValue("Svelte");
-  await expect(page.getByTestId("selected-state")).toHaveText("svelte");
+  await expect(page.locator("#selected-state")).toHaveText("svelte");
   await expect(listbox).toBeHidden();
 
   await input.fill("sol");
   await page.getByRole("option", { name: "Solid" }).click();
   await expect(input).toBeFocused();
   await expect(input).toHaveValue("Solid");
-  await expect(page.getByTestId("selected-state")).toHaveText("solid");
+  await expect(page.locator("#selected-state")).toHaveText("solid");
   await expect(listbox).toBeHidden();
 });
 
-test("no matches expose empty status and light dismiss closes the native popover", async ({ page }) => {
+test("[CMB-POP-STATE-01][CMB-POP-INT-01] no matches expose empty status and light dismiss closes the native popover", async ({ page }) => {
   const input = page.getByRole("combobox", { name: "Framework" });
   const listbox = page.getByRole("listbox", { name: "Framework" });
 
@@ -77,7 +77,7 @@ test("no matches expose empty status and light dismiss closes the native popover
   await page.getByRole("button", { name: "After combobox" }).click();
   await expect(listbox).toBeHidden();
   await expect(input).toHaveValue("s");
-  await expect(page.getByTestId("selected-state")).toHaveText("vue");
+  await expect(page.locator("#selected-state")).toHaveText("vue");
 });
 
 test("single-line option padding stays inside the control-size box", async ({ page }) => {

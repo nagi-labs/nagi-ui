@@ -15,5 +15,6 @@
     "packages/core/src/**/*.ts",
     "packages/eslint-plugin-nagi-ui/src/**/*.ts",
     "tests/types/**/*.ts"
-  ]
+  ],
+  "exclude": ["packages/core/src/test/**/*.ts"]
 }

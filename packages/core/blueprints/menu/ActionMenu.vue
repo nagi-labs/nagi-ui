@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { useMenu } from "@nagi-labs/nagi-ui";
 
 export interface ActionMenuItem {
@@ -10,7 +11,11 @@ export interface ActionMenuItem {
 const props = defineProps<{
   label: string;
   items: readonly ActionMenuItem[];
+  id?: string;
+  class?: string;
+  style?: StyleValue;
 }>();
+defineOptions({ inheritAttrs: false });
 
 const emit = defineEmits<{ select: [item: ActionMenuItem] }>();
 
@@ -25,13 +30,35 @@ const { triggerProps, menuProps, itemProps } = useMenu<ActionMenuItem>({
 </script>
 
 <template>
-  <div class="n-action-menu">
-    <button class="button -trigger" type="button" v-bind="triggerProps">
+  <div
+    class="n-action-menu"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
+    <button
+      class="button -trigger"
+      type="button"
+      v-bind="triggerProps"
+    >
       {{ label }}
     </button>
-    <ul class="list" popover v-bind="menuProps">
-      <li v-for="item in items" :key="item.key" class="item" role="none">
-        <button class="button" type="button" v-bind="itemProps(item)">
+    <ul
+      class="list"
+      popover
+      v-bind="menuProps"
+    >
+      <li
+        v-for="item in items"
+        :key="item.key"
+        class="item"
+        role="none"
+      >
+        <button
+          class="button"
+          type="button"
+          v-bind="itemProps(item)"
+        >
           {{ item.label }}
         </button>
       </li>

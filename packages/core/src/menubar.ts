@@ -7,6 +7,7 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type CSSProperties,
   type MaybeRefOrGetter,
@@ -14,6 +15,7 @@ import {
 } from "vue";
 
 import { createAnchorPair, type AnchorPair } from "./anchor.ts";
+import { createElementRegistry } from "./element-registry.ts";
 import { useMenu, type MenuItemProps, type MenuProps } from "./menu.ts";
 import { modelValueAccepted, requestModelValue, type WritableRef } from "./model-sync.ts";
 
@@ -44,6 +46,7 @@ export interface MenubarProps {
 }
 
 export interface MenubarTriggerProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "menuitem";
   tabindex: 0 | -1;
@@ -111,7 +114,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
   let pendingMenuKey: Key | null = null;
   let pendingBoundary: "first" | "last" = "first";
   let restoreMenuKey: Key | null = null;
-  let ownerDocument: Document | null = typeof document === "undefined" ? null : document;
+  const triggerElements = createElementRegistry<Key>();
   let popupElement: HTMLElement | null = null;
   let detachAnchor: (() => void) | null = null;
   let requestRevision = 0;
@@ -145,7 +148,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
 
   function focusTrigger(key: Key | null) {
     if (key === null) return;
-    void nextTick(() => ownerDocument?.getElementById(triggerIdForKey(key))?.focus({ preventScroll: true }));
+    void nextTick(() => triggerElements.get(key)?.focus({ preventScroll: true }));
   }
 
   const menuBehavior = useMenu<Action, ActionKey>({
@@ -166,7 +169,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
     if (!menu || !isOpen || !popupElement) return;
     const anchor = anchorFor(menu);
     if (anchor.native) return;
-    const trigger = ownerDocument?.getElementById(triggerId(menu));
+    const trigger = triggerElements.get(keyOf(menu));
     if (trigger) detachAnchor = anchor.attach(trigger, popupElement);
   }
 
@@ -219,7 +222,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
     if (index === -1) index = previous.findIndex((entry) => entry.key === missing);
     if (index === -1) return enabled[0]?.key ?? null;
     return current.slice(index).find((entry) => !entry.disabled)?.key
-      ?? current.slice(0, index).toReversed().find((entry) => !entry.disabled)?.key
+      ?? current.slice(0, index).reverse().find((entry) => !entry.disabled)?.key
       ?? null;
   }
 
@@ -269,7 +272,6 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
   });
   const baseToggle = menuProps.onToggle;
   menuProps.onToggle = (event) => {
-    ownerDocument = (event.target as HTMLElement).ownerDocument;
     popupElement = event.target as HTMLElement;
     baseToggle(event);
     syncAnchor(currentMenu(), event.newState === "open");
@@ -287,7 +289,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
     baseKeydown(event);
   };
 
-  watch(menuBehavior.open, (isOpen) => {
+  function reconcileOpenOwner(isOpen: boolean) {
     if (isOpen) {
       const candidate = menuFor(pendingMenuKey)
         ?? menuFor(activeMenuKey.value)
@@ -303,28 +305,39 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
     detachAnchor?.();
     detachAnchor = null;
     if (restore !== null) focusTrigger(restore);
-  }, { flush: "sync", immediate: true });
+  }
+
+  function menuSnapshot(): readonly MenuSnapshot<Key>[] {
+    return menus().map((menu) => ({ key: keyOf(menu), disabled: disabled(menu) }));
+  }
+
+  function reconcileMenus(
+    current: readonly MenuSnapshot<Key>[],
+    previous: readonly MenuSnapshot<Key>[] = [],
+  ) {
+    triggerElements.prune(current.map((entry) => entry.key));
+    const activeValid = current.some((entry) => entry.key === activeMenuKey.value && !entry.disabled);
+    const repairDomFocus = activeMenuKey.value !== null
+      && triggerElements.get(activeMenuKey.value)?.matches(":focus") === true;
+    if (!activeValid) {
+      const next = fallbackKey(activeMenuKey.value, current, previous);
+      activeMenuKey.value = next;
+      if (repairDomFocus) focusTrigger(next);
+    }
+    if (!menuBehavior.open.value) return;
+    const owner = menuFor(openMenuKey.value);
+    if (owner && !disabled(owner)) return;
+    const nextKey = fallbackKey(openMenuKey.value, current, previous);
+    const next = menuFor(nextKey);
+    if (next) commitOwner(next);
+    else close();
+  }
+
+  watch(menuBehavior.open, reconcileOpenOwner, { flush: "sync", immediate: true });
 
   watch(
-    () => menus().map((menu) => ({ key: keyOf(menu), disabled: disabled(menu) })),
-    (current, previous = []) => {
-      const activeValid = current.some((entry) => entry.key === activeMenuKey.value && !entry.disabled);
-      const activeElement = ownerDocument?.activeElement as HTMLElement | null;
-      const repairDomFocus = activeMenuKey.value !== null
-        && activeElement?.id === triggerIdForKey(activeMenuKey.value);
-      if (!activeValid) {
-        const next = fallbackKey(activeMenuKey.value, current, previous);
-        activeMenuKey.value = next;
-        if (repairDomFocus) focusTrigger(next);
-      }
-      if (!menuBehavior.open.value) return;
-      const owner = menuFor(openMenuKey.value);
-      if (owner && !disabled(owner)) return;
-      const nextKey = fallbackKey(openMenuKey.value, current, previous);
-      const next = menuFor(nextKey);
-      if (next) commitOwner(next);
-      else close();
-    },
+    menuSnapshot,
+    reconcileMenus,
     { flush: "sync", immediate: true },
   );
 
@@ -334,6 +347,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
       typeaheadTimer = null;
       detachAnchor?.();
       detachAnchor = null;
+      triggerElements.clear();
     });
   }
 
@@ -377,6 +391,7 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
     menubarTriggerProps(menu) {
       const key = keyOf(menu);
       return {
+        ref: triggerElements.refFor(key),
         id: triggerId(menu),
         role: "menuitem",
         get tabindex() { return activeMenuKey.value === key && !disabled(menu) ? 0 : -1; },
@@ -387,12 +402,10 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
         get "aria-expanded"() { return menuBehavior.open.value && openMenuKey.value === key ? "true" : "false"; },
         ...(disabled(menu) ? { "aria-disabled": "true" as const } : {}),
         style: anchorFor(menu).anchorStyle,
-        onFocus(event) {
-          ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
+        onFocus() {
           if (!disabled(menu)) activeMenuKey.value = key;
         },
         onClick(event) {
-          ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
           // The model must accept the transition before usePopover mutates the
           // native surface. Keep the invoker attributes for SSR/progressive
           // enhancement, but suppress the hydrated UA default in both paths.

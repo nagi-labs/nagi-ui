@@ -1,18 +1,28 @@
 <script setup lang="ts">
+import { computed, useAttrs } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+
 defineOptions({ inheritAttrs: false });
 
-defineProps<{
+const { label } = defineProps<{
   label?: string;
 }>();
+
+const attrs = useAttrs();
+const spinnerProps = computed(() =>
+  mergeElementProps(attrs, {
+    role: label ? "status" : undefined,
+    "aria-label": label || undefined,
+    "aria-hidden": label ? undefined : "true",
+  }),
+);
 </script>
 
 <template>
   <span
-    v-bind="$attrs"
     class="n-spinner"
-    :role="label ? 'status' : undefined"
-    :aria-label="label || undefined"
-    :aria-hidden="label ? undefined : 'true'"
+    v-bind="spinnerProps"
   ></span>
 </template>
 

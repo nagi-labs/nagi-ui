@@ -6,9 +6,11 @@ export interface RatingItem {
 </script>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, useAttrs } from "vue";
 
-import { useNativeRadioGroupReset } from "@nagi-labs/nagi-ui";
+import { mergeElementProps, useNativeRadioGroupReset } from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -27,15 +29,24 @@ const props = withDefaults(
 
 const model = defineModel<number | null>({ default: null });
 const inputs = ref<HTMLInputElement[]>([]);
+const attrs = useAttrs();
+const fieldsetProps = computed(() => mergeElementProps(attrs, { disabled: props.disabled }));
 
 useNativeRadioGroupReset(inputs, model);
 </script>
 
 <template>
-  <fieldset class="n-rating" :disabled="disabled">
+  <fieldset
+    class="n-rating"
+    v-bind="fieldsetProps"
+  >
     <legend class="legend">{{ label }}</legend>
     <div class="unit">
-      <label v-for="item in items" :key="item.value" class="label">
+      <label
+        v-for="item in items"
+        :key="item.value"
+        class="label"
+      >
         <input
           ref="inputs"
           v-model="model"
@@ -46,7 +57,11 @@ useNativeRadioGroupReset(inputs, model);
           :form="form"
           :required="required"
         />
-        <span class="icon" aria-hidden="true">★</span>
+        <span
+          class="icon"
+          aria-hidden="true"
+          >★</span
+        >
         <span class="text">{{ item.label }}</span>
       </label>
     </div>

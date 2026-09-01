@@ -7,12 +7,9 @@ export interface ComboboxOption {
 </script>
 
 <script setup lang="ts">
-import { useId, useTemplateRef } from "vue";
+import { useId, type StyleValue } from "vue";
 
-import {
-  mergeNagiProps,
-  useCombobox,
-} from "@nagi-labs/nagi-ui";
+import { useCombobox } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -20,7 +17,29 @@ const props = withDefaults(
   defineProps<{
     label: string;
     items: readonly ComboboxOption[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     placeholder?: string;
+    inputmode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
+    enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+    autocapitalize?: "none" | "off" | "on" | "sentences" | "words" | "characters";
+    autocorrect?: "on" | "off";
+    autofocus?: boolean;
+    dirname?: string;
+    list?: string;
+    size?: number;
+    spellcheck?: boolean;
+    tabindex?: number;
+    minlength?: number;
+    maxlength?: number;
+    pattern?: string;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
+    ariaDetails?: string;
+    ariaErrormessage?: string;
+    ariaPlaceholder?: string;
+    title?: string;
     autocomplete?: string;
     disabled?: boolean;
     readOnly?: boolean;
@@ -47,28 +66,76 @@ const props = withDefaults(
     validationMessage: "Select an option.",
   },
 );
+const emit = defineEmits<{
+  input: [event: Event];
+  compositionstart: [event: CompositionEvent];
+  compositionend: [event: CompositionEvent];
+  click: [event: MouseEvent];
+  keydown: [event: KeyboardEvent];
+  focus: [event: FocusEvent];
+  blur: [event: FocusEvent];
+}>();
 
 const inputValue = defineModel<string>({ default: "" });
 const selected = defineModel<string | null>("selected", { default: null });
 const labelId = useId();
-const inputElement = useTemplateRef<HTMLInputElement>("input");
-const combobox = useCombobox(props, inputElement, inputValue, selected);
+const combobox = useCombobox(props, inputValue, selected);
 const { visibleItems } = combobox;
 </script>
 
 <template>
-  <div class="n-combobox">
-    <label :id="labelId" class="label" :for="combobox.inputId">{{ label }}</label>
+  <div
+    data-scope="combobox"
+    data-part="root"
+    class="n-combobox"
+    :class="props.class"
+    :style="props.style"
+  >
+    <label
+      data-scope="combobox"
+      data-part="label"
+      :id="labelId"
+      class="label"
+      :for="combobox.inputId"
+      >{{ label }}</label
+    >
     <div class="unit -control">
       <input
-        ref="input"
+        data-scope="combobox"
+        data-part="input"
         class="input"
         type="text"
+        :inputmode="inputmode"
+        :enterkeyhint="enterkeyhint"
+        :autocapitalize="autocapitalize"
+        :autocorrect="autocorrect"
+        :autofocus="autofocus"
+        :dirname="dirname"
+        :list="list"
+        :size="size"
+        :spellcheck="spellcheck"
+        :tabindex="tabindex"
+        :minlength="minlength"
+        :maxlength="maxlength"
+        :pattern="pattern"
+        :aria-labelledby="ariaLabelledby"
+        :aria-describedby="ariaDescribedby"
+        :aria-details="ariaDetails"
+        :aria-errormessage="ariaErrormessage"
+        :aria-placeholder="ariaPlaceholder"
+        :title="title"
         :autocomplete="autocomplete"
         :form="form"
         :placeholder="placeholder"
         :aria-busy="loading ? 'true' : undefined"
-        v-bind="mergeNagiProps(combobox.inputProps, $attrs)"
+        v-bind="combobox.inputProps"
+        @input="emit('input', $event)"
+        @compositionstart="emit('compositionstart', $event)"
+        @compositionend="emit('compositionend', $event)"
+        @click="emit('click', $event)"
+        @keydown="emit('keydown', $event)"
+        @focus="emit('focus', $event)"
+        @blur="emit('blur', $event)"
       />
       <button
         v-if="clearable && !disabled && !readOnly && (selected !== null || inputValue !== '')"
@@ -91,12 +158,16 @@ const { visibleItems } = combobox;
     />
     <div
       class="unit -popup"
+      data-scope="combobox"
+      data-part="popup"
       popover
       :aria-busy="loading ? 'true' : undefined"
       v-bind="combobox.popupProps"
     >
       <ul
         class="list"
+        data-scope="combobox"
+        data-part="listbox"
         :aria-labelledby="labelId"
         v-bind="combobox.listboxProps"
       >
@@ -104,13 +175,25 @@ const { visibleItems } = combobox;
           v-for="item in visibleItems"
           :key="item.key"
           class="item"
+          data-scope="combobox"
+          data-part="option"
           v-bind="combobox.optionProps(item)"
         >
           <span class="text">{{ item.label }}</span>
         </li>
       </ul>
-      <div v-if="loading" class="status" role="status">{{ loadingText }}</div>
-      <div v-else-if="visibleItems.length === 0" class="status" role="status">
+      <div
+        v-if="loading"
+        class="status"
+        role="status"
+      >
+        {{ loadingText }}
+      </div>
+      <div
+        v-else-if="visibleItems.length === 0"
+        class="status"
+        role="status"
+      >
         {{ emptyText }}
       </div>
     </div>

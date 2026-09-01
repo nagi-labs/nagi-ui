@@ -74,7 +74,7 @@ test("shipped Combobox overload applies its fixed flat-schema defaults", () => {
   scope.stop();
 });
 
-test("emits the editable combobox/listbox relationship as standard attributes", () => {
+test("[CMB-SEM-01][CMB-SEM-02][CMB-SEM-03][CMB-LBX-SEM-01][CMB-LBX-SEM-02][CMB-LBX-STATE-01] emits the editable combobox/listbox relationship as standard attributes", () => {
   const combobox = createCombobox();
 
   assert.equal(combobox.inputProps.id, "fruit-combobox-input");
@@ -94,7 +94,7 @@ test("emits the editable combobox/listbox relationship as standard attributes", 
   assert.equal(combobox.optionProps(fruits[1] as Fruit)["aria-disabled"], "true");
 });
 
-test("input filters and opens without automatically selecting a suggestion", async () => {
+test("[CMB-INT-01][CMB-STATE-01] input filters and opens without automatically selecting a suggestion", async () => {
   const values: string[] = [];
   const combobox = createCombobox({ onInputValueChange: (value) => values.push(value) });
 
@@ -108,7 +108,7 @@ test("input filters and opens without automatically selecting a suggestion", asy
   assert.deepEqual(values, ["ap"]);
 });
 
-test("Arrow navigation stays on the input model, skips disabled options, and exposes active descendant", () => {
+test("[CMB-SEM-04][CMB-INT-02][CMB-FOCUS-01] Arrow navigation stays on the input model, skips disabled options, and exposes active descendant", () => {
   const combobox = createCombobox();
   const down = keydown("ArrowDown");
   combobox.inputProps.onKeydown(down.event);
@@ -128,7 +128,23 @@ test("Arrow navigation stays on the input model, skips disabled options, and exp
   assert.equal(combobox.activeKey.value, "apple");
 });
 
-test("navigation is provisional; Enter commits and Escape preserves the previous selection", () => {
+test("active-option scrolling is scoped to the registered listbox", async () => {
+  const combobox = createCombobox();
+  let scrolled = 0;
+  const option = {
+    id: "fruit-combobox-option-apple",
+    scrollIntoView: () => { scrolled += 1; },
+  };
+  combobox.listboxProps.ref({
+    querySelectorAll: () => [option],
+  } as unknown as Element);
+
+  combobox.inputProps.onKeydown(keydown("ArrowDown").event);
+  await new Promise<void>((resolve) => queueMicrotask(resolve));
+  assert.equal(scrolled, 1);
+});
+
+test("[CMB-INT-03] navigation is provisional; Enter commits and Escape preserves the previous selection", () => {
   const selections: (string | null)[] = [];
   const combobox = createCombobox({
     defaultSelected: "date",
@@ -220,7 +236,7 @@ test("text-editing keys and IME composition remain browser-owned", () => {
   assert.equal(combobox.open.value, false);
 });
 
-test("visible item changes clear only an invalid active key", async () => {
+test("[CMB-STATE-02] visible item changes clear only an invalid active key", async () => {
   const items = ref<readonly Fruit[]>(fruits);
   const combobox = createCombobox({ items, defaultSelected: "date", defaultInputValue: "" });
   combobox.inputProps.onKeydown(keydown("ArrowUp").event);
@@ -232,7 +248,7 @@ test("visible item changes clear only an invalid active key", async () => {
   assert.equal(combobox.selectedKey.value, "date");
 });
 
-test("disabled and read-only preserve the committed value without inventing state attributes", () => {
+test("[CMB-STATE-03] disabled and read-only preserve the committed value without inventing state attributes", () => {
   const disabled = ref(true);
   const readOnly = ref(false);
   const combobox = createCombobox({

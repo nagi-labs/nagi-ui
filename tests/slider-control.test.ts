@@ -30,7 +30,7 @@ test("Slider SFC exposes constraints but not sanitization or reset wiring", () =
   const source = fs.readFileSync(sourcePath, "utf8");
 
   assert.match(source, /useSlider\(input, model\)/u);
-  assert.match(source, /:min="min"[\s\S]*:max="max"[\s\S]*:step="step"/u);
-  assert.match(source, /<output class="output"[^>]*>\{\{ model \}\}<\/output>/u);
+  assert.match(source, /mergeElementProps\(attrs, \{[\s\S]*min,\s*max,\s*step/u);
+  assert.match(source, /<output\s+class="output"[^>]*>\s*\{\{ model \}\}\s*<\/output/u);
   assert.doesNotMatch(source, /useNativeNumberReset|valueAsNumber|watch|onMounted|onUpdated/u);
 });

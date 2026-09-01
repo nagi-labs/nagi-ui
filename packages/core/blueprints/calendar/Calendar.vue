@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, type StyleValue } from "vue";
 
 import { useCalendar } from "@nagi-labs/nagi-ui";
 import { useCalendarNativeForm } from "@nagi-labs/nagi-ui/component-controls";
@@ -10,6 +10,9 @@ const props = withDefaults(
   defineProps<{
     label: string;
     id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
     name?: string;
     form?: string;
     locale?: string;
@@ -47,11 +50,31 @@ useCalendarNativeForm(formControl, calendar);
 </script>
 
 <template>
-  <div v-bind="$attrs" class="n-calendar">
+  <div
+    class="n-calendar"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
     <header class="header">
-      <button v-bind="calendar.previousButtonProps" class="button -previous">‹</button>
-      <h2 class="title" aria-live="polite">{{ calendar.monthLabel.value }}</h2>
-      <button v-bind="calendar.nextButtonProps" class="button -next">›</button>
+      <button
+        v-bind="calendar.previousButtonProps"
+        class="button -previous"
+      >
+        ‹
+      </button>
+      <h2
+        class="title"
+        aria-live="polite"
+      >
+        {{ calendar.monthLabel.value }}
+      </h2>
+      <button
+        v-bind="calendar.nextButtonProps"
+        class="button -next"
+      >
+        ›
+      </button>
     </header>
     <table
       v-bind="calendar.gridProps"
@@ -60,13 +83,22 @@ useCalendarNativeForm(formControl, calendar);
     >
       <thead class="thead -head">
         <tr class="row">
-          <th v-for="weekday in calendar.weekdayLabels.value" :key="weekday" class="cell -head" scope="col">
+          <th
+            v-for="weekday in calendar.weekdayLabels.value"
+            :key="weekday"
+            class="cell -head"
+            scope="col"
+          >
             {{ weekday }}
           </th>
         </tr>
       </thead>
       <tbody class="tbody -dates">
-        <tr v-for="(week, index) in calendar.weeks.value" :key="index" class="row">
+        <tr
+          v-for="(week, index) in calendar.weeks.value"
+          :key="index"
+          class="row"
+        >
           <td
             v-for="cell in week"
             :key="cell.key"
@@ -74,7 +106,12 @@ useCalendarNativeForm(formControl, calendar);
             class="cell"
             :data-outside-month="cell.outsideMonth || undefined"
           >
-            <button v-bind="calendar.cellButtonProps(cell)" class="button -day">{{ cell.day }}</button>
+            <button
+              v-bind="calendar.cellButtonProps(cell)"
+              class="button -day"
+            >
+              {{ cell.day }}
+            </button>
           </td>
         </tr>
       </tbody>
@@ -84,8 +121,13 @@ useCalendarNativeForm(formControl, calendar);
       :id="`${calendar.gridProps.id}-error`"
       class="text -validation"
       role="alert"
-    >{{ validationMessage }}</span>
-    <input ref="formControl" v-bind="calendar.formValueProps" class="input -form-value" />
+      >{{ validationMessage }}</span
+    >
+    <input
+      ref="formControl"
+      v-bind="calendar.formValueProps"
+      class="input -form-value"
+    />
   </div>
 </template>
 

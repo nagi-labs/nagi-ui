@@ -1,34 +1,58 @@
 <script setup lang="ts">
 import { useButton } from "@nagi-labs/nagi-ui/component-controls";
+import { mergeElementProps, withoutClassToken } from "@nagi-labs/nagi-ui";
+import { computed, useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
-    variant?: "default" | "accent" | "danger";
-    size?: "small" | "default" | "large";
     type?: "button" | "submit" | "reset";
     disabled?: boolean;
     /** Keep the button in the tab order while suppressing activation. */
     focusableWhenDisabled?: boolean;
   }>(),
   {
-    variant: "default",
-    size: "default",
     type: "button",
     disabled: false,
     focusableWhenDisabled: false,
   },
 );
 
+const attrs = useAttrs();
+
 const button = useButton(props);
+
+const buttonProps = computed(() =>
+  mergeElementProps(
+    button.buttonProps,
+    { ...attrs, class: withoutClassToken(attrs.class, "n-button") },
+    { type: props.type },
+  ),
+);
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  click: [event: MouseEvent];
+  dblclick: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  keydown: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+}>();
 </script>
 
 <template>
   <button
     class="n-button"
-    :data-variant="variant"
-    :data-size="size"
-    :type="type"
-    v-bind="button.buttonProps"
+    v-bind="buttonProps"
+    data-scope="button"
+    data-part="root"
+    @blur="emit('blur', $event)"
+    @click="emit('click', $event)"
+    @dblclick="emit('dblclick', $event)"
+    @focus="emit('focus', $event)"
+    @keydown="emit('keydown', $event)"
+    @keyup="emit('keyup', $event)"
   >
     <slot />
   </button>
@@ -40,18 +64,23 @@ const button = useButton(props);
   gap: var(--n-space-5);
   align-items: center;
   justify-content: center;
-  min-block-size: var(--nagi-size-control);
-  padding: var(--nagi-space-control);
-  border: var(--n-border-width-1) solid var(--nagi-color-border);
-  border-radius: var(--nagi-radius-control);
-  background: var(--nagi-color-surface);
-  color: var(--nagi-color-text);
+  min-block-size: var(--_button-min-block-size, var(--nagi-size-control));
+  padding: var(--_button-padding, var(--nagi-space-control));
+  border: var(--n-border-width-1) solid
+    var(--_button-border-color, var(--_button-tone-border, var(--nagi-color-border)));
+  border-radius: var(--_button-radius, var(--nagi-radius-control));
+  background: var(--_button-background, var(--nagi-color-surface));
+  color: var(--_button-color, var(--_button-tone-color, var(--nagi-color-text)));
   font: inherit;
+  font-size: var(--_button-font-size, 1em);
   font-weight: 650;
   cursor: pointer;
 
   &:hover {
-    background: var(--nagi-color-surface-active);
+    background: var(
+      --_button-hover-background,
+      var(--_button-tone-surface, var(--nagi-color-surface-active))
+    );
   }
 
   &:focus-visible {
@@ -65,28 +94,6 @@ const button = useButton(props);
     color: var(--nagi-color-text-disabled);
     background: var(--nagi-color-surface);
     cursor: not-allowed;
-  }
-
-  &[data-variant="accent"] {
-    border-color: var(--nagi-color-accent);
-    color: var(--nagi-color-accent);
-  }
-
-  &[data-variant="danger"] {
-    border-color: var(--nagi-color-danger);
-    color: var(--nagi-color-danger);
-  }
-
-  &[data-size="small"] {
-    min-block-size: 1.75rem;
-    padding: var(--n-space-3) var(--nagi-space-item-gap);
-    font-size: var(--n-font-size-3);
-  }
-
-  &[data-size="large"] {
-    min-block-size: 2.5rem;
-    padding: var(--n-space-6) var(--n-space-8);
-    font-size: var(--n-font-size-5);
   }
 }
 

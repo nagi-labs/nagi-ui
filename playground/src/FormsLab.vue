@@ -2,22 +2,22 @@
 import { computed, ref } from "vue";
 
 import {
-  Button,
-  Checkbox,
-  Combobox,
-  Fieldset,
-  FileInput,
-  Input as NagiInput,
-  InputGroup,
-  Meter,
-  NumberField,
-  Progress,
-  Radio,
-  RangeSlider,
-  Rating,
-  Select as NagiSelect,
-  Slider,
-  Switch,
+  NButton,
+  NCheckbox,
+  NCombobox,
+  NFieldset,
+  NFileInput,
+  NInput as NagiInput,
+  NInputGroup,
+  NMeter,
+  NNumberField,
+  NProgress,
+  NRadio,
+  NRangeSlider,
+  NRating,
+  NSelect as NagiSelect,
+  NSlider,
+  NSwitch,
   type ComboboxOption,
   type NagiSelectOption,
   type RatingItem,
@@ -122,7 +122,7 @@ function narrowPriceRange() {
         <div class="unit">
           <NagiInput
             v-model="fullName"
-            data-testid="full-name"
+            id="full-name"
             label="Full name"
             name="fullName"
             autocomplete="name"
@@ -130,58 +130,58 @@ function narrowPriceRange() {
           />
           <NagiInput
             v-model="disabledValue"
-            data-testid="disabled-field"
+            id="disabled-field"
             label="Disabled value"
             name="disabledField"
             disabled
           />
-          <Checkbox
+          <n-checkbox
             v-model="agreement"
             v-model:indeterminate="agreementIndeterminate"
-            data-testid="agreement"
+            id="agreement"
             label="Accept the agreement"
             name="agreement"
             value="accepted"
           />
-          <Switch
+          <n-switch
             v-model="marketing"
-            data-testid="marketing"
+            id="marketing"
             label="Product updates"
             name="marketing"
             value="enabled"
           />
         </div>
 
-        <Fieldset legend="Contact preference">
-          <Radio
+        <n-fieldset legend="Contact preference">
+          <n-radio
             v-model="contact"
-            data-testid="contact-email"
+            id="contact-email"
             label="Email"
             name="contact"
             value="email"
             required
           />
-          <Radio
+          <n-radio
             v-model="contact"
-            data-testid="contact-sms"
+            id="contact-sms"
             label="SMS"
             name="contact"
             value="sms"
           />
-        </Fieldset>
+        </n-fieldset>
 
         <div class="unit">
           <NagiSelect
             v-model="plan"
-            data-testid="plan"
+            id="plan"
             label="Plan"
             name="plan"
             :options="plans"
             required
           />
-          <Slider
+          <n-slider
             v-model="volume"
-            data-testid="volume"
+            id="volume"
             label="Volume"
             name="volume"
             :min="0"
@@ -191,7 +191,7 @@ function narrowPriceRange() {
         </div>
 
         <div class="unit">
-          <Combobox
+          <n-combobox
             v-model="frameworkInput"
             v-model:selected="frameworkKey"
             label="Framework"
@@ -204,9 +204,9 @@ function narrowPriceRange() {
           />
           <p class="text">
             committed key:
-            <output data-testid="framework-key">{{ frameworkKey ?? "none" }}</output>
+            <output id="framework-key">{{ frameworkKey ?? "none" }}</output>
           </p>
-          <Combobox
+          <n-combobox
             v-model="disabledFrameworkInput"
             v-model:selected="disabledFrameworkKey"
             label="Disabled framework"
@@ -227,20 +227,20 @@ function narrowPriceRange() {
       <h2 id="interactive-form-heading" class="title">Small interactive controls</h2>
       <form id="interactive-form" class="form" @submit.prevent>
         <div class="unit">
-          <Rating
+          <n-rating
             v-model="rating"
             label="Release rating"
             name="rating"
             :items="ratingItems"
             required
           />
-          <FileInput
-            data-testid="release-file"
+          <n-file-input
+            id="release-file"
             label="Release attachment"
             name="attachment"
             accept="text/plain,.md"
           />
-          <NumberField
+          <n-number-field
             v-model="seats"
             label="Seats"
             name="seats"
@@ -255,7 +255,7 @@ function narrowPriceRange() {
             name="nativeDefaultPlan"
             :options="nativePlans"
           />
-          <Slider
+          <n-slider
             v-model="constrainedVolume"
             label="Constrained volume"
             name="constrainedVolume"
@@ -263,7 +263,7 @@ function narrowPriceRange() {
             :max="20"
             :step="3"
           />
-          <RangeSlider
+          <n-range-slider
             v-model="priceRange"
             label="Price range"
             lower-label="Minimum price"
@@ -274,7 +274,7 @@ function narrowPriceRange() {
             :max="priceRangeMax"
             :step="priceRangeStep"
           />
-          <InputGroup prefix="https://" suffix=".dev">
+          <n-input-group prefix="https://" suffix=".dev">
             <input
               class="n-input-group-control"
               type="text"
@@ -284,9 +284,9 @@ function narrowPriceRange() {
               autocomplete="url"
             />
             <template #action>
-              <Button class="n-input-group-action" type="submit">Open</Button>
+              <n-button class="n-input-group-action" type="submit">Open</n-button>
             </template>
-          </InputGroup>
+          </n-input-group>
         </div>
         <div class="actions">
           <button class="button" type="button" @click="removeInitialPlanOption">
@@ -298,15 +298,15 @@ function narrowPriceRange() {
           <button class="button" type="reset">Reset interactive controls</button>
         </div>
       </form>
-      <output data-testid="rating-value">rating: {{ rating ?? "none" }}</output>
-      <output data-testid="seats-value">seats: {{ seats ?? "none" }}</output>
-      <output data-testid="native-default-plan-value">
+      <output id="rating-value">rating: {{ rating ?? "none" }}</output>
+      <output id="seats-value">seats: {{ seats ?? "none" }}</output>
+      <output id="native-default-plan-value">
         native plan: {{ nativeDefaultPlan ?? "none" }}
       </output>
-      <output data-testid="constrained-volume-value">
+      <output id="constrained-volume-value">
         constrained volume: {{ constrainedVolume }}
       </output>
-      <output data-testid="price-range-value">
+      <output id="price-range-value">
         price range: {{ priceRange[0] }}–{{ priceRange[1] }}
       </output>
     </section>
@@ -320,7 +320,7 @@ function narrowPriceRange() {
       </p>
       <NagiInput
         v-model="externalNote"
-        data-testid="external-note"
+        id="external-note"
         label="External note"
         name="externalNote"
         :form="externalFormOwner"
@@ -342,15 +342,15 @@ function narrowPriceRange() {
     <section class="section" aria-labelledby="status-heading">
       <h2 id="status-heading" class="title">Native status elements</h2>
       <div class="unit">
-        <Progress
-          data-testid="determinate-progress"
+        <n-progress
+          id="determinate-progress"
           label="Build progress"
           :value="0.65"
           :max="1"
         />
-        <Progress data-testid="indeterminate-progress" label="Waiting for server" />
-        <Meter
-          data-testid="storage-meter"
+        <n-progress id="indeterminate-progress" label="Waiting for server" />
+        <n-meter
+          id="storage-meter"
           label="Storage used"
           :value="72"
           :min="0"
@@ -365,7 +365,7 @@ function narrowPriceRange() {
     <section class="section" aria-labelledby="combobox-states-heading">
       <h2 id="combobox-states-heading" class="title">Combobox states</h2>
       <div class="unit">
-        <Combobox
+        <n-combobox
           v-model="loadingInput"
           v-model:selected="loadingKey"
           label="Loading choices"
@@ -373,14 +373,14 @@ function narrowPriceRange() {
           loading
           loading-text="Loading frameworks…"
         />
-        <Combobox
+        <n-combobox
           v-model="emptyInput"
           v-model:selected="emptyKey"
           label="Empty choices"
           :items="frameworks"
           empty-text="No matching framework"
         />
-        <Combobox
+        <n-combobox
           v-model="readOnlyInput"
           v-model:selected="readOnlyKey"
           label="Read-only choice"
@@ -390,7 +390,7 @@ function narrowPriceRange() {
         />
         <p class="text">
           read-only key:
-          <output data-testid="read-only-key">{{ readOnlyKey ?? "none" }}</output>
+          <output id="read-only-key">{{ readOnlyKey ?? "none" }}</output>
         </p>
       </div>
     </section>
@@ -401,13 +401,13 @@ function narrowPriceRange() {
         <div class="item">
           <dt class="term">Vue models</dt>
           <dd class="definition">
-            <code class="code" data-testid="model-state">{{ JSON.stringify(modelState) }}</code>
+            <code class="code" id="model-state">{{ JSON.stringify(modelState) }}</code>
           </dd>
         </div>
         <div class="item">
           <dt class="term">FormData</dt>
           <dd class="definition">
-            <code class="code" data-testid="submission">{{ submission }}</code>
+            <code class="code" id="submission">{{ submission }}</code>
           </dd>
         </div>
       </dl>

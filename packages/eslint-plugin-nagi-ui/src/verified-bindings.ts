@@ -379,9 +379,9 @@ const contracts: Record<string, BindingContract> = {
     tags: ["section"],
     protectedAttributes: set("id", "role", "aria-label", "aria-disabled"),
   },
-  trackProps: {
+  viewportProps: {
     tags: ["div"],
-    protectedAttributes: set("role", "tabindex", "aria-label", "aria-disabled"),
+    protectedAttributes: set("role", "tabindex", "aria-label", "aria-roledescription"),
   },
   slideProps: {
     tags: ["article"],
@@ -530,7 +530,7 @@ function behaviorBindingPaths(attribute: VAttribute): string[] {
   const expression = attribute.value?.expression ?? null
   if (
     expression?.type === "CallExpression" &&
-    expressionPath(expression.callee ?? null)?.split(".").at(-1) === "mergeNagiProps"
+    expressionPath(expression.callee ?? null)?.split(".").at(-1) === "mergeElementProps"
   ) {
     return (expression.arguments ?? [])
       .map((argument) => expressionPath(argument))
@@ -594,7 +594,7 @@ export const verifiedBindingsRule: Rule.RuleModule = {
       protectedOverride:
         "{{attribute}} is owned by {{binding}}. Remove the direct attribute instead of overriding behavior wiring.",
       multipleObjectBindings:
-        "Merge object bindings with mergeNagiProps() before applying {{binding}}.",
+        "Merge object bindings with mergeElementProps() before applying {{binding}}.",
       missingKey: "The v-for owning {{binding}} must declare :key.",
     },
   },

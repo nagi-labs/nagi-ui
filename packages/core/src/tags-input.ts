@@ -45,7 +45,7 @@ export interface TagsInputProps {
   onPaste: (event: ClipboardEvent) => void;
   onBlur: (event: FocusEvent) => void;
   onCompositionstart: () => void;
-  onCompositionend: () => void;
+  onCompositionend: (event?: CompositionEvent) => void;
 }
 
 export interface TagsInputFormProps {
@@ -71,6 +71,7 @@ export interface TagsInputBinding {
 
 export interface TagsInputComponentProps {
   readonly label: string;
+  readonly id?: string | undefined;
   readonly name?: string | undefined;
   readonly form?: string | undefined;
   readonly placeholder?: string | undefined;
@@ -200,7 +201,7 @@ function createTagsInput(options: UseTagsInputOptions): TagsInputBinding {
       if (toValue(options.addOnBlur) ?? false) add();
     },
     onCompositionstart() { composing.value = true; },
-    onCompositionend() {
+    onCompositionend(_event?: CompositionEvent) {
       composing.value = false;
       if (inputElement) inputValue.value = inputElement.value;
     },
@@ -226,11 +227,13 @@ function createTagsInput(options: UseTagsInputOptions): TagsInputBinding {
     useNativeFormReset(options.formControl, () => reset(initial));
   }
 
-  watchEffect(() => {
+  function reconcileValidity() {
     if (!(toValue(options.required) ?? false) || disabled() || readOnly() || options.value.value.length > 0) {
       invalid.value = false;
     }
-  }, { flush: "sync" });
+  }
+
+  watchEffect(reconcileValidity, { flush: "sync" });
 
   return { value: options.value, inputValue, inputProps, formProps, add, remove, reset };
 }
@@ -247,6 +250,7 @@ export function useTagsInput(
   if (!model) return createTagsInput(optionsOrProps as UseTagsInputOptions);
   const props = optionsOrProps as TagsInputComponentProps;
   return createTagsInput({
+    ...(props.id === undefined ? {} : { id: props.id }),
     value: model.value,
     label: () => props.label,
     name: () => props.name,

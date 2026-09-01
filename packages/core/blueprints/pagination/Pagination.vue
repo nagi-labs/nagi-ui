@@ -9,11 +9,18 @@ export interface PaginationItem {
 </script>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import type { StyleValue } from "vue";
+import { usePagination } from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
     items: readonly PaginationItem[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
     label?: string;
   }>(),
   {
@@ -26,30 +33,32 @@ const emit = defineEmits<{
 }>();
 
 const currentKey = defineModel<string>("currentKey", { required: true });
-
-const currentIndex = computed(() => {
-  return props.items.findIndex((item) => item.key === currentKey.value);
-});
-
-function selectButton(item: PaginationItem) {
-  currentKey.value = item.key;
-  emit("select", item);
-}
-
-function selectLink(item: PaginationItem) {
-  emit("select", item);
-}
+const pagination = usePagination<PaginationItem>(
+  { onSelect: (item) => emit("select", item) },
+  currentKey,
+);
 </script>
 
 <template>
-  <nav class="n-pagination" :aria-label="label">
+  <nav
+    class="n-pagination"
+    :class="props.class"
+    :style="props.style"
+    :id="props.id"
+    :title="props.title"
+    :aria-label="label"
+  >
     <ol class="list">
-      <li v-for="(item, index) in items" :key="item.key" class="item">
+      <li
+        v-for="item in items"
+        :key="item.key"
+        class="item"
+      >
         <span
           v-if="item.href && item.disabled"
           class="text"
           aria-disabled="true"
-          :aria-current="index === currentIndex ? 'page' : undefined"
+          :aria-current="pagination.isCurrent(item) ? 'page' : undefined"
         >
           {{ item.label }}
         </span>
@@ -57,8 +66,8 @@ function selectLink(item: PaginationItem) {
           v-else-if="item.href"
           class="link"
           :href="item.href"
-          :aria-current="index === currentIndex ? 'page' : undefined"
-          @click="selectLink(item)"
+          :aria-current="pagination.isCurrent(item) ? 'page' : undefined"
+          @click="pagination.selectLink(item)"
         >
           {{ item.label }}
         </a>
@@ -67,8 +76,8 @@ function selectLink(item: PaginationItem) {
           class="button"
           type="button"
           :disabled="item.disabled"
-          :aria-current="index === currentIndex ? 'page' : undefined"
-          @click="selectButton(item)"
+          :aria-current="pagination.isCurrent(item) ? 'page' : undefined"
+          @click="pagination.selectButton(item)"
         >
           {{ item.label }}
         </button>

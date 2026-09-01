@@ -1,5 +1,10 @@
 <script setup lang="ts">
-withDefaults(
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
+import { computed, useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(
   defineProps<{
     /** Optional accessible name when nearby text does not label the group. */
     label?: string;
@@ -7,14 +12,20 @@ withDefaults(
   }>(),
   { orientation: "horizontal" },
 );
+const attrs = useAttrs();
+const divProps = computed(() =>
+  mergeElementProps(attrs, {
+    role: "group",
+    "aria-label": props.label,
+  }),
+);
 </script>
 
 <template>
   <div
     class="n-button-group"
+    v-bind="divProps"
     :data-orientation="orientation"
-    role="group"
-    :aria-label="label"
   >
     <slot />
   </div>

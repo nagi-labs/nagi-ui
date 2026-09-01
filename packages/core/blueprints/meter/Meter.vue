@@ -1,43 +1,57 @@
 <script setup lang="ts">
-import { useId } from "vue";
+import { computed, useAttrs, useId } from "vue";
+
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-withDefaults(
-  defineProps<{
-    label: string;
-    id?: string;
-    value: number;
-    min?: number;
-    max?: number;
-    low?: number;
-    high?: number;
-    optimum?: number;
-  }>(),
-  {
-    min: 0,
-    max: 1,
-  },
-);
+const {
+  label,
+  id,
+  value,
+  min = 0,
+  max = 1,
+  low,
+  high,
+  optimum,
+} = defineProps<{
+  label: string;
+  id?: string;
+  value: number;
+  min?: number;
+  max?: number;
+  low?: number;
+  high?: number;
+  optimum?: number;
+}>();
 
+const attrs = useAttrs();
 const generatedId = useId();
 const labelId = `${generatedId}-label`;
+const meterProps = computed(() =>
+  mergeElementProps({ "aria-labelledby": labelId }, attrs, {
+    id: id ?? generatedId,
+    value,
+    min,
+    max,
+    low,
+    high,
+    optimum,
+  }),
+);
 </script>
 
 <template>
   <div class="n-meter">
-    <label :id="labelId" class="label" :for="id ?? generatedId">{{ label }}</label>
+    <label
+      :id="labelId"
+      class="label"
+      :for="id ?? generatedId"
+      >{{ label }}</label
+    >
     <meter
-      v-bind="$attrs"
       class="meter"
-      :id="id ?? generatedId"
-      :aria-labelledby="labelId"
-      :value="value"
-      :min="min"
-      :max="max"
-      :low="low"
-      :high="high"
-      :optimum="optimum"
+      v-bind="meterProps"
     >
       {{ value }} / {{ max }}
     </meter>

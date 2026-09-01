@@ -7,6 +7,7 @@ import {
   watch,
   watchEffect,
   type MaybeRefOrGetter,
+  type WatchCallback,
 } from "vue";
 import { modelValueAccepted } from "./model-sync.ts";
 
@@ -26,9 +27,11 @@ export function useNativeCustomValidity(
   control: ReadonlyControlRef<NativeValidityControl>,
   message: MaybeRefOrGetter<string>,
 ): void {
-  watchEffect(() => {
+  function syncCustomValidity() {
     control.value?.setCustomValidity(toValue(message));
-  });
+  }
+
+  watchEffect(syncCustomValidity);
 }
 
 /**
@@ -175,22 +178,25 @@ export function useNativeCheckbox(
   const initialChecked = checked.value;
   const initialIndeterminate = indeterminate.value;
 
-  watchEffect(() => {
+  function syncIndeterminate() {
     if (control.value) control.value.indeterminate = indeterminate.value;
-  });
+  }
 
-  watch(
-    () => control.value,
-    (element, _previous, onCleanup) => {
-      if (!element) return;
-      const handleChange = () => {
-        if (indeterminate.value) indeterminate.value = false;
-      };
-      element.addEventListener("change", handleChange);
-      onCleanup(() => element.removeEventListener("change", handleChange));
-    },
-    { flush: "post", immediate: true },
-  );
+  const bindIndeterminateChange: WatchCallback<HTMLInputElement | null> = (
+    element,
+    _previous,
+    onCleanup,
+  ) => {
+    if (!element) return;
+    const handleChange = () => {
+      if (indeterminate.value) indeterminate.value = false;
+    };
+    element.addEventListener("change", handleChange);
+    onCleanup(() => element.removeEventListener("change", handleChange));
+  };
+
+  watchEffect(syncIndeterminate);
+  watch(() => control.value, bindIndeterminateChange, { flush: "post", immediate: true });
 
   useNativeFormReset(control, (element) => {
     checked.value = initialChecked;

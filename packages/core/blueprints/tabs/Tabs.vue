@@ -9,6 +9,8 @@ export interface TabsItem {
 </script>
 
 <script setup lang="ts">
+import type { StyleValue } from "vue";
+
 import {
   useTabs,
   type MenuDirection,
@@ -16,10 +18,16 @@ import {
   type TabsOrientation,
 } from "@nagi-labs/nagi-ui";
 
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     label: string;
     items: readonly TabsItem[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
     activationMode?: TabsActivationMode;
     orientation?: TabsOrientation;
     dir?: MenuDirection;
@@ -38,8 +46,16 @@ const tabs = useTabs(props, selectedModel);
 </script>
 
 <template>
-  <div class="n-tabs">
-    <div class="list" v-bind="tabs.tablistProps">
+  <div
+    class="n-tabs"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
+    <div
+      class="list"
+      v-bind="tabs.tablistProps"
+    >
       <button
         v-for="item in items"
         :key="item.key"
@@ -55,8 +71,16 @@ const tabs = useTabs(props, selectedModel);
       class="section"
       v-bind="tabs.panelProps(item)"
     >
-      <slot name="panel" :item="item">
-        <p v-if="item.content" class="text">{{ item.content }}</p>
+      <slot
+        name="panel"
+        :item="item"
+      >
+        <p
+          v-if="item.content"
+          class="text"
+        >
+          {{ item.content }}
+        </p>
       </slot>
     </section>
   </div>

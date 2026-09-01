@@ -1,41 +1,66 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, useAttrs } from "vue";
 
-import { useNativeValueReset } from "@nagi-labs/nagi-ui";
+import { mergeElementProps, useNativeValueReset } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    type?:
-      | "text"
-      | "email"
-      | "password"
-      | "search"
-      | "tel"
-      | "url"
-      | "date"
-      | "datetime-local"
-      | "month"
-      | "time"
-      | "week";
-    name?: string;
-    form?: string;
-    disabled?: boolean;
-    required?: boolean;
-    readOnly?: boolean;
-  }>(),
-  {
-    type: "text",
-    disabled: false,
-    required: false,
-    readOnly: false,
-  },
-);
+const {
+  label,
+  type = "text",
+  disabled = false,
+  required = false,
+  readOnly = false,
+} = defineProps<{
+  label: string;
+  type?:
+    | "text"
+    | "email"
+    | "password"
+    | "search"
+    | "tel"
+    | "url"
+    | "date"
+    | "datetime-local"
+    | "month"
+    | "time"
+    | "week";
+  disabled?: boolean;
+  required?: boolean;
+  readOnly?: boolean;
+}>();
 
+const attrs = useAttrs();
 const model = defineModel<string>({ default: "" });
 const input = ref<HTMLInputElement | null>(null);
+const inputProps = computed(() =>
+  mergeElementProps(attrs, {
+    type,
+    disabled,
+    required,
+    readonly: readOnly,
+  }),
+);
+
+const emit = defineEmits<{
+  beforeinput: [event: InputEvent];
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  compositionend: [event: CompositionEvent];
+  compositionstart: [event: CompositionEvent];
+  compositionupdate: [event: CompositionEvent];
+  copy: [event: ClipboardEvent];
+  cut: [event: ClipboardEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+  keydown: [event: KeyboardEvent];
+  keypress: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+  paste: [event: ClipboardEvent];
+  select: [event: Event];
+}>();
 
 useNativeValueReset(input, model);
 </script>
@@ -44,16 +69,27 @@ useNativeValueReset(input, model);
   <label class="n-input">
     <span class="unit">{{ label }}</span>
     <input
-      v-bind="$attrs"
       ref="input"
       v-model="model"
       class="input"
-      :type="type"
-      :name="name"
-      :form="form"
-      :disabled="disabled"
-      :required="required"
-      :readonly="readOnly"
+      v-bind="inputProps"
+      @beforeinput="emit('beforeinput', $event)"
+      @blur="emit('blur', $event)"
+      @change="emit('change', $event)"
+      @click="emit('click', $event)"
+      @compositionend="emit('compositionend', $event)"
+      @compositionstart="emit('compositionstart', $event)"
+      @compositionupdate="emit('compositionupdate', $event)"
+      @copy="emit('copy', $event)"
+      @cut="emit('cut', $event)"
+      @focus="emit('focus', $event)"
+      @input="emit('input', $event)"
+      @invalid="emit('invalid', $event)"
+      @keydown="emit('keydown', $event)"
+      @keypress="emit('keypress', $event)"
+      @keyup="emit('keyup', $event)"
+      @paste="emit('paste', $event)"
+      @select="emit('select', $event)"
     />
   </label>
 </template>

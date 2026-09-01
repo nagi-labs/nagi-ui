@@ -32,6 +32,7 @@ export interface UsePreviewCardOptions {
 }
 
 interface PreviewCardComponentProps {
+  readonly id?: string | undefined
   readonly openDelay: number
   readonly closeDelay: number
   readonly disabled: boolean
@@ -79,6 +80,24 @@ interface NativePopoverElement extends HTMLElement {
 
 let previewCardCount = 0
 
+function previewCardComponentOptions(
+  props: PreviewCardComponentProps,
+  open: Ref<boolean>,
+): UsePreviewCardOptions {
+  const options: UsePreviewCardOptions = {
+    openDelay: props.openDelay,
+    closeDelay: props.closeDelay,
+    disabled: () => props.disabled,
+    anchor: {
+      area: props.area,
+      offset: props.offset,
+    },
+    open,
+  }
+  if (props.id !== undefined) options.id = props.id
+  return options
+}
+
 export function usePreviewCard(options?: UsePreviewCardOptions): UsePreviewCardReturn
 export function usePreviewCard(
   props: PreviewCardComponentProps,
@@ -89,16 +108,7 @@ export function usePreviewCard(
   componentOpen?: Ref<boolean>,
 ): UsePreviewCardReturn {
   const options: UsePreviewCardOptions = componentOpen
-    ? {
-        openDelay: (optionsOrProps as PreviewCardComponentProps).openDelay,
-        closeDelay: (optionsOrProps as PreviewCardComponentProps).closeDelay,
-        disabled: () => (optionsOrProps as PreviewCardComponentProps).disabled,
-        anchor: {
-          area: (optionsOrProps as PreviewCardComponentProps).area,
-          offset: (optionsOrProps as PreviewCardComponentProps).offset,
-        },
-        open: componentOpen,
-      }
+    ? previewCardComponentOptions(optionsOrProps as PreviewCardComponentProps, componentOpen)
     : optionsOrProps as UsePreviewCardOptions
 
   const instance = getCurrentInstance()
@@ -124,10 +134,7 @@ export function usePreviewCard(
   let previewFocused = false
 
   function resolvePreview(): NativePopoverElement | null {
-    if (previewElement?.isConnected) return previewElement
-    if (typeof document === "undefined") return null
-    previewElement = document.getElementById(id) as NativePopoverElement | null
-    return previewElement
+    return previewElement?.isConnected ? previewElement : null
   }
 
   function syncAnchor(target: NativePopoverElement, isOpen: boolean) {
@@ -200,15 +207,15 @@ export function usePreviewCard(
     if (open.value && !disabled()) apply(true)
   }
 
-  watch(open, (next) => {
+  function reconcileOpenState(next: boolean) {
     if (next && disabled()) {
       open.value = false
       return
     }
     apply(next)
-  }, { flush: "sync" })
+  }
 
-  watch(disabled, (next) => {
+  function reconcileDisabledState(next: boolean) {
     if (!next) return
     clearTimer()
     triggerHovered = false
@@ -216,7 +223,10 @@ export function usePreviewCard(
     triggerFocused = false
     previewFocused = false
     open.value = false
-  }, { flush: "sync", immediate: true })
+  }
+
+  watch(open, reconcileOpenState, { flush: "sync" })
+  watch(disabled, reconcileDisabledState, { flush: "sync", immediate: true })
 
   if (instance) {
     onMounted(() => {

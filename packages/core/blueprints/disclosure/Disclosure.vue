@@ -1,8 +1,16 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
+
 import { useDisclosure } from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
   summary: string;
+  id?: string;
+  class?: string;
+  style?: StyleValue;
+  title?: string;
   name?: string;
   disabled?: boolean;
 }>();
@@ -14,9 +22,22 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 </script>
 
 <template>
-  <details class="n-disclosure" v-bind="disclosure.detailsProps">
-    <summary class="summary" v-bind="disclosure.summaryProps">
-      <slot name="summary" :summary="summary">{{ summary }}</slot>
+  <details
+    class="n-disclosure"
+    v-bind="disclosure.detailsProps"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
+    <summary
+      class="summary"
+      v-bind="disclosure.summaryProps"
+    >
+      <slot
+        name="summary"
+        :summary="summary"
+        >{{ summary }}</slot
+      >
     </summary>
     <section class="section">
       <slot />
@@ -34,6 +55,7 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 
   > .summary {
     padding: var(--nagi-space-control);
+    font-size: var(--n-font-size-3);
     font-weight: 650;
     cursor: pointer;
 

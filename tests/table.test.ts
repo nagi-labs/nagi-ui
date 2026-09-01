@@ -17,11 +17,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 async function withTable(run: (table: Component) => Promise<void>) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-table-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-table-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -32,6 +34,7 @@ async function withTable(run: (table: Component) => Promise<void>) {
     await run(table);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 

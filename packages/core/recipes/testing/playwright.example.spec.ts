@@ -49,7 +49,7 @@ test("keyboard navigation, focus restoration, and light dismiss stay intact", as
   await page.keyboard.press("Enter");
   await expect(menu).toBeHidden();
   await expect(trigger).toBeFocused();
-  await expect(page.getByTestId("selected-action")).toHaveText("rename");
+  await expect(page.locator("#selected-action")).toHaveText("rename");
 
   await trigger.click();
   await page.getByRole("button", { name: "After menu" }).click();
@@ -61,5 +61,5 @@ test("native form submission survives ownership changes", async ({ page }) => {
   await page.getByRole("textbox", { name: "Project" }).fill("Owned Nagi");
   await page.getByRole("button", { name: "Save" }).click();
 
-  await expect(page.getByTestId("submitted-project")).toHaveText("Owned Nagi");
+  await expect(page.locator("#submitted-project")).toHaveText("Owned Nagi");
 });

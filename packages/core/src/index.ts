@@ -33,13 +33,15 @@ export {
   type ToastPromiseOptions,
   type ToastPromiseState,
   type ToastRegionProps,
-  type ToastRendererItemProps,
   type ToastTone,
   type ToastUpdateOptions,
   type UseToastOptions,
-  type UseToastRendererReturn,
   type UseToastReturn,
 } from "./toast.ts"
+export {
+  type ToastRendererItemProps,
+  type UseToastRendererReturn,
+} from "./toast-renderer.ts"
 export {
   useAvatar,
   type UseAvatarOptions,
@@ -153,6 +155,29 @@ export {
   type UseToggleReturn,
 } from "./toggle.ts"
 export {
+  useToggleGroup,
+  type ToggleGroupMode,
+  type ToggleGroupValue,
+  type UseToggleGroupOptions,
+  type UseToggleGroupReturn,
+} from "./toggle-group.ts"
+export {
+  usePagination,
+  type PaginationBehaviorItem,
+  type UsePaginationOptions,
+  type UsePaginationReturn,
+} from "./pagination.ts"
+export {
+  useStepper,
+  type StepperBehaviorItem,
+  type UseStepperReturn,
+} from "./stepper.ts"
+export {
+  handleLinkClick,
+  prefetchLink,
+  type LinkNavigationOptions,
+} from "./link.ts"
+export {
   useCombobox,
   type ComboboxInputProps,
   type ComboboxListboxProps,
@@ -250,7 +275,8 @@ export {
   type CarouselComponentProps,
   type CarouselRootProps,
   type CarouselSlideProps,
-  type CarouselTrackProps,
+  type CarouselSlideLabelProps,
+  type CarouselViewportProps,
   type UseCarouselOptions,
 } from "./carousel.ts"
 export {
@@ -296,11 +322,45 @@ export {
   warnMissingNagiThemeTokens,
 } from "./theme.ts"
 export {
-  mergeNagiProps,
-  NagiPropConflictError,
-  type MergedNagiProps,
+  mergeElementProps,
+  withoutClassToken,
+  ElementPropConflictError,
+  type MergedElementProps,
 } from "./merge-props.ts"
 export type { WritableRef } from "./model-sync.ts"
+export {
+  assertDefinition,
+  adoptRequirementSet,
+  assertAnatomy,
+  defineComponentDefinition,
+  defineRequirementSet,
+  inspectAnatomy,
+  validateDefinition,
+  verifyAnatomy,
+  type DefinitionIssue,
+  type DefinitionIssueCode,
+  type AnatomyIssue,
+  type AnatomyIssueCode,
+  type AnatomyMatch,
+  type AnatomyPart,
+  type ComponentDefinition,
+  type DefinitionClassification,
+  type DefinitionEntry,
+  type DefinitionOrigin,
+  type DefinitionReference,
+  type DefinitionSection,
+  type DefinitionStatement,
+  type DefinitionStatus,
+  type RequirementSet,
+  type RequirementSetAdoption,
+  type RequirementSetStatement,
+} from "./definition.ts"
+export { nagiButtonRequirementsV1 } from "./standards/nagi-button.ts"
+export { nagiCalendarRequirementsV1 } from "./standards/nagi-calendar.ts"
+export { nagiDialogRequirementsV1 } from "./standards/nagi-dialog.ts"
+export { nagiListboxRequirementsV1 } from "./standards/nagi-listbox.ts"
+export { nagiMenuRequirementsV1 } from "./standards/nagi-menu.ts"
+export { nagiPopupRequirementsV1 } from "./standards/nagi-popup.ts"
 export {
   assertNagiDom,
   observeNagiDom,

@@ -14,7 +14,9 @@ interface FakeMenu {
   isConnected: boolean;
   openState: boolean;
   calls: string[];
+  items: HTMLElement[];
   matches: (selector: string) => boolean;
+  querySelectorAll: <ElementType extends Element = Element>(selector: string) => ElementType[];
   showPopover: () => void;
   hidePopover: () => void;
   focus: () => void;
@@ -35,8 +37,12 @@ function fakeMenu(): FakeMenu {
     isConnected: true,
     openState: false,
     calls: [],
+    items: [],
     matches(selector) {
       return selector === ":popover-open" && this.openState;
+    },
+    querySelectorAll() {
+      return this.items;
     },
     showPopover() {
       this.openState = true;
@@ -239,20 +245,14 @@ test("a rejected controlled child close keeps focus in the visible child", async
   const childElement = fakeMenu();
   childElement.openState = true;
   const focused: string[] = [];
-  Object.assign(parentElement, {
-    ownerDocument: {
-      getElementById(id: string) {
-        return { focus() { focused.push(`parent:${id}`); } };
-      },
-    },
-  });
-  Object.assign(childElement, {
-    ownerDocument: {
-      getElementById(id: string) {
-        return { focus() { focused.push(`child:${id}`); } };
-      },
-    },
-  });
+  parentElement.items.push({
+    id: "controlled-child-root-item-share",
+    focus() { focused.push(`parent:${this.id}`); },
+  } as unknown as HTMLElement);
+  childElement.items.push({
+    id: "controlled-child-item-copy",
+    focus() { focused.push(`child:${this.id}`); },
+  } as unknown as HTMLElement);
   root.menuProps.onToggle(toggleEvent(parentElement, "open"));
   submenu.menuProps.onToggle(toggleEvent(childElement, "open"));
   submenu.itemProps(shareItems[0]).onFocus();

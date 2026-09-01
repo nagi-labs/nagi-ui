@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/catalog.html");
 });
 
-test("styling-only package components expose semantic content and tone variants", async ({
+test("[BTN-STYLE-01][BTN-STYLE-03] package components expose semantic content and compiled style axes", async ({
   page,
 }) => {
   const card = page.locator("div.n-card", { hasText: "Package-first surface" });
@@ -14,7 +14,9 @@ test("styling-only package components expose semantic content and tone variants"
     "own only when the structure must change.",
   );
   await expect(card.getByText("Markup stays local.", { exact: true })).toBeVisible();
-  await expect(card.getByText("The consumer owns and styles this declared slot sub-surface.")).toBeVisible();
+  await expect(
+    card.getByText("The consumer owns and styles this declared slot sub-surface."),
+  ).toBeVisible();
   await expect(card.getByText("Package component with an owned footer surface.")).toBeVisible();
   await expect(card.getByRole("button", { name: "Manage package" })).toBeVisible();
 
@@ -28,14 +30,75 @@ test("styling-only package components expose semantic content and tone variants"
   await expect(card.locator(".n-alert-title", { hasText: "Verified" })).toBeVisible();
   await expect(card.getByRole("alert")).toContainText("Destructive action");
 
-  const smallHeight = await page.getByTestId("button-small").evaluate((button) => button.clientHeight);
-  const defaultHeight = await page.getByTestId("button-default").evaluate((button) => button.clientHeight);
-  const largeHeight = await page.getByTestId("button-large").evaluate((button) => button.clientHeight);
+  const smallHeight = await page.locator("#button-small").evaluate((button) => button.clientHeight);
+  const defaultHeight = await page
+    .locator("#button-default")
+    .evaluate((button) => button.clientHeight);
+  const largeHeight = await page.locator("#button-large").evaluate((button) => button.clientHeight);
   expect(smallHeight).toBeLessThan(defaultHeight);
   expect(defaultHeight).toBeLessThan(largeHeight);
+
+  const managedButton = card.getByRole("button", { name: "Manage package" });
+  await expect(managedButton).toHaveCSS("color", "rgb(49, 95, 189)");
+  expect(
+    await managedButton.evaluate((button) =>
+      getComputedStyle(button).getPropertyValue("--button-tone").trim(),
+    ),
+  ).toBe("accent");
+
+  const composedButton = page.locator("#button-composed");
+  await expect(composedButton).toHaveCSS("color", "rgb(180, 35, 54)");
+  await expect(composedButton).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  const composedAxes = await composedButton.evaluate((button) => {
+    const style = getComputedStyle(button);
+    return {
+      tone: style.getPropertyValue("--button-tone").trim(),
+      appearance: style.getPropertyValue("--button-appearance").trim(),
+      shape: style.getPropertyValue("--button-shape").trim(),
+      compiledRadius: style.getPropertyValue("--_button-radius").trim(),
+    };
+  });
+  expect(composedAxes).toMatchObject({
+    tone: "danger",
+    appearance: "outlined",
+    shape: "rounded",
+  });
+  expect(composedAxes.compiledRadius).not.toBe("");
 });
 
-test("focusable disabled Button stays focusable without activating", async ({ page }) => {
+test("[BTN-STYLE-04] Button axes and compiled outputs do not inherit from ancestors", async ({
+  page,
+}) => {
+  const button = page.locator("#button-default");
+  await button.evaluate((element) => {
+    const parent = element.parentElement;
+    if (!parent) throw new Error("Button fixture requires a parent");
+    parent.style.setProperty("--button-tone", "danger");
+    parent.style.setProperty("--_button-color", "rgb(1, 2, 3)");
+  });
+
+  await expect
+    .poll(() =>
+      button.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          tone: style.getPropertyValue("--button-tone").trim(),
+          privateColor: style.getPropertyValue("--_button-color").trim(),
+        };
+      }),
+    )
+    .toEqual({ tone: "neutral", privateColor: "" });
+
+  await button.evaluate((element) => {
+    element.style.setProperty("--button-tone", "danger");
+    element.style.setProperty("--_button-color", "rgb(1, 2, 3)");
+  });
+  await expect(button).toHaveCSS("color", "rgb(1, 2, 3)");
+});
+
+test("[BTN-STATE-02][BTN-INT-01][BTN-INT-02][BTN-FOCUS-01] focusable disabled Button stays focusable without activating", async ({
+  page,
+}) => {
   const button = page.getByRole("button", { name: "Focusable disabled" });
   await expect(button).toHaveAttribute("aria-disabled", "true");
   await expect(button).not.toHaveAttribute("disabled", "");
@@ -43,10 +106,12 @@ test("focusable disabled Button stays focusable without activating", async ({ pa
   await button.focus();
   await expect(button).toBeFocused();
   await button.press("Enter");
-  await expect(page.getByTestId("focusable-disabled-clicks")).toHaveText("activations: 0");
+  await expect(page.locator("#focusable-disabled-clicks")).toHaveText("activations: 0");
 });
 
-test("package triggers and links retain visible focus in forced colors", async ({ page }) => {
+test("[BTN-STYLE-02][POP-STYLE-01] package triggers and links retain visible focus in forced colors", async ({
+  page,
+}) => {
   await page.emulateMedia({ forcedColors: "active" });
 
   const expectSystemOutline = async (locator: Locator) => {
@@ -60,7 +125,7 @@ test("package triggers and links retain visible focus in forced colors", async (
     ).toEqual({ style: "solid", width: "2px" });
   };
 
-  await expectSystemOutline(page.getByTestId("button-default"));
+  await expectSystemOutline(page.locator("#button-default"));
   await expectSystemOutline(
     page.getByRole("navigation", { name: "Package path" }).getByRole("link", { name: "Home" }),
   );
@@ -88,7 +153,7 @@ test("package triggers and links retain visible focus in forced colors", async (
 test("Avatar recovers after an image error and Toggle exposes native pressed state", async ({
   page,
 }) => {
-  const avatar = page.getByTestId("catalog-avatar");
+  const avatar = page.locator("#catalog-avatar");
   await expect(avatar).toHaveAccessibleName("Ada Lovelace");
   await expect(avatar.locator("img")).toHaveCount(1);
 
@@ -116,7 +181,7 @@ test("Avatar recovers after an image error and Toggle exposes native pressed sta
     Number.parseFloat(getComputedStyle(element).borderTopWidth),
   );
   expect(pressedBorder).toBeGreaterThan(unpressedBorder);
-  await expect(page.getByTestId("toggle-state")).toHaveText("pressed: true");
+  await expect(page.locator("#toggle-state")).toHaveText("pressed: true");
   await toggle.press("Space");
   await expect(toggle).toHaveAttribute("aria-pressed", "false");
 });
@@ -137,18 +202,18 @@ test("expanded thin primitives preserve native semantics and form reset", async 
   await expect(group.getByRole("button", { name: "Publish" })).toBeVisible();
 
   await expect(page.getByRole("status", { name: "Loading package catalog" })).toBeVisible();
-  await expect(page.getByTestId("decorative-spinner")).toHaveAttribute("aria-hidden", "true");
-  await expect(page.getByTestId("catalog-skeleton")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator("#decorative-spinner")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator("#catalog-skeleton")).toHaveAttribute("aria-hidden", "true");
   await expect(page.getByText("No packages yet", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Create package" })).toBeVisible();
 
   const textarea = page.getByRole("textbox", { name: "Release notes" });
   await expect(textarea).toHaveValue("Native behavior first.");
   await textarea.fill("Edited release notes");
-  await expect(page.getByTestId("release-notes-value")).toHaveText("Edited release notes");
+  await expect(page.locator("#release-notes-value")).toHaveText("Edited release notes");
   await page.getByRole("button", { name: "Reset release notes" }).click();
   await expect(textarea).toHaveValue("Native behavior first.");
-  await expect(page.getByTestId("release-notes-value")).toHaveText("Native behavior first.");
+  await expect(page.locator("#release-notes-value")).toHaveText("Native behavior first.");
 });
 
 test("Pagination keeps native links and controlled button selection distinct", async ({ page }) => {
@@ -172,9 +237,7 @@ test("Pagination keeps native links and controlled button selection distinct", a
     "aria-current",
     "page",
   );
-  await expect(page.getByTestId("pagination-state")).toHaveText(
-    "current: 3, selections: 1",
-  );
+  await expect(page.locator("#pagination-state")).toHaveText("current: 3, selections: 1");
 });
 
 test("Table keeps native reading semantics and custom cell content", async ({ page }) => {
@@ -197,11 +260,11 @@ test("ToggleGroup keeps native buttons while updating single and multiple models
   await expect(center).toHaveAttribute("aria-pressed", "true");
   await center.click();
   await expect(center).toHaveAttribute("aria-pressed", "false");
-  await expect(page.getByTestId("alignment-state")).toHaveText("alignment: none");
+  await expect(page.locator("#alignment-state")).toHaveText("alignment: none");
   await left.focus();
   await left.press("Space");
   await expect(left).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByTestId("alignment-state")).toHaveText("alignment: left");
+  await expect(page.locator("#alignment-state")).toHaveText("alignment: left");
   await expect(alignment.locator("button[tabindex]")).toHaveCount(0);
 
   const formats = page.getByRole("group", { name: "Text formats" });
@@ -212,7 +275,7 @@ test("ToggleGroup keeps native buttons while updating single and multiple models
   await expect(bold).toHaveAttribute("aria-pressed", "true");
   await expect(italic).toHaveAttribute("aria-pressed", "true");
   await expect(formats.getByRole("button", { name: "Underline" })).toBeDisabled();
-  await expect(page.getByTestId("format-state")).toHaveText("formats: bold, italic");
+  await expect(page.locator("#format-state")).toHaveText("formats: bold, italic");
 });
 
 test("PreviewCard preserves link navigation and interactive pointer/focus transit", async ({
@@ -264,18 +327,30 @@ test("Stepper keeps native button focus while changing only the current step", a
   await expect(access).toBeFocused();
   await expect(access).toHaveAttribute("aria-current", "step");
   await expect(details).not.toHaveAttribute("aria-current", "step");
-  await expect(page.getByTestId("stepper-state")).toHaveText("current step: access");
+  await expect(page.locator("#stepper-state")).toHaveText("current step: access");
   await expect(publish).toBeDisabled();
 });
 
-test("package Popover opens and light dismisses through native wiring", async ({ page }) => {
+test("[POP-SEM-01][POP-INT-01][POP-ANAT-01] package Popover opens and light dismisses through native wiring", async ({
+  page,
+}) => {
   const trigger = page.getByRole("button", { name: "Open package popover" });
   const body = page.getByText("Popover body belongs to the application slot.");
+  const root = page.locator('[data-scope="popover"][data-part="root"]');
+  const surface = root.locator('[data-scope="popover"][data-part="surface"]');
+
+  await expect(root.getByRole("button", { name: "Open package popover" })).toHaveAttribute(
+    "data-part",
+    "trigger",
+  );
+  await expect(surface).toHaveJSProperty("popover", "auto");
+  await expect(trigger).toHaveAttribute("popovertarget", (await surface.getAttribute("id")) ?? "");
 
   await trigger.click();
+  await expect(surface).toBeVisible();
   await expect(body).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(body).toBeHidden();
+  await expect(surface).toBeHidden();
 });
 
 test("package Dialog mirrors open state and closes through its owned button", async ({ page }) => {
@@ -311,20 +386,20 @@ test("AlertDialog keeps critical actions explicit and returns focus through nati
 
   await dialog.getByRole("button", { name: "Cancel" }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByTestId("alert-dialog-cancels")).toHaveText("cancels: 1");
+  await expect(page.locator("#alert-dialog-cancels")).toHaveText("cancels: 1");
   await expect(trigger).toBeFocused();
 
   await trigger.click();
   await dialog.getByRole("button", { name: "Delete package" }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByTestId("alert-dialog-actions")).toHaveText("actions: 1");
+  await expect(page.locator("#alert-dialog-actions")).toHaveText("actions: 1");
   await expect(trigger).toBeFocused();
 
   await trigger.click();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(page.getByText("alert model open: false")).toBeVisible();
-  await expect(page.getByTestId("alert-dialog-cancels")).toHaveText("cancels: 1");
+  await expect(page.locator("#alert-dialog-cancels")).toHaveText("cancels: 1");
 });
 
 test("Accordion delegates exclusive and multiple disclosure state to native details", async ({
@@ -342,12 +417,12 @@ test("Accordion delegates exclusive and multiple disclosure state to native deta
   await accordion.getByText("Can I return an order?", { exact: true }).click();
   await expect(details.nth(0)).not.toHaveAttribute("open", "");
   await expect(details.nth(1)).toHaveAttribute("open", "");
-  await expect(page.getByTestId("accordion-open-keys")).toContainText("open: returns");
+  await expect(page.locator("#accordion-open-keys")).toContainText("open: returns");
 
   await page.getByRole("button", { name: "Open shipping programmatically" }).click();
   await expect(details.nth(0)).toHaveAttribute("open", "");
   await expect(details.nth(1)).not.toHaveAttribute("open", "");
-  await expect(page.getByTestId("accordion-open-keys")).toContainText("open: shipping");
+  await expect(page.locator("#accordion-open-keys")).toContainText("open: shipping");
 
   const disabled = accordion.locator("summary", { hasText: "Legacy policy" });
   await expect(disabled).toHaveAttribute("aria-disabled", "true");
@@ -366,7 +441,7 @@ test("Accordion delegates exclusive and multiple disclosure state to native deta
   await multiple.getByText("How does shipping work?", { exact: true }).click();
   await expect(multipleDetails.nth(0)).not.toHaveAttribute("open", "");
   await expect(multipleDetails.nth(1)).toHaveAttribute("open", "");
-  await expect(page.getByTestId("multiple-accordion-open-keys")).toContainText("open: returns");
+  await expect(page.locator("#multiple-accordion-open-keys")).toContainText("open: returns");
 });
 
 test("disabled Tooltip and Disclosure suppress activation", async ({ page }) => {
@@ -435,7 +510,7 @@ test("Toast exposes structured actions and F6 focus without stealing trigger foc
   await page.keyboard.press("Tab");
   await expect(region.getByRole("button", { name: "Undo" })).toBeFocused();
   await region.getByRole("button", { name: "Undo" }).click();
-  await expect(page.getByTestId("undone-actions")).toHaveText("undo actions: 1");
+  await expect(page.locator("#undone-actions")).toHaveText("undo actions: 1");
   await expect(region.getByText("Item archived", { exact: true })).toBeHidden();
   await expect(trigger).toBeFocused();
 });
@@ -448,9 +523,9 @@ test("Toast repairs focus when an update removes the focused action", async ({ p
   await page.keyboard.press("Tab");
   await expect(region.getByRole("button", { name: "Undo" })).toBeFocused();
 
-  await page.getByRole("button", { name: "Remove undo action" }).evaluate(
-    (button: HTMLButtonElement) => button.click(),
-  );
+  await page
+    .getByRole("button", { name: "Remove undo action" })
+    .evaluate((button: HTMLButtonElement) => button.click());
   const dismiss = region.getByRole("button", { name: "Dismiss notification" });
   await expect(dismiss).toBeFocused();
   await dismiss.click();
@@ -478,9 +553,9 @@ test("Toast upserts by explicit id, limits live items, and closes all", async ({
     await expect(region.getByText(`Limited notification ${number}`, { exact: true })).toBeVisible();
   }
 
-  await page.getByRole("button", { name: "Close all notifications" }).evaluate(
-    (button: HTMLButtonElement) => button.click(),
-  );
+  await page
+    .getByRole("button", { name: "Close all notifications" })
+    .evaluate((button: HTMLButtonElement) => button.click());
   await expect(region.getByRole("listitem")).toHaveCount(0);
   await expect(region).toBeHidden();
 });

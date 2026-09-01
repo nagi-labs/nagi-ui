@@ -180,14 +180,14 @@ test("DateField follows RTL visual arrows and accepts mobile beforeinput digits"
     assert.equal(field.fieldProps.dir, "rtl");
 
     const focused: string[] = [];
-    const ownerDocument = {
-      getElementById(id: string) {
-        return { focus() { focused.push(id); } };
-      },
-    } as unknown as Document;
+    for (const segment of field.segments.value) {
+      if (segment.type === "literal") continue;
+      field.segmentProps(segment).ref?.({
+        focus() { focused.push(`rtl-date-${segment.type}`); },
+      } as unknown as Element);
+    }
     const day = editable(field.segments.value, "day");
     const dayProps = field.segmentProps(day);
-    dayProps.onFocus?.({ currentTarget: { ownerDocument } } as unknown as FocusEvent);
     dayProps.onKeydown?.(keyEvent("ArrowLeft").event);
     assert.equal(focused.at(-1), "rtl-date-month");
 

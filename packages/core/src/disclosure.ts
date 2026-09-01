@@ -5,6 +5,7 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue"
@@ -23,11 +24,14 @@ export interface UseDisclosureOptions {
 }
 
 interface DisclosureComponentProps {
+  readonly id?: string | undefined
   readonly name?: string | undefined
   readonly disabled?: boolean | undefined
 }
 
 export interface DisclosureProps {
+  /** Complete Behavior API wiring; registers the local native disclosure. */
+  ref: (element: Element | ComponentPublicInstance | null) => void
   id: string
   /** Present only when open at render time, so SSR emits `<details open>`. */
   open?: boolean
@@ -63,6 +67,19 @@ interface DetailsElement extends HTMLElement {
 
 let disclosureCount = 0
 
+function disclosureComponentOptions(
+  props: DisclosureComponentProps,
+  open: Ref<boolean>,
+): UseDisclosureOptions {
+  const options: UseDisclosureOptions = {
+    disabled: () => props.disabled ?? false,
+    open,
+  }
+  if (props.id !== undefined) options.id = props.id
+  if (props.name !== undefined) options.name = props.name
+  return options
+}
+
 export function useDisclosure(options?: UseDisclosureOptions): UseDisclosureReturn
 export function useDisclosure(
   props: DisclosureComponentProps,
@@ -73,13 +90,7 @@ export function useDisclosure(
   componentOpen?: Ref<boolean>,
 ): UseDisclosureReturn {
   const options: UseDisclosureOptions = componentOpen
-    ? {
-        ...((optionsOrProps as DisclosureComponentProps).name
-          ? { name: (optionsOrProps as DisclosureComponentProps).name }
-          : {}),
-        disabled: () => (optionsOrProps as DisclosureComponentProps).disabled ?? false,
-        open: componentOpen,
-      }
+    ? disclosureComponentOptions(optionsOrProps as DisclosureComponentProps, componentOpen)
     : optionsOrProps as UseDisclosureOptions
   const instance = getCurrentInstance()
   const id = options.id ?? (instance ? useId() : `nagi-disclosure-${disclosureCount++}`)
@@ -89,10 +100,12 @@ export function useDisclosure(
   let element: DetailsElement | null = null
 
   function resolve(): DetailsElement | null {
-    if (element?.isConnected) return element
-    if (typeof document === "undefined") return null
-    element = document.getElementById(id) as DetailsElement | null
-    return element
+    return element?.isConnected ? element : null
+  }
+
+  function setDetails(elementOrComponent: Element | ComponentPublicInstance | null) {
+    element = elementOrComponent as DetailsElement | null
+    if (element) apply(open.value)
   }
 
   // <details> owns its open state natively; the model is mirrored from the
@@ -118,6 +131,7 @@ export function useDisclosure(
     hide: () => (open.value = false),
     toggle: () => (open.value = !open.value),
     detailsProps: {
+      ref: setDetails,
       id,
       // Rendered once at setup so the server emits `<details open>` for the
       // initial state; subsequent changes flow through the toggle event and the

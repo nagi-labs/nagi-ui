@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { vDialogClose } from "@nagi-labs/nagi-ui";
 import { useAlertDialog } from "@nagi-labs/nagi-ui/component-controls";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     triggerLabel: string;
     title: string;
     description: string;
     actionLabel: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     cancelLabel?: string;
     actionTone?: "accent" | "danger";
   }>(),
@@ -16,6 +20,7 @@ withDefaults(
     actionTone: "accent",
   },
 );
+defineOptions({ inheritAttrs: false });
 
 defineEmits<{
   action: [event: MouseEvent];
@@ -31,28 +36,63 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 </script>
 
 <template>
-  <div class="n-alert-dialog">
-    <button class="button -trigger" type="button" v-bind="dialog.triggerProps">
+  <div
+    class="n-alert-dialog"
+    data-scope="alert-dialog"
+    data-part="root"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
+    <button
+      class="button -trigger"
+      type="button"
+      data-scope="alert-dialog"
+      data-part="trigger"
+      v-bind="dialog.triggerProps"
+    >
       {{ triggerLabel }}
     </button>
     <dialog
       class="dialog"
+      data-scope="alert-dialog"
+      data-part="surface"
       role="alertdialog"
       :aria-labelledby="titleId"
       :aria-describedby="descriptionId"
       v-bind="dialog.dialogProps"
     >
       <header class="header">
-        <h2 :id="titleId" class="title">
-          <slot name="title" :title="title">{{ title }}</slot>
+        <h2
+          data-scope="alert-dialog"
+          data-part="title"
+          :id="titleId"
+          class="title"
+        >
+          <slot
+            name="title"
+            :title="title"
+            >{{ title }}</slot
+          >
         </h2>
-        <p :id="descriptionId" class="text">
-          <slot name="description" :description="description">{{ description }}</slot>
+        <p
+          data-scope="alert-dialog"
+          data-part="description"
+          :id="descriptionId"
+          class="text"
+        >
+          <slot
+            name="description"
+            :description="description"
+            >{{ description }}</slot
+          >
         </p>
       </header>
       <footer class="footer">
         <button
           v-dialog-close="dialog.id"
+          data-scope="alert-dialog"
+          data-part="cancel"
           autofocus
           class="button -cancel"
           type="button"
@@ -62,6 +102,8 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         </button>
         <button
           v-dialog-close="dialog.id"
+          data-scope="alert-dialog"
+          data-part="action"
           class="button -action"
           :data-tone="actionTone"
           type="button"

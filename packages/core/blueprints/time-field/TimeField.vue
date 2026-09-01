@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, type StyleValue } from "vue";
 
-import {
-  mergeNagiProps,
-  useTimeField,
-  type TimeFieldGranularity,
-} from "@nagi-labs/nagi-ui";
+import { useTimeField, type TimeFieldGranularity } from "@nagi-labs/nagi-ui";
 import { useTimeFieldNativeForm } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
@@ -13,6 +9,8 @@ defineOptions({ inheritAttrs: false });
 const props = withDefaults(
   defineProps<{
     label: string;
+    class?: string;
+    style?: StyleValue;
     id?: string;
     name?: string;
     form?: string;
@@ -32,6 +30,7 @@ const props = withDefaults(
     secondLabel?: string;
     dayPeriodLabel?: string;
     emptyLabel?: string;
+    ariaDescribedby?: string;
   }>(),
   {
     locale: "en-US",
@@ -48,38 +47,61 @@ const props = withDefaults(
     emptyLabel: "Empty",
   },
 );
+const emit = defineEmits<{ focusout: [event: FocusEvent] }>();
 
 const model = defineModel<string | null>({ default: null });
 const formControl = ref<HTMLInputElement | null>(null);
 const behavior = useTimeField(props, model);
 useTimeFieldNativeForm(formControl, behavior);
+const describedBy = computed(
+  () =>
+    [
+      props.ariaDescribedby,
+      behavior.isInvalid.value ? `${behavior.fieldProps.id}-error` : undefined,
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined,
+);
 </script>
 
 <template>
-  <div class="n-time-field">
+  <div
+    class="n-time-field"
+    :class="props.class"
+    :style="props.style"
+  >
     <span class="text">{{ label }}</span>
     <div
-      v-bind="mergeNagiProps(behavior.fieldProps, $attrs, {
-        'aria-describedby': behavior.isInvalid.value ? `${behavior.fieldProps.id}-error` : undefined,
-      })"
+      v-bind="behavior.fieldProps"
+      @focusout="emit('focusout', $event)"
       class="field"
+      :aria-describedby="describedBy"
     >
-      <template v-for="segment in behavior.segments.value" :key="segment.key">
+      <template
+        v-for="segment in behavior.segments.value"
+        :key="segment.key"
+      >
         <span
           v-bind="behavior.segmentProps(segment)"
           class="text -segment"
           :data-literal="segment.type === 'literal' || undefined"
           :data-placeholder="segment.value === undefined || undefined"
-        >{{ segment.text }}</span>
+          >{{ segment.text }}</span
+        >
       </template>
-      <input ref="formControl" v-bind="behavior.formValueProps" class="input -form-value" />
+      <input
+        ref="formControl"
+        v-bind="behavior.formValueProps"
+        class="input -form-value"
+      />
     </div>
     <span
       v-if="behavior.isInvalid.value"
       :id="`${behavior.fieldProps.id}-error`"
       class="text -validation"
       role="alert"
-    >{{ validationMessage }}</span>
+      >{{ validationMessage }}</span
+    >
   </div>
 </template>
 

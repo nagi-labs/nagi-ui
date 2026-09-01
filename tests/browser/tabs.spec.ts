@@ -33,11 +33,11 @@ test("automatic horizontal navigation skips disabled tabs, wraps, and handles Ho
   await expect(settings).toBeFocused();
   await expect(settings).toHaveAttribute("aria-selected", "true");
   await expect(activity).toBeDisabled();
-  await expect(page.getByTestId("automatic-state")).toHaveText("settings");
+  await expect(page.locator("#automatic-state")).toHaveText("settings");
 
   await settings.press("End");
   await expect(billing).toBeFocused();
-  await expect(page.getByTestId("automatic-state")).toHaveText("billing");
+  await expect(page.locator("#automatic-state")).toHaveText("billing");
   await billing.press("ArrowRight");
   await expect(overview).toBeFocused();
   await overview.press("ArrowLeft");
@@ -57,20 +57,20 @@ test("manual vertical navigation separates focus from selection and ignores cros
   await profile.focus();
   await profile.press("ArrowRight");
   await expect(profile).toBeFocused();
-  await expect(page.getByTestId("manual-state")).toHaveText("profile");
+  await expect(page.locator("#manual-state")).toHaveText("profile");
 
   await profile.press("ArrowDown");
   await expect(sessions).toBeFocused();
   await expect(sessions).toHaveAttribute("aria-selected", "false");
-  await expect(page.getByTestId("manual-state")).toHaveText("profile");
+  await expect(page.locator("#manual-state")).toHaveText("profile");
   await sessions.press("Enter");
-  await expect(page.getByTestId("manual-state")).toHaveText("sessions");
+  await expect(page.locator("#manual-state")).toHaveText("sessions");
 
   await sessions.press("ArrowUp");
   await expect(profile).toBeFocused();
-  await expect(page.getByTestId("manual-state")).toHaveText("sessions");
+  await expect(page.locator("#manual-state")).toHaveText("sessions");
   await profile.press(" ");
-  await expect(page.getByTestId("manual-state")).toHaveText("profile");
+  await expect(page.locator("#manual-state")).toHaveText("profile");
 });
 
 test("automatic horizontal tabs ignore vertical arrows", async ({ page }) => {
@@ -79,7 +79,7 @@ test("automatic horizontal tabs ignore vertical arrows", async ({ page }) => {
   await overview.focus();
   await overview.press("ArrowDown");
   await expect(overview).toBeFocused();
-  await expect(page.getByTestId("automatic-state")).toHaveText("overview");
+  await expect(page.locator("#automatic-state")).toHaveText("overview");
 });
 
 test("RTL horizontal navigation reverses ArrowLeft and ArrowRight", async ({ page }) => {
@@ -92,17 +92,17 @@ test("RTL horizontal navigation reverses ArrowLeft and ArrowRight", async ({ pag
   await start.focus();
   await start.press("ArrowLeft");
   await expect(middle).toBeFocused();
-  await expect(page.getByTestId("rtl-state")).toHaveText("middle");
+  await expect(page.locator("#rtl-state")).toHaveText("middle");
   await middle.press("ArrowRight");
   await expect(start).toBeFocused();
   await start.press("ArrowRight");
   await expect(end).toBeFocused();
-  await expect(page.getByTestId("rtl-state")).toHaveText("end");
+  await expect(page.locator("#rtl-state")).toHaveText("end");
 });
 
 test("Tab order has one tab stop in the tablist, then the selected panel", async ({ page }) => {
-  const before = page.getByTestId("before-tabs");
-  const after = page.getByTestId("after-tabs");
+  const before = page.locator("#before-tabs");
+  const after = page.locator("#after-tabs");
   const list = tablist(page, "Account sections");
   const tabs = list.getByRole("tab");
 
@@ -124,12 +124,12 @@ test("removing the focused selected tab repairs selection and DOM focus", async 
   const remove = page.getByRole("button", { name: "Remove selected dynamic tab" });
 
   await beta.focus();
-  await expect(page.getByTestId("dynamic-state")).toHaveText("beta");
+  await expect(page.locator("#dynamic-state")).toHaveText("beta");
   await remove.evaluate((button: HTMLButtonElement) => button.click());
   await expect(list.getByRole("tab", { name: "Beta" })).toHaveCount(0);
-  await expect(page.getByTestId("dynamic-state")).toHaveText("gamma");
+  await expect(page.locator("#dynamic-state")).toHaveText("gamma");
   await expect(list.getByRole("tab", { name: "Gamma" })).toBeFocused();
-  await expect(page.getByTestId("dynamic-items-state")).toHaveText("alpha,gamma,delta");
+  await expect(page.locator("#dynamic-items-state")).toHaveText("alpha,gamma,delta");
 });
 
 test("disabling the focused selected tab repairs selection and DOM focus", async ({ page }) => {
@@ -138,12 +138,12 @@ test("disabling the focused selected tab repairs selection and DOM focus", async
   const disable = page.getByRole("button", { name: "Disable selected dynamic tab" });
 
   await beta.focus();
-  await expect(page.getByTestId("dynamic-state")).toHaveText("beta");
+  await expect(page.locator("#dynamic-state")).toHaveText("beta");
   await disable.evaluate((button: HTMLButtonElement) => button.click());
   await expect(beta).toBeDisabled();
-  await expect(page.getByTestId("dynamic-state")).toHaveText("gamma");
+  await expect(page.locator("#dynamic-state")).toHaveText("gamma");
   await expect(list.getByRole("tab", { name: "Gamma" })).toBeFocused();
-  await expect(page.getByTestId("dynamic-items-state")).toHaveText(
+  await expect(page.locator("#dynamic-items-state")).toHaveText(
     "alpha,beta:disabled,gamma,delta",
   );
 });

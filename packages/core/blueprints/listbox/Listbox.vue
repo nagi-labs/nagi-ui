@@ -7,7 +7,7 @@ export interface ListboxOption {
 </script>
 
 <script setup lang="ts">
-import { useId } from "vue";
+import { useId, type StyleValue } from "vue";
 
 import {
   useListbox,
@@ -20,6 +20,9 @@ const props = withDefaults(
   defineProps<{
     label: string;
     items: readonly ListboxOption[];
+    id?: string;
+    class?: string;
+    style?: StyleValue;
     mode?: ListboxSelectionMode;
     orientation?: ListboxOrientation;
     dir?: MenuDirection;
@@ -32,6 +35,7 @@ const props = withDefaults(
     loop: true,
   },
 );
+defineOptions({ inheritAttrs: false });
 
 const selected = defineModel<readonly string[]>("selected", { default: () => [] });
 
@@ -41,16 +45,34 @@ const listbox = useListbox(props, selected);
 </script>
 
 <template>
-  <div class="n-listbox">
-    <p :id="labelId" class="text">{{ label }}</p>
-    <ul class="list" v-bind="listbox.listboxProps" :aria-labelledby="labelId">
+  <div
+    class="n-listbox"
+    :id="id"
+    :class="props.class"
+    :style="props.style"
+  >
+    <p
+      :id="labelId"
+      class="text"
+    >
+      {{ label }}
+    </p>
+    <ul
+      class="list"
+      v-bind="listbox.listboxProps"
+      :aria-labelledby="labelId"
+    >
       <li
         v-for="item in items"
         :key="item.key"
         class="item"
         v-bind="listbox.optionProps(item)"
       >
-        <span class="icon -check" aria-hidden="true">✓</span>
+        <span
+          class="icon -check"
+          aria-hidden="true"
+          >✓</span
+        >
         <span class="text">{{ item.label }}</span>
       </li>
     </ul>

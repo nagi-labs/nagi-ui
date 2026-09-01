@@ -33,8 +33,8 @@ test("Unovis stays a playground and consumer dependency rather than a core runti
 
 test("the live playground composes Card and Unovis without a Chart proxy", () => {
   assert.match(chartSource, /from "@unovis\/vue"/u);
-  assert.match(chartSource, /\{ Button, Card \} from "@nagi-labs\/nagi-ui\/components"/u);
-  assert.match(chartSource, /<Card[\s\S]*<VisXYContainer[\s\S]*<VisLine/u);
+  assert.match(chartSource, /\{ NButton, NCard \} from "@nagi-labs\/nagi-ui\/components"/u);
+  assert.match(chartSource, /<n-card[\s\S]*<VisXYContainer[\s\S]*<VisLine/u);
   assert.match(chartSource, /data-nagi-unovis/u);
   assert.match(chartSource, /aria-label="Weekly active users:/u);
   assert.match(chartSource, /<table class="table">[\s\S]*<caption class="caption">/u);

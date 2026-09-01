@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, type StyleValue } from "vue";
 
-import { mergeNagiProps, useDatePicker, type AnchorArea } from "@nagi-labs/nagi-ui";
+import { useDatePicker, type AnchorArea } from "@nagi-labs/nagi-ui";
 import { useDatePickerNativeForm } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
@@ -9,6 +9,10 @@ defineOptions({ inheritAttrs: false });
 const props = withDefaults(
   defineProps<{
     label: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
     calendarLabel?: string;
     triggerLabel?: string;
     name?: string;
@@ -54,62 +58,128 @@ useDatePickerNativeForm(formControl, picker);
 </script>
 
 <template>
-  <div v-bind="$attrs" class="n-date-picker">
+  <div
+    :id="props.id"
+    data-scope="date-picker"
+    data-part="root"
+    class="n-date-picker"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
     <span class="text -field-title">{{ label }}</span>
     <div
       v-bind="picker.field.fieldProps"
+      data-scope="date-picker"
+      data-part="field"
       class="field"
       :aria-describedby="picker.isInvalid.value ? `${picker.field.fieldProps.id}-error` : undefined"
     >
-      <template v-for="segment in picker.field.segments.value" :key="segment.key">
+      <template
+        v-for="segment in picker.field.segments.value"
+        :key="segment.key"
+      >
         <span
           v-bind="picker.field.segmentProps(segment)"
+          data-scope="date-picker"
+          data-part="segment"
           class="text -segment"
           :data-literal="segment.type === 'literal' || undefined"
           :data-placeholder="segment.value === undefined || undefined"
-        >{{ segment.text }}</span>
+          >{{ segment.text }}</span
+        >
       </template>
       <button
-        v-bind="mergeNagiProps(picker.popover.triggerProps, {
-          'aria-haspopup': 'dialog',
-          'aria-label': triggerLabel,
-          disabled,
-        })"
+        v-bind="picker.popover.triggerProps"
+        data-scope="date-picker"
+        data-part="trigger"
         type="button"
         class="button -trigger"
-      >▦</button>
-      <input ref="formControl" v-bind="picker.field.formValueProps" class="input -form-value" />
+        :aria-label="triggerLabel"
+        :disabled="disabled"
+      >
+        ▦
+      </button>
+      <input
+        ref="formControl"
+        v-bind="picker.field.formValueProps"
+        data-scope="date-picker"
+        data-part="form-control"
+        class="input -form-value"
+      />
     </div>
     <div
-      v-bind="mergeNagiProps(picker.popover.popoverProps, {
-        role: 'dialog',
-        'aria-label': calendarLabel ?? label,
-      })"
+      v-bind="picker.popover.popoverProps"
+      data-scope="date-picker"
+      data-part="popup"
       class="unit"
+      role="dialog"
       popover
+      :aria-label="calendarLabel ?? label"
     >
       <header class="header">
-        <button v-bind="picker.calendar.previousButtonProps" class="button -previous">‹</button>
-        <h2 class="title" aria-live="polite">{{ picker.calendar.monthLabel.value }}</h2>
-        <button v-bind="picker.calendar.nextButtonProps" class="button -next">›</button>
+        <button
+          v-bind="picker.calendar.previousButtonProps"
+          class="button -previous"
+        >
+          ‹
+        </button>
+        <h2
+          class="title"
+          aria-live="polite"
+        >
+          {{ picker.calendar.monthLabel.value }}
+        </h2>
+        <button
+          v-bind="picker.calendar.nextButtonProps"
+          class="button -next"
+        >
+          ›
+        </button>
       </header>
       <table
         v-bind="picker.calendar.gridProps"
+        data-scope="date-picker"
+        data-part="grid"
         class="table"
-        :aria-describedby="picker.isInvalid.value ? `${picker.field.fieldProps.id}-error` : undefined"
+        :aria-describedby="
+          picker.isInvalid.value ? `${picker.field.fieldProps.id}-error` : undefined
+        "
       >
-        <thead class="thead -head"><tr class="row">
-          <th v-for="weekday in picker.calendar.weekdayLabels.value" :key="weekday" class="cell -head" scope="col">{{ weekday }}</th>
-        </tr></thead>
+        <thead class="thead -head">
+          <tr class="row">
+            <th
+              v-for="weekday in picker.calendar.weekdayLabels.value"
+              :key="weekday"
+              class="cell -head"
+              scope="col"
+            >
+              {{ weekday }}
+            </th>
+          </tr>
+        </thead>
         <tbody class="tbody -dates">
-          <tr v-for="(week, index) in picker.calendar.weeks.value" :key="index" class="row">
+          <tr
+            v-for="(week, index) in picker.calendar.weeks.value"
+            :key="index"
+            class="row"
+          >
             <td
               v-for="cell in week"
               :key="cell.key"
               v-bind="picker.calendar.gridCellProps(cell)"
               class="cell"
               :data-outside-month="cell.outsideMonth || undefined"
-            ><button v-bind="picker.calendar.cellButtonProps(cell)" class="button -day">{{ cell.day }}</button></td>
+            >
+              <button
+                v-bind="picker.calendar.cellButtonProps(cell)"
+                data-scope="date-picker"
+                data-part="day"
+                class="button -day"
+              >
+                {{ cell.day }}
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -119,7 +189,8 @@ useDatePickerNativeForm(formControl, picker);
       :id="`${picker.field.fieldProps.id}-error`"
       class="text -validation"
       role="alert"
-    >{{ validationMessage }}</span>
+      >{{ validationMessage }}</span
+    >
   </div>
 </template>
 
@@ -156,17 +227,30 @@ useDatePickerNativeForm(formControl, picker);
       border-color: var(--nagi-color-focus-ring);
       box-shadow: var(--nagi-shadow-focus);
     }
-    &[aria-disabled="true"] { color: var(--nagi-color-text-disabled); }
-    &[aria-readonly="true"] { background: var(--nagi-color-surface-active); }
-    &[aria-invalid="true"] { border-color: var(--nagi-color-danger); }
+    &[aria-disabled="true"] {
+      color: var(--nagi-color-text-disabled);
+    }
+    &[aria-readonly="true"] {
+      background: var(--nagi-color-surface-active);
+    }
+    &[aria-invalid="true"] {
+      border-color: var(--nagi-color-danger);
+    }
 
     > .text.-segment {
       border-radius: var(--nagi-radius-control);
       outline: none;
       cursor: text;
-      &:focus { background: var(--nagi-color-surface-active); color: var(--nagi-color-text); }
-      &[data-literal="true"] { cursor: default; }
-      &[data-placeholder="true"] { color: var(--nagi-color-text-muted); }
+      &:focus {
+        background: var(--nagi-color-surface-active);
+        color: var(--nagi-color-text);
+      }
+      &[data-literal="true"] {
+        cursor: default;
+      }
+      &[data-placeholder="true"] {
+        color: var(--nagi-color-text-muted);
+      }
     }
 
     > .button.-trigger {
@@ -180,9 +264,17 @@ useDatePickerNativeForm(formControl, picker);
       color: inherit;
       font: inherit;
       cursor: pointer;
-      &:hover:not(:disabled) { background: var(--nagi-color-surface-active); }
-      &:focus-visible { outline: none; box-shadow: var(--nagi-shadow-focus); }
-      &:disabled { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
+      &:hover:not(:disabled) {
+        background: var(--nagi-color-surface-active);
+      }
+      &:focus-visible {
+        outline: none;
+        box-shadow: var(--nagi-shadow-focus);
+      }
+      &:disabled {
+        color: var(--nagi-color-text-disabled);
+        cursor: not-allowed;
+      }
     }
 
     > .input.-form-value {
@@ -212,7 +304,11 @@ useDatePickerNativeForm(formControl, picker);
       align-items: center;
       gap: var(--nagi-space-item-gap);
 
-      > .title { margin: 0; text-align: center; font-size: var(--nagi-font-size-label); }
+      > .title {
+        margin: 0;
+        text-align: center;
+        font-size: var(--nagi-font-size-label);
+      }
       > .button {
         inline-size: var(--nagi-size-control);
         min-block-size: var(--nagi-size-control);
@@ -223,9 +319,18 @@ useDatePickerNativeForm(formControl, picker);
         color: inherit;
         font: inherit;
         cursor: pointer;
-        &:hover:not(:disabled) { background: var(--nagi-color-surface-active); }
-        &:focus-visible { outline: none; border-color: var(--nagi-color-focus-ring); box-shadow: var(--nagi-shadow-focus); }
-        &:disabled { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
+        &:hover:not(:disabled) {
+          background: var(--nagi-color-surface-active);
+        }
+        &:focus-visible {
+          outline: none;
+          border-color: var(--nagi-color-focus-ring);
+          box-shadow: var(--nagi-shadow-focus);
+        }
+        &:disabled {
+          color: var(--nagi-color-text-disabled);
+          cursor: not-allowed;
+        }
       }
     }
 
@@ -250,11 +355,22 @@ useDatePickerNativeForm(formControl, picker);
           color: inherit;
           font: inherit;
           cursor: pointer;
-          &:hover:not(:disabled) { background: var(--nagi-color-surface-active); }
-          &:focus-visible { outline: none; border-color: var(--nagi-color-focus-ring); box-shadow: var(--nagi-shadow-focus); }
-          &:disabled { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
+          &:hover:not(:disabled) {
+            background: var(--nagi-color-surface-active);
+          }
+          &:focus-visible {
+            outline: none;
+            border-color: var(--nagi-color-focus-ring);
+            box-shadow: var(--nagi-shadow-focus);
+          }
+          &:disabled {
+            color: var(--nagi-color-text-disabled);
+            cursor: not-allowed;
+          }
         }
-        &[data-outside-month] > .button.-day { color: var(--nagi-color-text-muted); }
+        &[data-outside-month] > .button.-day {
+          color: var(--nagi-color-text-muted);
+        }
         &[aria-selected="true"] > .button.-day {
           background: var(--nagi-color-surface-accent);
           color: var(--nagi-color-text);
@@ -272,7 +388,13 @@ useDatePickerNativeForm(formControl, picker);
     outline: 2px solid Highlight;
     outline-offset: var(--n-border-width-2);
   }
-  .n-date-picker > .unit > .table > .tbody.-dates > .row > .cell[aria-selected="true"] > .button.-day {
+  .n-date-picker
+    > .unit
+    > .table
+    > .tbody.-dates
+    > .row
+    > .cell[aria-selected="true"]
+    > .button.-day {
     outline: 2px solid CanvasText;
   }
 }

@@ -1,29 +1,49 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, type StyleValue } from "vue";
 
-import { mergeNagiProps, useOTPField } from "@nagi-labs/nagi-ui";
+import { useOTPField } from "@nagi-labs/nagi-ui";
 import { useNativeValueReset } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<{
-  label: string;
-  length?: number;
-  kind?: "numeric" | "alphanumeric";
-  name?: string;
-  form?: string;
-  disabled?: boolean;
-  readOnly?: boolean;
-  required?: boolean;
-  invalid?: boolean;
-}>(), {
-  length: 6,
-  kind: "numeric",
-  disabled: false,
-  readOnly: false,
-  required: false,
-  invalid: false,
-});
+const props = withDefaults(
+  defineProps<{
+    label: string;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    length?: number;
+    kind?: "numeric" | "alphanumeric";
+    name?: string;
+    form?: string;
+    disabled?: boolean;
+    readOnly?: boolean;
+    required?: boolean;
+    invalid?: boolean;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
+    ariaDetails?: string;
+    ariaErrormessage?: string;
+    enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+    autocapitalize?: "none" | "off" | "on" | "sentences" | "words" | "characters";
+    autofocus?: boolean;
+    spellcheck?: boolean;
+    tabindex?: number;
+  }>(),
+  {
+    length: 6,
+    kind: "numeric",
+    disabled: false,
+    readOnly: false,
+    required: false,
+    invalid: false,
+  },
+);
+const emit = defineEmits<{
+  input: [event: Event];
+  compositionstart: [event: CompositionEvent];
+  compositionend: [event: CompositionEvent];
+}>();
 
 const model = defineModel<string>({ default: "" });
 const input = ref<HTMLInputElement | null>(null);
@@ -39,16 +59,43 @@ useNativeValueReset(input, model);
 </script>
 
 <template>
-  <label class="n-otp-field">
+  <label
+    class="n-otp-field"
+    :class="props.class"
+    :style="props.style"
+  >
     <span class="value -prompt">{{ label }}</span>
-    <span class="field" :style="fieldStyle">
-      <input ref="input" v-bind="mergeNagiProps(field.otpInputProps, $attrs)" class="input" />
-      <span class="unit -digits" aria-hidden="true">
+    <span
+      class="field"
+      :style="fieldStyle"
+    >
+      <input
+        ref="input"
+        v-bind="field.otpInputProps"
+        @input="emit('input', $event)"
+        @compositionstart="emit('compositionstart', $event)"
+        @compositionend="emit('compositionend', $event)"
+        class="input"
+        :aria-labelledby="ariaLabelledby"
+        :aria-describedby="ariaDescribedby"
+        :aria-details="ariaDetails"
+        :aria-errormessage="ariaErrormessage"
+        :enterkeyhint="enterkeyhint"
+        :autocapitalize="autocapitalize"
+        :autofocus="autofocus"
+        :spellcheck="spellcheck"
+        :tabindex="tabindex"
+      />
+      <span
+        class="unit -digits"
+        aria-hidden="true"
+      >
         <span
           v-for="(_cell, index) in field.cells.value"
           :key="index"
           class="cell"
-        >{{ field.cells.value[index] || '·' }}</span>
+          >{{ field.cells.value[index] || "·" }}</span
+        >
       </span>
     </span>
   </label>
@@ -60,7 +107,11 @@ useNativeValueReset(input, model);
   gap: var(--nagi-space-item-gap);
   color: var(--nagi-color-text);
 
-  > .value.-prompt { color: var(--nagi-color-text-muted); font-size: var(--nagi-font-size-label); font-weight: 650; }
+  > .value.-prompt {
+    color: var(--nagi-color-text-muted);
+    font-size: var(--nagi-font-size-label);
+    font-weight: 650;
+  }
 
   > .field {
     position: relative;
@@ -101,8 +152,13 @@ useNativeValueReset(input, model);
       }
     }
 
-    &:focus-within > .unit.-digits > .cell { border-color: var(--nagi-color-focus-ring); }
-    &:focus-within { border-radius: var(--nagi-radius-control); box-shadow: var(--nagi-shadow-focus); }
+    &:focus-within > .unit.-digits > .cell {
+      border-color: var(--nagi-color-focus-ring);
+    }
+    &:focus-within {
+      border-radius: var(--nagi-radius-control);
+      box-shadow: var(--nagi-shadow-focus);
+    }
     &:has(> :is(.input:invalid, .input[aria-invalid="true"])) > .unit.-digits > .cell {
       border-color: var(--nagi-color-danger);
     }
@@ -110,11 +166,15 @@ useNativeValueReset(input, model);
       background: var(--nagi-color-surface-active);
       color: var(--nagi-color-text-disabled);
     }
-    &:has(> .input:read-only) > .unit.-digits > .cell { background: var(--nagi-color-surface-active); }
+    &:has(> .input:read-only) > .unit.-digits > .cell {
+      background: var(--nagi-color-surface-active);
+    }
   }
 }
 
 @media (forced-colors: active) {
-  .n-otp-field > .field:focus-within { outline: 2px solid Highlight; }
+  .n-otp-field > .field:focus-within {
+    outline: 2px solid Highlight;
+  }
 }
 </style>

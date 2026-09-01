@@ -8,29 +8,57 @@ export interface StepperItem {
 </script>
 
 <script setup lang="ts">
-defineProps<{
+import type { StyleValue } from "vue";
+import { useStepper } from "@nagi-labs/nagi-ui";
+
+defineOptions({ inheritAttrs: false });
+
+const props = defineProps<{
   label: string;
   items: readonly StepperItem[];
+  id?: string;
+  class?: string;
+  style?: StyleValue;
+  title?: string;
 }>();
 
 const currentKey = defineModel<string>("currentKey", { required: true });
+const stepper = useStepper<StepperItem>(currentKey);
 </script>
 
 <template>
-  <nav class="n-stepper" :aria-label="label">
+  <nav
+    class="n-stepper"
+    :class="props.class"
+    :style="props.style"
+    :id="props.id"
+    :title="props.title"
+    :aria-label="props.label"
+  >
     <ol class="list">
-      <li v-for="(item, index) in items" :key="item.key" class="item">
+      <li
+        v-for="(item, index) in items"
+        :key="item.key"
+        class="item"
+      >
         <button
           class="button"
           type="button"
-          :aria-current="item.key === currentKey ? 'step' : undefined"
+          :aria-current="stepper.isCurrent(item) ? 'step' : undefined"
           :disabled="item.disabled"
-          @click="currentKey = item.key"
+          @click="stepper.select(item)"
         >
-          <span class="icon" aria-hidden="true">{{ index + 1 }}</span>
+          <span
+            class="icon"
+            aria-hidden="true"
+            >{{ index + 1 }}</span
+          >
           <span class="unit">
             <span class="title">{{ item.label }}</span>
-            <span v-if="item.description" class="text">
+            <span
+              v-if="item.description"
+              class="text"
+            >
               {{ item.description }}
             </span>
           </span>

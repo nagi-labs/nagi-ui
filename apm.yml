@@ -1,0 +1,17 @@
+name: nagi-ui
+version: 0.1.0
+description: Shared coding-agent configuration for Nagi UI
+author: Yoshinori Ishii
+targets:
+  - agent-skills
+  - claude
+  - codex
+  - copilot
+dependencies:
+  apm:
+    - git: nagi-labs/nagi-css#afc9447ca094319819017ea0163951b718c9847c
+      skills:
+        - nagi-css
+  mcp: []
+includes: auto
+scripts: {}

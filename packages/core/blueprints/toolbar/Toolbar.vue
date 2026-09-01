@@ -11,20 +11,27 @@ export interface ToolbarItem {
 </script>
 
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import { useToolbar } from "@nagi-labs/nagi-ui";
 
-const props = withDefaults(defineProps<{
-  items: readonly ToolbarItem[];
-  label?: string;
-  orientation?: "horizontal" | "vertical";
-  dir?: "ltr" | "rtl";
-  loop?: boolean;
-}>(), {
-  label: "Toolbar",
-  orientation: "horizontal",
-  dir: "ltr",
-  loop: true,
-});
+const props = withDefaults(
+  defineProps<{
+    items: readonly ToolbarItem[];
+    class?: string;
+    style?: StyleValue;
+    label?: string;
+    orientation?: "horizontal" | "vertical";
+    dir?: "ltr" | "rtl";
+    loop?: boolean;
+  }>(),
+  {
+    label: "Toolbar",
+    orientation: "horizontal",
+    dir: "ltr",
+    loop: true,
+  },
+);
+defineOptions({ inheritAttrs: false });
 
 const emit = defineEmits<{ activate: [item: ToolbarItem] }>();
 const toolbar = useToolbar(props);
@@ -34,10 +41,15 @@ const toolbar = useToolbar(props);
   <div
     v-bind="toolbar.toolbarProps"
     class="n-toolbar"
+    :class="props.class"
+    :style="props.style"
     :data-orientation="orientation"
     :dir="dir"
   >
-    <template v-for="item in items" :key="item.key">
+    <template
+      v-for="item in items"
+      :key="item.key"
+    >
       <a
         v-if="item.href && !item.disabled"
         v-bind="toolbar.itemProps(item)"
@@ -47,7 +59,8 @@ const toolbar = useToolbar(props);
         :rel="item.rel"
         :download="item.download"
         @click="emit('activate', item)"
-      >{{ item.label }}</a>
+        >{{ item.label }}</a
+      >
       <button
         v-else
         v-bind="toolbar.itemProps(item)"
@@ -55,7 +68,9 @@ const toolbar = useToolbar(props);
         type="button"
         :disabled="item.disabled"
         @click="emit('activate', item)"
-      >{{ item.label }}</button>
+      >
+        {{ item.label }}
+      </button>
     </template>
   </div>
 </template>
@@ -71,7 +86,10 @@ const toolbar = useToolbar(props);
   border-radius: var(--nagi-radius-control);
   background: var(--nagi-color-surface);
 
-  &[data-orientation="vertical"] { flex-direction: column; align-items: stretch; }
+  &[data-orientation="vertical"] {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
   > :is(.link, .button) {
     min-block-size: var(--nagi-size-control);
@@ -84,13 +102,23 @@ const toolbar = useToolbar(props);
     text-decoration: none;
     cursor: pointer;
 
-    &:hover:not(:disabled) { background: var(--nagi-color-surface-active); }
-    &:focus-visible { outline: none; box-shadow: var(--nagi-shadow-focus); }
-    &:disabled { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
+    &:hover:not(:disabled) {
+      background: var(--nagi-color-surface-active);
+    }
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--nagi-shadow-focus);
+    }
+    &:disabled {
+      color: var(--nagi-color-text-disabled);
+      cursor: not-allowed;
+    }
   }
 }
 
 @media (forced-colors: active) {
-  .n-toolbar > :is(.link, .button):focus-visible { outline: 2px solid Highlight; }
+  .n-toolbar > :is(.link, .button):focus-visible {
+    outline: 2px solid Highlight;
+  }
 }
 </style>

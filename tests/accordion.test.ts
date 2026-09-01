@@ -15,12 +15,14 @@ function normalizeSsrHtml(html: string): string {
   return html.replace(/<!--(?:\[-->|\]-->|-->)?/g, "");
 }
 
-async function loadAccordion(): Promise<{ server: ViteDevServer; component: Component }> {
+async function loadAccordion(): Promise<{ server: ViteDevServer; component: Component; cacheDir: string }> {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-accordion-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: repo,
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-accordion-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -30,7 +32,7 @@ async function loadAccordion(): Promise<{ server: ViteDevServer; component: Comp
       `/@fs${path.join(repo, "packages/core/blueprints/accordion/Accordion.vue")}`,
     )
   ).default as Component;
-  return { server, component };
+  return { server, component, cacheDir };
 }
 
 const items = [
@@ -40,7 +42,7 @@ const items = [
 ] as const;
 
 test("SSR emits native exclusive details anatomy and one normalized initial open item", async () => {
-  const { server, component } = await loadAccordion();
+  const { server, component, cacheDir } = await loadAccordion();
   try {
     const html = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(component, { items, defaultOpenKeys: ["shipping", "returns"] }),
@@ -61,11 +63,12 @@ test("SSR emits native exclusive details anatomy and one normalized initial open
     assert.doesNotMatch(html, /role="(?:button|region)"/, "native semantics are not duplicated with ARIA roles");
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
 test("multiple mode omits the native group name and preserves all initial open items", async () => {
-  const { server, component } = await loadAccordion();
+  const { server, component, cacheDir } = await loadAccordion();
   try {
     const html = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(component, {
@@ -79,11 +82,12 @@ test("multiple mode omits the native group name and preserves all initial open i
     assert.equal(html.match(/ open(?:="")?/g)?.length, 2);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
 test("content-only slots keep the owned summary and panel wrappers", async () => {
-  const { server, component } = await loadAccordion();
+  const { server, component, cacheDir } = await loadAccordion();
   try {
     const html = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(
@@ -100,6 +104,7 @@ test("content-only slots keep the owned summary and panel wrappers", async () =>
     assert.match(html, /<section class="section"[^>]*><ul><li>Tracked<\/li>/);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 

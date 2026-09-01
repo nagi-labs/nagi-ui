@@ -22,11 +22,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 async function renderPagination(props: Record<string, unknown>) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-pagination-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-pagination-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -41,6 +43,7 @@ async function renderPagination(props: Record<string, unknown>) {
     })));
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 
@@ -55,7 +58,7 @@ test("Pagination SSR uses native navigation, list, links, and buttons", async ()
     ],
   });
 
-  assert.match(html, /^<nav class="n-pagination" aria-label="Search results">/u);
+  assert.match(html, /^<nav class="n-pagination"[^>]*aria-label="Search results">/u);
   assert.match(html, /<ol class="list">/u);
   assert.equal(html.match(/<li class="item">/gu)?.length, 3);
   assert.match(html, /<a class="link" href="\/search\?page=1">1<\/a>/u);
@@ -95,7 +98,7 @@ test("Pagination does not invent a current page for an invalid controlled key", 
   assert.doesNotMatch(html, /aria-current="page"/u);
 });
 
-test("Pagination source keeps its controlled event and schema contract local", () => {
+test("Pagination source delegates controlled selection and keeps its schema visible", () => {
   const source = fs.readFileSync(sourcePath, "utf8");
   const manifest = new Set<string>(nagiThemeTokens);
 
@@ -106,8 +109,8 @@ test("Pagination source keeps its controlled event and schema contract local", (
   assert.match(source, /disabled\?: boolean/u);
   assert.match(source, /defineModel<string>\("currentKey", \{ required: true \}\)/u);
   assert.match(source, /select: \[item: PaginationItem\]/u);
-  assert.match(source, /currentKey\.value = item\.key;\s*emit\("select", item\)/u);
-  assert.match(source, /function selectLink\(item: PaginationItem\) \{\s*emit\("select", item\)/u);
+  assert.match(source, /usePagination<PaginationItem>/u);
+  assert.doesNotMatch(source, /function select(?:Button|Link)/u);
   assert.doesNotMatch(source, /preventDefault|@click\.prevent/u, "native link navigation must remain intact");
   assert.doesNotMatch(source, /<slot\b|Teleport|provide\(|inject\(|asChild|data-state/u);
   assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|document|window)\b/u);

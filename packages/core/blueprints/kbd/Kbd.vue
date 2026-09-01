@@ -1,11 +1,21 @@
 <script setup lang="ts">
-defineProps<{
+import { useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
+const { label } = defineProps<{
   label: string;
 }>();
+
+const attrs = useAttrs();
 </script>
 
 <template>
-  <kbd class="n-kbd">{{ label }}</kbd>
+  <kbd
+    class="n-kbd"
+    v-bind="attrs"
+    >{{ label }}</kbd
+  >
 </template>
 
 <style scoped>

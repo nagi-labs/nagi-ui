@@ -13,12 +13,15 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
 
 import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
+import { createElementRegistry } from "./element-registry.ts";
+import { createSegmentDigitBuffer, localeDigit } from "./segmented-field.ts";
 
 export type DateFieldSegmentType = "year" | "month" | "day" | "literal";
 export type DateFieldDirection = "ltr" | "rtl";
@@ -46,6 +49,7 @@ export interface DateFieldProps {
 }
 
 export interface DateFieldSegmentProps {
+  ref?: (element: Element | ComponentPublicInstance | null) => void;
   id?: string;
   role?: "spinbutton";
   tabindex?: 0 | -1;
@@ -193,10 +197,8 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
   let pendingModelWrite = false;
   let pendingModelValue: string | null = null;
   let writeRevision = 0;
-  let ownerDocument: Document | null = null;
-  let buffer = "";
-  let bufferedType: EditableDateFieldSegmentType | null = null;
-  let bufferTask: ReturnType<typeof setTimeout> | undefined;
+  const segmentElements = createElementRegistry<EditableDateFieldSegmentType>();
+  const digitBuffer = createSegmentDigitBuffer<EditableDateFieldSegmentType>();
 
   function locale(): string {
     return toValue(options.locale) ?? "en-US";
@@ -218,18 +220,6 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     return toValue(options.readOnly) ?? false;
   }
 
-  function clearBuffer() {
-    buffer = "";
-    bufferedType = null;
-    if (bufferTask !== undefined) clearTimeout(bufferTask);
-    bufferTask = undefined;
-  }
-
-  function resetBufferLater() {
-    if (bufferTask !== undefined) clearTimeout(bufferTask);
-    bufferTask = setTimeout(clearBuffer, 1000);
-  }
-
   function syncFromModel(value: string | null) {
     const parsed = parseIsoDate(value);
     const next = dateParts(parsed);
@@ -238,7 +228,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     parts.day = next.day;
     incompleteInvalid.value = value !== null && parsed === null;
     forcedInvalid.value = false;
-    clearBuffer();
+    digitBuffer.clear();
   }
 
   function writeModel(next: string | null) {
@@ -285,7 +275,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     forcedInvalid.value = outOfRange(next);
   }
 
-  watch(options.value, (value) => {
+  function reconcileModelValue(value: string | null) {
     if (modelWrite) {
       pendingModelWrite = false;
       return;
@@ -296,7 +286,9 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     }
     pendingModelWrite = false;
     syncFromModel(value);
-  }, { flush: "sync" });
+  }
+
+  watch(options.value, reconcileModelValue, { flush: "sync" });
 
   function maximumFor(type: EditableDateFieldSegmentType): number {
     if (type === "year") return 9999;
@@ -338,7 +330,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
   }
 
   function focus(type: EditableDateFieldSegmentType) {
-    ownerDocument?.getElementById(segmentId(type))?.focus({ preventScroll: true });
+    segmentElements.get(type)?.focus({ preventScroll: true });
   }
 
   function focusAdjacent(type: EditableDateFieldSegmentType, delta: -1 | 1) {
@@ -346,15 +338,6 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     const index = editable.indexOf(type);
     const next = editable[index + delta];
     if (next) focus(next);
-  }
-
-  function localeDigit(key: string): string | null {
-    if (/^[0-9]$/u.test(key)) return key;
-    const formatter = new Intl.NumberFormat(locale(), { useGrouping: false });
-    for (let digit = 0; digit <= 9; digit += 1) {
-      if (formatter.format(digit) === key) return String(digit);
-    }
-    return null;
   }
 
   function setSegment(type: EditableDateFieldSegmentType, value: number | undefined) {
@@ -366,22 +349,16 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
   }
 
   function typeDigit(type: EditableDateFieldSegmentType, digit: string) {
-    if (bufferedType !== type) buffer = "";
-    bufferedType = type;
-    let nextBuffer = `${buffer}${digit}`;
     const maximum = maximumFor(type);
     const width = type === "year" ? 4 : 2;
-    if (Number(nextBuffer) > maximum || nextBuffer.length > width) nextBuffer = digit;
-    const next = Number(nextBuffer);
-    if (next < minimumFor(type) || next > maximum) return;
-    buffer = nextBuffer;
-    setSegment(type, next);
-    resetBufferLater();
-
-    if (buffer.length >= width || Number(`${buffer}0`) > maximum) {
-      clearBuffer();
-      focusAdjacent(type, 1);
-    }
+    const result = digitBuffer.consume(type, digit, {
+      minimum: minimumFor(type),
+      maximum,
+      width,
+    });
+    if (!result) return;
+    setSegment(type, result.value);
+    if (result.complete) focusAdjacent(type, 1);
   }
 
   function cycle(type: EditableDateFieldSegmentType, amount: -1 | 1) {
@@ -410,7 +387,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
 
   function onKeydown(type: EditableDateFieldSegmentType, event: KeyboardEvent) {
     if (disabled() || readOnly()) return;
-    const digit = localeDigit(event.key);
+    const digit = localeDigit(locale(), event.key);
     if (digit !== null && !event.altKey && !event.ctrlKey && !event.metaKey) {
       event.preventDefault();
       typeDigit(type, digit);
@@ -419,38 +396,38 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     switch (event.key) {
       case "ArrowUp":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         cycle(type, 1);
         break;
       case "ArrowDown":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         cycle(type, -1);
         break;
       case "ArrowLeft":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         focusAdjacent(type, direction() === "rtl" ? 1 : -1);
         break;
       case "ArrowRight":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         focusAdjacent(type, direction() === "rtl" ? -1 : 1);
         break;
       case "Home":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         setSegment(type, minimumFor(type));
         break;
       case "End":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         setSegment(type, maximumFor(type));
         break;
       case "Backspace":
       case "Delete":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         setSegment(type, undefined);
         break;
     }
@@ -524,7 +501,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
       if (next && (event.currentTarget as HTMLElement).contains(next)) return;
       const hasAny = parts.year !== undefined || parts.month !== undefined || parts.day !== undefined;
       incompleteInvalid.value = hasAny && candidate() === null;
-      clearBuffer();
+      digitBuffer.clear();
     },
   };
 
@@ -533,6 +510,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     const type = segment.type;
     const value = parts[type];
     return {
+      ref: segmentElements.refFor(type),
       id: segmentId(type),
       role: "spinbutton",
       tabindex: disabled() ? -1 : 0,
@@ -548,11 +526,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
       inputmode: "numeric",
       spellcheck: false,
       onClick(event) {
-        ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
         (event.currentTarget as HTMLElement).focus();
-      },
-      onFocus(event) {
-        ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
       },
       onBeforeinput(event) {
         event.preventDefault();
@@ -563,7 +537,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
         }
         if (event.inputType !== "insertText" || !event.data) return;
         for (const character of event.data) {
-          const digit = localeDigit(character);
+          const digit = localeDigit(locale(), character);
           if (digit !== null) typeDigit(type, digit);
         }
       },
@@ -632,7 +606,6 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     onInvalid(event) {
       forcedInvalid.value = true;
       event.preventDefault();
-      ownerDocument = (event.currentTarget as HTMLInputElement | null)?.ownerDocument ?? ownerDocument;
       focusFirst();
     },
   };
@@ -646,7 +619,10 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     useNativeCustomValidity(options.formControl, validationMessage);
   }
 
-  onScopeDispose(clearBuffer);
+  onScopeDispose(() => {
+    digitBuffer.clear();
+    segmentElements.clear();
+  });
 
   return {
     value: options.value,

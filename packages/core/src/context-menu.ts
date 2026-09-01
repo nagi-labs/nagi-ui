@@ -7,6 +7,7 @@ import {
   useId,
   watch,
   type CSSProperties,
+  type ComponentPublicInstance,
   type ComputedRef,
   type Ref,
 } from "vue";
@@ -22,6 +23,8 @@ export interface UseContextMenuOptions<Item, Key extends string = string>
 }
 
 export interface ContextMenuTriggerProps {
+  /** Vue template ref callback; it does not render a DOM attribute. */
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   onClickCapture: (event: MouseEvent) => void;
   onContextmenu: (event: MouseEvent) => void;
   onPointerdown: (event: PointerEvent) => void;
@@ -30,8 +33,14 @@ export interface ContextMenuTriggerProps {
   onPointercancel: (event: PointerEvent) => void;
 }
 
+export interface ContextMenuAnchorProps {
+  /** Vue template ref callback; it does not render a DOM attribute. */
+  ref: (element: Element | ComponentPublicInstance | null) => void;
+}
+
 export interface ContextMenuBinding<Item, Key extends string = string> {
   menu: UseMenuReturn<Item, Key>;
+  anchorProps: ContextMenuAnchorProps;
   contextTriggerProps: ContextMenuTriggerProps;
   anchorStyle: ComputedRef<CSSProperties>;
   positionStyle: ComputedRef<CSSProperties>;
@@ -103,6 +112,10 @@ function createContextMenu<Item, Key extends string>(
       lastRestoreTarget?.focus({ preventScroll: true });
     },
   });
+
+  const anchorProps: ContextMenuAnchorProps = {
+    ref: (element) => setAnchorElement(element as HTMLElement | null),
+  };
 
   function syncAnchor(isOpen = menu.open.value) {
     detachAnchor?.();
@@ -217,7 +230,7 @@ function createContextMenu<Item, Key extends string>(
 
   if (instance) onBeforeUnmount(dispose);
 
-  watch(menu.open, (isOpen) => {
+  function reconcileOpenSession(isOpen: boolean) {
     if (isOpen) {
       commit(pending ?? fallbackInvocation());
       if (press.kind === "opening") {
@@ -242,7 +255,9 @@ function createContextMenu<Item, Key extends string>(
     stopFollowingTarget();
     detachAnchor?.();
     detachAnchor = null;
-  }, { flush: "sync", immediate: true });
+  }
+
+  watch(menu.open, reconcileOpenSession, { flush: "sync", immediate: true });
 
   function setContextElement(element: HTMLElement | null) {
     contextElement = element;
@@ -256,6 +271,7 @@ function createContextMenu<Item, Key extends string>(
 
   return {
     menu,
+    anchorProps,
     setContextElement,
     setAnchorElement,
     anchorStyle: computed(() => ({
@@ -270,6 +286,7 @@ function createContextMenu<Item, Key extends string>(
     })),
     positionStyle: computed(() => anchor.positionedStyle),
     contextTriggerProps: {
+      ref: (element) => setContextElement(element as HTMLElement | null),
       onClickCapture(event) {
         if (!suppressClick) return;
         suppressClick = false;

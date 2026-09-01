@@ -27,10 +27,10 @@ test("Unovis renders inside Card with token bridge and non-color series cues", a
       unovis: style.getPropertyValue("--vis-color0").trim(),
     };
   });
-  expect(light).toEqual({ series: "#16768b", unovis: "#16768b" });
+  expect(light).toEqual({ series: "#315fbd", unovis: "#315fbd" });
 
-  await page.getByTestId("chart-theme-toggle").click();
-  await expect(page.getByTestId("chart-theme-toggle")).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#chart-theme-toggle").click();
+  await expect(page.locator("#chart-theme-toggle")).toHaveAttribute("aria-pressed", "true");
   await expect(bridge).toHaveCSS("color", "rgb(245, 251, 252)");
   expect(
     await bridge.evaluate((element) =>

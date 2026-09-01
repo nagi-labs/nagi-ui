@@ -1,29 +1,40 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, useAttrs } from "vue";
 
-import { useNativeCheckbox } from "@nagi-labs/nagi-ui";
+import { mergeElementProps, useNativeCheckbox } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    name?: string;
-    value?: string;
-    form?: string;
-    disabled?: boolean;
-    required?: boolean;
-  }>(),
-  {
-    value: "on",
-    disabled: false,
-    required: false,
-  },
-);
+const {
+  label,
+  value = "on",
+  disabled = false,
+  required = false,
+} = defineProps<{
+  label: string;
+  value?: string;
+  disabled?: boolean;
+  required?: boolean;
+}>();
 
+const attrs = useAttrs();
 const checked = defineModel<boolean>({ default: false });
 const indeterminate = defineModel<boolean>("indeterminate", { default: false });
 const input = ref<HTMLInputElement | null>(null);
+const inputProps = computed(() =>
+  mergeElementProps(attrs, { type: "checkbox", value, disabled, required }),
+);
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+  keydown: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+}>();
 
 useNativeCheckbox(input, checked, indeterminate);
 </script>
@@ -31,16 +42,18 @@ useNativeCheckbox(input, checked, indeterminate);
 <template>
   <label class="n-checkbox">
     <input
-      v-bind="$attrs"
       ref="input"
       v-model="checked"
       class="input"
-      type="checkbox"
-      :name="name"
-      :form="form"
-      :value="value"
-      :disabled="disabled"
-      :required="required"
+      v-bind="inputProps"
+      @blur="emit('blur', $event)"
+      @change="emit('change', $event)"
+      @click="emit('click', $event)"
+      @focus="emit('focus', $event)"
+      @input="emit('input', $event)"
+      @invalid="emit('invalid', $event)"
+      @keydown="emit('keydown', $event)"
+      @keyup="emit('keyup', $event)"
     />
     <span class="unit">{{ label }}</span>
   </label>
@@ -82,7 +95,6 @@ useNativeCheckbox(input, checked, indeterminate);
       outline: 1px solid var(--nagi-color-danger);
       outline-offset: var(--n-border-width-1);
     }
-
   }
 
   > .unit {

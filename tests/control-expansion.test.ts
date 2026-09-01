@@ -15,7 +15,7 @@ test("expandable default controls ship one discoverable low-level recipe", () =>
     "listbox/Listbox.vue": ["useListbox(props, selected)", "useListbox<ListboxOption>"],
     "tabs/Tabs.vue": ["useTabs(props, selectedModel)", "useTabs<TabsItem>"],
     "combobox/Combobox.vue": [
-      "useCombobox(props, inputElement, inputValue, selected)",
+      "useCombobox(props, inputValue, selected)",
       "useCombobox<ComboboxOption>",
     ],
   } as const;

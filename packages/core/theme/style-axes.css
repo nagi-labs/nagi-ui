@@ -1,0 +1,87 @@
+/* BTN-STYLE-04: Component-local public axes. These values must be declared on the component
+ * that owns them; they intentionally do not create descendant style context. */
+@property --button-tone {
+  syntax: "neutral | accent | danger";
+  inherits: false;
+  initial-value: neutral;
+}
+
+@property --button-appearance {
+  syntax: "outlined | solid | ghost";
+  inherits: false;
+  initial-value: outlined;
+}
+
+@property --button-shape {
+  syntax: "square | rounded | pill";
+  inherits: false;
+  initial-value: rounded;
+}
+
+@property --button-size {
+  syntax: "small | medium | large";
+  inherits: false;
+  initial-value: medium;
+}
+
+/* Build-time expansions are component-local too. Registering the private
+ * outputs prevents an axis compiled on an ancestor from leaking indirectly. */
+@property --_button-tone-color {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-tone-border {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-tone-surface {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-tone-contrast {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-background {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-border-color {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-color {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-hover-background {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-radius {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-min-block-size {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-padding {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --_button-font-size {
+  syntax: "*";
+  inherits: false;
+}

@@ -19,11 +19,13 @@ import {
   useId,
   watch,
   watchEffect,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
 
+import { createElementRegistry } from "./element-registry.ts";
 import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
 
 export interface CalendarCell {
@@ -67,6 +69,7 @@ export interface CalendarGridCellProps {
 }
 
 export interface CalendarCellButtonProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   type: "button";
   tabindex: 0 | -1;
@@ -179,7 +182,7 @@ export interface CalendarBinding {
   isInvalid: ComputedRef<boolean>;
   validationMessage: ComputedRef<string>;
   select: (cell: CalendarCell) => boolean;
-  focusDate: (value: string) => void;
+  focusDate: (value: string, root?: Document | ShadowRoot) => void;
   reset: (value: string | null) => void;
 }
 
@@ -202,7 +205,7 @@ export interface RangeCalendarBinding {
   anchor: Readonly<Ref<string | null>>;
   announcement: ComputedRef<string>;
   select: (cell: RangeCalendarCell) => boolean;
-  focusDate: (value: string) => void;
+  focusDate: (value: string, root?: Document | ShadowRoot) => void;
   reset: (value: RangeCalendarValue | null) => void;
 }
 
@@ -310,7 +313,8 @@ function createNavigation(
   // Vue's deep Ref unwrapping cannot preserve classes with private fields.
   const visible = shallowRef<CalendarDate>(startOfMonth(initial));
   const focused = shallowRef<CalendarDate>(focusableDateInGrid(options, initial, initial));
-  let ownerDocument: Document | null = null;
+  let ownerRoot: Document | ShadowRoot | null = null;
+  const cellElements = createElementRegistry<string>();
 
   function formatter(date: CalendarDate, format: Intl.DateTimeFormatOptions): string {
     return new Intl.DateTimeFormat(localeOf(options), {
@@ -338,9 +342,11 @@ function createNavigation(
 
   function focusElement(date: CalendarDate) {
     void nextTick(() => {
-      const documentTarget = ownerDocument
-        ?? (typeof document === "undefined" ? null : document);
-      documentTarget?.getElementById(cellId(date))?.focus({ preventScroll: true });
+      const id = cellId(date);
+      const target = cellElements.get(date.toString())
+        ?? ownerRoot?.getElementById(id)
+        ?? null;
+      target?.focus({ preventScroll: true });
     });
   }
 
@@ -356,7 +362,8 @@ function createNavigation(
     if (moveDom) focusElement(candidate);
   }
 
-  function focusDate(value: string) {
+  function focusDate(value: string, root?: Document | ShadowRoot) {
+    if (root) ownerRoot = root;
     const parsed = parseIso(value);
     if (parsed) setFocused(parsed);
   }
@@ -477,6 +484,7 @@ function createNavigation(
     pointerenter?: (event: PointerEvent) => void,
   ): CalendarCellButtonProps {
     return {
+      ref: cellElements.refFor(date.toString()),
       id: cellId(date),
       type: "button",
       get tabindex() {
@@ -488,12 +496,10 @@ function createNavigation(
       "aria-label": formatter(date, { dateStyle: "full" }),
       ...(isSameDay(date, today(timeZoneOf(options))) ? { "aria-current": "date" as const } : {}),
       onClick(event) {
-        ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
         focused.value = date;
         select(event);
       },
-      onFocus(event) {
-        ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
+      onFocus() {
         focused.value = date;
       },
       onKeydown: (event) => onKeydown(date, event),
@@ -501,17 +507,17 @@ function createNavigation(
     };
   }
 
-  watchEffect(
-    () => {
-      const previous = focused.value;
-      if (!unavailable(options, previous)) return;
-      const next = focusableDateInGrid(options, visible.value, previous);
-      const moveDom = ownerDocument?.activeElement?.id === cellId(previous);
-      focused.value = next;
-      if (moveDom && !unavailable(options, next)) focusElement(next);
-    },
-    { flush: "sync" },
-  );
+  function reconcileFocusedDate() {
+    const previous = focused.value;
+    cellElements.prune(dates.value.flat().map((date) => date.toString()));
+    if (!unavailable(options, previous)) return;
+    const next = focusableDateInGrid(options, visible.value, previous);
+    const moveDom = cellElements.get(previous.toString())?.matches(":focus") === true;
+    focused.value = next;
+    if (moveDom && !unavailable(options, next)) focusElement(next);
+  }
+
+  watchEffect(reconcileFocusedDate, { flush: "sync" });
 
   return {
     id,
@@ -594,13 +600,15 @@ function createCalendar(options: UseCalendarOptions): CalendarBinding {
     ? toValue(options.validationMessage) ?? "Choose an available date."
     : "");
 
-  watch(options.value, (value) => {
+  function syncCalendarFromValue(value: string | null) {
     const date = parseIso(value);
     if (!date) return;
     navigation.visible.value = startOfMonth(date);
     navigation.focused.value = focusableDateInGrid(options, date, date);
     forcedInvalid.value = false;
-  }, { flush: "sync" });
+  }
+
+  watch(options.value, syncCalendarFromValue, { flush: "sync" });
 
   function cell(date: CalendarDate): CalendarCell {
     const selected = parsedValue.value !== null && isSameDay(date, parsedValue.value);
@@ -728,18 +736,19 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
     ? toValue(options.validationMessage) ?? "Choose an available date range."
     : "");
 
+  function syncRangeCalendarFromValue() {
+    const range = orderedRange(options.value.value);
+    anchorDate.value = null;
+    previewDate.value = null;
+    forcedInvalid.value = false;
+    if (!range) return;
+    navigation.visible.value = startOfMonth(range[0]);
+    navigation.focused.value = focusableDateInGrid(options, range[0], range[0]);
+  }
+
   watch(
     () => [options.value.value?.start, options.value.value?.end] as const,
-    () => {
-      const value = options.value.value;
-      const range = orderedRange(value);
-      anchorDate.value = null;
-      previewDate.value = null;
-      forcedInvalid.value = false;
-      if (!range) return;
-      navigation.visible.value = startOfMonth(range[0]);
-      navigation.focused.value = focusableDateInGrid(options, range[0], range[0]);
-    },
+    syncRangeCalendarFromValue,
     { flush: "sync" },
   );
 
@@ -777,9 +786,11 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
 
   const weeks = computed(() => navigation.dates.value.map((week) => week.map(cell)));
 
-  watch(navigation.focused, (date) => {
+  function syncRangePreviewFromFocus(date: CalendarDate) {
     if (anchorDate.value) previewDate.value = date;
-  }, { flush: "sync" });
+  }
+
+  watch(navigation.focused, syncRangePreviewFromFocus, { flush: "sync" });
 
   const announcement = computed(() => {
     if (!anchorDate.value) return "";

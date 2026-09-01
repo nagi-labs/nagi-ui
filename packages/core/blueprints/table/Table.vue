@@ -11,7 +11,9 @@ export interface TableColumn<Row extends object = Record<string, unknown>> {
 </script>
 
 <script setup lang="ts" generic="Row extends object">
-import { computed } from "vue";
+import { computed, useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -31,6 +33,7 @@ const props = withDefaults(
     layout: "auto",
   },
 );
+const attrs = useAttrs();
 
 const emptyColspan = computed(() => Math.max(1, props.columns.length));
 
@@ -52,10 +55,23 @@ function cellSlotName(column: TableColumn<Row>) {
 </script>
 
 <template>
-  <div class="n-table">
-    <table class="table" :data-layout="layout">
-      <caption class="caption" :data-hidden="captionHidden || undefined">
-        <slot name="caption" :caption="caption">{{ caption }}</slot>
+  <div
+    class="n-table"
+    v-bind="attrs"
+  >
+    <table
+      class="table"
+      :data-layout="layout"
+    >
+      <caption
+        class="caption"
+        :data-hidden="captionHidden || undefined"
+      >
+        <slot
+          name="caption"
+          :caption="caption"
+          >{{ caption }}</slot
+        >
       </caption>
       <thead class="thead">
         <tr class="row">
@@ -66,16 +82,31 @@ function cellSlotName(column: TableColumn<Row>) {
             scope="col"
             :data-align="column.align ?? 'start'"
           >
-            <slot :name="headerSlotName(column)" :column="column">
+            <slot
+              :name="headerSlotName(column)"
+              :column="column"
+            >
               {{ column.label }}
             </slot>
           </th>
         </tr>
       </thead>
       <tbody class="tbody">
-        <tr v-for="(row, rowIndex) in rows" :key="rowIdentity(row, rowIndex)" class="row">
-          <template v-for="column in columns" :key="column.key">
-            <th v-if="column.rowHeader" class="cell" scope="row" :data-align="column.align ?? 'start'">
+        <tr
+          v-for="(row, rowIndex) in rows"
+          :key="rowIdentity(row, rowIndex)"
+          class="row"
+        >
+          <template
+            v-for="column in columns"
+            :key="column.key"
+          >
+            <th
+              v-if="column.rowHeader"
+              class="cell"
+              scope="row"
+              :data-align="column.align ?? 'start'"
+            >
               <slot
                 :name="cellSlotName(column)"
                 :row="row"
@@ -86,7 +117,11 @@ function cellSlotName(column: TableColumn<Row>) {
                 {{ row[column.key] }}
               </slot>
             </th>
-            <td v-else class="cell" :data-align="column.align ?? 'start'">
+            <td
+              v-else
+              class="cell"
+              :data-align="column.align ?? 'start'"
+            >
               <slot
                 :name="cellSlotName(column)"
                 :row="row"
@@ -99,9 +134,18 @@ function cellSlotName(column: TableColumn<Row>) {
             </td>
           </template>
         </tr>
-        <tr v-if="rows.length === 0" class="row -empty">
-          <td class="cell" :colspan="emptyColspan">
-            <slot name="empty" :columns="columns">
+        <tr
+          v-if="rows.length === 0"
+          class="row -empty"
+        >
+          <td
+            class="cell"
+            :colspan="emptyColspan"
+          >
+            <slot
+              name="empty"
+              :columns="columns"
+            >
               {{ emptyText }}
             </slot>
           </td>
@@ -119,6 +163,7 @@ function cellSlotName(column: TableColumn<Row>) {
   border-radius: var(--nagi-radius-control);
   background: var(--nagi-color-surface);
   color: var(--nagi-color-text);
+  font-size: var(--n-font-size-3);
 
   > .table {
     inline-size: 100%;

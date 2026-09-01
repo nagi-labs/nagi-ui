@@ -27,7 +27,7 @@ test("keyboard navigation, focus restoration, and dismiss stay intact", async ()
   const screen = await render(ConsumerNagiHarness);
   const trigger = screen.getByRole("button", { name: "File actions" });
   const menu = screen.getByRole("menu");
-  const root = screen.getByTestId("nagi-contract-root").element();
+  const root = document.querySelector<HTMLElement>("#nagi-contract-root")!;
 
   await userEvent.tab();
   await expect.element(trigger).toHaveFocus();
@@ -40,7 +40,7 @@ test("keyboard navigation, focus restoration, and dismiss stay intact", async ()
   await userEvent.keyboard("{Enter}");
   await expect.element(menu).not.toBeVisible();
   await expect.element(trigger).toHaveFocus();
-  await expect.element(screen.getByTestId("selected-action")).toHaveTextContent("rename");
+  await expect.element(document.querySelector<HTMLElement>("#selected-action")!).toHaveTextContent("rename");
 
   await trigger.click();
   await expect.element(menu).toBeVisible();
@@ -56,5 +56,5 @@ test("the owned button still participates in native form submission", async () =
   await screen.getByRole("textbox", { name: "Project" }).fill("Owned Nagi");
   await screen.getByRole("button", { name: "Save" }).click();
 
-  await expect.element(screen.getByTestId("submitted-project")).toHaveTextContent("Owned Nagi");
+  await expect.element(document.querySelector<HTMLElement>("#submitted-project")!).toHaveTextContent("Owned Nagi");
 });

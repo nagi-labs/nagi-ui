@@ -5,16 +5,26 @@ export interface ToggleGroupItem {
   disabled?: boolean;
 }
 
-export type ToggleGroupValue = string | null | readonly string[];
+export type { ToggleGroupValue } from "@nagi-labs/nagi-ui";
 </script>
 
 <script setup lang="ts">
+import { useToggleGroup, type ToggleGroupValue } from "@nagi-labs/nagi-ui";
+import type { StyleValue } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     label: string;
     items: readonly ToggleGroupItem[];
     mode?: "single" | "multiple";
     disabled?: boolean;
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
+    ariaDescribedby?: string;
   }>(),
   {
     mode: "single",
@@ -23,39 +33,38 @@ const props = withDefaults(
 );
 
 const model = defineModel<ToggleGroupValue>({ required: true });
-
-function isPressed(item: ToggleGroupItem) {
-  if (props.mode === "multiple") {
-    return Array.isArray(model.value) && model.value.includes(item.key);
-  }
-  return model.value === item.key;
-}
-
-function toggleItem(item: ToggleGroupItem) {
-  if (props.disabled || item.disabled) return;
-
-  if (props.mode === "multiple") {
-    const selected = Array.isArray(model.value) ? model.value : [];
-    model.value = selected.includes(item.key)
-      ? selected.filter((key) => key !== item.key)
-      : [...selected, item.key];
-    return;
-  }
-
-  model.value = model.value === item.key ? null : item.key;
-}
+const toggleGroup = useToggleGroup(
+  {
+    get mode() {
+      return props.mode;
+    },
+    get disabled() {
+      return props.disabled;
+    },
+  },
+  model,
+);
 </script>
 
 <template>
-  <div class="n-toggle-group" role="group" :aria-label="label">
+  <div
+    class="n-toggle-group"
+    :id="id"
+    :class="props.class"
+    v-bind="props.style ? { style: props.style } : undefined"
+    :title="title"
+    role="group"
+    :aria-label="label"
+    :aria-describedby="ariaDescribedby"
+  >
     <button
       v-for="item in items"
       :key="item.key"
       class="button"
       type="button"
-      :aria-pressed="isPressed(item)"
+      :aria-pressed="toggleGroup.isPressed(item.key)"
       :disabled="disabled || item.disabled"
-      @click="toggleItem(item)"
+      @click="toggleGroup.toggle(item.key, item.disabled)"
     >
       {{ item.label }}
     </button>

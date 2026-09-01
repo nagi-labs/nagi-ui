@@ -20,11 +20,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 test("Textarea renders a native form-associated textarea and targets attrs at the control", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-textarea-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-textarea-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -73,6 +75,7 @@ test("Textarea renders a native form-associated textarea and targets attrs at th
     assert.equal(html.match(/<textarea/gu)?.length, 1);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
@@ -83,7 +86,8 @@ test("Textarea source keeps reset mechanism fixed and exposes no speculative wir
   assert.match(source, /defineModel<string>\(\{ default: "" \}\)/u);
   assert.match(source, /ref<HTMLTextAreaElement \| null>\(null\)/u);
   assert.match(source, /useNativeValueReset\(textarea, model\)/u);
-  assert.match(source, /<textarea[\s\S]*v-bind="\$attrs"/u);
+  assert.doesNotMatch(source, /v-bind="\$attrs"/u);
+  assert.match(source, /mergeElementProps\(attrs,/u);
   assert.doesNotMatch(source, /<slot\b|watch(?:Effect)?\b|onMounted\b|onUpdated\b/u);
   assert.doesNotMatch(source, /\b(?:document|window|ResizeObserver)\b|autosize/iu);
   assert.doesNotMatch(source, /var\([^\n,]+,/u, "theme token fallbacks are forbidden");

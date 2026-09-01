@@ -1,8 +1,17 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
+
 defineOptions({ inheritAttrs: false });
 
 withDefaults(
   defineProps<{
+    id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
+    ariaLabel?: string;
+    ariaLabelledby?: string;
+    ariaDescribedby?: string;
     orientation?: "horizontal" | "vertical";
     /** Remove separator semantics when the line is only visual decoration. */
     decorative?: boolean;
@@ -17,16 +26,28 @@ withDefaults(
 <template>
   <hr
     v-if="orientation === 'horizontal' && !decorative"
-    v-bind="$attrs"
     class="n-separator"
+    :id="id"
+    :class="$props.class"
+    :style="$props.style"
+    :title="title"
+    :aria-label="ariaLabel"
+    :aria-labelledby="ariaLabelledby"
+    :aria-describedby="ariaDescribedby"
   />
   <div
     v-else
-    v-bind="$attrs"
     class="n-separator"
+    :id="id"
+    :class="$props.class"
+    :style="$props.style"
+    :title="title"
     :data-orientation="orientation"
     :role="decorative ? undefined : 'separator'"
     :aria-orientation="!decorative && orientation === 'vertical' ? 'vertical' : undefined"
+    :aria-label="!decorative ? ariaLabel : undefined"
+    :aria-labelledby="!decorative ? ariaLabelledby : undefined"
+    :aria-describedby="!decorative ? ariaDescribedby : undefined"
     :aria-hidden="decorative ? 'true' : undefined"
   ></div>
 </template>

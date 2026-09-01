@@ -27,6 +27,7 @@ interface AutocompleteComponentItem {
 
 export interface AutocompleteComponentProps<Item extends AutocompleteComponentItem> {
   readonly items: readonly Item[];
+  readonly id?: string | undefined;
   readonly disabled: boolean;
   readonly readOnly: boolean;
   readonly required: boolean;
@@ -82,12 +83,14 @@ function createAutocomplete<Item, Key extends string>(
     settleInput(input, input.value);
   };
 
-  watch(options.value, (value) => {
+  function reconcileSelectionFromInput(value: string) {
     if (selected.value === null) return;
     const item = toValue(options.items)
       .find((candidate) => options.getKey(candidate) === selected.value);
     if (!item || options.getTextValue(item) !== value) selected.value = null;
-  }, { flush: "sync" });
+  }
+
+  watch(options.value, reconcileSelectionFromInput, { flush: "sync" });
 
   return { ...behavior, inputProps };
 }
@@ -107,6 +110,7 @@ export function useAutocomplete<Item, Key extends string = string>(
   const props = optionsOrProps as AutocompleteComponentProps<Item & AutocompleteComponentItem>;
   return createAutocomplete({
     value,
+    ...(props.id === undefined ? {} : { id: props.id }),
     items: () => props.items,
     getKey: (item) => item.key as Key,
     getTextValue: (item) => item.label,

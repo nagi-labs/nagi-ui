@@ -5,10 +5,12 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
 
+import { createElementRegistry } from "./element-registry.ts";
 import type { MenuDirection } from "./menu.ts";
 
 export type TabsOrientation = "horizontal" | "vertical";
@@ -41,6 +43,7 @@ export type UseTabsOptions<Item, Key extends string = string> = TabsAccessibleNa
 };
 
 export interface TabsListProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   role: "tablist";
   dir: MenuDirection;
@@ -51,6 +54,7 @@ export interface TabsListProps {
 }
 
 export interface TabsTabProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   type: "button";
   role: "tab";
@@ -91,6 +95,7 @@ interface TabsComponentItem {
 
 interface TabsComponentProps<Item extends TabsComponentItem> {
   readonly label: string;
+  readonly id?: string | undefined;
   readonly items: readonly Item[];
   readonly activationMode: TabsActivationMode;
   readonly orientation: TabsOrientation;
@@ -107,12 +112,16 @@ export function useTabsModelBridge<Key extends string>(
 ): Ref<Key | null> {
   const selected = ref<Key | null>(model.value) as Ref<Key | null>;
 
-  watch(model, (value) => {
+  function syncSelectedFromModel(value: Key | null) {
     selected.value = value;
-  }, { flush: "sync" });
-  watch(selected, (value) => {
+  }
+
+  function syncModelFromSelected(value: Key | null) {
     if (model.value !== value) model.value = value;
-  }, { flush: "sync" });
+  }
+
+  watch(model, syncSelectedFromModel, { flush: "sync" });
+  watch(selected, syncModelFromSelected, { flush: "sync" });
 
   return selected;
 }
@@ -137,7 +146,8 @@ function createTabs<Item, Key extends string = string>(
   const activationMode = options.activationMode ?? "manual";
   const orientation = options.orientation ?? "horizontal";
   const direction = options.dir ?? "ltr";
-  let ownerDocument: Document | null = null;
+  let tablistElement: HTMLElement | null = null;
+  const tabElements = createElementRegistry<Key>();
 
   function items(): readonly Item[] {
     return toValue(options.items);
@@ -203,15 +213,18 @@ function createTabs<Item, Key extends string = string>(
   }
 
   function tablistHasFocus(): boolean {
-    const active = ownerDocument?.activeElement;
-    return typeof (active as HTMLElement | null)?.closest === "function"
-      && (active as HTMLElement).closest('[role="tablist"]')?.id === id;
+    if (!tablistElement) return false;
+    const root = tablistElement.getRootNode();
+    const active = "activeElement" in root
+      ? (root as Document | ShadowRoot).activeElement
+      : null;
+    return active !== null && tablistElement.contains(active);
   }
 
   function focusItem(item: Item) {
     const key = keyOf(item);
     focusedKey.value = key;
-    ownerDocument?.getElementById(tabId(key))?.focus({ preventScroll: true });
+    tabElements.get(key)?.focus({ preventScroll: true });
   }
 
   function handled(event: KeyboardEvent) {
@@ -252,57 +265,59 @@ function createTabs<Item, Key extends string = string>(
 
     const after = current.slice(index).find((entry) => !entry.disabled);
     if (after) return after.key;
-    return current.slice(0, index).toReversed().find((entry) => !entry.disabled)?.key ?? null;
+    return current.slice(0, index).reverse().find((entry) => !entry.disabled)?.key ?? null;
   }
 
-  watch(
-    snapshot,
-    (current, previous = []) => {
-      const enabled = current.filter((entry) => !entry.disabled).map((entry) => entry.key);
-      const selected = selectedKey.value;
-      const selectedIsValid = selected !== null && enabled.includes(selected);
-      const focused = focusedKey.value;
-      const focusedIsValid = focused !== null && enabled.includes(focused);
-      const repairDomFocus =
-        focused !== null && ownerDocument?.activeElement?.id === tabId(focused);
+  function reconcileCollection(
+    current: readonly ItemSnapshot<Key>[],
+    previous: readonly ItemSnapshot<Key>[] = [],
+  ) {
+    const enabled = current.filter((entry) => !entry.disabled).map((entry) => entry.key);
+    const selected = selectedKey.value;
+    const selectedIsValid = selected !== null && enabled.includes(selected);
+    const focused = focusedKey.value;
+    const focusedIsValid = focused !== null && enabled.includes(focused);
+    const repairDomFocus =
+      focused !== null && tabElements.get(focused)?.matches(":focus") === true;
 
-      // Vue defineModel refs emit to the parent synchronously but may keep
-      // exposing the old prop until the parent render returns. Keep using the
-      // fallback calculated from this snapshot instead of re-reading the ref;
-      // otherwise focus repair can activate the wrong tab in automatic mode.
-      const canonicalSelection = selectedIsValid
-        ? selected
-        : fallbackKey(selected, current, previous);
-      if (!selectedIsValid) writeSelection(canonicalSelection);
-      const nextFocus =
-        canonicalSelection !== null && enabled.includes(canonicalSelection)
-          ? canonicalSelection
-          : enabled[0] ?? null;
-      if (!focusedIsValid) focusedKey.value = nextFocus;
+    // Vue defineModel refs emit to the parent synchronously but may keep
+    // exposing the old prop until the parent render returns. Keep using the
+    // fallback calculated from this snapshot instead of re-reading the ref;
+    // otherwise focus repair can activate the wrong tab in automatic mode.
+    const canonicalSelection = selectedIsValid
+      ? selected
+      : fallbackKey(selected, current, previous);
+    if (!selectedIsValid) writeSelection(canonicalSelection);
+    const nextFocus =
+      canonicalSelection !== null && enabled.includes(canonicalSelection)
+        ? canonicalSelection
+        : enabled[0] ?? null;
+    if (!focusedIsValid) focusedKey.value = nextFocus;
+    tabElements.prune(current.map((entry) => entry.key));
 
-      if (repairDomFocus && nextFocus !== null) {
-        void nextTick(() => {
-          ownerDocument?.getElementById(tabId(nextFocus))?.focus({ preventScroll: true });
-        });
-      }
-    },
-    { immediate: true, flush: "sync" },
-  );
+    if (repairDomFocus && nextFocus !== null) {
+      void nextTick(() => {
+        tabElements.get(nextFocus)?.focus({ preventScroll: true });
+      });
+    }
+  }
 
-  watch(
-    selectedKey,
-    (selected) => {
-      const enabled = enabledKeys();
-      if (selected === null || !enabled.includes(selected)) {
-        writeSelection(fallbackKey(selected, snapshot(), snapshot()));
-        return;
-      }
-      if (!tablistHasFocus()) focusedKey.value = selected;
-    },
-    { flush: "sync" },
-  );
+  function reconcileSelection(selected: Key | null) {
+    const enabled = enabledKeys();
+    if (selected === null || !enabled.includes(selected)) {
+      writeSelection(fallbackKey(selected, snapshot(), snapshot()));
+      return;
+    }
+    if (!tablistHasFocus()) focusedKey.value = selected;
+  }
+
+  watch(snapshot, reconcileCollection, { immediate: true, flush: "sync" });
+  watch(selectedKey, reconcileSelection, { flush: "sync" });
 
   const tablistProps: TabsListProps = {
+    ref: (element) => {
+      tablistElement = element as HTMLElement | null;
+    },
     id,
     role: "tablist",
     dir: direction,
@@ -325,6 +340,7 @@ function createTabs<Item, Key extends string = string>(
     const key = keyOf(item);
     const disabled = isDisabled(item);
     return {
+      ref: tabElements.refFor(key),
       id: tabId(key),
       type: "button",
       role: "tab",
@@ -332,14 +348,12 @@ function createTabs<Item, Key extends string = string>(
       tabindex: !disabled && focusedKey.value === key ? 0 : -1,
       "aria-selected": isSelected(item) ? "true" : "false",
       "aria-controls": panelId(key),
-      onFocus(event) {
-        ownerDocument = (event.currentTarget as HTMLElement | null)?.ownerDocument ?? null;
+      onFocus() {
         if (disabled) return;
         focusedKey.value = key;
         if (activationMode === "automatic") select(item);
       },
       onClick(event) {
-        ownerDocument = (event.currentTarget as HTMLElement | null)?.ownerDocument ?? null;
         if (disabled) {
           event.preventDefault();
           return;
@@ -348,7 +362,6 @@ function createTabs<Item, Key extends string = string>(
         select(item);
       },
       onKeydown(event) {
-        ownerDocument = (event.currentTarget as HTMLElement | null)?.ownerDocument ?? null;
         if (disabled || event.altKey || event.ctrlKey || event.metaKey) return;
 
         const nextKey = orientation === "vertical"
@@ -434,5 +447,6 @@ export function useTabs(
     items: () => props.items,
     selected,
     label: props.label,
+    ...(props.id ? { id: props.id } : {}),
   });
 }

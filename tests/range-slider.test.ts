@@ -251,6 +251,7 @@ test("RangeSlider rail emits no extra input after the active thumb reaches its p
 });
 
 test("RangeSlider renders two named native range controls with visible constraints", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-range-slider-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
@@ -263,7 +264,8 @@ test("RangeSlider renders two named native range controls with visible constrain
       ],
     },
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-range-slider-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -294,7 +296,7 @@ test("RangeSlider renders two named native range controls with visible constrain
     ));
     const controls = html.match(/<input[^>]*>/gu) ?? [];
 
-    assert.match(html, /^<fieldset class="n-range-slider" disabled>/u);
+    assert.match(html, /^<fieldset class="n-range-slider"[^>]*disabled>/u);
     assert.match(html, /<legend class="legend">Price range<\/legend>/u);
     assert.equal(controls.length, 2);
     assert.match(controls[0] ?? "", /type="range"/u);
@@ -319,6 +321,7 @@ test("RangeSlider renders two named native range controls with visible constrain
     assert.match(html, /<output class="output" for="price-max">75<\/output>/u);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
@@ -330,9 +333,12 @@ test("RangeSlider leaves native keyboard behavior and constraints visible in the
   assert.match(source, /<span[\s\S]*?class="rail"[\s\S]*?v-bind="railProps"/u);
   assert.equal(source.match(/type="range"/gu)?.length, 2);
   assert.match(source, /<div class="item -wide"[^>]*>[\s\S]*class="rail"[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u);
-  assert.match(source, /:name="lowerName"[\s\S]*:form="form"[\s\S]*:min="min"[\s\S]*:max="max"[\s\S]*:step="step"[\s\S]*:aria-valuemax="upperValue"/u);
-  assert.match(source, /:name="upperName"[\s\S]*:form="form"[\s\S]*:min="min"[\s\S]*:max="max"[\s\S]*:step="step"[\s\S]*:aria-valuemin="lowerValue"/u);
-  assert.match(source, /<fieldset class="n-range-slider" :disabled="disabled">/u);
+  assert.match(source, /const lowerInputProps = computed\([\s\S]*name: props\.lowerName[\s\S]*form: props\.form[\s\S]*min: props\.min[\s\S]*max: props\.max[\s\S]*step: props\.step[\s\S]*"aria-valuemax": upperValue\.value/u);
+  assert.match(source, /const upperInputProps = computed\([\s\S]*name: props\.upperName[\s\S]*form: props\.form[\s\S]*min: props\.min[\s\S]*max: props\.max[\s\S]*step: props\.step[\s\S]*"aria-valuemin": lowerValue\.value/u);
+  assert.match(source, /<input[\s\S]*?class="input -lower"[\s\S]*?v-bind="lowerInputProps"/u);
+  assert.match(source, /<input[\s\S]*?class="input -upper"[\s\S]*?v-bind="upperInputProps"/u);
+  assert.match(source, /const fieldsetProps = computed\([\s\S]*disabled: props\.disabled/u);
+  assert.match(source, /<fieldset[\s\S]*?class="n-range-slider"[\s\S]*?v-bind="fieldsetProps"[\s\S]*?>/u);
   assert.match(source, /> \.item\.-wide[\s\S]*> \.rail[\s\S]*touch-action:\s*none/u);
   assert.match(source, /inset-inline:\s*calc\(var\(--nagi-size-control\) \/ 4\)/u);
   assert.match(source, /::-webkit-slider-thumb[\s\S]*inline-size:\s*calc\(var\(--nagi-size-control\) \/ 2\)/u);

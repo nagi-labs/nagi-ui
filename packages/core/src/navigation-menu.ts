@@ -7,6 +7,7 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type CSSProperties,
   type MaybeRefOrGetter,
@@ -14,6 +15,7 @@ import {
 } from "vue";
 
 import { createAnchorPair, type AnchorPair } from "./anchor.ts";
+import { createElementRegistry } from "./element-registry.ts";
 import { modelValueAccepted, requestModelValue, type WritableRef } from "./model-sync.ts";
 import { usePopover, type PopoverProps } from "./popover.ts";
 
@@ -28,6 +30,7 @@ export interface UseNavigationMenuOptions<Item, Key extends string = string> {
 }
 
 export interface NavigationMenuTriggerProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   type: "button";
   popovertarget: string;
@@ -69,6 +72,11 @@ export interface NavigationMenuComponentProps<Item extends NavigationMenuCompone
 
 type OpenCause = "hover" | "focus" | "activation" | "external";
 
+interface NavigationItemSnapshot<Key extends string> {
+  key: Key;
+  panel: boolean;
+}
+
 let navigationMenuCount = 0;
 
 function createNavigationMenu<Item, Key extends string>(
@@ -82,7 +90,7 @@ function createNavigationMenu<Item, Key extends string>(
   let pendingCause: OpenCause = "external";
   const openCause = ref<OpenCause | null>(null);
   let restoreKey: Key | null = null;
-  let ownerDocument: Document | null = typeof document === "undefined" ? null : document;
+  const triggerElements = createElementRegistry<Key>();
   let popupElement: HTMLElement | null = null;
   let detachAnchor: (() => void) | null = null;
   let closeTimer: ReturnType<typeof setTimeout> | null = null;
@@ -122,7 +130,7 @@ function createNavigationMenu<Item, Key extends string>(
     if (!item || !isOpen || !popupElement) return;
     const anchor = anchorFor(item);
     if (anchor.native) return;
-    const trigger = ownerDocument?.getElementById(triggerId(item));
+    const trigger = triggerElements.get(keyOf(item));
     if (trigger) detachAnchor = anchor.attach(trigger, popupElement);
   }
 
@@ -210,13 +218,12 @@ function createNavigationMenu<Item, Key extends string>(
   };
   const baseToggle = popupProps.onToggle;
   popupProps.onToggle = (event) => {
-    ownerDocument = (event.target as HTMLElement).ownerDocument;
     popupElement = event.target as HTMLElement;
     baseToggle(event);
     syncAnchor(activeItem.value, event.newState === "open");
   };
 
-  watch(popover.open, (isOpen) => {
+  function reconcileOpenOwner(isOpen: boolean) {
     if (isOpen) {
       const candidate = itemFor(pendingKey) ?? activeItem.value ?? panelItems()[0];
       if (candidate && options.hasPanel(candidate)) commit(candidate, pendingKey !== null ? pendingCause : "external");
@@ -235,25 +242,34 @@ function createNavigationMenu<Item, Key extends string>(
     if (focusKey !== null) {
       suppressedFocusOpenKey = focusKey;
       void nextTick(() => {
-        ownerDocument?.getElementById(triggerIdForKey(focusKey))?.focus({ preventScroll: true });
+        triggerElements.get(focusKey)?.focus({ preventScroll: true });
         if (suppressedFocusOpenKey === focusKey) suppressedFocusOpenKey = null;
       });
     }
-  }, { flush: "sync", immediate: true });
+  }
+
+  function collectionSnapshot(): readonly NavigationItemSnapshot<Key>[] {
+    return items().map((item) => ({ key: keyOf(item), panel: options.hasPanel(item) }));
+  }
+
+  function reconcileCollection(snapshot: readonly NavigationItemSnapshot<Key>[]) {
+    triggerElements.prune(snapshot.map((entry) => entry.key));
+    const livePanelKeys = snapshot.filter((entry) => entry.panel).map((entry) => entry.key);
+    if (pointerPreviewKey !== null && !livePanelKeys.includes(pointerPreviewKey)) pointerPreviewKey = null;
+    if (focusPreviewKey !== null && !livePanelKeys.includes(focusPreviewKey)) focusPreviewKey = null;
+    if (!popover.open.value) return;
+    const owner = snapshot.find((entry) => entry.key === activeKey.value);
+    if (owner?.panel) return;
+    const next = panelItems()[0];
+    if (next) commit(next, "external");
+    else close();
+  }
+
+  watch(popover.open, reconcileOpenOwner, { flush: "sync", immediate: true });
 
   watch(
-    () => items().map((item) => ({ key: keyOf(item), panel: options.hasPanel(item) })),
-    (snapshot) => {
-      const livePanelKeys = snapshot.filter((entry) => entry.panel).map((entry) => entry.key);
-      if (pointerPreviewKey !== null && !livePanelKeys.includes(pointerPreviewKey)) pointerPreviewKey = null;
-      if (focusPreviewKey !== null && !livePanelKeys.includes(focusPreviewKey)) focusPreviewKey = null;
-      if (!popover.open.value) return;
-      const owner = snapshot.find((entry) => entry.key === activeKey.value);
-      if (owner?.panel) return;
-      const next = panelItems()[0];
-      if (next) commit(next, "external");
-      else close();
-    },
+    collectionSnapshot,
+    reconcileCollection,
     { flush: "sync" },
   );
 
@@ -262,6 +278,7 @@ function createNavigationMenu<Item, Key extends string>(
       clearClose();
       detachAnchor?.();
       detachAnchor = null;
+      triggerElements.clear();
     });
   }
 
@@ -280,7 +297,7 @@ function createNavigationMenu<Item, Key extends string>(
         const target = event.target as Node | null;
         if (!target || popupElement?.contains(target)) return;
         const pointedTrigger = panelItems().find((item) =>
-          ownerDocument?.getElementById(triggerId(item))?.contains(target));
+          triggerElements.get(keyOf(item))?.contains(target));
         if (pointedTrigger) {
           pointerPreviewKey = keyOf(pointedTrigger);
           return;
@@ -299,7 +316,7 @@ function createNavigationMenu<Item, Key extends string>(
           return;
         }
         const focusedTrigger = panelItems().find((item) =>
-          ownerDocument?.getElementById(triggerId(item)) === next);
+          triggerElements.get(keyOf(item)) === next);
         if (focusedTrigger) focusPreviewKey = keyOf(focusedTrigger);
         else if (popupElement?.contains(next)) focusPreviewKey = activeKey.value;
         else focusPreviewKey = null;
@@ -309,6 +326,7 @@ function createNavigationMenu<Item, Key extends string>(
     navigationTriggerProps(item) {
       const key = keyOf(item);
       return {
+        ref: triggerElements.refFor(key),
         id: triggerId(item),
         type: "button",
         popovertarget: popover.id,
@@ -317,7 +335,6 @@ function createNavigationMenu<Item, Key extends string>(
         get "aria-expanded"() { return popover.open.value && activeKey.value === key ? "true" : "false"; },
         style: anchorFor(item).anchorStyle,
         onClick(event) {
-          ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
           // Avoid a rejected controlled write flashing the native popover.
           // usePopover applies the accepted model transition imperatively.
           event.preventDefault();
@@ -327,12 +344,10 @@ function createNavigationMenu<Item, Key extends string>(
         },
         onPointerenter(event) {
           if (event.pointerType === "touch") return;
-          ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
           pointerPreviewKey = key;
           requestOpen(item, "hover");
         },
-        onFocus(event) {
-          ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
+        onFocus() {
           if (closingFocusKey === key) {
             focusPreviewKey = null;
             return;

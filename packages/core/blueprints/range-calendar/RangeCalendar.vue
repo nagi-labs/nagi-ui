@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, type StyleValue } from "vue";
 
 import { useRangeCalendar, type RangeCalendarValue } from "@nagi-labs/nagi-ui";
 import { useRangeCalendarNativeForm } from "@nagi-labs/nagi-ui/component-controls";
@@ -10,6 +10,9 @@ const props = withDefaults(
   defineProps<{
     label: string;
     id?: string;
+    class?: string;
+    style?: StyleValue;
+    title?: string;
     startName?: string;
     endName?: string;
     form?: string;
@@ -49,11 +52,31 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
 </script>
 
 <template>
-  <div v-bind="$attrs" class="n-range-calendar">
+  <div
+    class="n-range-calendar"
+    :class="props.class"
+    :style="props.style"
+    :title="props.title"
+  >
     <header class="header">
-      <button v-bind="range.previousButtonProps" class="button -previous">‹</button>
-      <h2 class="title" aria-live="polite">{{ range.monthLabel.value }}</h2>
-      <button v-bind="range.nextButtonProps" class="button -next">›</button>
+      <button
+        v-bind="range.previousButtonProps"
+        class="button -previous"
+      >
+        ‹
+      </button>
+      <h2
+        class="title"
+        aria-live="polite"
+      >
+        {{ range.monthLabel.value }}
+      </h2>
+      <button
+        v-bind="range.nextButtonProps"
+        class="button -next"
+      >
+        ›
+      </button>
     </header>
     <table
       v-bind="range.gridProps"
@@ -62,13 +85,22 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
     >
       <thead class="thead -head">
         <tr class="row">
-          <th v-for="weekday in range.weekdayLabels.value" :key="weekday" class="cell -head" scope="col">
+          <th
+            v-for="weekday in range.weekdayLabels.value"
+            :key="weekday"
+            class="cell -head"
+            scope="col"
+          >
             {{ weekday }}
           </th>
         </tr>
       </thead>
       <tbody class="tbody -dates">
-        <tr v-for="(week, index) in range.weeks.value" :key="index" class="row">
+        <tr
+          v-for="(week, index) in range.weeks.value"
+          :key="index"
+          class="row"
+        >
           <td
             v-for="cell in week"
             :key="cell.key"
@@ -79,12 +111,22 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
             :data-range-start="cell.rangeStart || undefined"
             :data-range-end="cell.rangeEnd || undefined"
           >
-            <button v-bind="range.cellButtonProps(cell)" class="button -day">{{ cell.day }}</button>
+            <button
+              v-bind="range.cellButtonProps(cell)"
+              class="button -day"
+            >
+              {{ cell.day }}
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
-    <span class="text -assistive" role="status" aria-live="polite" aria-atomic="true">
+    <span
+      class="text -assistive"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {{ range.announcement.value }}
     </span>
     <span
@@ -92,9 +134,18 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
       :id="`${range.gridProps.id}-error`"
       class="text -validation"
       role="alert"
-    >{{ validationMessage }}</span>
-    <input ref="startFormControl" v-bind="range.startFormValueProps" class="input -form-value" />
-    <input ref="endFormControl" v-bind="range.endFormValueProps" class="input -form-value" />
+      >{{ validationMessage }}</span
+    >
+    <input
+      ref="startFormControl"
+      v-bind="range.startFormValueProps"
+      class="input -form-value"
+    />
+    <input
+      ref="endFormControl"
+      v-bind="range.endFormValueProps"
+      class="input -form-value"
+    />
   </div>
 </template>
 
@@ -133,13 +184,18 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
       font: inherit;
       cursor: pointer;
 
-      &:hover:not(:disabled) { background: var(--nagi-color-surface-active); }
+      &:hover:not(:disabled) {
+        background: var(--nagi-color-surface-active);
+      }
       &:focus-visible {
         outline: none;
         border-color: var(--nagi-color-focus-ring);
         box-shadow: var(--nagi-shadow-focus);
       }
-      &:disabled { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
+      &:disabled {
+        color: var(--nagi-color-text-disabled);
+        cursor: not-allowed;
+      }
     }
   }
 
@@ -169,17 +225,26 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
         font-variant-numeric: tabular-nums;
         cursor: pointer;
 
-        &:hover:not(:disabled) { background: var(--nagi-color-surface-active); }
+        &:hover:not(:disabled) {
+          background: var(--nagi-color-surface-active);
+        }
         &:focus-visible {
           outline: none;
           border-color: var(--nagi-color-focus-ring);
           box-shadow: var(--nagi-shadow-focus);
         }
-        &:disabled { color: var(--nagi-color-text-disabled); cursor: not-allowed; }
+        &:disabled {
+          color: var(--nagi-color-text-disabled);
+          cursor: not-allowed;
+        }
       }
 
-      &[data-outside-month] > .button.-day { color: var(--nagi-color-text-muted); }
-      &[data-preview] > .button.-day { background: var(--nagi-color-surface-active); }
+      &[data-outside-month] > .button.-day {
+        color: var(--nagi-color-text-muted);
+      }
+      &[data-preview] > .button.-day {
+        background: var(--nagi-color-surface-active);
+      }
       &[aria-selected="true"] > .button.-day {
         border-radius: 0;
         background: var(--nagi-color-surface-accent);

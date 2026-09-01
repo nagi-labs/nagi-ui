@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 
 import { assertNagiDom } from "@nagi-labs/nagi-ui";
-import { Button, DropdownMenu } from "@nagi-labs/nagi-ui/components";
+import { NButton, NDropdownMenu } from "@nagi-labs/nagi-ui/components";
 import type { DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
 
 declare global {
@@ -56,14 +56,14 @@ onUnmounted(() => {
 
 <template>
   <!-- Replace this harness with the smallest real consumer view that owns the contract. -->
-  <main ref="contractRoot" data-testid="nagi-contract-root">
+  <main ref="contractRoot" id="nagi-contract-root">
     <h1>Nagi contract harness</h1>
 
     <section aria-labelledby="menu-heading">
       <h2 id="menu-heading">Menu behavior</h2>
-      <DropdownMenu label="File actions" :items="items" />
+      <n-dropdown-menu label="File actions" :items="items" />
       <button type="button">After menu</button>
-      <output data-testid="selected-action">{{ selectedAction }}</output>
+      <output id="selected-action">{{ selectedAction }}</output>
     </section>
 
     <section aria-labelledby="form-heading">
@@ -71,9 +71,9 @@ onUnmounted(() => {
       <form @submit.prevent="submitProject">
         <label for="project">Project</label>
         <input id="project" name="project" value="Nagi" />
-        <Button type="submit">Save</Button>
+        <n-button type="submit">Save</n-button>
       </form>
-      <output data-testid="submitted-project">{{ submittedProject }}</output>
+      <output id="submitted-project">{{ submittedProject }}</output>
     </section>
   </main>
 </template>

@@ -2,12 +2,12 @@
 import { ref } from "vue";
 
 import {
-  Calendar,
-  DateField,
-  DatePicker,
-  DateRangePicker,
-  RangeCalendar,
-  TimeField,
+  NCalendar,
+  NDateField,
+  NDatePicker,
+  NDateRangePicker,
+  NRangeCalendar,
+  NTimeField,
 } from "@nagi-labs/nagi-ui/components";
 import type { RangeCalendarValue } from "@nagi-labs/nagi-ui";
 
@@ -18,6 +18,7 @@ const inlineRange = ref<RangeCalendarValue | null>({
 });
 const fieldDate = ref<string | null>("2026-07-23");
 const pickedDate = ref<string | null>("2026-07-24");
+const pickedDateOpen = ref(false);
 const pickedRange = ref<RangeCalendarValue | null>({
   start: "2026-07-25",
   end: "2026-07-27",
@@ -46,7 +47,7 @@ function submit(event: SubmitEvent) {
   <main>
     <h1>Date and time components</h1>
     <form id="date-time-form" @submit.prevent="submit">
-      <DateField
+      <n-date-field
         v-model="fieldDate"
         label="Field date"
         name="fieldDate"
@@ -54,16 +55,17 @@ function submit(event: SubmitEvent) {
         min="2026-07-01"
         max="2026-08-31"
       />
-      <TimeField
+      <n-time-field
         v-model="fieldTime"
         label="Field time"
         name="fieldTime"
         locale="en-US"
       />
-      <DateField v-model="emptyDate" label="Initially empty date" locale="en-US" />
-      <TimeField v-model="emptyTime" label="Initially empty time" locale="en-GB" />
-      <DatePicker
+      <n-date-field v-model="emptyDate" label="Initially empty date" locale="en-US" />
+      <n-time-field v-model="emptyTime" label="Initially empty time" locale="en-GB" />
+      <n-date-picker
         v-model="pickedDate"
+        v-model:open="pickedDateOpen"
         label="Picked date"
         calendar-label="Picked date calendar"
         trigger-label="Choose picked date"
@@ -73,7 +75,8 @@ function submit(event: SubmitEvent) {
         min="2026-07-01"
         max="2026-08-31"
       />
-      <DateRangePicker
+      <output role="status" aria-label="Picked date open state">{{ pickedDateOpen }}</output>
+      <n-date-range-picker
         v-model="pickedRange"
         label="Picked range"
         calendar-label="Picked range calendar"
@@ -89,7 +92,7 @@ function submit(event: SubmitEvent) {
       <button type="reset">Reset dates</button>
     </form>
 
-    <Calendar
+    <n-calendar
       v-model="inlineDate"
       label="Inline date calendar"
       name="inlineDate"
@@ -100,7 +103,7 @@ function submit(event: SubmitEvent) {
       max="2026-08-31"
       :unavailable-dates="['2026-07-24']"
     />
-    <RangeCalendar
+    <n-range-calendar
       v-model="inlineRange"
       label="Inline range calendar"
       start-name="inlineStart"
@@ -113,21 +116,21 @@ function submit(event: SubmitEvent) {
       :unavailable-dates="['2026-07-24']"
     />
 
-    <output data-testid="date-model">{{ fieldDate }}</output>
-    <output data-testid="time-model">{{ fieldTime }}</output>
-    <output data-testid="empty-date-model">{{ emptyDate }}</output>
-    <output data-testid="empty-time-model">{{ emptyTime }}</output>
-    <output data-testid="submission">{{ submission }}</output>
+    <output id="date-model">{{ fieldDate }}</output>
+    <output id="time-model">{{ fieldTime }}</output>
+    <output id="empty-date-model">{{ emptyDate }}</output>
+    <output id="empty-time-model">{{ emptyTime }}</output>
+    <output id="submission">{{ submission }}</output>
 
     <section v-if="qaMode" aria-label="Date and time QA fixtures">
-      <DateField
+      <n-date-field
         :model-value="qaControlledDate"
         label="Rejected controlled date"
         locale="en-US"
         @update:model-value="() => {}"
       />
-      <output data-testid="qa-controlled-date">{{ qaControlledDate }}</output>
-      <DatePicker
+      <output id="qa-controlled-date">{{ qaControlledDate }}</output>
+      <n-date-picker
         v-model="qaPickerDate"
         v-model:open="qaPickerOpen"
         label="Initially open date"
@@ -136,7 +139,7 @@ function submit(event: SubmitEvent) {
         locale="en-US"
         time-zone="UTC"
       />
-      <Calendar
+      <n-calendar
         v-model="qaReadonlyDate"
         label="Readonly date calendar"
         name="qaReadonlyDate"
@@ -146,7 +149,7 @@ function submit(event: SubmitEvent) {
         read-only
         required
       />
-      <RangeCalendar
+      <n-range-calendar
         v-model="qaReadonlyRange"
         label="Readonly range calendar"
         start-name="qaReadonlyStart"
@@ -157,7 +160,7 @@ function submit(event: SubmitEvent) {
         read-only
         required
       />
-      <RangeCalendar
+      <n-range-calendar
         v-model="qaPartialRange"
         label="Optional partial range"
         start-name="qaPartialStart"

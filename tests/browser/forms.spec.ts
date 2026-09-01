@@ -37,14 +37,14 @@ test("native controls expose initial state and submit browser FormData", async (
   );
   await expect(page.getByRole("slider", { name: "Volume", exact: true })).toHaveValue("40");
   await expect(page.getByRole("combobox", { name: "Framework", exact: true })).toHaveValue("v");
-  await expect(page.getByTestId("framework-key")).toHaveText("vue");
+  await expect(page.locator("#framework-key")).toHaveText("vue");
   await expect(page.getByRole("combobox", { name: "Disabled framework" })).toBeDisabled();
 
   expect(await external.evaluate((element) => element.closest("form"))).toBeNull();
   await expect(external).toHaveAttribute("form", "alignment-form");
 
   await form.getByRole("button", { name: "Submit form" }).click();
-  expect(await json(page.getByTestId("submission"))).toEqual({
+  expect(await json(page.locator("#submission"))).toEqual({
     fullName: "Ada Lovelace",
     marketing: "enabled",
     contact: "email",
@@ -77,7 +77,7 @@ test("native checkbox, radio, select, and slider keep platform behavior", async 
   await slider.press("ArrowRight");
   await expect(slider).toHaveValue("50");
 
-  const state = await json(page.getByTestId("model-state"));
+  const state = await json(page.locator("#model-state"));
   expect(state).toMatchObject({
     agreement: true,
     agreementIndeterminate: false,
@@ -99,7 +99,7 @@ test("Rating and FileInput keep keyboard, FormData, and reset browser-owned", as
   await rating3.focus();
   await rating3.press("ArrowRight");
   await expect(rating4).toBeChecked();
-  await expect(page.getByTestId("rating-value")).toHaveText("rating: 4");
+  await expect(page.locator("#rating-value")).toHaveText("rating: 4");
 
   await fileInput.setInputFiles({
     name: "release-notes.txt",
@@ -125,7 +125,7 @@ test("Rating and FileInput keep keyboard, FormData, and reset browser-owned", as
 
   await form.getByRole("button", { name: "Reset interactive controls" }).click();
   await expect(rating3).toBeChecked();
-  await expect(page.getByTestId("rating-value")).toHaveText("rating: 3");
+  await expect(page.locator("#rating-value")).toHaveText("rating: 3");
   expect(
     await fileInput.evaluate((input: HTMLInputElement) => input.files?.length ?? 0),
   ).toBe(0);
@@ -155,7 +155,7 @@ test("native form controls retain visible focus outlines in forced colors", asyn
     page.getByRole("slider", { name: "Volume", exact: true }),
     page.getByRole("slider", { name: "Minimum price" }),
     page.getByRole("slider", { name: "Maximum price" }),
-    page.getByTestId("release-file"),
+    page.locator("#release-file"),
     page.getByRole("switch", { name: "Product updates" }),
   ];
 
@@ -173,7 +173,7 @@ test("native form controls retain visible focus outlines in forced colors", asyn
 test("FileInput presents one native chooser button instead of a split field", async ({
   page,
 }) => {
-  const fileInput = page.getByTestId("release-file");
+  const fileInput = page.locator("#release-file");
   const styles = await fileInput.evaluate((element) => ({
     inputBorder: getComputedStyle(element).borderTopWidth,
     inputBackground: getComputedStyle(element).backgroundColor,
@@ -199,7 +199,7 @@ test("NumberField and InputGroup preserve native step, form, and reset behavior"
   await expect(seats).toHaveValue("3");
   await seats.press("ArrowUp");
   await expect(seats).toHaveValue("4");
-  await expect(page.getByTestId("seats-value")).toHaveText("seats: 4");
+  await expect(page.locator("#seats-value")).toHaveText("seats: 4");
   await page.getByRole("button", { name: "Decrease seats" }).click();
   await expect(seats).toHaveValue("3");
 
@@ -213,7 +213,7 @@ test("NumberField and InputGroup preserve native step, form, and reset behavior"
 
   await form.getByRole("button", { name: "Reset interactive controls" }).click();
   await expect(seats).toHaveValue("2");
-  await expect(page.getByTestId("seats-value")).toHaveText("seats: 2");
+  await expect(page.locator("#seats-value")).toHaveText("seats: 2");
   await expect(projectUrl).toHaveValue("nagi-ui");
 });
 
@@ -255,7 +255,7 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await expect(upper).toHaveAttribute("min", "0");
   await expect(upper).toHaveAttribute("max", "100");
   await expect(upper).toHaveAttribute("aria-valuemin", "35");
-  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 35–65");
+  await expect(page.locator("#price-range-value")).toHaveText("price range: 35–65");
   const alignment = await rangeFieldset.evaluate((element) => {
     const track = element.querySelector<HTMLElement>(".item.-wide > .rail");
     const inputs = element.querySelectorAll<HTMLInputElement>('input[type="range"]');
@@ -263,8 +263,8 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
 
     const trackRect = track.getBoundingClientRect();
     const style = getComputedStyle(track);
-    const start = Number.parseFloat(style.getPropertyValue("--range-start")) / 100;
-    const end = 1 - Number.parseFloat(style.getPropertyValue("--range-end")) / 100;
+    const start = Number.parseFloat(style.getPropertyValue("--local-range-start")) / 100;
+    const end = 1 - Number.parseFloat(style.getPropertyValue("--local-range-end")) / 100;
     const sizeProbe = document.createElement("span");
     sizeProbe.style.cssText =
       "position:absolute;inline-size:calc(var(--nagi-size-control) / 2)";
@@ -312,7 +312,7 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await expect(upper).toHaveValue("65");
   await expect(lower).toHaveAttribute("aria-valuemax", "65");
   await expect(upper).toHaveAttribute("aria-valuemin", "65");
-  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 65–65");
+  await expect(page.locator("#price-range-value")).toHaveText("price range: 65–65");
 
   await dragRangeThumb(page, lower, 0.6, 0.45);
   await expect(lower).toHaveValue("45");
@@ -321,7 +321,7 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await form.getByRole("button", { name: "Reset interactive controls" }).click();
   await expect(lower).toHaveValue("25");
   await expect(upper).toHaveValue("75");
-  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 25–75");
+  await expect(page.locator("#price-range-value")).toHaveText("price range: 25–75");
 
   await rangeFieldset.evaluate((element: HTMLFieldSetElement) => {
     element.disabled = true;
@@ -340,7 +340,7 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await expect(lower).toHaveAttribute("max", "60");
   await expect(upper).toHaveAttribute("min", "40");
   await expect(upper).toHaveAttribute("max", "60");
-  await expect(page.getByTestId("price-range-value")).toHaveText("price range: 40–60");
+  await expect(page.locator("#price-range-value")).toHaveText("price range: 40–60");
   await lower.focus();
   await page.keyboard.press("Tab");
   await expect(upper).toBeFocused();
@@ -358,20 +358,20 @@ test("Select and Slider adopt native initial sanitization and reset their canoni
   const slider = page.getByRole("slider", { name: "Constrained volume" });
 
   await expect(plan).toHaveValue("standard");
-  await expect(page.getByTestId("native-default-plan-value")).toHaveText(
+  await expect(page.locator("#native-default-plan-value")).toHaveText(
     "native plan: standard",
   );
   await expect(slider).toHaveValue("19");
-  await expect(page.getByTestId("constrained-volume-value")).toHaveText(
+  await expect(page.locator("#constrained-volume-value")).toHaveText(
     "constrained volume: 19",
   );
 
   await page.getByRole("button", { name: "Remove initial plan option" }).click();
   await expect(plan).toHaveValue("pro");
-  await expect(page.getByTestId("native-default-plan-value")).toHaveText("native plan: pro");
+  await expect(page.locator("#native-default-plan-value")).toHaveText("native plan: pro");
   await form.getByRole("button", { name: "Reset interactive controls" }).click();
   await expect(plan).toHaveValue("pro");
-  await expect(page.getByTestId("native-default-plan-value")).toHaveText("native plan: pro");
+  await expect(page.locator("#native-default-plan-value")).toHaveText("native plan: pro");
 
   await page.reload();
   const reloadedForm = page.locator("#interactive-form");
@@ -379,18 +379,18 @@ test("Select and Slider adopt native initial sanitization and reset their canoni
   const reloadedSlider = page.getByRole("slider", { name: "Constrained volume" });
   await reloadedPlan.selectOption("pro");
   await reloadedSlider.fill("13");
-  await expect(page.getByTestId("native-default-plan-value")).toHaveText("native plan: pro");
-  await expect(page.getByTestId("constrained-volume-value")).toHaveText(
+  await expect(page.locator("#native-default-plan-value")).toHaveText("native plan: pro");
+  await expect(page.locator("#constrained-volume-value")).toHaveText(
     "constrained volume: 13",
   );
 
   await reloadedForm.getByRole("button", { name: "Reset interactive controls" }).click();
   await expect(reloadedPlan).toHaveValue("standard");
-  await expect(page.getByTestId("native-default-plan-value")).toHaveText(
+  await expect(page.locator("#native-default-plan-value")).toHaveText(
     "native plan: standard",
   );
   await expect(reloadedSlider).toHaveValue("19");
-  await expect(page.getByTestId("constrained-volume-value")).toHaveText(
+  await expect(page.locator("#constrained-volume-value")).toHaveText(
     "constrained volume: 19",
   );
 });
@@ -451,7 +451,7 @@ test("InputGroup distinguishes action focus, forwards invalid state, and preserv
   const stepWidths = await numberField.locator("button").evaluateAll((buttons) =>
     buttons.map((button) => button.getBoundingClientRect().width),
   );
-  expect(stepWidths).toEqual([32, 32]);
+  expect(stepWidths).toEqual([30, 30]);
 });
 
 test("form reset restores native DOM and every controlled Vue model", async ({ page }) => {
@@ -466,7 +466,7 @@ test("form reset restores native DOM and every controlled Vue model", async ({ p
   const framework = page.getByRole("combobox", { name: "Framework", exact: true });
   await framework.fill("sve");
   await page.getByRole("option", { name: "Svelte" }).click();
-  await expect(page.getByTestId("framework-key")).toHaveText("svelte");
+  await expect(page.locator("#framework-key")).toHaveText("svelte");
 
   await page.getByRole("button", { name: "Reset form" }).click();
 
@@ -483,9 +483,9 @@ test("form reset restores native DOM and every controlled Vue model", async ({ p
   await expect(page.getByRole("slider", { name: "Volume", exact: true })).toHaveValue("40");
   await expect(page.getByLabel("External note")).toHaveValue("outside the form tree");
   await expect(framework).toHaveValue("v");
-  await expect(page.getByTestId("framework-key")).toHaveText("vue");
+  await expect(page.locator("#framework-key")).toHaveText("vue");
 
-  expect(await json(page.getByTestId("model-state"))).toEqual({
+  expect(await json(page.locator("#model-state"))).toEqual({
     fullName: "Ada Lovelace",
     agreement: false,
     agreementIndeterminate: true,
@@ -529,7 +529,7 @@ test("preventDefault keeps a canceled native reset from changing DOM or models",
   await page.getByRole("button", { name: "Reset form" }).click();
 
   await expect(fullName).toHaveValue("Grace Hopper");
-  expect(await json(page.getByTestId("model-state"))).toMatchObject({
+  expect(await json(page.locator("#model-state"))).toMatchObject({
     fullName: "Grace Hopper",
   });
 });
@@ -545,7 +545,7 @@ test("a changed external form owner rebinds reset synchronization", async ({ pag
 
   await page.getByRole("button", { name: "2. Reset alternate form" }).click();
   await expect(external).toHaveValue("outside the form tree");
-  expect(await json(page.getByTestId("model-state"))).toMatchObject({
+  expect(await json(page.locator("#model-state"))).toMatchObject({
     externalNote: "outside the form tree",
   });
 });
@@ -558,18 +558,18 @@ test("required input and committed combobox key participate in native validation
   await page.getByRole("button", { name: "Submit form" }).click();
   await expect(fullName).toBeFocused();
   expect(await fullName.evaluate((element) => (element as HTMLInputElement).validity.valid)).toBe(false);
-  await expect(page.getByTestId("submission")).toHaveText("No submission yet");
+  await expect(page.locator("#submission")).toHaveText("No submission yet");
 
   await fullName.fill("Ada Lovelace");
   await page.getByRole("button", { name: "Clear framework" }).click();
   const framework = page.getByRole("combobox", { name: "Framework", exact: true });
   await expect(framework).toHaveValue("");
-  await expect(page.getByTestId("framework-key")).toHaveText("none");
+  await expect(page.locator("#framework-key")).toHaveText("none");
   await page.getByRole("heading", { name: "Native form controls" }).click();
   await page.getByRole("button", { name: "Submit form" }).click();
   await expect(framework).toBeFocused();
   expect(await framework.evaluate((element) => (element as HTMLInputElement).validity.valid)).toBe(false);
-  await expect(page.getByTestId("submission")).toHaveText("No submission yet");
+  await expect(page.locator("#submission")).toHaveText("No submission yet");
 });
 
 test("required Combobox validates the committed key rather than editable text", async ({
@@ -579,7 +579,7 @@ test("required Combobox validates the committed key rather than editable text", 
   await framework.fill("");
   await page.getByRole("button", { name: "Submit form" }).click();
 
-  expect(await json(page.getByTestId("submission"))).toMatchObject({ framework: "vue" });
+  expect(await json(page.locator("#submission"))).toMatchObject({ framework: "vue" });
   expect(await framework.evaluate((element) => (element as HTMLInputElement).validity.valid)).toBe(true);
 });
 
@@ -612,5 +612,5 @@ test("progress, meter, and combobox loading, empty, clear, and read-only states 
   await readOnly.press("ArrowDown");
   await readOnly.press("Enter");
   await expect(readOnly).toHaveValue("Svelte");
-  await expect(page.getByTestId("read-only-key")).toHaveText("svelte");
+  await expect(page.locator("#read-only-key")).toHaveText("svelte");
 });

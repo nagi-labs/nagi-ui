@@ -22,11 +22,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 async function renderToggleGroup(props: Record<string, unknown>) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-toggle-group-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-toggle-group-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -41,6 +43,7 @@ async function renderToggleGroup(props: Record<string, unknown>) {
     })));
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 
@@ -108,18 +111,16 @@ test("ToggleGroup combines group and item disabled state on native buttons", asy
   assert.match(groupDisabled, /aria-pressed="true" disabled>List<\/button>/u);
 });
 
-test("ToggleGroup source keeps toggle policy local and avoids a focus state machine", () => {
+test("ToggleGroup source delegates selection policy and avoids a focus state machine", () => {
   const source = fs.readFileSync(sourcePath, "utf8");
   const manifest = new Set<string>(nagiThemeTokens);
 
   assert.match(source, /export interface ToggleGroupItem/u);
-  assert.match(source, /export type ToggleGroupValue = string \| null \| readonly string\[\]/u);
+  assert.match(source, /useToggleGroup/u);
   assert.match(source, /mode\?: "single" \| "multiple"/u);
   assert.match(source, /defineModel<ToggleGroupValue>\(\{ required: true \}\)/u);
-  assert.match(source, /model\.value = model\.value === item\.key \? null : item\.key/u);
-  assert.match(source, /selected\.filter\(\(key\) => key !== item\.key\)/u);
-  assert.match(source, /\.\.\.selected, item\.key/u);
-  assert.match(source, /<button[\s\S]*type="button"[\s\S]*:aria-pressed="isPressed\(item\)"/u);
+  assert.doesNotMatch(source, /function (?:isPressed|toggleItem)/u);
+  assert.match(source, /<button[\s\S]*type="button"[\s\S]*:aria-pressed="toggleGroup\.isPressed\(item\.key\)"/u);
   assert.doesNotMatch(source, /tabindex|onKeydown|@keydown|aria-activedescendant|aria-selected/u);
   assert.doesNotMatch(source, /<slot\b|Teleport|provide\(|inject\(|asChild|data-state/u);
   assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|document|window)\b/u);

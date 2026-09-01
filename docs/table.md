@@ -9,7 +9,7 @@ it when needed.
 
 ```vue
 <script setup lang="ts">
-import { Table, type TableColumn } from "@nagi-labs/nagi-ui/components"
+import { NTable, type TableColumn } from "@nagi-labs/nagi-ui/components"
 
 interface User {
   id: number
@@ -28,7 +28,7 @@ const columns: readonly TableColumn<User>[] = [
 </script>
 
 <template>
-  <Table
+  <n-table
     :rows="rows"
     :columns="columns"
     caption="Users"
@@ -61,23 +61,56 @@ Use `cell-<key>` or `header-<key>` scoped slots. The component still owns the
 native `th` or `td`, so custom content cannot erase table semantics.
 
 ```vue
-<Table :rows="rows" :columns="columns" caption="Users">
+<n-table :rows="rows" :columns="columns" caption="Users">
   <template #header-status="{ column }">
     <abbr title="Account status">{{ column.label }}</abbr>
   </template>
 
   <template #cell-status="{ row, value }">
-    <Badge :label="String(value)" :tone="row.active ? 'success' : 'neutral'" />
+    <n-badge :label="String(value)" :tone="row.active ? 'success' : 'neutral'" />
   </template>
 
   <template #empty>No users match the current filters.</template>
-</Table>
+</n-table>
 ```
 
 Cell slots receive `row`, `rowIndex`, `column`, and `value`. Header slots
 receive `column`. `emptyText` provides the simple empty state; the `empty`
 slot customizes it. The empty cell uses a valid `colspan` for the configured
 columns.
+
+Dynamic `cell-<key>` and `header-<key>` names do not create CSS surface names.
+When application CSS styles owned slot content, wrap it in the corresponding
+generic surface declared by the Nagi UI preset: `n-table-cell-content` or
+`n-table-header-content`. Use a static variant to distinguish a particular
+column. Caption and empty slots similarly expose `n-table-caption-content` and
+`n-table-empty-content`.
+
+```vue
+<n-table :rows="rows" :columns="columns" caption="Users">
+  <template #cell-company="{ row }">
+    <div class="n-table-cell-content -company">
+      <a class="link" :href="`/customers/${row.id}`">{{ row.company }}</a>
+    </div>
+  </template>
+</n-table>
+
+<style scoped>
+.customers-page {
+  > .n-table {
+    .n-table-cell-content.-company {
+      > .link {
+        font-weight: 600;
+      }
+    }
+  }
+}
+</style>
+```
+
+The generic surface is intentional: column keys belong to application data and
+cannot be exhaustively declared by the library preset. If the slot content is
+not styled by the parent surface, no wrapper is needed.
 
 Use a column's `align` (`start`, `center`, or `end`) for ordinary alignment,
 and `layout="fixed"` when native fixed table layout is useful. Widths and more
@@ -89,8 +122,8 @@ specialized presentation remain owned-source CSS concerns.
 compose `Pagination`:
 
 ```vue
-<Table :rows="visibleRows" :columns="columns" caption="Search results" />
-<Pagination
+<n-table :rows="visibleRows" :columns="columns" caption="Search results" />
+<n-pagination
   v-model:current-key="currentPage"
   :items="pageItems"
   label="Result pages"

@@ -1,19 +1,49 @@
 <script setup lang="ts">
-import { useToggle } from "@nagi-labs/nagi-ui";
+import { mergeElementProps, useToggle } from "@nagi-labs/nagi-ui";
+import { computed, useAttrs } from "vue";
 
-const props = withDefaults(
-  defineProps<{
-    disabled?: boolean;
-  }>(),
-  { disabled: false },
+defineOptions({ inheritAttrs: false });
+
+const { disabled = false } = defineProps<{
+  disabled?: boolean;
+}>();
+
+const attrs = useAttrs();
+const pressed = defineModel<boolean>({ default: false });
+const toggle = useToggle(
+  {
+    get disabled() {
+      return disabled;
+    },
+  },
+  pressed,
 );
 
-const pressed = defineModel<boolean>({ default: false });
-const toggle = useToggle(props, pressed);
+const buttonProps = computed(() =>
+  mergeElementProps(toggle.buttonProps, attrs, { type: "button" }),
+);
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  click: [event: MouseEvent];
+  dblclick: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  keydown: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+}>();
 </script>
 
 <template>
-  <button v-bind="toggle.buttonProps" class="n-toggle">
+  <button
+    v-bind="buttonProps"
+    class="n-toggle"
+    @blur="emit('blur', $event)"
+    @click="emit('click', $event)"
+    @dblclick="emit('dblclick', $event)"
+    @focus="emit('focus', $event)"
+    @keydown="emit('keydown', $event)"
+    @keyup="emit('keyup', $event)"
+  >
     <slot />
   </button>
 </template>
@@ -69,3 +99,4 @@ const toggle = useToggle(props, pressed);
   }
 }
 </style>
+@click="onClick"

@@ -17,11 +17,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 async function loadRating() {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-rating-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-rating-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -30,11 +32,11 @@ async function loadRating() {
   const Rating = (
     await server.ssrLoadModule(`/@fs${sourcePath}`)
   ).default as Component;
-  return { Rating, server };
+  return { Rating, server, cacheDir };
 }
 
 test("Rating renders a localized native radio group", async () => {
-  const { Rating, server } = await loadRating();
+  const { Rating, server, cacheDir } = await loadRating();
 
   try {
     const html = normalizeSsrHtml(await renderToString(
@@ -51,13 +53,15 @@ test("Rating renders a localized native radio group", async () => {
           form: "survey",
           disabled: true,
           required: true,
+          "data-owner": "application",
         }),
       }),
     ));
 
     const controls = html.match(/<input[^>]*>/gu) ?? [];
 
-    assert.match(html, /^<fieldset class="n-rating" disabled>/u);
+    assert.match(html, /^<fieldset class="n-rating"[^>]*disabled>/u);
+    assert.match(html, /data-owner="application"/u);
     assert.match(html, /<legend class="legend">Satisfaction<\/legend>/u);
     assert.equal(controls.length, 3);
     for (const control of controls) {
@@ -75,6 +79,7 @@ test("Rating renders a localized native radio group", async () => {
     assert.match(html, /<span class="text">Satisfied<\/span>/u);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 
@@ -87,7 +92,8 @@ test("Rating source keeps interaction native and its public schema small", () =>
   assert.match(source, /defineModel<number \| null>\(\{ default: null \}\)/u);
   assert.match(source, /<fieldset[\s\S]*<legend[\s\S]*type="radio"/u);
   assert.match(source, /useNativeRadioGroupReset\(inputs, model\)/u);
-  assert.doesNotMatch(source, /computed|nativeModel|resetControl/u);
+  assert.match(source, /mergeElementProps\(attrs,/u);
+  assert.doesNotMatch(source, /nativeModel|resetControl/u);
   assert.match(source, /@media \(forced-colors: active\)/u);
   assert.doesNotMatch(source, /<slot\b|provide\(|inject\(|data-state|role="radiogroup"/u);
   assert.doesNotMatch(source, /watch(?:Effect)?\b|onMounted\b|onUpdated\b/u);

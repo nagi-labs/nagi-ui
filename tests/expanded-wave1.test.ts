@@ -33,10 +33,10 @@ test("Toolbar roves across enabled items and follows RTL", async () => {
   }));
   assert.ok(toolbar);
   const first = toolbar.itemProps(items.value[0]);
-  const ownerDocument = {
-    getElementById(id: string) { return { focus() { focused.push(id); } }; },
-  } as unknown as Document;
-  first.onFocus({ currentTarget: { ownerDocument } } as unknown as FocusEvent);
+  first.ref({ isConnected: true, focus() { focused.push(first.id); } } as unknown as HTMLElement);
+  const link = toolbar.itemProps(items.value[2]);
+  link.ref({ isConnected: true, focus() { focused.push(link.id); } } as unknown as HTMLElement);
+  first.onFocus({ currentTarget: {} } as unknown as FocusEvent);
   const next = keyboard("ArrowLeft");
   toolbar.toolbarProps.onKeydown(next.event);
   await new Promise((resolve) => queueMicrotask(resolve));
@@ -177,22 +177,31 @@ test("Resizable sanitizes non-finite models and ignores zero-size pointer geomet
   scope.stop();
 });
 
-test("Carousel derives a bounded view without overwriting controlled indices", async () => {
+function mockCarouselSlides(
+  carouselId: string,
+  count: number,
+  onScrollIntoView: (index: number) => void,
+) {
+  const root = { id: carouselId } as HTMLElement;
+  return Array.from({ length: count }, (_, itemIndex) => ({
+    offsetLeft: itemIndex * 100,
+    closest: () => root,
+    contains: () => false,
+    scrollIntoView: () => onScrollIntoView(itemIndex),
+  })) as unknown as HTMLElement[];
+}
+
+test("[CAR-STATE-01] Carousel derives a bounded view without overwriting controlled indices", async () => {
   const scope = effectScope();
   await scope.run(async () => {
     const items = ref([{ key: "a" }, { key: "b" }, { key: "c" }]);
     const index = ref(0);
     const carousel = useCarousel({ items, index, label: "Featured" });
     const scrolled: number[] = [];
-    const children = items.value.map((_item, itemIndex) => ({
-      offsetLeft: itemIndex * 100,
-      scrollIntoView() { scrolled.push(itemIndex); },
-    }));
-    carousel.setTrack({ children: {
-      length: children.length,
-      item: (itemIndex: number) => children[itemIndex] ?? null,
-      [Symbol.iterator]: function* () { yield* children; },
-    } } as unknown as Element);
+    const slides = mockCarouselSlides(carousel.rootProps.id, items.value.length, (itemIndex) => {
+      scrolled.push(itemIndex);
+    });
+    carousel.viewportProps.ref({ querySelectorAll: () => slides } as unknown as Element);
     carousel.nextButtonProps.onClick();
     assert.equal(index.value, 1);
     await nextTick();
@@ -209,7 +218,40 @@ test("Carousel derives a bounded view without overwriting controlled indices", a
   scope.stop();
 });
 
-test("Carousel localizes status and removes disabled scroll controls from tab order", () => {
+test("[CAR-SEM-01][CAR-SEM-02][CAR-SEM-06] Carousel chooses landmark and viewport semantics explicitly", () => {
+  const grouped = useCarousel({ items: [], index: ref(0), label: "Featured products" });
+  const landmark = useCarousel({
+    items: [],
+    index: ref(0),
+    label: "Featured products",
+    landmark: true,
+  });
+  const blankDescriptions = useCarousel({
+    items: [{ key: "a" }],
+    index: ref(0),
+    label: "Fallback descriptions",
+    carouselRoleDescription: " ",
+    slidesRoleDescription: " ",
+    slideRoleDescription: " ",
+  });
+
+  assert.equal(grouped.rootProps.role, "group");
+  assert.equal(landmark.rootProps.role, "region");
+  assert.equal(grouped.rootProps["aria-label"], "Featured products");
+  assert.equal(grouped.rootProps["aria-roledescription"], "carousel");
+  assert.equal(grouped.viewportProps.role, "group");
+  assert.equal(grouped.viewportProps["aria-label"], "Featured products");
+  assert.equal(grouped.viewportProps["aria-roledescription"], "slides");
+  assert.equal(blankDescriptions.rootProps["aria-roledescription"], "carousel");
+  assert.equal(blankDescriptions.viewportProps["aria-roledescription"], "slides");
+  assert.equal(
+    blankDescriptions.slideProps({ key: "a" }, 0)["aria-roledescription"],
+    "slide",
+  );
+  assert.equal(typeof grouped.viewportProps.ref, "function");
+});
+
+test("[CAR-SEM-02][CAR-SEM-04][CAR-SEM-05][CAR-STATE-03] Carousel localizes role descriptions, slide text, and disabled policy", () => {
   const scope = effectScope();
   scope.run(() => {
     const items = [{ key: "a" }, { key: "b" }];
@@ -217,43 +259,55 @@ test("Carousel localizes status and removes disabled scroll controls from tab or
       items,
       index: ref(1),
       label: "注目記事",
-      trackLabel: "記事一覧",
+      slidesLabel: "記事一覧",
+      carouselRoleDescription: "カルーセル",
+      slidesRoleDescription: "スライド一覧",
+      slideRoleDescription: "スライド",
       disabled: true,
       formatAnnouncement: (position, count) => position === null ? "記事なし" : `${count}件中${position}件目`,
       formatSlideLabel: (_item, position, count) => `${count}件中${position}件目の記事`,
     });
     assert.equal(carousel.announcement.value, "2件中2件目");
-    assert.equal(carousel.trackProps["aria-label"], "記事一覧");
-    assert.equal(carousel.trackProps.tabindex, -1);
-    assert.equal(carousel.trackProps["aria-disabled"], "true");
-    assert.equal(carousel.rootProps["aria-disabled"], "true");
-    assert.equal(carousel.slideProps(items[1]!, 1)["aria-label"], "2件中2件目の記事");
+    assert.equal(carousel.rootProps["aria-roledescription"], "カルーセル");
+    assert.equal(carousel.viewportProps.tabindex, -1);
+    assert.equal(carousel.viewportProps.role, "group");
+    assert.equal(carousel.viewportProps["aria-label"], "記事一覧");
+    assert.equal(carousel.viewportProps["aria-roledescription"], "スライド一覧");
+    assert.equal("aria-disabled" in carousel.viewportProps, false);
+    assert.equal("aria-disabled" in carousel.rootProps, false);
+    assert.equal(carousel.rootProps["data-disabled"], "");
+    assert.equal(carousel.slideProps(items[1]!, 1).role, "group");
+    assert.equal(carousel.slideProps(items[1]!, 1)["aria-roledescription"], "スライド");
+    assert.equal(
+      carousel.slideProps(items[1]!, 1)["aria-labelledby"],
+      carousel.slideLabelProps(1).id,
+    );
+    assert.equal(carousel.slidePosition(items[1]!, 1), "2件中2件目の記事");
+
+    carousel.goTo(0);
+    assert.equal(carousel.currentIndex.value, 1, "disabled user navigation is ignored");
+    carousel.index.value = 0;
+    assert.equal(carousel.currentIndex.value, 0, "external controlled updates remain authoritative");
   });
   scope.stop();
 });
 
-test("Carousel restores the physical slide when a controlled scroll write is rejected", async () => {
+test("[CAR-INT-02] Carousel restores the physical slide when a controlled scroll write is rejected", async () => {
   const scope = effectScope();
   await scope.run(async () => {
     const source = ref(0);
     const index = computed({ get: () => source.value, set: () => {} });
     const carousel = useCarousel({ items: [{ key: "a" }, { key: "b" }], index, label: "Locked" });
     const restored: number[] = [];
-    const children = [0, 1].map((itemIndex) => ({
-      offsetLeft: itemIndex * 100,
-      scrollIntoView() { restored.push(itemIndex); },
-    }));
-    const collection = {
-      length: children.length,
-      item(itemIndex: number) { return children[itemIndex] ?? null; },
-      [Symbol.iterator]: function* () { yield* children; },
-    };
-    const track = {
-      children: collection,
+    const slides = mockCarouselSlides(carousel.rootProps.id, 2, (itemIndex) => {
+      restored.push(itemIndex);
+    });
+    const viewport = {
+      querySelectorAll: () => slides,
       scrollLeft: 100,
       ownerDocument: { defaultView: { getComputedStyle: () => ({ direction: "ltr" }) } },
     } as unknown as HTMLElement;
-    carousel.trackProps.onScroll({ currentTarget: track } as unknown as Event);
+    carousel.viewportProps.onScroll({ currentTarget: viewport } as unknown as Event);
     await nextTick();
     await nextTick();
     assert.equal(source.value, 0);
@@ -272,30 +326,92 @@ test("Carousel ignores smooth-scroll intermediates during an external index tran
       label: "External",
     });
     const scrolled: number[] = [];
-    const children = [0, 1, 2].map((itemIndex) => ({
-      offsetLeft: itemIndex * 100,
-      scrollIntoView() { scrolled.push(itemIndex); },
-    }));
-    const track = {
-      children: {
-        length: children.length,
-        item(itemIndex: number) { return children[itemIndex] ?? null; },
-        [Symbol.iterator]: function* () { yield* children; },
-      },
+    const slides = mockCarouselSlides(carousel.rootProps.id, 3, (itemIndex) => {
+      scrolled.push(itemIndex);
+    });
+    const viewport = {
+      querySelectorAll: () => slides,
       scrollLeft: 100,
       ownerDocument: { defaultView: { getComputedStyle: () => ({ direction: "ltr" }) } },
     } as unknown as HTMLElement;
-    carousel.setTrack(track);
+    carousel.viewportProps.ref(viewport);
     index.value = 2;
     await nextTick();
-    carousel.trackProps.onScroll({ currentTarget: track } as unknown as Event);
+    carousel.viewportProps.onScroll({ currentTarget: viewport } as unknown as Event);
     assert.equal(index.value, 2);
     assert.ok(scrolled.includes(2));
   });
   scope.stop();
 });
 
-test("Carousel normalizes large negative and non-finite indices with one finite modulo rule", () => {
+test("[CAR-FOCUS-02] Carousel restores the accepted slide when focus interrupts smooth scrolling", async () => {
+  const scope = effectScope();
+  await scope.run(async () => {
+    const index = ref(1);
+    const carousel = useCarousel({
+      items: [{ key: "a" }, { key: "b" }, { key: "c" }],
+      index,
+      label: "Focusable",
+    });
+    const scrolled: number[] = [];
+    const slides = mockCarouselSlides(carousel.rootProps.id, 3, (itemIndex) => {
+      scrolled.push(itemIndex);
+    });
+    carousel.viewportProps.ref({ querySelectorAll: () => slides } as unknown as Element);
+    carousel.viewportProps.onFocus();
+    await nextTick();
+    await nextTick();
+
+    assert.ok(scrolled.every((itemIndex) => itemIndex === 1));
+    assert.ok(scrolled.length >= 1);
+  });
+  scope.stop();
+});
+
+test("[CAR-ANAT-01] Carousel discovers wrapped slides locally and excludes nested Carousel slides", async () => {
+  const scope = effectScope();
+  await scope.run(async () => {
+    const index = ref(0);
+    const carousel = useCarousel({
+      items: [{ key: "a" }, { key: "b" }],
+      index,
+      label: "Outer",
+    });
+    const outerRoot = { id: carousel.rootProps.id } as HTMLElement;
+    const nestedRoot = { id: "nested-carousel" } as HTMLElement;
+    const scrolled: string[] = [];
+    const outerFirst = {
+      closest: () => outerRoot,
+      contains: () => false,
+      scrollIntoView: () => scrolled.push("outer-first"),
+    } as unknown as HTMLElement;
+    const nestedFirst = {
+      closest: () => nestedRoot,
+      contains: () => false,
+      scrollIntoView: () => scrolled.push("nested-first"),
+    } as unknown as HTMLElement;
+    const outerSecond = {
+      closest: () => outerRoot,
+      contains: () => false,
+      scrollIntoView: () => scrolled.push("outer-second"),
+    } as unknown as HTMLElement;
+    const viewport = {
+      children: { length: 1 },
+      querySelectorAll: () => [outerFirst, nestedFirst, outerSecond],
+    } as unknown as Element;
+
+    carousel.viewportProps.ref(viewport);
+    carousel.goTo(1);
+    await nextTick();
+    await nextTick();
+
+    assert.equal(index.value, 1);
+    assert.deepEqual(scrolled, ["outer-second"]);
+  });
+  scope.stop();
+});
+
+test("[CAR-STATE-02] Carousel normalizes loop requests with one finite modulo rule", () => {
   const scope = effectScope();
   scope.run(() => {
     const index = ref(-4);
@@ -317,4 +433,23 @@ test("Carousel normalizes large negative and non-finite indices with one finite 
     assert.equal(index.value, 0);
   });
   scope.stop();
+});
+
+test("[CAR-STATE-02][CAR-FOCUS-01] non-looping boundary controls remain focusable", () => {
+  const index = ref(0);
+  const carousel = useCarousel({
+    items: [{ key: "a" }, { key: "b" }, { key: "c" }],
+    index,
+    label: "Bounded",
+  });
+
+  assert.equal(carousel.previousButtonProps.disabled, false);
+  assert.equal(carousel.previousButtonProps["aria-disabled"], "true");
+  assert.equal(carousel.nextButtonProps.disabled, false);
+  assert.equal(carousel.nextButtonProps["aria-disabled"], undefined);
+
+  carousel.goTo(2);
+  assert.equal(carousel.previousButtonProps["aria-disabled"], undefined);
+  assert.equal(carousel.nextButtonProps.disabled, false);
+  assert.equal(carousel.nextButtonProps["aria-disabled"], "true");
 });

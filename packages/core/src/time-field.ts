@@ -9,12 +9,15 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
 
 import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
+import { createElementRegistry } from "./element-registry.ts";
+import { createSegmentDigitBuffer, localeDigit } from "./segmented-field.ts";
 
 export type TimeFieldGranularity = "minute" | "second";
 export type TimeFieldDirection = "ltr" | "rtl";
@@ -43,6 +46,7 @@ export interface TimeFieldProps {
 }
 
 export interface TimeFieldSegmentProps {
+  ref?: (element: Element | ComponentPublicInstance | null) => void;
   id?: string | undefined;
   role?: "spinbutton";
   tabindex?: 0 | -1;
@@ -227,10 +231,8 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   let pendingModelWrite = false;
   let pendingModelValue: string | null = null;
   let writeRevision = 0;
-  let ownerDocument: Document | null = null;
-  let buffer = "";
-  let bufferedType: NumericTimeFieldSegmentType | null = null;
-  let bufferTask: ReturnType<typeof setTimeout> | undefined;
+  const segmentElements = createElementRegistry<EditableTimeFieldSegmentType>();
+  const digitBuffer = createSegmentDigitBuffer<NumericTimeFieldSegmentType>();
 
   function disabled(): boolean {
     return toValue(options.disabled) ?? false;
@@ -248,18 +250,6 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     return toValue(options.readOnly) ?? false;
   }
 
-  function clearBuffer() {
-    buffer = "";
-    bufferedType = null;
-    if (bufferTask !== undefined) clearTimeout(bufferTask);
-    bufferTask = undefined;
-  }
-
-  function resetBufferLater() {
-    if (bufferTask !== undefined) clearTimeout(bufferTask);
-    bufferTask = setTimeout(clearBuffer, 1000);
-  }
-
   function syncFromModel(value: string | null) {
     const valueTime = parsed(value);
     const next = timeParts(valueTime);
@@ -269,7 +259,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     parts.dayPeriod = next.dayPeriod;
     incompleteInvalid.value = value !== null && valueTime === null;
     forcedInvalid.value = false;
-    clearBuffer();
+    digitBuffer.clear();
   }
 
   function writeModel(next: string | null) {
@@ -330,7 +320,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     forcedInvalid.value = outOfRange(next);
   }
 
-  watch(options.value, (value) => {
+  function reconcileModelValue(value: string | null) {
     if (modelWrite) {
       pendingModelWrite = false;
       return;
@@ -341,14 +331,17 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     }
     pendingModelWrite = false;
     syncFromModel(value);
-  }, { flush: "sync" });
+  }
 
-  watch(granularity, () => {
+  function reconcileGranularity() {
     const current = parts.hour === undefined || parts.minute === undefined
       ? null
       : new Time(parts.hour, parts.minute, parts.second ?? 0);
     if (current !== null && options.value.value !== null) writeModel(isoValue(current));
-  }, { flush: "sync" });
+  }
+
+  watch(options.value, reconcileModelValue, { flush: "sync" });
+  watch(granularity, reconcileGranularity, { flush: "sync" });
 
   function periodNames(): readonly [string, string] {
     const formatter = new Intl.DateTimeFormat(locale(), {
@@ -430,7 +423,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   }
 
   function focus(type: EditableTimeFieldSegmentType) {
-    ownerDocument?.getElementById(segmentId(type))?.focus({ preventScroll: true });
+    segmentElements.get(type)?.focus({ preventScroll: true });
   }
 
   function focusAdjacent(type: EditableTimeFieldSegmentType, delta: -1 | 1) {
@@ -438,15 +431,6 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     const index = editable.indexOf(type);
     const next = editable[index + delta];
     if (next) focus(next);
-  }
-
-  function localeDigit(key: string): string | null {
-    if (/^[0-9]$/u.test(key)) return key;
-    const formatter = new Intl.NumberFormat(locale(), { useGrouping: false });
-    for (let digit = 0; digit <= 9; digit += 1) {
-      if (formatter.format(digit) === key) return String(digit);
-    }
-    return null;
   }
 
   function numericMaximum(type: NumericTimeFieldSegmentType): number {
@@ -471,20 +455,15 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   }
 
   function typeDigit(type: NumericTimeFieldSegmentType, digit: string) {
-    if (bufferedType !== type) buffer = "";
-    bufferedType = type;
-    let nextBuffer = `${buffer}${digit}`;
     const maximum = numericMaximum(type);
-    if (Number(nextBuffer) > maximum || nextBuffer.length > 2) nextBuffer = digit;
-    const next = Number(nextBuffer);
-    if (next < numericMinimum(type) || next > maximum) return;
-    buffer = nextBuffer;
-    setNumeric(type, next);
-    resetBufferLater();
-    if (buffer.length >= 2 || Number(`${buffer}0`) > maximum) {
-      clearBuffer();
-      focusAdjacent(type, 1);
-    }
+    const result = digitBuffer.consume(type, digit, {
+      minimum: numericMinimum(type),
+      maximum,
+      width: 2,
+    });
+    if (!result) return;
+    setNumeric(type, result.value);
+    if (result.complete) focusAdjacent(type, 1);
   }
 
   function setDayPeriod(period: 0 | 1) {
@@ -540,7 +519,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
         return;
       }
     } else {
-      const digit = localeDigit(event.key);
+      const digit = localeDigit(locale(), event.key);
       if (digit !== null && !event.altKey && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
         typeDigit(type, digit);
@@ -552,7 +531,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       case "ArrowUp":
       case "ArrowDown": {
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         const amount = event.key === "ArrowUp" ? 1 : -1;
         if (type === "dayPeriod") setDayPeriod(parts.dayPeriod === 1 ? 0 : 1);
         else cycleNumeric(type, amount);
@@ -560,25 +539,25 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       }
       case "ArrowLeft":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         focusAdjacent(type, direction() === "rtl" ? 1 : -1);
         break;
       case "ArrowRight":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         focusAdjacent(type, direction() === "rtl" ? -1 : 1);
         break;
       case "Home":
       case "End":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         if (type === "dayPeriod") setDayPeriod(event.key === "Home" ? 0 : 1);
         else setNumeric(type, event.key === "Home" ? numericMinimum(type) : numericMaximum(type));
         break;
       case "Backspace":
       case "Delete":
         event.preventDefault();
-        clearBuffer();
+        digitBuffer.clear();
         if (type === "dayPeriod") {
           parts.dayPeriod = undefined;
           commitParts();
@@ -616,7 +595,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       if (next && (event.currentTarget as HTMLElement).contains(next)) return;
       const hasAny = parts.hour !== undefined || parts.minute !== undefined || parts.second !== undefined;
       incompleteInvalid.value = hasAny && candidate() === null;
-      clearBuffer();
+      digitBuffer.clear();
     },
   };
 
@@ -636,6 +615,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
         ? options.segmentLabels?.empty ?? DEFAULT_LABELS.empty
         : formatNumber(value);
     return {
+      ref: segmentElements.refFor(type),
       id: segmentId(type),
       role: "spinbutton",
       tabindex: disabled() ? -1 : 0,
@@ -650,11 +630,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       inputmode: type === "dayPeriod" ? "text" : "numeric",
       spellcheck: false,
       onClick(event) {
-        ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
         (event.currentTarget as HTMLElement).focus();
-      },
-      onFocus(event) {
-        ownerDocument = (event.currentTarget as HTMLElement).ownerDocument;
       },
       onBeforeinput(event) {
         event.preventDefault();
@@ -673,7 +649,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
           return;
         }
         for (const character of event.data) {
-          const digit = localeDigit(character);
+          const digit = localeDigit(locale(), character);
           if (digit !== null) typeDigit(type, digit);
         }
       },
@@ -728,7 +704,6 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     onInvalid(event) {
       forcedInvalid.value = true;
       event.preventDefault();
-      ownerDocument = (event.currentTarget as HTMLInputElement | null)?.ownerDocument ?? ownerDocument;
       focusFirst();
     },
   };
@@ -742,7 +717,10 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     useNativeCustomValidity(options.formControl, validationMessage);
   }
 
-  onScopeDispose(clearBuffer);
+  onScopeDispose(() => {
+    digitBuffer.clear();
+    segmentElements.clear();
+  });
 
   return {
     value: options.value,

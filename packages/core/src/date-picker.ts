@@ -138,6 +138,7 @@ export interface DateRangePickerComponentModel {
 function popoverOptions(options: DatePickerBaseOptions, open: Ref<boolean>) {
   return {
     open,
+    hasPopup: "dialog" as const,
     anchor: {
       area: options.area ?? "block-end",
       offset: options.offset ?? 4,
@@ -184,13 +185,7 @@ function invalidRange(
 
 function repairFocusAfterClose(popover: UsePopoverReturn) {
   void nextTick(() => {
-    if (typeof document === "undefined") return;
-    const popup = document.getElementById(popover.id);
-    const active = document.activeElement;
-    if (active !== document.body && !(popup && active && popup.contains(active))) return;
-    const trigger = Array.from(document.querySelectorAll<HTMLElement>("[popovertarget]"))
-      .find((candidate) => candidate.getAttribute("popovertarget") === popover.id);
-    trigger?.focus({ preventScroll: true });
+    popover.restoreTriggerFocus();
   });
 }
 
@@ -237,10 +232,15 @@ function createDatePicker(options: UseDatePickerOptions): DatePickerBinding {
     },
   });
 
-  watch(open, (next, previous) => {
-    if (next) calendar.focusDate(options.value.value ?? calendar.focusedDate.value);
+  function reconcileOpenState(next: boolean, previous: boolean | undefined) {
+    if (next) calendar.focusDate(
+      options.value.value ?? calendar.focusedDate.value,
+      popover.getTriggerRoot() ?? undefined,
+    );
     else if (previous) repairFocusAfterClose(popover);
-  }, { flush: "post", immediate: true });
+  }
+
+  watch(open, reconcileOpenState, { flush: "post", immediate: true });
 
   if (options.formControl) {
     const initial = options.value.value;
@@ -293,26 +293,22 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
     syncingExternal = false;
   }
 
-  watch(
-    () => [options.value.value?.start, options.value.value?.end] as const,
-    () => {
-      const value = options.value.value;
-      if (modelWrite) {
-        pendingModelWrite = false;
-        return;
-      }
-      if (pendingModelWrite && sameRange(value, pendingModelValue)) {
-        pendingModelWrite = false;
-        return;
-      }
+  function reconcileExternalRange() {
+    const value = options.value.value;
+    if (modelWrite) {
       pendingModelWrite = false;
-      writeRevision += 1;
-      syncDraft(value);
-    },
-    { flush: "sync" },
-  );
+      return;
+    }
+    if (pendingModelWrite && sameRange(value, pendingModelValue)) {
+      pendingModelWrite = false;
+      return;
+    }
+    pendingModelWrite = false;
+    writeRevision += 1;
+    syncDraft(value);
+  }
 
-  watch([startValue, endValue], ([start, end]) => {
+  function reconcileDraftRange([start, end]: readonly [string | null, string | null]) {
     if (syncingExternal) return;
     const next = start !== null
       && end !== null
@@ -333,7 +329,14 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
       pendingModelWrite = false;
       syncDraft(options.value.value);
     });
-  }, { flush: "sync" });
+  }
+
+  watch(
+    () => [options.value.value?.start, options.value.value?.end] as const,
+    reconcileExternalRange,
+    { flush: "sync" },
+  );
+  watch([startValue, endValue], reconcileDraftRange, { flush: "sync" });
 
   const forcedInvalid = computed(() =>
     (toValue(options.invalid) ?? false)
@@ -387,10 +390,15 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
     },
   });
 
-  watch(open, (next, previous) => {
-    if (next) calendar.focusDate(startValue.value ?? calendar.focusedDate.value);
+  function reconcileOpenState(next: boolean, previous: boolean | undefined) {
+    if (next) calendar.focusDate(
+      startValue.value ?? calendar.focusedDate.value,
+      popover.getTriggerRoot() ?? undefined,
+    );
     else if (previous) repairFocusAfterClose(popover);
-  }, { flush: "post", immediate: true });
+  }
+
+  watch(open, reconcileOpenState, { flush: "post", immediate: true });
 
   if (options.startFormControl) {
     const initial = options.value.value ? { ...options.value.value } : null;

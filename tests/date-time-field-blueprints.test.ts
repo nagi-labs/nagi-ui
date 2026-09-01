@@ -18,11 +18,13 @@ function normalize(html: string) {
 }
 
 test("DateField and TimeField SSR plain segmented DOM with native form-value channels", async () => {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-date-time-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-date-time-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -70,6 +72,7 @@ test("DateField and TimeField SSR plain segmented DOM with native form-value cha
     assert.match(timeHtml, /step="1"/u);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 });
 

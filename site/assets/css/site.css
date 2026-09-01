@@ -1,0 +1,69 @@
+:root {
+  color-scheme: light;
+  --site-color-canvas: #f7f8fa;
+  --site-color-canvas-muted: #eef0f3;
+  --site-color-ink-strong: var(--nagi-color-text);
+  --site-color-brand: var(--nagi-color-accent);
+  --site-color-brand-strong: color-mix(in srgb, var(--nagi-color-accent) 82%, black);
+  --site-color-code: #202328;
+  --site-color-code-text: #eef0f3;
+  --site-font-code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --site-layout-max: 86rem;
+  --site-sidebar-width: 15rem;
+  --site-header-height: 3.5rem;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --site-color-canvas: #111315;
+  --site-color-canvas-muted: #1b1e22;
+  --site-color-code: #0d0f12;
+  --site-color-code-text: #eef0f3;
+  --nagi-color-accent: #8aafff;
+  --nagi-color-focus-ring: #8aafff;
+  --nagi-color-surface: #1b1e22;
+  --nagi-color-surface-accent: #23345a;
+  --nagi-color-surface-active: #272b31;
+  --nagi-color-surface-danger: #3b2026;
+  --nagi-color-surface-success: #183426;
+  --nagi-color-surface-warning: #372d18;
+  --nagi-color-border: #444a54;
+  --nagi-color-border-muted: #30343b;
+  --nagi-color-text: #e7e9ec;
+  --nagi-color-text-muted: #a5abb4;
+  --nagi-color-text-disabled: #6d737d;
+  --nagi-color-danger: #ff8996;
+  --nagi-color-success: #70d39d;
+  --nagi-color-warning: #efc56d;
+  --nagi-shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.32);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--site-color-canvas);
+}
+::selection {
+  background: var(--nagi-color-surface-accent);
+}
+
+/* Button axes are component-local; context classes select their owned Button. */
+.actions.-compact .n-button {
+  --button-size: small;
+}
+
+.actions.-spacious > .n-button {
+  --button-size: large;
+}
+
+.actions.-primary > .n-button {
+  --button-tone: accent;
+  --button-appearance: solid;
+}
+
+.actions.-destructive > .n-button {
+  --button-tone: danger;
+  --button-appearance: outlined;
+  --button-shape: rounded;
+}

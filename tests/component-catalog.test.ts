@@ -13,14 +13,48 @@ import { createToastManager } from "../packages/core/src/toast.ts";
 
 const repo = path.join(import.meta.dirname, "..");
 
+test("compound Blueprints do not fall through unknown attributes", () => {
+  for (const blueprint of [
+    "menu/ActionMenu.vue",
+    "menu/DropdownMenu.vue",
+    "menu/DropdownMenuItem.vue",
+    "menu/DropdownSubmenu.vue",
+    "context-menu/ContextMenu.vue",
+    "dialog/Dialog.vue",
+    "alert-dialog/AlertDialog.vue",
+    "listbox/Listbox.vue",
+    "menubar/Menubar.vue",
+    "navigation-menu/NavigationMenu.vue",
+    "popover/Popover.vue",
+    "toolbar/Toolbar.vue",
+    "tooltip/Tooltip.vue",
+    "tree/Tree.vue",
+    "tree/TreeBranch.vue",
+    "autocomplete/Autocomplete.vue",
+    "combobox/Combobox.vue",
+    "date-field/DateField.vue",
+    "multi-select/MultiSelect.vue",
+    "otp-field/OTPField.vue",
+    "preview-card/PreviewCard.vue",
+    "tags-input/TagsInput.vue",
+    "time-field/TimeField.vue",
+  ]) {
+    const source = fs.readFileSync(path.join(repo, "packages/core/blueprints", blueprint), "utf8");
+    assert.match(source, /inheritAttrs:\s*false/u, blueprint);
+    assert.doesNotMatch(source, /\$attrs|mergeElementProps/u, blueprint);
+  }
+});
+
 async function withComponents(
   run: (components: Record<string, Component>) => Promise<void>,
 ) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-catalog-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-catalog-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -33,6 +67,7 @@ async function withComponents(
     await run(components as Record<string, Component>);
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 
@@ -77,21 +112,21 @@ function renderSlotFunctions(
 test("components entry exposes every thin behavior Blueprint", async () => {
   await withComponents(async (components) => {
     for (const name of ["Popover", "Dialog", "Tooltip", "Disclosure", "Toast"]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
   });
 });
 
 test("components entry exposes the independent Tabs behavior Blueprint", async () => {
   await withComponents(async (components) => {
-    assert.ok(components.Tabs, "Tabs is exported from /components");
+    assert.ok(components.NTabs, "Tabs is exported from /components");
   });
 });
 
 test("components entry exposes Avatar, Separator, and Toggle", async () => {
   await withComponents(async (components) => {
     for (const name of ["Avatar", "Separator", "Toggle"]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
   });
 });
@@ -99,7 +134,7 @@ test("components entry exposes Avatar, Separator, and Toggle", async () => {
 test("components entry exposes Accordion and AlertDialog", async () => {
   await withComponents(async (components) => {
     for (const name of ["Accordion", "AlertDialog"]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
   });
 });
@@ -114,10 +149,10 @@ test("components entry exposes the complete date and time family", async () => {
       "DateRangePicker",
       "TimeField",
     ]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
 
-    const calendar = await render(components.Calendar as Component, {
+    const calendar = await render(components.NCalendar as Component, {
       label: "Arrival calendar",
       locale: "en-US",
       timeZone: "UTC",
@@ -128,7 +163,7 @@ test("components entry exposes the complete date and time family", async () => {
     assert.equal(calendar.match(/role="gridcell"/gu)?.length, 42);
     assert.match(calendar, /<input[^>]*type="date"[^>]*name="arrival"[^>]*value="2026-07-23"/u);
 
-    const picker = await render(components.DatePicker as Component, {
+    const picker = await render(components.NDatePicker as Component, {
       label: "Arrival",
       locale: "en-US",
       timeZone: "UTC",
@@ -139,7 +174,7 @@ test("components entry exposes the complete date and time family", async () => {
     assert.ok(picker.includes(`id="${popup}"`));
     assert.match(picker, /popover[^>]*role="dialog"|role="dialog"[^>]*popover/u);
 
-    const range = await render(components.DateRangePicker as Component, {
+    const range = await render(components.NDateRangePicker as Component, {
       label: "Stay",
       locale: "en-US",
       timeZone: "UTC",
@@ -149,7 +184,7 @@ test("components entry exposes the complete date and time family", async () => {
     assert.equal(range.match(/role="spinbutton"/gu)?.length, 6);
     assert.equal(range.match(/aria-selected="true"/gu)?.length, 3);
 
-    const time = await render(components.TimeField as Component, {
+    const time = await render(components.NTimeField as Component, {
       label: "Start time",
       modelValue: "13:45",
       name: "starts",
@@ -169,10 +204,10 @@ test("components entry exposes the expanded thin catalog slice", async () => {
       "Spinner",
       "Textarea",
     ]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
 
-    const breadcrumb = await render(components.Breadcrumb as Component, {
+    const breadcrumb = await render(components.NBreadcrumb as Component, {
       label: "Project path",
       items: [
         { key: "home", label: "Home", href: "/" },
@@ -185,7 +220,7 @@ test("components entry exposes the expanded thin catalog slice", async () => {
     assert.match(breadcrumb, /aria-current="page"[^>]*>Project/);
 
     const buttonGroup = await render(
-      components.ButtonGroup as Component,
+      components.NButtonGroup as Component,
       { label: "Editor actions" },
       "Action",
     );
@@ -193,7 +228,7 @@ test("components entry exposes the expanded thin catalog slice", async () => {
     assert.match(buttonGroup, /aria-label="Editor actions"/);
 
     const emptyState = await render(
-      components.EmptyState as Component,
+      components.NEmptyState as Component,
       { title: "No projects", description: "Create one to begin." },
       "Create project",
     );
@@ -201,17 +236,17 @@ test("components entry exposes the expanded thin catalog slice", async () => {
     assert.match(emptyState, /Create one to begin\./);
     assert.match(emptyState, /Create project/);
 
-    const kbd = await render(components.Kbd as Component, { label: "K" });
+    const kbd = await render(components.NKbd as Component, { label: "K" });
     assert.match(kbd, /<kbd[^>]*>K<\/kbd>/);
 
-    const skeleton = await render(components.Skeleton as Component);
+    const skeleton = await render(components.NSkeleton as Component);
     assert.match(skeleton, /aria-hidden="true"/);
 
-    const spinner = await render(components.Spinner as Component, { label: "Loading" });
+    const spinner = await render(components.NSpinner as Component, { label: "Loading" });
     assert.match(spinner, /role="status"/);
     assert.match(spinner, /aria-label="Loading"/);
 
-    const textarea = await render(components.Textarea as Component, {
+    const textarea = await render(components.NTextarea as Component, {
       label: "Notes",
       modelValue: "Initial",
       name: "notes",
@@ -228,9 +263,9 @@ test("components entry exposes the expanded thin catalog slice", async () => {
 
 test("components entry exposes native Table", async () => {
   await withComponents(async (components) => {
-    assert.ok(components.Table, "Table is exported from /components");
+    assert.ok(components.NTable, "Table is exported from /components");
     const rendered = await renderSlotFunctions(
-      components.Table as Component,
+      components.NTable as Component,
       {
         caption: "Package users",
         columns: [
@@ -254,10 +289,10 @@ test("components entry exposes native Table", async () => {
 test("components entry exposes the small interactive catalog slice", async () => {
   await withComponents(async (components) => {
     for (const name of ["FileInput", "Pagination", "Rating"]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
 
-    const pagination = await render(components.Pagination as Component, {
+    const pagination = await render(components.NPagination as Component, {
       label: "Result pages",
       currentKey: "2",
       items: [
@@ -269,7 +304,7 @@ test("components entry exposes the small interactive catalog slice", async () =>
     assert.match(pagination, /<a[^>]*href="\/results\?page=1"/);
     assert.match(pagination, /<button[^>]*aria-current="page"[^>]*>2/);
 
-    const rating = await render(components.Rating as Component, {
+    const rating = await render(components.NRating as Component, {
       label: "Quality",
       name: "quality",
       modelValue: 2,
@@ -284,7 +319,7 @@ test("components entry exposes the small interactive catalog slice", async () =>
     const selectedRating = rating.match(/<input[^>]*checked[^>]*>/)?.[0] ?? "";
     assert.match(selectedRating, /value="2"/);
 
-    const fileInput = await render(components.FileInput as Component, {
+    const fileInput = await render(components.NFileInput as Component, {
       label: "Attachment",
       name: "attachment",
       accept: ".txt",
@@ -303,11 +338,11 @@ test("components entry exposes the small interactive catalog slice", async () =>
 test("components entry exposes the first anatomy-sensitive catalog slice", async () => {
   await withComponents(async (components) => {
     for (const name of ["InputGroup", "NumberField", "ToggleGroup"]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
 
     const inputGroup = await renderSlotFunctions(
-      components.InputGroup as Component,
+      components.NInputGroup as Component,
       { prefix: "https://", suffix: ".dev" },
       {
         default: () => h("input", {
@@ -326,7 +361,7 @@ test("components entry exposes the first anatomy-sensitive catalog slice", async
     assert.match(inputGroup, /class="n-input-group-control"/);
     assert.match(inputGroup, /class="n-input-group-action"/);
 
-    const numberField = await render(components.NumberField as Component, {
+    const numberField = await render(components.NNumberField as Component, {
       label: "Seats",
       modelValue: 2,
       min: 0,
@@ -338,7 +373,7 @@ test("components entry exposes the first anatomy-sensitive catalog slice", async
     assert.match(numberField, /<input[^>]*value="2"/);
     assert.equal(numberField.match(/<button/gu)?.length, 2);
 
-    const toggleGroup = await render(components.ToggleGroup as Component, {
+    const toggleGroup = await render(components.NToggleGroup as Component, {
       label: "Alignment",
       modelValue: "center",
       items: [
@@ -353,8 +388,8 @@ test("components entry exposes the first anatomy-sensitive catalog slice", async
 
 test("components entry exposes RangeSlider as one native two-thumb range", async () => {
   await withComponents(async (components) => {
-    assert.ok(components.RangeSlider, "RangeSlider is exported from /components");
-    const range = await render(components.RangeSlider as Component, {
+    assert.ok(components.NRangeSlider, "RangeSlider is exported from /components");
+    const range = await render(components.NRangeSlider as Component, {
       label: "Price range",
       lowerLabel: "Minimum price",
       upperLabel: "Maximum price",
@@ -375,9 +410,9 @@ test("components entry exposes RangeSlider as one native two-thumb range", async
 
 test("components entry exposes PreviewCard as a real link with an interactive preview", async () => {
   await withComponents(async (components) => {
-    assert.ok(components.PreviewCard, "PreviewCard is exported from /components");
+    assert.ok(components.NPreviewCard, "PreviewCard is exported from /components");
     const preview = await renderSlotFunctions(
-      components.PreviewCard as Component,
+      components.NPreviewCard as Component,
       {
         href: "/packages/nagi-ui",
         label: "Nagi UI package",
@@ -400,8 +435,8 @@ test("components entry exposes PreviewCard as a real link with an interactive pr
 
 test("components entry exposes Stepper as flat native navigation", async () => {
   await withComponents(async (components) => {
-    assert.ok(components.Stepper, "Stepper is exported from /components");
-    const stepper = await render(components.Stepper as Component, {
+    assert.ok(components.NStepper, "Stepper is exported from /components");
+    const stepper = await render(components.NStepper as Component, {
       label: "Package setup",
       currentKey: "access",
       items: [
@@ -421,7 +456,7 @@ test("components entry exposes Stepper as flat native navigation", async () => {
 test("Accordion and AlertDialog preserve their native SSR contracts", async () => {
   await withComponents(async (components) => {
     const accordion = await renderSlotFunctions(
-      components.Accordion as Component,
+      components.NAccordion as Component,
       {
         items: [
           { key: "shipping", summary: "Shipping", content: "Two days" },
@@ -445,7 +480,7 @@ test("Accordion and AlertDialog preserve their native SSR contracts", async () =
     assert.match(accordion, /<section[^>]*class="section"[^>]*>.*<p>Two days<\/p>/);
 
     const alertDialog = await renderSlots(
-      components.AlertDialog as Component,
+      components.NAlertDialog as Component,
       {
         triggerLabel: "Delete package",
         title: "Delete this package?",
@@ -472,7 +507,7 @@ test("Accordion and AlertDialog preserve their native SSR contracts", async () =
 
 test("small native primitives preserve their semantics during SSR", async () => {
   await withComponents(async (components) => {
-    const avatar = await render(components.Avatar as Component, {
+    const avatar = await render(components.NAvatar as Component, {
       src: "/ada.jpg",
       alt: "Ada Lovelace",
     });
@@ -480,22 +515,22 @@ test("small native primitives preserve their semantics during SSR", async () => 
     assert.match(avatar, /aria-label="Ada Lovelace"/);
     assert.match(avatar, /<img[^>]*src="\/ada.jpg"[^>]*alt=""/);
 
-    const separator = await render(components.Separator as Component);
+    const separator = await render(components.NSeparator as Component);
     assert.match(separator, /<hr[^>]*class="n-separator"/);
 
-    const verticalSeparator = await render(components.Separator as Component, {
+    const verticalSeparator = await render(components.NSeparator as Component, {
       orientation: "vertical",
     });
     assert.match(verticalSeparator, /role="separator"/);
     assert.match(verticalSeparator, /aria-orientation="vertical"/);
 
-    const decorativeSeparator = await render(components.Separator as Component, {
+    const decorativeSeparator = await render(components.NSeparator as Component, {
       decorative: true,
     });
     assert.match(decorativeSeparator, /aria-hidden="true"/);
     assert.doesNotMatch(decorativeSeparator, /role="separator"/);
 
-    const toggle = await render(components.Toggle as Component, { modelValue: true }, "Pinned");
+    const toggle = await render(components.NToggle as Component, { modelValue: true }, "Pinned");
     assert.match(toggle, /<button[^>]*type="button"/);
     assert.match(toggle, /aria-pressed="true"/);
     assert.match(toggle, />Pinned</);
@@ -515,14 +550,14 @@ test("components entry exposes every native form and indicator Blueprint", async
       "Meter",
       "Slider",
     ]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      assert.ok(components[`N${name}`], `N${name} is exported from /components`);
     }
   });
 });
 
 test("native form and indicator Blueprints preserve platform markup during SSR", async () => {
   await withComponents(async (components) => {
-    const input = await render(components.Input as Component, {
+    const input = await render(components.NInput as Component, {
       label: "Email",
       modelValue: "dev@example.com",
       type: "email",
@@ -546,7 +581,7 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(input, /form="profile"/);
     assert.match(input, /required/);
 
-    const checkbox = await render(components.Checkbox as Component, {
+    const checkbox = await render(components.NCheckbox as Component, {
       label: "Updates",
       modelValue: true,
       name: "updates",
@@ -563,7 +598,7 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(nativeCheckbox, /aria-describedby="updates-help"/);
     assert.match(nativeCheckbox, /class="[^"]*consumer-checkbox/);
 
-    const radio = await render(components.Radio as Component, {
+    const radio = await render(components.NRadio as Component, {
       label: "Email",
       modelValue: "email",
       value: "email",
@@ -573,7 +608,7 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(radio, /<input[^>]*type="radio"/);
     assert.match(radio, /checked/);
 
-    const toggle = await render(components.Switch as Component, {
+    const toggle = await render(components.NSwitch as Component, {
       label: "Public",
       modelValue: true,
       name: "public",
@@ -588,7 +623,7 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(nativeSwitch, /aria-describedby="public-help"/);
     assert.match(nativeSwitch, /class="[^"]*consumer-switch/);
 
-    const select = await render(components.Select as Component, {
+    const select = await render(components.NSelect as Component, {
       label: "Framework",
       modelValue: "vue",
       name: "framework",
@@ -603,21 +638,21 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(select, /<option[^>]*value="react"[^>]*disabled/);
 
     const fieldset = await render(
-      components.Fieldset as Component,
+      components.NFieldset as Component,
       { legend: "Contact", disabled: true },
       "Fields",
     );
     assert.match(fieldset, /<fieldset[^>]*disabled/);
     assert.match(fieldset, /<legend[^>]*>Contact<\/legend>/);
 
-    const indeterminateProgress = await render(components.Progress as Component, {
+    const indeterminateProgress = await render(components.NProgress as Component, {
       label: "Uploading",
       max: 100,
     });
     assert.match(indeterminateProgress, /<progress/);
     assert.doesNotMatch(indeterminateProgress, /<progress[^>]*\svalue=/);
 
-    const meter = await render(components.Meter as Component, {
+    const meter = await render(components.NMeter as Component, {
       label: "Storage",
       value: 72,
       min: 0,
@@ -630,7 +665,7 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(meter, /low="20"/);
     assert.match(meter, /high="80"/);
 
-    const slider = await render(components.Slider as Component, {
+    const slider = await render(components.NSlider as Component, {
       label: "Volume",
       modelValue: 40,
       name: "volume",
@@ -648,25 +683,27 @@ test("native form and indicator Blueprints preserve platform markup during SSR",
     assert.match(nativeSlider, /aria-describedby="volume-help"/);
     assert.match(nativeSlider, /class="[^"]*consumer-slider/);
 
-    const combobox = await render(components.Combobox as Component, {
+    const combobox = await render(components.NCombobox as Component, {
       label: "Framework",
       items: [{ key: "vue", label: "Vue" }],
       inputmode: "search",
-      "aria-describedby": "framework-help",
+      ariaDescribedby: "framework-help",
       class: "consumer-combobox",
+      "data-unexpected": "must-not-leak",
     });
     const nativeCombobox = combobox.match(/<input[^>]*type="text"[^>]*>/)?.[0] ?? "";
-    assert.doesNotMatch(combobox, /<div[^>]*n-combobox[^>]*consumer-combobox/);
+    assert.match(combobox, /<div[^>]*n-combobox[^>]*consumer-combobox/);
     assert.match(nativeCombobox, /inputmode="search"/);
     assert.match(nativeCombobox, /aria-describedby="framework-help"/);
-    assert.match(nativeCombobox, /class="[^"]*consumer-combobox/);
+    assert.doesNotMatch(nativeCombobox, /consumer-combobox/);
+    assert.doesNotMatch(combobox, /must-not-leak/);
   });
 });
 
 test("thin package Blueprints emit native relationship attributes during SSR", async () => {
   await withComponents(async (components) => {
     const popover = await render(
-      components.Popover as Component,
+      components.NPopover as Component,
       { triggerLabel: "Open popover" },
       "Popover body",
     );
@@ -676,7 +713,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(popover, /<div[^>]*\spopover[\s>]/);
 
     const dialog = await render(
-      components.Dialog as Component,
+      components.NDialog as Component,
       { triggerLabel: "Open dialog", title: "Confirm" },
       "Dialog body",
     );
@@ -686,8 +723,17 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.ok(dialog.includes(`id="${dialogTarget}"`));
     assert.match(dialog, /command="close"/);
 
+    const explicitlyIdentifiedDialog = await render(
+      components.NDialog as Component,
+      { id: "account-dialog", triggerLabel: "Open account dialog", title: "Account" },
+      "Account body",
+    );
+    assert.equal(explicitlyIdentifiedDialog.match(/id="account-dialog"/g)?.length, 1);
+    assert.match(explicitlyIdentifiedDialog, /<div[^>]*id="account-dialog"/);
+    assert.doesNotMatch(explicitlyIdentifiedDialog, /<dialog[^>]*id="account-dialog"/);
+
     const describedDialog = await render(
-      components.Dialog as Component,
+      components.NDialog as Component,
       {
         triggerLabel: "Open described dialog",
         title: "Confirm",
@@ -700,7 +746,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.ok(describedDialog.includes(`id="${descriptionTarget}"`));
 
     const richDialog = await renderSlotFunctions(
-      components.Dialog as Component,
+      components.NDialog as Component,
       {
         triggerLabel: "Open rich dialog",
         title: "Confirm",
@@ -720,7 +766,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.ok(richDialog.includes(`id="${richDescriptionTarget}"`));
 
     const slotOnlyDialogDescription = await renderSlots(
-      components.Dialog as Component,
+      components.NDialog as Component,
       { triggerLabel: "Open slot description", title: "Confirm" },
       { description: "Slot-only description" },
     );
@@ -731,7 +777,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.ok(slotOnlyDialogDescription.includes(`id="${slotOnlyDescriptionTarget}"`));
     assert.match(slotOnlyDialogDescription, /Slot-only description/);
 
-    const tooltip = await render(components.Tooltip as Component, {
+    const tooltip = await render(components.NTooltip as Component, {
       triggerLabel: "Help",
       text: "Hint text",
     });
@@ -742,7 +788,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(tooltip, /popover="hint"/);
 
     const disclosure = await render(
-      components.Disclosure as Component,
+      components.NDisclosure as Component,
       { summary: "Question", open: true },
       "Answer",
     );
@@ -751,7 +797,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(disclosure, /Question/);
 
     const richDisclosure = await renderSlotFunctions(
-      components.Disclosure as Component,
+      components.NDisclosure as Component,
       { summary: "Question", open: true },
       { summary: (slotProps) => h("span", `${String(slotProps.summary)} with icon`) },
     );
@@ -766,7 +812,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
       priority: "assertive",
       action: { label: "Retry", onClick() {} },
     });
-    const toast = await render(components.Toast as Component, { manager: toastManager });
+    const toast = await render(components.NToast as Component, { manager: toastManager });
     assert.match(toast, /popover="manual"/);
     assert.match(toast, /role="region"/);
     assert.match(toast, /aria-label="Notifications"/);
@@ -781,7 +827,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
 
 test("Tabs package Blueprint emits a complete ARIA relationship graph during SSR", async () => {
   await withComponents(async (components) => {
-    const tabs = await render(components.Tabs as Component, {
+    const tabs = await render(components.NTabs as Component, {
       label: "Project sections",
       items: [
         { key: "overview", label: "Overview", content: "Project summary" },
@@ -812,7 +858,7 @@ test("Tabs package Blueprint emits a complete ARIA relationship graph during SSR
       ["missing", "overview"],
       ["billing", "activity"],
     ] as const) {
-      const controlled = await render(components.Tabs as Component, {
+      const controlled = await render(components.NTabs as Component, {
         label: "Controlled sections",
         selected,
         "onUpdate:selected": () => undefined,
@@ -841,10 +887,10 @@ test("Tabs package Blueprint emits a complete ARIA relationship graph during SSR
   });
 });
 
-test("styling-only package Blueprints emit semantic, readable markup during SSR", async () => {
+test("[BTN-SEM-01][BTN-SEM-02][BTN-STATE-01][BTN-INT-03][BTN-STYLE-01][BTN-STYLE-03] styling-only package Blueprints emit semantic, readable markup during SSR", async () => {
   await withComponents(async (components) => {
     const card = await render(
-      components.Card as Component,
+      components.NCard as Component,
       { title: "Profile", description: "Owned when needed" },
       "Card body",
     );
@@ -855,7 +901,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(card, /Card body/);
 
     const cardWithFooter = await renderSlots(
-      components.Card as Component,
+      components.NCard as Component,
       { title: "Billing" },
       { default: "Plan details", footer: "Manage subscription" },
     );
@@ -863,7 +909,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(cardWithFooter, /Manage subscription/);
 
     const cardWithRichHeader = await renderSlotFunctions(
-      components.Card as Component,
+      components.NCard as Component,
       { title: "Base title", description: "Base description" },
       {
         title: (slotProps) => h("span", `Rich ${String(slotProps.title)}`),
@@ -876,7 +922,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(cardWithRichHeader, /<span>Rich Base description<\/span>/);
 
     const cardWithSlotOnlyHeader = await renderSlots(
-      components.Card as Component,
+      components.NCard as Component,
       {},
       { title: "Slot-only title", description: "Slot-only description" },
     );
@@ -884,22 +930,23 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(cardWithSlotOnlyHeader, /Slot-only title/);
     assert.match(cardWithSlotOnlyHeader, /Slot-only description/);
 
-    const untitledCard = await render(components.Card as Component, {}, "Untitled card body");
+    const untitledCard = await render(components.NCard as Component, {}, "Untitled card body");
     assert.match(untitledCard, /<div[^>]*class="n-card"/);
     assert.doesNotMatch(untitledCard, /<header/);
     assert.match(untitledCard, /Untitled card body/);
 
     const alert = await render(
-      components.Alert as Component,
+      components.NAlert as Component,
       { title: "Action required", tone: "danger", role: "alert" },
       "Review the change",
     );
     assert.match(alert, /role="alert"/);
-    assert.match(alert, /class="n-alert" data-tone="danger"/);
+    const alertRoot = alert.match(/<section[^>]*class="n-alert"[^>]*>/u)?.[0] ?? "";
+    assert.match(alertRoot, /data-tone="danger"/u);
     assert.match(alert, /Action required/);
 
     const alertWithIcon = await renderSlots(
-      components.Alert as Component,
+      components.NAlert as Component,
       { title: "Saved" },
       { icon: "Success icon", default: "The record is current" },
     );
@@ -907,21 +954,50 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(alertWithIcon, /Success icon/);
 
     const alertWithRichTitle = await renderSlotFunctions(
-      components.Alert as Component,
+      components.NAlert as Component,
       { title: "Saved" },
       { title: (slotProps) => h("span", `${String(slotProps.title)} status`) },
     );
     assert.match(alertWithRichTitle, /<h2[^>]*class="title"[^>]*>/);
     assert.match(alertWithRichTitle, /<span>Saved status<\/span>/);
 
-    const smallButton = await render(components.Button as Component, { size: "small" }, "Small");
-    const defaultButton = await render(components.Button as Component, {}, "Default");
-    const largeButton = await render(components.Button as Component, { size: "large" }, "Large");
-    assert.match(smallButton, /class="n-button" data-variant="default" data-size="small"/);
+    const defaultButton = await render(components.NButton as Component, {}, "Default");
+    const attributedButton = await render(
+      components.NButton as Component,
+      {
+        id: "save-button",
+        class: "consumer-button",
+        title: "Save changes",
+        type: "submit",
+        name: "intent",
+        value: "save",
+        form: "settings-form",
+        "aria-label": "Save settings",
+      },
+      "Save",
+    );
+    const presetStyledButton = await render(
+      components.NButton as Component,
+      { class: "n-button -destructive" },
+      "Delete",
+    );
     assert.match(defaultButton, /class="n-button"/);
-    assert.match(largeButton, /class="n-button" data-variant="default" data-size="large"/);
+    assert.match(defaultButton, /data-scope="button"/);
+    assert.match(defaultButton, /data-part="root"/);
+    assert.match(defaultButton, /type="button"/);
+    assert.doesNotMatch(defaultButton, /data-(?:variant|size)=/u);
+    assert.match(attributedButton, /id="save-button"/);
+    assert.match(attributedButton, /class="n-button consumer-button"/);
+    assert.match(attributedButton, /title="Save changes"/);
+    assert.match(attributedButton, /type="submit"/);
+    assert.match(attributedButton, /name="intent"/);
+    assert.match(attributedButton, /value="save"/);
+    assert.match(attributedButton, /form="settings-form"/);
+    assert.match(attributedButton, /aria-label="Save settings"/);
+    assert.match(presetStyledButton, /class="n-button -destructive"/);
+    assert.doesNotMatch(presetStyledButton, /n-button n-button/u);
 
-    const badge = await render(components.Badge as Component, {
+    const badge = await render(components.NBadge as Component, {
       label: "Ready",
       tone: "success",
     });
@@ -929,7 +1005,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
     assert.match(badge, /Ready/);
 
     const badgeWithRichLabel = await renderSlotFunctions(
-      components.Badge as Component,
+      components.NBadge as Component,
       { label: "Ready", tone: "success" },
       { label: (slotProps) => h("span", `Icon ${String(slotProps.label)}`) },
     );
@@ -938,7 +1014,7 @@ test("styling-only package Blueprints emit semantic, readable markup during SSR"
   });
 });
 
-test("components entry exposes the completed expanded catalog with semantic SSR markup", async () => {
+test("[CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-06] components entry exposes the completed expanded catalog with semantic SSR markup", async () => {
   await withComponents(async (components) => {
     for (const name of [
       "Autocomplete",
@@ -953,37 +1029,38 @@ test("components entry exposes the completed expanded catalog with semantic SSR 
       "Toolbar",
       "Tree",
     ]) {
-      assert.ok(components[name], `${name} is exported from /components`);
+      const exportName = name === "OTPField" ? "NOtpField" : `N${name}`;
+      assert.ok(components[exportName], `${exportName} is exported from /components`);
     }
 
     const choices = [{ key: "jp", label: "Japan" }, { key: "jm", label: "Jamaica" }];
-    const autocomplete = await render(components.Autocomplete as Component, {
+    const autocomplete = await render(components.NAutocomplete as Component, {
       label: "Destination", items: choices, modelValue: "Ja", name: "destination",
     });
     assert.match(autocomplete, /role="combobox"/u);
     assert.match(autocomplete, /<input[^>]*name="destination"/u);
     assert.match(autocomplete, /popover/u);
 
-    const multi = await render(components.MultiSelect as Component, {
+    const multi = await render(components.NMultiSelect as Component, {
       label: "Countries", items: choices, modelValue: ["jp"], name: "countries",
-      "aria-describedby": "countries-help",
+      ariaDescribedby: "countries-help",
     });
     assert.match(multi, /role="combobox"/u);
     assert.match(multi, /<select[^>]*multiple[^>]*name="countries"|<select[^>]*name="countries"[^>]*multiple/u);
     assert.match(multi, /<option[^>]*value="jp"[^>]*selected/u);
     assert.match(multi, /<input[^>]*aria-describedby="countries-help"/u);
 
-    const tags = await render(components.TagsInput as Component, {
+    const tags = await render(components.NTagsInput as Component, {
       label: "Topics", modelValue: ["vue", "aria"], name: "topics",
-      "aria-describedby": "topics-help",
+      ariaDescribedby: "topics-help",
     });
     assert.equal(tags.match(/<option/gu)?.length, 2);
     assert.match(tags, /<select[^>]*multiple[^>]*name="topics"|<select[^>]*name="topics"[^>]*multiple/u);
     assert.match(tags, /<input[^>]*aria-describedby="topics-help"/u);
 
-    const otp = await render(components.OTPField as Component, {
+    const otp = await render(components.NOtpField as Component, {
       label: "Verification code", modelValue: "12", name: "code", length: 4,
-      "aria-describedby": "code-help", enterkeyhint: "done",
+      ariaDescribedby: "code-help", enterkeyhint: "done",
     });
     assert.equal(otp.match(/<input/gu)?.length, 1);
     const otpInput = otp.match(/<input[^>]*>/u)?.[0] ?? "";
@@ -993,28 +1070,37 @@ test("components entry exposes the completed expanded catalog with semantic SSR 
     assert.match(otpInput, /enterkeyhint="done"/u);
     assert.equal(otp.match(/class="cell"/gu)?.length, 4);
 
-    const carousel = await render(components.Carousel as Component, {
-      label: "Highlights", modelValue: 0,
+    const carousel = await render(components.NCarousel as Component, {
+      label: "Highlights", slidesLabel: "Highlight slides", landmark: true, modelValue: 0,
       items: [{ key: "a", label: "First" }, { key: "b", label: "Second" }],
     });
     assert.match(carousel, /role="region"/u);
-    assert.match(carousel, /role="group"[^>]*aria-label="Highlights"|aria-label="Highlights"[^>]*role="group"/u);
-    assert.equal(carousel.match(/aria-label="[12] \/ 2"/gu)?.length, 2);
+    assert.match(carousel, /aria-roledescription="carousel"/u);
+    assert.equal(carousel.match(/aria-roledescription="slide"/gu)?.length, 2);
+    assert.equal(carousel.match(/data-scope="carousel"/gu)?.length, 4);
+    assert.match(carousel, /data-part="root"/u);
+    assert.match(carousel, /data-part="viewport"/u);
+    assert.equal(carousel.match(/data-part="slide"/gu)?.length, 2);
+    assert.equal(carousel.match(/aria-labelledby="[^"]+-slide-[12]-label"/gu)?.length, 2);
+    assert.doesNotMatch(carousel, /data-nagi-carousel-track/u);
+    assert.match(carousel, /role="group" aria-label="Highlight slides" aria-roledescription="slides" tabindex="0"/u);
+    assert.match(carousel, /aria-label="Highlight slides"[\s\S]*class="seg -slides"[\s\S]*aria-roledescription="slide"/u);
+    assert.match(carousel, />First[\s\S]*?1 \/ 2/u);
 
-    const resizable = await renderSlots(components.Resizable as Component, {
+    const resizable = await renderSlots(components.NResizable as Component, {
       label: "Panels", modelValue: 50,
     }, { first: "Editor", second: "Preview" });
     assert.match(resizable, /role="separator"/u);
     assert.match(resizable, /aria-valuenow="50"/u);
 
-    const toolbar = await render(components.Toolbar as Component, {
+    const toolbar = await render(components.NToolbar as Component, {
       label: "Formatting",
       items: [{ key: "bold", label: "Bold" }, { key: "link", label: "Link" }],
     });
     assert.match(toolbar, /role="toolbar"/u);
     assert.equal(toolbar.match(/tabindex="0"/gu)?.length, 1);
 
-    const context = await render(components.ContextMenu as Component, {
+    const context = await render(components.NContextMenu as Component, {
       items: [{ key: "copy", label: "Copy" }],
     }, "Context target");
     assert.match(context, /Context target/u);
@@ -1023,21 +1109,21 @@ test("components entry exposes the completed expanded catalog with semantic SSR 
     assert.match(context, /class="unit -assistive"/u);
     assert.doesNotMatch(context, /class="value -assistive"/u);
 
-    const menubar = await render(components.Menubar as Component, {
+    const menubar = await render(components.NMenubar as Component, {
       label: "Application",
       items: [{ key: "file", label: "File", items: [{ key: "new", label: "New" }] }],
     });
     assert.match(menubar, /role="menubar"/u);
     assert.match(menubar, /aria-label="Application"/u);
 
-    const navigation = await render(components.NavigationMenu as Component, {
+    const navigation = await render(components.NNavigationMenu as Component, {
       label: "Primary",
       items: [{ key: "about", label: "About", href: "/about" }],
     });
     assert.match(navigation, /<nav[^>]*aria-label="Primary"/u);
     assert.doesNotMatch(navigation, /role="menu(?:bar|item)?"/u);
 
-    const tree = await render(components.Tree as Component, {
+    const tree = await render(components.NTree as Component, {
       label: "Files", modelValue: null, expanded: [],
       items: [{ key: "src", label: "Source", children: [{ key: "app", label: "App" }] }],
     });

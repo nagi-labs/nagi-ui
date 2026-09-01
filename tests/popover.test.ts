@@ -37,16 +37,18 @@ function toggleEvent(target: FakePopoverElement, newState: "open" | "closed") {
   return { target, newState } as unknown as ToggleEvent
 }
 
-test("emits only standard attributes", () => {
+test("[POP-SEM-01] emits local native target and surface registration", () => {
   const { id, triggerProps, popoverProps } = usePopover({ id: "pop-1" })
 
   assert.equal(id, "pop-1")
-  assert.deepEqual(triggerProps, { popovertarget: "pop-1" })
+  assert.equal(triggerProps.popovertarget, "pop-1")
+  assert.equal(typeof triggerProps.ref, "function")
   assert.equal(popoverProps.id, "pop-1")
+  assert.equal(typeof popoverProps.ref, "function")
   assert.equal(typeof popoverProps.onToggle, "function")
 })
 
-test("uncontrolled: UA toggle events mirror into open", async () => {
+test("[POP-STATE-01] uncontrolled UA toggle events mirror into open", async () => {
   const element = fakeElement()
   const { open, popoverProps } = usePopover({ id: "pop-2" })
 
@@ -62,7 +64,7 @@ test("uncontrolled: UA toggle events mirror into open", async () => {
   assert.equal(open.value, false)
 })
 
-test("controlled: writes to the model apply imperatively (async close)", async () => {
+test("[POP-STATE-01] controlled writes apply to the registered native surface", async () => {
   const element = fakeElement()
   const externalOpen = ref(false)
   const { open, popoverProps } = usePopover({ id: "pop-3", open: externalOpen })

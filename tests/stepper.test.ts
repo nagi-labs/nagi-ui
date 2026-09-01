@@ -19,11 +19,13 @@ function normalizeSsrHtml(html: string) {
 }
 
 async function renderStepper(props: Record<string, unknown>) {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-stepper-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: path.join(repo, "playground"),
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-stepper-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -38,6 +40,7 @@ async function renderStepper(props: Record<string, unknown>) {
     })));
   } finally {
     await server.close();
+    fs.rmSync(cacheDir, { recursive: true, force: true });
   }
 }
 
@@ -52,7 +55,7 @@ test("Stepper renders one named native step navigation", async () => {
     ],
   });
 
-  assert.match(html, /^<nav class="n-stepper" aria-label="Account setup">/u);
+  assert.match(html, /^<nav class="n-stepper"[^>]*aria-label="Account setup">/u);
   assert.match(html, /<ol class="list">/u);
   assert.equal(html.match(/<li class="item">/gu)?.length, 3);
   assert.equal(html.match(/<button class="button" type="button"/gu)?.length, 3);
@@ -83,7 +86,7 @@ test("Stepper does not invent a current step for an invalid controlled key", asy
   assert.doesNotMatch(html, /tabindex|aria-selected|aria-activedescendant/u);
 });
 
-test("Stepper keeps flat selection policy and editable anatomy in its SFC", () => {
+test("Stepper delegates selection policy and keeps editable anatomy in its SFC", () => {
   const source = fs.readFileSync(sourcePath, "utf8");
   const manifest = new Set<string>(nagiThemeTokens);
 
@@ -93,10 +96,11 @@ test("Stepper keeps flat selection policy and editable anatomy in its SFC", () =
   assert.match(source, /description\?: string/u);
   assert.match(source, /disabled\?: boolean/u);
   assert.match(source, /defineModel<string>\("currentKey", \{ required: true \}\)/u);
-  assert.match(source, /<nav class="n-stepper" :aria-label="label">/u);
+  assert.match(source, /useStepper<StepperItem>\(currentKey\)/u);
+  assert.match(source, /<nav[\s\S]*?class="n-stepper"[\s\S]*?:aria-label="props\.label"[\s\S]*?>/u);
   assert.match(source, /<ol class="list">/u);
-  assert.match(source, /<button[\s\S]*type="button"[\s\S]*:aria-current="item\.key === currentKey \? 'step' : undefined"/u);
-  assert.match(source, /:disabled="item\.disabled"[\s\S]*@click="currentKey = item\.key"/u);
+  assert.match(source, /<button[\s\S]*type="button"[\s\S]*:aria-current="stepper\.isCurrent\(item\) \? 'step' : undefined"/u);
+  assert.match(source, /:disabled="item\.disabled"[\s\S]*@click="stepper\.select\(item\)"/u);
 
   assert.doesNotMatch(source, /<slot\b|Teleport|provide\(|inject\(|asChild|data-state/u);
   assert.doesNotMatch(source, /\b(?:useId|watch|watchEffect|onMounted|document|window)\b/u);

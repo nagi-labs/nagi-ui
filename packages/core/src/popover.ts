@@ -5,6 +5,7 @@ import {
   ref,
   useId,
   watch,
+  type ComponentPublicInstance,
   type CSSProperties,
   type ObjectDirective,
   type Ref,
@@ -24,6 +25,8 @@ export interface UsePopoverOptions {
   defaultOpen?: boolean
   /** Override the generated id (SSR-stable ids come from Vue's useId). */
   id?: string
+  /** Kind of popup controlled by the trigger, when the target has a specific role. */
+  hasPopup?: "dialog" | "grid" | "listbox" | "menu" | "tree"
   /**
    * Position the popover against its trigger: native CSS Anchor Positioning
    * where supported, Floating UI fallback otherwise (CHARTER §5).
@@ -37,11 +40,16 @@ interface PopoverComponentProps {
 }
 
 export interface PopoverTriggerProps {
+  /** Complete Behavior API wiring; registers the local invoker for anchoring. */
+  ref: (element: Element | ComponentPublicInstance | null) => void
   popovertarget: string
+  "aria-haspopup"?: "dialog" | "grid" | "listbox" | "menu" | "tree"
   style?: CSSProperties
 }
 
 export interface PopoverProps {
+  /** Complete Behavior API wiring; registers the local native surface. */
+  ref: (element: Element | ComponentPublicInstance | null) => void
   id: string
   style?: CSSProperties
   onToggle: (event: ToggleEvent) => void
@@ -54,7 +62,13 @@ export interface UsePopoverReturn {
   show: () => void
   hide: () => void
   toggle: () => void
-  /** Spread on the invoking button: `popovertarget` only — the UA exposes aria-expanded itself. */
+  /** Focus the locally registered invoker without rediscovering it from `document`. */
+  focusTrigger: () => void
+  /** Root containing the locally registered invoker, for root-scoped focus lookup. */
+  getTriggerRoot: () => Document | ShadowRoot | null
+  /** Restore the invoker only when focus was left in the surface or nowhere useful. */
+  restoreTriggerFocus: () => void
+  /** Spread on the invoker: local registration, native target wiring, and optional popup type. */
   triggerProps: PopoverTriggerProps
   /** Spread on the popover element. The `popover` attribute stays in the user's template. */
   popoverProps: PopoverProps
@@ -83,12 +97,47 @@ export function usePopover(
   const open = options.open ?? ref(options.defaultOpen ?? false)
 
   let element: HTMLElement | null = null
+  let triggerElement: HTMLElement | null = null
 
   function resolve(): HTMLElement | null {
-    if (element?.isConnected) return element
-    if (typeof document === "undefined") return null
-    element = document.getElementById(id)
-    return element
+    return element?.isConnected ? element : null
+  }
+
+  function setTrigger(elementOrComponent: Element | ComponentPublicInstance | null) {
+    triggerElement = elementOrComponent as HTMLElement | null
+    const target = resolve()
+    if (target && open.value) syncAnchor(target, true)
+  }
+
+  function setPopover(elementOrComponent: Element | ComponentPublicInstance | null) {
+    element = elementOrComponent as HTMLElement | null
+    if (element) apply(open.value)
+  }
+
+  function focusTrigger() {
+    if (triggerElement?.isConnected) triggerElement.focus({ preventScroll: true })
+  }
+
+  function getTriggerRoot(): Document | ShadowRoot | null {
+    const root = triggerElement?.getRootNode()
+    return root && "querySelectorAll" in root
+      ? root as Document | ShadowRoot
+      : null
+  }
+
+  function restoreTriggerFocus() {
+    const target = resolve()
+    const trigger = triggerElement?.isConnected ? triggerElement : null
+    if (!target || !trigger) return
+    const root = target.getRootNode()
+    const rootActive = "activeElement" in root
+      ? (root as Document | ShadowRoot).activeElement
+      : null
+    const documentActive = target.ownerDocument.activeElement
+    const focusRemainedInSurface = rootActive !== null && target.contains(rootActive)
+    const focusHasNoOwner = documentActive === null || documentActive === target.ownerDocument.body
+    if (!focusRemainedInSurface && !focusHasNoOwner) return
+    focusTrigger()
   }
 
   // Hide transitions are not cancelable per the Popover API, so controlled
@@ -113,11 +162,8 @@ export function usePopover(
     if (!anchor || anchor.native) return
     detachAnchor?.()
     detachAnchor = null
-    if (!isOpen || typeof document === "undefined") return
-    const trigger = Array.from(
-      document.querySelectorAll<HTMLElement>("[popovertarget]"),
-    ).find((candidate) => candidate.getAttribute("popovertarget") === id)
-    if (trigger) detachAnchor = anchor.attach(trigger, target)
+    if (!isOpen || !triggerElement) return
+    detachAnchor = anchor.attach(triggerElement, target)
   }
 
   function onToggle(event: ToggleEvent) {
@@ -152,12 +198,18 @@ export function usePopover(
     show: () => (open.value = true),
     hide: () => (open.value = false),
     toggle: () => (open.value = !open.value),
-    triggerProps: anchor
-      ? { popovertarget: id, style: anchor.anchorStyle }
-      : { popovertarget: id },
+    focusTrigger,
+    getTriggerRoot,
+    restoreTriggerFocus,
+    triggerProps: {
+      ref: setTrigger,
+      popovertarget: id,
+      ...(options.hasPopup ? { "aria-haspopup": options.hasPopup } : {}),
+      ...(anchor ? { style: anchor.anchorStyle } : {}),
+    },
     popoverProps: anchor
-      ? { id, style: anchor.positionedStyle, onToggle }
-      : { id, onToggle },
+      ? { ref: setPopover, id, style: anchor.positionedStyle, onToggle }
+      : { ref: setPopover, id, onToggle },
   }
 }
 

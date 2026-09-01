@@ -7,47 +7,76 @@ export interface NagiSelectOption {
 </script>
 
 <script setup lang="ts">
-import { ref, useId } from "vue";
+import { computed, ref, useAttrs, useId } from "vue";
 
+import { mergeElementProps } from "@nagi-labs/nagi-ui";
 import { useSelect } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    options: readonly NagiSelectOption[];
-    id?: string;
-    name?: string;
-    disabled?: boolean;
-    required?: boolean;
-    form?: string;
-  }>(),
-  {
-    disabled: false,
-    required: false,
-  },
-);
+const {
+  label,
+  options,
+  id,
+  disabled = false,
+  required = false,
+} = defineProps<{
+  label: string;
+  options: readonly NagiSelectOption[];
+  id?: string;
+  disabled?: boolean;
+  required?: boolean;
+}>();
 
+const attrs = useAttrs();
 const model = defineModel<string | undefined>();
 const generatedId = useId();
 const select = ref<HTMLSelectElement | null>(null);
 const selectBinding = useSelect(select, model);
+const selectProps = computed(() =>
+  mergeElementProps(attrs, {
+    id: id ?? generatedId,
+    disabled,
+    required,
+  }),
+);
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+  keydown: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+}>();
+
+function onChange(event: Event) {
+  selectBinding.onChange(event);
+  emit("change", event);
+}
 </script>
 
 <template>
   <div class="n-select">
-    <label class="label" :for="id ?? generatedId">{{ label }}</label>
+    <label
+      class="label"
+      :for="id ?? generatedId"
+      >{{ label }}</label
+    >
     <select
       ref="select"
-      v-bind="$attrs"
       class="select"
-      :id="id ?? generatedId"
-      :name="name"
-      :disabled="disabled"
-      :required="required"
-      :form="form"
-      @change="selectBinding.onChange"
+      v-bind="selectProps"
+      @blur="emit('blur', $event)"
+      @change="onChange"
+      @click="emit('click', $event)"
+      @focus="emit('focus', $event)"
+      @input="emit('input', $event)"
+      @invalid="emit('invalid', $event)"
+      @keydown="emit('keydown', $event)"
+      @keyup="emit('keyup', $event)"
     >
       <option
         v-for="option in options"

@@ -3,32 +3,32 @@ import { ref } from "vue";
 import { createToastManager } from "@nagi-labs/nagi-ui";
 
 import {
-  Accordion,
-  Alert,
-  AlertDialog,
-  Avatar,
-  Badge,
-  Breadcrumb,
-  Button,
-  ButtonGroup,
-  Card,
-  Dialog,
-  Disclosure,
-  EmptyState,
-  Kbd,
-  Pagination,
-  Popover,
-  PreviewCard,
-  Separator,
-  Skeleton,
-  Spinner,
-  Stepper,
-  Table,
-  Textarea,
-  Toast,
-  Toggle,
-  ToggleGroup,
-  Tooltip,
+  NAccordion,
+  NAlert,
+  NAlertDialog,
+  NAvatar,
+  NBadge,
+  NBreadcrumb,
+  NButton,
+  NButtonGroup,
+  NCard,
+  NDialog,
+  NDisclosure,
+  NEmptyState,
+  NKbd,
+  NPagination,
+  NPopover,
+  NPreviewCard,
+  NSeparator,
+  NSkeleton,
+  NSpinner,
+  NStepper,
+  NTable,
+  NTextarea,
+  NToast,
+  NToggle,
+  NToggleGroup,
+  NTooltip,
   type PaginationItem,
   type StepperItem,
   type ToggleGroupItem,
@@ -211,9 +211,17 @@ function runPromiseToast() {
       </p>
     </header>
 
-    <section class="section" aria-labelledby="styling-heading">
-      <h2 id="styling-heading" class="title">Styling-only baseline</h2>
-      <Card
+    <section
+      class="section"
+      aria-labelledby="styling-heading"
+    >
+      <h2
+        id="styling-heading"
+        class="title"
+      >
+        Styling-only baseline
+      </h2>
+      <n-card
         class="n-card"
         title="Package-first surface"
         description="Theme by default; own only when the structure must change."
@@ -221,7 +229,10 @@ function runPromiseToast() {
         <template #title="{ title }">
           <span class="n-card-title">
             <span>{{ title }}</span>
-            <Badge label="Rich content" tone="accent" />
+            <n-badge
+              label="Rich content"
+              tone="accent"
+            />
           </span>
         </template>
         <template #description="{ description }">
@@ -231,126 +242,213 @@ function runPromiseToast() {
         </template>
         <div class="n-card-content">
           <p class="text">The consumer owns and styles this declared slot sub-surface.</p>
-          <div class="list" aria-label="Package status badges">
-            <Badge label="Neutral" />
-            <Badge label="Accent" tone="accent" />
-            <Badge label="Ready" tone="success">
+          <div
+            class="list"
+            aria-label="Package status badges"
+          >
+            <n-badge label="Neutral" />
+            <n-badge
+              label="Accent"
+              tone="accent"
+            />
+            <n-badge
+              label="Ready"
+              tone="success"
+            >
               <template #label="{ label }">
-                <span class="n-badge-label"><span aria-hidden="true">✓</span> {{ label }}</span>
+                <span class="n-badge-label">
+                  <span aria-hidden="true">✓</span>
+                  {{ label }}
+                </span>
               </template>
-            </Badge>
-            <Badge label="Review" tone="warning" />
-            <Badge label="Blocked" tone="danger" />
+            </n-badge>
+            <n-badge
+              label="Review"
+              tone="warning"
+            />
+            <n-badge
+              label="Blocked"
+              tone="danger"
+            />
           </div>
-          <Alert title="Catalog ready" tone="success">
-            <template #icon><span class="n-alert-icon" aria-hidden="true">✓</span></template>
+          <n-alert
+            title="Catalog ready"
+            tone="success"
+          >
+            <template #icon>
+              <span
+                class="n-alert-icon"
+                aria-hidden="true"
+                >✓</span
+              >
+            </template>
             <template #title="{ title }">
-              <span class="n-alert-title">{{ title }} <Badge label="Verified" /></span>
+              <span class="n-alert-title">{{ title }} <n-badge label="Verified" /></span>
             </template>
             <p class="text">Card, Alert, and Badge complete the initial styling-only baseline.</p>
-          </Alert>
-          <Alert title="Destructive action" tone="danger" role="alert">
+          </n-alert>
+          <n-alert
+            title="Destructive action"
+            tone="danger"
+            role="alert"
+          >
             <p class="text">Use assertive semantics only for urgent, newly surfaced information.</p>
-          </Alert>
-          <div class="list" aria-label="Disabled button examples">
-            <Button disabled>Native disabled</Button>
-            <Button
+          </n-alert>
+          <div
+            class="list"
+            aria-label="Disabled button examples"
+          >
+            <n-button disabled>Native disabled</n-button>
+            <n-button
               disabled
               focusable-when-disabled
               @click="focusableDisabledClicks += 1"
             >
               Focusable disabled
-            </Button>
-            <output data-testid="focusable-disabled-clicks">
+            </n-button>
+            <output id="focusable-disabled-clicks">
               activations: {{ focusableDisabledClicks }}
             </output>
           </div>
-          <div class="list" aria-label="Button size examples">
-            <Button data-testid="button-small" size="small">Small</Button>
-            <Button data-testid="button-default">Default</Button>
-            <Button data-testid="button-large" size="large">Large</Button>
+          <div
+            class="list"
+            aria-label="Button size examples"
+          >
+            <n-button
+              id="button-small"
+              class="small-catalog-action"
+              >Small</n-button
+            >
+            <n-button id="button-default">Default</n-button>
+            <n-button
+              id="button-large"
+              class="large-catalog-action"
+              >Large</n-button
+            >
+          </div>
+          <div
+            class="list"
+            aria-label="Composable button style axes"
+          >
+            <n-button
+              id="button-composed"
+              class="delete-catalog-action"
+            >
+              Danger outlined rounded
+            </n-button>
           </div>
         </div>
         <template #footer>
           <div class="n-card-footer">
             <span>Package component with an owned footer surface.</span>
-            <Button size="small" variant="accent">Manage package</Button>
+            <n-button class="manage-package-action">Manage package</n-button>
           </div>
         </template>
-      </Card>
+      </n-card>
     </section>
 
-    <section class="section" aria-labelledby="primitive-heading">
-      <h2 id="primitive-heading" class="title">Small native primitives</h2>
+    <section
+      class="section"
+      aria-labelledby="primitive-heading"
+    >
+      <h2
+        id="primitive-heading"
+        class="title"
+      >
+        Small native primitives
+      </h2>
       <div class="list -primitives">
-        <Avatar
-          data-testid="catalog-avatar"
+        <n-avatar
+          id="catalog-avatar"
           :src="avatarSrc"
           alt="Ada Lovelace"
         />
-        <Button size="small" @click="avatarSrc = '/missing-avatar.png'">
+        <n-button
+          class="avatar-action"
+          @click="avatarSrc = '/missing-avatar.png'"
+        >
           Break avatar image
-        </Button>
-        <Button size="small" @click="avatarSrc = avatarImage">
+        </n-button>
+        <n-button
+          class="avatar-action"
+          @click="avatarSrc = avatarImage"
+        >
           Restore avatar image
-        </Button>
+        </n-button>
       </div>
-      <Separator />
+      <n-separator />
       <div class="list -primitives">
-        <Toggle v-model="pinned">Pin release</Toggle>
-        <output data-testid="toggle-state">pressed: {{ pinned }}</output>
-        <Separator orientation="vertical" aria-label="Toggle status" />
+        <n-toggle v-model="pinned">Pin release</n-toggle>
+        <output id="toggle-state">pressed: {{ pinned }}</output>
+        <n-separator
+          orientation="vertical"
+          aria-label="Toggle status"
+        />
         <span>Native pressed state</span>
       </div>
-      <Separator decorative />
+      <n-separator decorative />
     </section>
 
-    <section class="section" aria-labelledby="utility-heading">
-      <h2 id="utility-heading" class="title">Utility and feedback primitives</h2>
-      <Breadcrumb label="Package path" :items="breadcrumbItems" />
-      <Pagination
+    <section
+      class="section"
+      aria-labelledby="utility-heading"
+    >
+      <h2
+        id="utility-heading"
+        class="title"
+      >
+        Utility and feedback primitives
+      </h2>
+      <n-breadcrumb
+        label="Package path"
+        :items="breadcrumbItems"
+      />
+      <n-pagination
         v-model:current-key="currentPage"
         label="Catalog pages"
         :items="paginationItems"
         @select="paginationSelections += 1"
       />
-      <output data-testid="pagination-state">
+      <output id="pagination-state">
         current: {{ currentPage }}, selections: {{ paginationSelections }}
       </output>
-      <Table
+      <n-table
         :rows="tableRows"
         :columns="tableColumns"
         caption="Catalog users"
         row-key="id"
       >
         <template #cell-status="{ value }">
-          <Badge :label="String(value)" :tone="value === 'Active' ? 'success' : 'neutral'" />
+          <n-badge
+            :label="String(value)"
+            :tone="value === 'Active' ? 'success' : 'neutral'"
+          />
         </template>
-      </Table>
+      </n-table>
 
-      <ToggleGroup
+      <n-toggle-group
         v-model="alignment"
         label="Text alignment"
         :items="alignmentItems"
       />
-      <output data-testid="alignment-state">alignment: {{ alignment ?? "none" }}</output>
-      <ToggleGroup
+      <output id="alignment-state">alignment: {{ alignment ?? "none" }}</output>
+      <n-toggle-group
         v-model="formats"
         label="Text formats"
         mode="multiple"
         :items="formatItems"
       />
-      <output data-testid="format-state">
+      <output id="format-state">
         formats: {{ Array.isArray(formats) ? formats.join(", ") || "none" : "none" }}
       </output>
 
       <div class="list -primitives">
         <span>Open search</span>
-        <Kbd label="Command" />
+        <n-kbd label="Command" />
         <span>+</span>
-        <Kbd label="K" />
-        <Spinner label="Loading package catalog" />
-        <Spinner data-testid="decorative-spinner" />
+        <n-kbd label="K" />
+        <n-spinner label="Loading package catalog" />
+        <n-spinner id="decorative-spinner" />
       </div>
 
       <div
@@ -359,52 +457,75 @@ function runPromiseToast() {
         aria-label="Loading card preview"
         aria-busy="true"
       >
-        <Skeleton data-testid="catalog-skeleton" />
-        <Skeleton />
-        <Skeleton />
+        <n-skeleton id="catalog-skeleton" />
+        <n-skeleton />
+        <n-skeleton />
       </div>
 
-      <ButtonGroup class="n-button-group" label="Editor actions">
-        <Button class="n-button-group-content">Save draft</Button>
-        <Button class="n-button-group-content" variant="accent">Publish</Button>
-      </ButtonGroup>
+      <n-button-group
+        class="n-button-group"
+        label="Editor actions"
+      >
+        <n-button class="n-button-group-content">Save draft</n-button>
+        <n-button class="n-button-group-content publish-action">Publish</n-button>
+      </n-button-group>
 
-      <EmptyState
+      <n-empty-state
         class="n-empty-state"
         title="No packages yet"
         description="Create a package to populate this workspace."
       >
-        <Button class="n-empty-state-action" variant="accent">Create package</Button>
-      </EmptyState>
+        <n-button class="n-empty-state-action create-package-action">Create package</n-button>
+      </n-empty-state>
 
-      <form class="form" @submit.prevent>
-        <Textarea
+      <form
+        class="form"
+        @submit.prevent
+      >
+        <n-textarea
           v-model="releaseNotes"
           label="Release notes"
           name="releaseNotes"
           :rows="3"
           placeholder="Describe this release"
         />
-        <Button type="reset">Reset release notes</Button>
+        <n-button type="reset">Reset release notes</n-button>
       </form>
-      <output data-testid="release-notes-value">{{ releaseNotes }}</output>
+      <output id="release-notes-value">{{ releaseNotes }}</output>
     </section>
 
-    <section class="section" aria-labelledby="stepper-heading">
-      <h2 id="stepper-heading" class="title">Stepper</h2>
-      <Stepper
+    <section
+      class="section"
+      aria-labelledby="stepper-heading"
+    >
+      <h2
+        id="stepper-heading"
+        class="title"
+      >
+        Stepper
+      </h2>
+      <n-stepper
         v-model:current-key="currentStep"
         label="Package setup"
         :items="stepperItems"
       />
-      <output data-testid="stepper-state">current step: {{ currentStep }}</output>
+      <output id="stepper-state">current step: {{ currentStep }}</output>
     </section>
 
-    <section id="preview-card-target" class="section" aria-labelledby="preview-card-heading">
-      <h2 id="preview-card-heading" class="title">Preview Card</h2>
+    <section
+      id="preview-card-target"
+      class="section"
+      aria-labelledby="preview-card-heading"
+    >
+      <h2
+        id="preview-card-heading"
+        class="title"
+      >
+        Preview Card
+      </h2>
       <p class="text">
         Inspect the
-        <PreviewCard
+        <n-preview-card
           href="#preview-card-target"
           label="Nagi UI package"
           title="@nagi-labs/nagi-ui"
@@ -413,51 +534,86 @@ function runPromiseToast() {
           <span class="n-preview-card-content">
             <a href="#preview-card-notes">Read compatibility notes</a>
           </span>
-        </PreviewCard>
+        </n-preview-card>
         before following the link.
       </p>
     </section>
 
-    <section class="section" aria-labelledby="popover-heading">
-      <h2 id="popover-heading" class="title">Popover</h2>
-      <Popover trigger-label="Open package popover" area="block-end" :offset="8">
+    <section
+      class="section"
+      aria-labelledby="popover-heading"
+    >
+      <h2
+        id="popover-heading"
+        class="title"
+      >
+        Popover
+      </h2>
+      <n-popover
+        trigger-label="Open package popover"
+        area="block-end"
+        :offset="8"
+      >
         <p class="text">Popover body belongs to the application slot.</p>
-      </Popover>
+      </n-popover>
     </section>
 
-    <section class="section" aria-labelledby="dialog-heading">
-      <h2 id="dialog-heading" class="title">Dialog</h2>
+    <section
+      class="section"
+      aria-labelledby="dialog-heading"
+    >
+      <h2
+        id="dialog-heading"
+        class="title"
+      >
+        Dialog
+      </h2>
       <p class="text">model open: {{ dialogOpen }}</p>
-      <Dialog
+      <n-dialog
         v-model:open="dialogOpen"
         trigger-label="Open package dialog"
         title="Package dialog"
         description="Confirm the package-level action before continuing."
       >
         <template #title="{ title }">
-          <span class="n-dialog-title">{{ title }} <span aria-hidden="true">✓</span></span>
+          <span class="n-dialog-title">
+            {{ title }}
+            <span aria-hidden="true">✓</span>
+          </span>
         </template>
         <template #description="{ description }">
-          <span class="n-dialog-description"><strong>{{ description }}</strong></span>
+          <span class="n-dialog-description">
+            <strong>{{ description }}</strong>
+          </span>
         </template>
         <p class="text">The browser owns modality, focus trapping, and Escape.</p>
         <template #actions>
-          <Button
-            class="n-dialog-actions"
-            variant="accent"
+          <n-button
+            class="n-dialog-actions confirm-dialog-action"
             @click="dialogOpen = false"
           >
             Confirm
-          </Button>
+          </n-button>
         </template>
-      </Dialog>
+      </n-dialog>
     </section>
 
-    <section class="section" aria-labelledby="alert-dialog-heading">
-      <h2 id="alert-dialog-heading" class="title">Alert Dialog</h2>
+    <section
+      class="section"
+      aria-labelledby="alert-dialog-heading"
+    >
+      <h2
+        id="alert-dialog-heading"
+        class="title"
+      >
+        Alert Dialog
+      </h2>
       <p class="text">alert model open: {{ alertDialogOpen }}</p>
-      <form class="form" @submit.prevent>
-        <AlertDialog
+      <form
+        class="form"
+        @submit.prevent
+      >
+        <n-alert-dialog
           v-model:open="alertDialogOpen"
           trigger-label="Delete package"
           title="Delete this package?"
@@ -473,22 +629,30 @@ function runPromiseToast() {
           <template #description="{ description }">
             <span class="n-alert-dialog-description">{{ description }}</span>
           </template>
-        </AlertDialog>
+        </n-alert-dialog>
       </form>
-      <output data-testid="alert-dialog-actions">actions: {{ alertDialogActions }}</output>
-      <output data-testid="alert-dialog-cancels">cancels: {{ alertDialogCancels }}</output>
+      <output id="alert-dialog-actions">actions: {{ alertDialogActions }}</output>
+      <output id="alert-dialog-cancels">cancels: {{ alertDialogCancels }}</output>
     </section>
 
-    <section class="section" aria-labelledby="tooltip-heading">
-      <h2 id="tooltip-heading" class="title">Tooltip</h2>
-      <Tooltip
+    <section
+      class="section"
+      aria-labelledby="tooltip-heading"
+    >
+      <h2
+        id="tooltip-heading"
+        class="title"
+      >
+        Tooltip
+      </h2>
+      <n-tooltip
         trigger-label="More information"
         text="This hint is linked with aria-describedby."
         :open-delay="0"
         area="block-start"
         :offset="8"
       />
-      <Tooltip
+      <n-tooltip
         trigger-label="Unavailable information"
         text="Disabled tooltips do not open."
         disabled
@@ -496,24 +660,46 @@ function runPromiseToast() {
       />
     </section>
 
-    <section class="section" aria-labelledby="disclosure-heading">
-      <h2 id="disclosure-heading" class="title">Disclosure</h2>
-      <Disclosure v-model:open="disclosureOpen" summary="What does native mean?">
+    <section
+      class="section"
+      aria-labelledby="disclosure-heading"
+    >
+      <h2
+        id="disclosure-heading"
+        class="title"
+      >
+        Disclosure
+      </h2>
+      <n-disclosure
+        v-model:open="disclosureOpen"
+        summary="What does native mean?"
+      >
         <template #summary="{ summary }">
           <span class="n-disclosure-summary">
             <span aria-hidden="true">◆</span> {{ summary }}
           </span>
         </template>
         <p class="text">The details element owns disclosure state and keyboard behavior.</p>
-      </Disclosure>
-      <Disclosure summary="Unavailable disclosure" disabled>
+      </n-disclosure>
+      <n-disclosure
+        summary="Unavailable disclosure"
+        disabled
+      >
         <p class="text">Disabled disclosure content.</p>
-      </Disclosure>
+      </n-disclosure>
     </section>
 
-    <section class="section" aria-labelledby="accordion-heading">
-      <h2 id="accordion-heading" class="title">Accordion</h2>
-      <Accordion
+    <section
+      class="section"
+      aria-labelledby="accordion-heading"
+    >
+      <h2
+        id="accordion-heading"
+        class="title"
+      >
+        Accordion
+      </h2>
+      <n-accordion
         v-model:open-keys="accordionOpenKeys"
         class="n-accordion"
         :items="accordionItems"
@@ -524,46 +710,86 @@ function runPromiseToast() {
         <template #panel="{ item }">
           <p class="n-accordion-panel">{{ item.content }}</p>
         </template>
-      </Accordion>
-      <output data-testid="accordion-open-keys">
-        open: {{ accordionOpenKeys.join(",") || "none" }}
-      </output>
-      <Button size="small" @click="accordionOpenKeys = ['shipping']">
+      </n-accordion>
+      <output id="accordion-open-keys"> open: {{ accordionOpenKeys.join(",") || "none" }} </output>
+      <n-button
+        class="accordion-action"
+        @click="accordionOpenKeys = ['shipping']"
+      >
         Open shipping programmatically
-      </Button>
-      <Accordion
+      </n-button>
+      <n-accordion
         v-model:open-keys="multipleAccordionOpenKeys"
         class="n-accordion"
         :items="accordionItems.slice(0, 2)"
         multiple
       />
-      <output data-testid="multiple-accordion-open-keys">
+      <output id="multiple-accordion-open-keys">
         open: {{ multipleAccordionOpenKeys.join(",") || "none" }}
       </output>
     </section>
 
-    <section class="section" aria-labelledby="toast-heading">
-      <h2 id="toast-heading" class="title">Toast</h2>
+    <section
+      class="section"
+      aria-labelledby="toast-heading"
+    >
+      <h2
+        id="toast-heading"
+        class="title"
+      >
+        Toast
+      </h2>
       <div class="list">
-        <Button @click="showToast">Show toast</Button>
-        <Button @click="showUndoToast">Show undo toast</Button>
-        <Button @click="removeUndoAction">Remove undo action</Button>
-        <Button @click="upsertToast">Upsert sync toast</Button>
-        <Button @click="fillToastLimit">Fill toast limit</Button>
-        <Button @click="showUrgentToast">Show urgent toast</Button>
-        <Button @click="showTimedToast">Show timed toast</Button>
-        <Button @click="showSecondaryToast">Show secondary toast</Button>
-        <Button @click="runPromiseToast">Run successful promise</Button>
-        <Button @click="toastManager.close()">Close all notifications</Button>
+        <n-button @click="showToast">Show toast</n-button>
+        <n-button @click="showUndoToast">Show undo toast</n-button>
+        <n-button @click="removeUndoAction">Remove undo action</n-button>
+        <n-button @click="upsertToast">Upsert sync toast</n-button>
+        <n-button @click="fillToastLimit">Fill toast limit</n-button>
+        <n-button @click="showUrgentToast">Show urgent toast</n-button>
+        <n-button @click="showTimedToast">Show timed toast</n-button>
+        <n-button @click="showSecondaryToast">Show secondary toast</n-button>
+        <n-button @click="runPromiseToast">Run successful promise</n-button>
+        <n-button @click="toastManager.close()">Close all notifications</n-button>
       </div>
-      <output data-testid="undone-actions">undo actions: {{ undoneActions }}</output>
-      <Toast :manager="toastManager" />
-      <Toast :manager="secondaryToastManager" label="Secondary notifications" />
+      <output id="undone-actions">undo actions: {{ undoneActions }}</output>
+      <n-toast :manager="toastManager" />
+      <n-toast
+        :manager="secondaryToastManager"
+        label="Secondary notifications"
+      />
     </section>
   </main>
 </template>
 
 <style scoped>
+.n-button.small-catalog-action,
+.n-button.avatar-action,
+.n-button.accordion-action {
+  --button-size: small;
+}
+
+.n-button.large-catalog-action {
+  --button-size: large;
+}
+
+.n-button.manage-package-action {
+  --button-tone: accent;
+  --button-size: small;
+}
+
+.n-button.delete-catalog-action {
+  --button-tone: danger;
+  --button-appearance: outlined;
+  --button-shape: rounded;
+}
+
+.n-button.publish-action,
+.n-button.create-package-action,
+.n-button.confirm-dialog-action {
+  --button-tone: accent;
+  --button-appearance: solid;
+}
+
 .n-catalog-lab {
   display: grid;
   gap: 1rem;

@@ -1,28 +1,45 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, useAttrs } from "vue";
 
-import { useNativeCheckedReset } from "@nagi-labs/nagi-ui";
+import { mergeElementProps, useNativeCheckedReset } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    name?: string;
-    value?: string;
-    form?: string;
-    disabled?: boolean;
-    required?: boolean;
-  }>(),
-  {
-    value: "on",
-    disabled: false,
-    required: false,
-  },
-);
+const {
+  label,
+  value = "on",
+  disabled = false,
+  required = false,
+} = defineProps<{
+  label: string;
+  value?: string;
+  disabled?: boolean;
+  required?: boolean;
+}>();
 
+const attrs = useAttrs();
 const checked = defineModel<boolean>({ default: false });
 const input = ref<HTMLInputElement | null>(null);
+const inputProps = computed(() =>
+  mergeElementProps(attrs, {
+    type: "checkbox",
+    role: "switch",
+    value,
+    disabled,
+    required,
+  }),
+);
+
+const emit = defineEmits<{
+  blur: [event: FocusEvent];
+  change: [event: Event];
+  click: [event: MouseEvent];
+  focus: [event: FocusEvent];
+  input: [event: Event];
+  invalid: [event: Event];
+  keydown: [event: KeyboardEvent];
+  keyup: [event: KeyboardEvent];
+}>();
 
 useNativeCheckedReset(input, checked);
 </script>
@@ -30,17 +47,18 @@ useNativeCheckedReset(input, checked);
 <template>
   <label class="n-switch">
     <input
-      v-bind="$attrs"
       ref="input"
       v-model="checked"
       class="input"
-      type="checkbox"
-      role="switch"
-      :name="name"
-      :form="form"
-      :value="value"
-      :disabled="disabled"
-      :required="required"
+      v-bind="inputProps"
+      @blur="emit('blur', $event)"
+      @change="emit('change', $event)"
+      @click="emit('click', $event)"
+      @focus="emit('focus', $event)"
+      @input="emit('input', $event)"
+      @invalid="emit('invalid', $event)"
+      @keydown="emit('keydown', $event)"
+      @keyup="emit('keyup', $event)"
     />
     <span class="unit">{{ label }}</span>
   </label>
@@ -78,7 +96,9 @@ useNativeCheckedReset(input, checked);
       transparent 0.48rem
     );
     cursor: pointer;
-    transition: border-color 120ms ease, background-color 120ms ease;
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease;
 
     &:checked {
       border-color: var(--nagi-color-accent);
@@ -105,7 +125,6 @@ useNativeCheckedReset(input, checked);
     &[aria-invalid="true"] {
       border-color: var(--nagi-color-danger);
     }
-
   }
 
   > .unit {

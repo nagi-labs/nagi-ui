@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import { Listbox, type ListboxOption } from "@nagi-labs/nagi-ui/components";
+import { NListbox, type ListboxOption } from "@nagi-labs/nagi-ui/components";
 
 const fruits: readonly ListboxOption[] = [
   { key: "apple", label: "Apple" },
@@ -40,7 +40,7 @@ const visibleToppings = computed(() =>
 
     <section class="section">
       <h2 class="title">Single</h2>
-      <Listbox v-model:selected="fruit" label="Fruit" :items="fruits" />
+      <n-listbox v-model:selected="fruit" label="Fruit" :items="fruits" />
     </section>
 
     <section class="section">
@@ -52,7 +52,7 @@ const visibleToppings = computed(() =>
         placeholder="Filter toppings"
         aria-label="Filter toppings"
       />
-      <Listbox
+      <n-listbox
         v-model:selected="picked"
         label="Toppings"
         mode="multiple"
@@ -63,11 +63,11 @@ const visibleToppings = computed(() =>
     <dl class="list -state">
       <div class="item">
         <dt class="term">fruit</dt>
-        <dd class="definition" data-testid="single-state">{{ fruit.join(",") || "none" }}</dd>
+        <dd class="definition" id="single-state">{{ fruit.join(",") || "none" }}</dd>
       </div>
       <div class="item">
         <dt class="term">toppings</dt>
-        <dd class="definition" data-testid="multi-state">{{ picked.join(",") || "none" }}</dd>
+        <dd class="definition" id="multi-state">{{ picked.join(",") || "none" }}</dd>
       </div>
     </dl>
 

@@ -16,11 +16,13 @@ function normalizeSsrHtml(html: string): string {
 }
 
 async function load(file: string): Promise<{ component: Component; close: () => Promise<void> }> {
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-thin-navigation-vite-"));
   const server = await createServer({
     configFile: false,
     plugins: [vue()],
     root: repo,
-    cacheDir: fs.mkdtempSync(path.join(os.tmpdir(), "nagi-thin-navigation-vite-")),
+    cacheDir,
+    optimizeDeps: { noDiscovery: true, include: [] },
     logLevel: "silent",
     server: { middlewareMode: true },
     appType: "custom",
@@ -28,7 +30,13 @@ async function load(file: string): Promise<{ component: Component; close: () => 
   const component = (
     await server.ssrLoadModule(`/@fs${path.join(repo, "packages/core/blueprints", file)}`)
   ).default as Component;
-  return { component, close: () => server.close() };
+  return {
+    component,
+    close: async () => {
+      await server.close();
+      fs.rmSync(cacheDir, { recursive: true, force: true });
+    },
+  };
 }
 
 test("Breadcrumb emits a native named navigation trail", async () => {
@@ -87,7 +95,11 @@ test("ButtonGroup owns only group semantics and layout orientation", async () =>
         { default: () => [h("button", { type: "button" }, "Save"), h("a", { href: "/" }, "Back")] },
       ),
     })));
-    assert.match(html, /^<div class="n-button-group" data-orientation="vertical" role="group" aria-label="Editor actions">/);
+    const root = html.match(/^<div[^>]*>/u)?.[0] ?? "";
+    assert.match(root, /class="n-button-group"/u);
+    assert.match(root, /data-orientation="vertical"/u);
+    assert.match(root, /role="group"/u);
+    assert.match(root, /aria-label="Editor actions"/u);
     assert.match(html, /<button type="button">Save<\/button>/);
     assert.match(html, /<a href="\/">Back<\/a>/);
     assert.doesNotMatch(html, /aria-orientation|data-state/);
@@ -96,10 +108,10 @@ test("ButtonGroup owns only group semantics and layout orientation", async () =>
   }
 });
 
-test("thin navigation SFCs contain no hidden behavior or literal theme fallback", () => {
+test("thin navigation SFCs contain no lifecycle behavior or literal theme fallback", () => {
   for (const file of ["breadcrumb/Breadcrumb.vue", "button-group/ButtonGroup.vue"]) {
     const source = fs.readFileSync(path.join(repo, "packages/core/blueprints", file), "utf8");
-    assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|useAttrs|document|window)\b/);
+    assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|document|window)\b/);
     assert.doesNotMatch(source, /var\(--nagi-[^,)]+,|#[\da-f]{3,8}\b|\brgba?\(/iu);
     assert.doesNotMatch(source, /Teleport|provide\(|inject\(|data-state/);
   }

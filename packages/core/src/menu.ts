@@ -72,6 +72,7 @@ export interface MenuTriggerProps extends PopoverTriggerProps {
   id: string;
   "aria-controls": string;
   "aria-haspopup": "menu";
+  readonly "aria-expanded": "true" | "false";
   onKeydown: (event: KeyboardEvent) => void;
 }
 
@@ -270,6 +271,14 @@ function createMenu<Item, Key extends string>(
     return `${popover.id}-item-${encodeURIComponent(key)}`;
   }
 
+  function itemElement(key: string): HTMLElement | null {
+    if (!menuElement) return null;
+    const id = itemId(key);
+    return Array.from(menuElement.querySelectorAll<HTMLElement>(
+      '[role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"]',
+    )).find((candidate) => candidate.id === id) ?? null;
+  }
+
   function setActiveKey(key: string, focus = true) {
     activeKey.value = key as Key;
     closeChildrenExcept(key);
@@ -293,7 +302,7 @@ function createMenu<Item, Key extends string>(
       if (!popover.open.value || !menuElement?.isConnected) return;
       const active = activeKey.value === null
         ? null
-        : menuElement.ownerDocument?.getElementById(itemId(activeKey.value));
+        : itemElement(activeKey.value);
       (active ?? menuElement).focus({ preventScroll: true });
     });
   }
@@ -340,11 +349,6 @@ function createMenu<Item, Key extends string>(
     let root = controller;
     while (root.parent) root = root.parent.menu;
     return root;
-  }
-
-  function rootTrigger(): HTMLElement | null {
-    if (typeof document === "undefined") return null;
-    return document.getElementById(`${rootController().id}-trigger`);
   }
 
   function closeBranch() {
@@ -416,9 +420,7 @@ function createMenu<Item, Key extends string>(
     else nativeLinks.delete(key);
     activations.set(key, (event) => {
       if (itemOptions.nativeLink && event?.type === "keydown" && !isDisabled(item)) {
-        const owner = (event.currentTarget as HTMLElement | null)?.ownerDocument
-          ?? menuElement?.ownerDocument;
-        const anchor = owner?.getElementById(itemId(key)) as HTMLAnchorElement | null;
+        const anchor = itemElement(key) as HTMLAnchorElement | null;
         if (anchor && typeof anchor.click === "function") {
           // Enter on the focused real anchor never reaches this branch; the UA
           // owns that trusted activation. This fallback covers plain Space and
@@ -704,6 +706,9 @@ function createMenu<Item, Key extends string>(
     id: rootTriggerId,
     "aria-controls": popover.id,
     "aria-haspopup": "menu",
+    get "aria-expanded"() {
+      return popover.open.value ? "true" : "false";
+    },
     onKeydown: onTriggerKeydown,
   };
 
@@ -722,7 +727,7 @@ function createMenu<Item, Key extends string>(
     closeTree,
     restoreFocus() {
       if (options.restoreFocus) options.restoreFocus();
-      else rootTrigger()?.focus({ preventScroll: true });
+      else popover.focusTrigger();
     },
     closeToParent,
     registerChild(key, child) {
@@ -743,24 +748,23 @@ function createMenu<Item, Key extends string>(
 
   parent?.menu.registerChild(parent.itemKey, controller);
 
-  watch(
-    () => enabledItems().map(keyOf),
-    (keys) => {
-      const owner = menuElement?.ownerDocument.activeElement ?? null;
-      const ownedFocus = owner === menuElement
-        || (owner !== null && (menuElement?.contains(owner) ?? false));
-      if (activeKey.value === null) {
-        if (keys.length > 0 && popover.open.value && owner === menuElement) {
-          setActive(enabledItems()[0], true);
-        }
-        return;
+  function reconcileCollection(keys: readonly Key[]) {
+    const owner = menuElement?.ownerDocument.activeElement ?? null;
+    const ownedFocus = owner === menuElement
+      || (owner !== null && (menuElement?.contains(owner) ?? false));
+    if (activeKey.value === null) {
+      if (keys.length > 0 && popover.open.value && owner === menuElement) {
+        setActive(enabledItems()[0], true);
       }
-      if (activeKey.value !== null && !keys.includes(activeKey.value)) {
-        const next = enabledItems()[0];
-        setActive(next, ownedFocus);
-      }
-    },
-  );
+      return;
+    }
+    if (!keys.includes(activeKey.value)) {
+      const next = enabledItems()[0];
+      setActive(next, ownedFocus);
+    }
+  }
+
+  watch(() => enabledItems().map(keyOf), reconcileCollection);
 
   function dispose() {
     clearTypeahead();
@@ -838,6 +842,7 @@ function createMenu<Item, Key extends string>(
       });
       return {
         ...base,
+        ref: submenu.triggerProps.ref,
         popovertarget: submenu.triggerProps.popovertarget,
         ...(submenu.triggerProps.style ? { style: submenu.triggerProps.style } : {}),
         id: itemId(key),

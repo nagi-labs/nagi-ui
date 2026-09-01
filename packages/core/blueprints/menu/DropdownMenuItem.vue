@@ -24,12 +24,17 @@ defineProps<{
   menu: UseMenuReturn<DropdownMenuEntry>;
   node: DropdownMenuNode;
 }>();
+defineOptions({ inheritAttrs: false });
 
 const labelId = useId();
 </script>
 
 <template>
-  <li v-if="node.type === 'separator'" class="n-dropdown-menu-item" role="separator"></li>
+  <li
+    v-if="node.type === 'separator'"
+    class="n-dropdown-menu-item"
+    role="separator"
+  ></li>
 
   <li
     v-else-if="node.type === 'group'"
@@ -37,8 +42,17 @@ const labelId = useId();
     role="group"
     :aria-labelledby="node.label ? labelId : undefined"
   >
-    <div v-if="node.label" :id="labelId" class="text -category">{{ node.label }}</div>
-    <ul class="list -items" role="presentation">
+    <div
+      v-if="node.label"
+      :id="labelId"
+      class="text -category"
+    >
+      {{ node.label }}
+    </div>
+    <ul
+      class="list -items"
+      role="presentation"
+    >
       <DropdownMenuItem
         v-for="child in node.items"
         :key="child.key"
@@ -54,36 +68,75 @@ const labelId = useId();
     role="group"
     :aria-labelledby="node.label ? labelId : undefined"
   >
-    <div v-if="node.label" :id="labelId" class="text -category">{{ node.label }}</div>
-    <ul class="list -items" role="presentation">
-      <li v-for="item in node.items" :key="item.key" class="item" role="none">
+    <div
+      v-if="node.label"
+      :id="labelId"
+      class="text -category"
+    >
+      {{ node.label }}
+    </div>
+    <ul
+      class="list -items"
+      role="presentation"
+    >
+      <li
+        v-for="item in node.items"
+        :key="item.key"
+        class="item"
+        role="none"
+      >
         <button
           class="button"
           type="button"
           v-bind="menu.radioItemProps(radioEntry(node, item), radioOptions(node, item))"
         >
-          <span class="icon -dot" aria-hidden="true">●</span>
+          <span
+            class="icon -dot"
+            aria-hidden="true"
+            >●</span
+          >
           <span class="text">{{ item.label }}</span>
         </button>
       </li>
     </ul>
   </li>
 
-  <DropdownSubmenu v-else-if="node.type === 'submenu'" :menu="menu" :node="node" />
+  <DropdownSubmenu
+    v-else-if="node.type === 'submenu'"
+    :menu="menu"
+    :node="node"
+  />
 
-  <li v-else-if="node.type === 'checkbox'" class="n-dropdown-menu-item" role="none">
+  <li
+    v-else-if="node.type === 'checkbox'"
+    class="n-dropdown-menu-item"
+    role="none"
+  >
     <button
       class="button"
       type="button"
       v-bind="menu.checkboxItemProps(checkboxEntry(node), checkboxOptions(node))"
     >
-      <span class="icon -check" aria-hidden="true">✓</span>
+      <span
+        class="icon -check"
+        aria-hidden="true"
+        >✓</span
+      >
       <span class="text">{{ node.label }}</span>
-      <span v-if="node.shortcut" class="text -shortcut" aria-hidden="true">{{ node.shortcut }}</span>
+      <span
+        v-if="node.shortcut"
+        class="text -shortcut"
+        aria-hidden="true"
+        >{{ node.shortcut }}</span
+      >
     </button>
   </li>
 
-  <li v-else-if="node.type === 'link'" class="n-dropdown-menu-item" role="none">
+  <li
+    v-else-if="node.type === 'link'"
+    class="n-dropdown-menu-item"
+    role="none"
+  >
     <a
       class="link"
       :href="node.href"
@@ -93,22 +146,42 @@ const labelId = useId();
       v-bind="menu.itemProps(linkEntry(node), linkOptions(node))"
       @pointerenter="prefetchLink(node)"
     >
-      <span class="icon" aria-hidden="true"></span>
+      <span
+        class="icon"
+        aria-hidden="true"
+      ></span>
       <span class="text">{{ node.label }}</span>
-      <span v-if="node.shortcut" class="text -shortcut" aria-hidden="true">{{ node.shortcut }}</span>
+      <span
+        v-if="node.shortcut"
+        class="text -shortcut"
+        aria-hidden="true"
+        >{{ node.shortcut }}</span
+      >
     </a>
   </li>
 
-  <li v-else class="n-dropdown-menu-item" role="none">
+  <li
+    v-else
+    class="n-dropdown-menu-item"
+    role="none"
+  >
     <button
       class="button"
       type="button"
       :data-variant="node.variant"
       v-bind="menu.itemProps(actionEntry(node), actionOptions(node))"
     >
-      <span class="icon" aria-hidden="true"></span>
+      <span
+        class="icon"
+        aria-hidden="true"
+      ></span>
       <span class="text">{{ node.label }}</span>
-      <span v-if="node.shortcut" class="text -shortcut" aria-hidden="true">{{ node.shortcut }}</span>
+      <span
+        v-if="node.shortcut"
+        class="text -shortcut"
+        aria-hidden="true"
+        >{{ node.shortcut }}</span
+      >
     </button>
   </li>
 </template>
