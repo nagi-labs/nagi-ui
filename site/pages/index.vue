@@ -18,11 +18,12 @@ const previewColumns = [
   <div class="site-index-page">
     <section class="section -hero">
       <div class="unit">
-        <p class="text -eyebrow">Nagi UI</p>
-        <h1 class="title">Native-first components for Vue applications.</h1>
+        <p class="text -eyebrow">Own-first Vue UI</p>
+        <h1 class="title">Readable components, with the tests that keep them maintainable.</h1>
         <p class="text">
-          Ordinary HTML, Vue, and plain CSS for application interfaces. Use the package as-is, or
-          take ownership of its readable source when the boundary no longer fits.
+          Nagi UI ships concrete Vue Blueprints and the executable knowledge needed to change them.
+          Use the package for light work, or own the same source and tests without adopting a
+          hidden renderer or another component composition language.
         </p>
         <div class="actions">
           <a
@@ -36,7 +37,8 @@ const previewColumns = [
           >
         </div>
         <p class="text -proof">
-          This site is built with Nuxt, Nagi UI, Nagi CSS, and ordinary scoped CSS.
+          Component pages show the shipped Vue source and the Component Contract/Implementation tests that define
+          its maintenance boundary.
         </p>
       </div>
       <div
@@ -89,8 +91,8 @@ const previewColumns = [
 
     <section class="section -proof">
       <header class="header">
-        <p class="text">Design principles</p>
-        <h2 class="title">A small layer over the browser.</h2>
+        <p class="text">What Nagi makes visible</p>
+        <h2 class="title">The implementation and its safe change boundary.</h2>
       </header>
       <div class="unit -principles">
         <article class="article">
@@ -99,10 +101,10 @@ const previewColumns = [
             aria-hidden="true"
             >01</span
           >
-          <h3 class="title">Native where it matters</h3>
+          <h3 class="title">Read the concrete source</h3>
           <p class="text">
-            Tables remain tables. Dialogs remain dialogs. Form controls participate in browser
-            validation and submission.
+            Structure and styling stay in ordinary Vue SFCs. Narrow Behavior APIs coordinate the
+            hard parts without becoming a hidden renderer.
           </p>
         </article>
         <article class="article">
@@ -111,10 +113,10 @@ const previewColumns = [
             aria-hidden="true"
             >02</span
           >
-          <h3 class="title">Constrained plain CSS</h3>
+          <h3 class="title">Tests explain the contract</h3>
           <p class="text">
-            Nagi CSS derives most identities from structure and semantics, then verifies the real
-            Vue template and style block.
+            Component Contract tests state what every compatible implementation must preserve. Implementation tests expose how
+            this Blueprint provides it. Their assertions are the evidence.
           </p>
         </article>
         <article class="article">
@@ -123,10 +125,10 @@ const previewColumns = [
             aria-hidden="true"
             >03</span
           >
-          <h3 class="title">Source ownership</h3>
+          <h3 class="title">Own flexibility</h3>
           <p class="text">
-            Use the canonical package component, then copy that same readable Vue source when
-            structural customization becomes necessary.
+            Structural customization happens in source instead of growing a runtime API. Re-run
+            the published tests to distinguish deliberate change from regression.
           </p>
         </article>
       </div>
@@ -135,10 +137,10 @@ const previewColumns = [
     <section class="section -ownership">
       <div class="unit">
         <p class="text -eyebrow">Source ownership</p>
-        <h2 class="title">Package first, owned source when needed.</h2>
+        <h2 class="title">Move flexibility into the repository.</h2>
         <p class="text">
-          Install components normally. If your product needs different structure, own the canonical
-          SFC and continue with ordinary Vue.
+          Package mode is the light-use tier. Full adoption means owning the canonical Vue source,
+          its Component Contract and Implementation tests, and the generated maintenance view as one local system.
         </p>
       </div>
       <div class="actions">

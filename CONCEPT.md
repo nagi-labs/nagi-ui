@@ -1,15 +1,24 @@
 # Nagi UI Concept
 
-> **Nagi UI is a system for building and maintaining the component library you own.**
+> **Nagi UI provides readable Vue components and the executable knowledge needed
+> to own, change, and maintain them.**
 
-Nagi UI is not primarily a traditional package-first component library.
+Traditional component libraries keep their implementation private and recover
+flexibility through runtime APIs: compound components, render indirection,
+configuration matrices, and state-machine conventions that consumers must
+learn before making structural changes. Nagi changes the premise. It publishes
+a concrete implementation and the tests that define its guarantees, then lets
+the application own both.
 
-It is a methodology and toolchain for creating an owned UI system that humans and AI agents can understand, modify, test, and maintain over time.
+Nagi is therefore not primarily a package-first component library. It is a
+methodology and toolchain for creating an owned UI system that humans and AI
+agents can inspect, modify, test, and maintain using ordinary Vue development
+practices.
 
 Nagi UI began as a reference implementation and stress test for **Nagi CSS**. That remains an important role, but the broader concept is:
 
 ```text
-Component Definition
+Component Contract and Implementation tests
         ↓
 Canonical Implementation
         ↓
@@ -22,9 +31,24 @@ Visual Catalog
 AI-assisted Maintenance
 ```
 
-The goal is not maximum runtime configurability.
+The goal is not maximum runtime configurability. The goal is to move
+flexibility out of a black-box runtime and into **controlled source ownership
+with explicit, executable guarantees**.
 
-The goal is **controlled source ownership with explicit, executable guarantees**.
+The maintenance model is intentionally visible:
+
+```text
+Readable Vue Blueprint
+        +
+Component Contract tests: what compatible implementations preserve
+        +
+Implementation tests: how this source provides it
+        ↓
+Own, modify, and verify with ordinary tools
+```
+
+The generated Component Definition is a browsable projection of that knowledge,
+not a second specification maintained beside the tests.
 
 ---
 
@@ -48,9 +72,11 @@ ui/
 │   ├── Button.vue
 │   ├── Dialog.vue
 │   └── Select.vue
-├── definitions/
+├── tests/
+│   ├── contracts/
+│   └── implementations/
 ├── scenarios/
-└── tests/
+└── catalog/
 ```
 
 Then components can be added:
@@ -76,7 +102,7 @@ You do not merely keep depending on Nagi UI's components. Nagi UI helps you esta
 Nagi UI may also provide a normal package:
 
 ```bash
-pnpm add @nagi-labs/nagi-ui
+vp add @nagi-labs/nagi-ui
 ```
 
 This is useful for evaluation, simple use cases, or teams that do not need structural customization.
@@ -146,7 +172,10 @@ Slots are not unlimited escape hatches either. They should correspond to anatomy
 
 A Nagi UI component is not just a `.vue` file.
 
-Each component should have a clear definition describing what the component is and what it guarantees.
+Each component should have structured Component Contract and Implementation tests describing
+what it guarantees. The Component Definition shown to maintainers is generated
+from those tests and executable anatomy rules; it is not a second prose manifest
+that repeats them.
 
 For example, a Dialog definition may include:
 
@@ -187,7 +216,9 @@ For example, a Dialog definition may include:
 - supported variants
 - documented visual states
 
-The implementation, tests, scenarios, and documentation should correspond to this definition.
+Named test functions, runner titles, native classification metadata, and their
+assertions are the operational source of truth. Documentation and the catalog
+Definition are projections of those ordinary test results.
 
 ---
 
@@ -195,16 +226,22 @@ The implementation, tests, scenarios, and documentation should correspond to thi
 
 Source ownership should not mean copy-and-forget.
 
+Tests are part of the public maintenance interface. They do more than protect
+Nagi's package from regressions: they show an owner what the component promises,
+which implementation choices are local, and how a proposed edit will be judged.
+The source explains the implementation; the tests explain the safe boundary for
+changing it.
+
 Nagi UI treats these as one unit:
 
 ```text
 Component Source
 +
-Definition
-+
 Tests
 +
 Scenarios
++
+Generated Definition
 ```
 
 If a team owns a Dialog and moves the close action, changes the DOM hierarchy, or modifies the layout, that is fine.
@@ -370,7 +407,7 @@ A useful rule is:
 
 ## 9. Keep Versioning Lightweight
 
-Nagi's upstream Component Definitions should be versioned.
+Nagi's upstream component sources and test suites should be versioned.
 
 An owned component should retain provenance such as:
 
@@ -386,8 +423,6 @@ After ownership, the local repository is the source of truth:
 
 ```text
 Owned source
-+
-Local definition
 +
 Local tests
 +
@@ -499,11 +534,11 @@ If an owned component introduces a new supported state:
 ```text
 Implementation changes
         ↓
-Definition changes
+Requirement tests change
         ↓
 Scenario added
         ↓
-Tests added or updated
+Generated Definition updates
 ```
 
 This keeps the component's visible behavior and executable expectations aligned.
@@ -625,8 +660,8 @@ Conceptually:
 Add a canonical component together with its:
 
 - source
-- definition
-- tests
+- Component Contract and Implementation tests
+- generated Definition catalog entry
 - scenarios
 - provenance metadata
 
@@ -644,32 +679,21 @@ The exact CLI and directory structure remain implementation details.
 
 ## 16. Positioning
 
-Nagi UI should not be positioned merely as:
+Nagi UI is not positioned as another Vue component package or as a headless
+runtime with a different composition API. Its canonical description is:
 
-> another Vue component library
+> **Nagi UI provides readable Vue components and the executable knowledge needed
+> to own, change, and maintain them.**
 
-A better description is:
+The shorter ownership message is:
 
-> **Nagi UI is a system for building and maintaining the component library you own.**
+> **Own your components. Keep the tests that explain how to change them.**
 
-An AI-oriented version:
-
-> **A UI system designed to be owned and maintained by humans and AI.**
-
-An ownership-oriented version:
-
-> **Own your components. Keep the source, the definition, and the tests.**
-
-A more descriptive version:
-
-> **Nagi UI gives you canonical components, their definitions, tests, scenarios, and the tooling to evolve them as your own UI system.**
-
-The distinguishing idea is not source copying by itself.
-
-It is the full lifecycle:
+Source copying alone is not the product. The product is the complete maintenance
+lifecycle:
 
 ```text
-Component Definition
+Component Contract and Implementation tests
         ↓
 Canonical Implementation
         ↓
@@ -682,9 +706,9 @@ Verify
 Maintain as a coherent UI system
 ```
 
-The component library is one part of the product.
-
-The broader product is the **methodology and toolchain for maintaining an owned UI library**.
+The component library is the starting implementation. Nagi's distinguishing
+product is the methodology and tooling that keep an owned UI library readable
+and verifiable for humans and AI agents.
 
 ---
 
@@ -695,19 +719,19 @@ art. This section exists so that work is not rebuilt from scratch, so that
 existing solutions can be studied, and so that descriptions of Nagi UI stay
 accurate. None of these ideas originated here.
 
-| Idea | Prior art |
-| --- | --- |
-| Source-ownership CLI | shadcn/ui, shadcn-vue, jsrepo |
-| Shipping source together with tests, examples, and stories | jsrepo (`--with test`, file roles) |
-| Agent instructions distributed with components | shadcn/skills |
-| Machine-readable component specifications | OpenUI Specification (openuispec.org); W3C UI Specification Schema CG (closed 2026-05) |
-| Component anatomy, states, and behavior vocabulary | Open UI |
-| Specification linked to executable tests | ARIA APG (tests bound to its own reference examples); ACT Rules Format 1.1 |
-| Portable accessibility conformance suites run against arbitrary implementations | **Evinced Unit Tester** (commercial) |
-| A thin consumer call where the suite lives in the upgradable package | Evinced Unit Tester |
-| Scenarios driving browser-level verification | Storybook (portable stories, Vitest addon) |
-| Behavior as typed attribute bundles bound to your own markup | React Aria hooks, Ariakit, Melt UI builders, **Zag.js (including Vue)** |
-| Native-platform-first implementation | Ignite UI Web Components and other platform-native projects |
+| Idea                                                                            | Prior art                                                                              |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Source-ownership CLI                                                            | shadcn/ui, shadcn-vue, jsrepo                                                          |
+| Shipping source together with tests, examples, and stories                      | jsrepo (`--with test`, file roles)                                                     |
+| Agent instructions distributed with components                                  | shadcn/skills                                                                          |
+| Machine-readable component specifications                                       | OpenUI Specification (openuispec.org); W3C UI Specification Schema CG (closed 2026-05) |
+| Component anatomy, states, and behavior vocabulary                              | Open UI                                                                                |
+| Specification linked to executable tests                                        | ARIA APG (tests bound to its own reference examples); ACT Rules Format 1.1             |
+| Portable accessibility conformance suites run against arbitrary implementations | **Evinced Unit Tester** (commercial)                                                   |
+| A thin consumer call where the suite lives in the upgradable package            | Evinced Unit Tester                                                                    |
+| Scenarios driving browser-level verification                                    | Storybook (portable stories, Vitest addon)                                             |
+| Behavior as typed attribute bundles bound to your own markup                    | React Aria hooks, Ariakit, Melt UI builders, **Zag.js (including Vue)**                |
+| Native-platform-first implementation                                            | Ignite UI Web Components and other platform-native projects                            |
 
 Two entries deserve emphasis as the closest existing work, worth studying
 directly.
@@ -727,13 +751,61 @@ which is a useful precedent for declaring anatomy as a value rather than as
 prose. Nagi adopts the useful `data-scope` / `data-part` split for explicit
 structural identity while keeping user-facing ARIA semantics independent. The
 difference is not the attribute vocabulary: Zag's machine is the component
-state authority, while Nagi's Definition, visible owned Vue source, native
-platform state, and conformance evidence remain separate layers. A Nagi CSS
+state authority, while Nagi's Definition, visible owned Vue source,
+Implementation, and conformance evidence remain separate layers. A Nagi CSS
 class is still never an anatomy anchor because it is derived from the DOM and
 changes with it. See the functional anatomy contracts in the
 [component layer audit](docs/component-layer-audit.md). Zag's state ownership
-model is also the opposite of the one here: the machine owns state that Nagi UI
-delegates to native elements and the browser's top layer.
+model is also the opposite of the standard Blueprint Implementation: the machine owns
+state that those Blueprints delegate to native elements and the browser's top
+layer.
+
+### A Definition collects Component Contract and Implementation tests
+
+The three names are not peer concepts. Component Contract tests verify what users and
+applications can rely on across implementations. Implementation tests verify how one
+concrete implementation provides those guarantees. A Component Definition is
+the generated view that collects both groups:
+
+```text
+Component Contract tests ─┐
+                         ├── generated Component Definition
+Implementation tests ─────┘
+```
+
+The package's default Blueprints use platform-first Implementations. An owned
+application may instead use a Motion-owned Implementation—for example delegated
+enter/exit presence—while claiming the same Component Contract only after its
+shared Contract and local Implementation suites pass. Implementations are not
+runtime variants or props; they describe the source that actually ships in that repository.
+
+This boundary follows established library practice rather than inventing a
+Nagi-only lifecycle. Ark UI and Zag Presence distinguish logical presence from
+mounting and expose exit completion. Radix UI and Reka UI keep animated content
+mounted and allow JavaScript animation libraries to own unmount timing through
+`forceMount`. Floating UI distinguishes logical `open` from `isMounted`, and
+Base UI exposes `keepMounted` plus animation-aware teardown. Nagi adopts the
+shared architectural lesson—visibility intent and render presence may have
+different owners—without adding any of those runtimes to core.
+
+The generated Definition remains implementation-specific. It collects one
+Component Contract suite plus exactly one Implementation suite; it never pretends that
+native and Motion implementations have identical DOM. Anatomy and native
+element constraints therefore belong to Implementation tests; observable user
+guarantees belong to Component Contract tests.
+
+The
+[Open UI Component Specification Template](https://open-ui.org/component-spec-template/)
+is Nagi's authoring checklist and shared vocabulary, not the sole source of
+truth. Normative requirements come from HTML, ARIA, and CSS; APG supplies
+established but informative interaction guidance. Zag, Ark UI, Radix, Reka,
+Base UI, and Motion are implementation prior art. The operational source of
+truth for what Nagi ships is the passing Component Contract and Implementation test set. The
+Definition is its generated documentation view. External references normally
+belong to the component or suite; per-test source revisions are required only
+for an explicit pinned conformance claim.
+See
+[Component Definitions](docs/component-definitions.md#authoring-model-and-sources-of-authority).
 
 ### Scope of the conformance contracts
 

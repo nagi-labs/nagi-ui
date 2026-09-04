@@ -119,6 +119,19 @@ test("every public package component has an ownership registry entry", () => {
   assert.deepEqual(Object.keys(components).sort(), publicComponents);
 });
 
+test("DropdownMenu renderers remain owned internals rather than package components", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")) as {
+    exports: Record<string, unknown>;
+  };
+  const componentEntry = fs.readFileSync(path.join(packageRoot, "components.ts"), "utf8");
+
+  assert.equal(manifest.exports["./blueprints/menu/internal/*"], null);
+  assert.doesNotMatch(
+    componentEntry,
+    /export\s+\{\s*default\s+as\s+NDropdownMenu(?:Item|Group|Submenu)\b/u,
+  );
+});
+
 test("theme check reports missing and unknown replacement-theme tokens", async () => {
   const root = tempDir();
   const incomplete = path.join(root, "theme.css");

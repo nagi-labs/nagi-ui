@@ -9,10 +9,13 @@ export interface BlueprintChannel {
   type: string;
 }
 
-const blueprintModules = import.meta.glob("#nagi-blueprints/**/*.vue", {
-  import: "default",
-  query: "?raw",
-});
+const blueprintModules = import.meta.glob(
+  ["#nagi-blueprints/**/*.vue", "#nagi-blueprints/**/*.ts"],
+  {
+    import: "default",
+    query: "?raw",
+  },
+);
 const controlModules = import.meta.glob("#nagi-control-source/*.ts", {
   import: "default",
   query: "?raw",
@@ -23,15 +26,79 @@ export interface BlueprintBehaviorApi {
   source: string;
 }
 
+export interface BlueprintSourceFile {
+  path: string;
+  kind: "public-component" | "internal-component" | "owned-helper";
+  source: string;
+}
+
 function componentFileName(name: string) {
   return `${name}.vue`;
 }
 
-export async function loadBlueprintSource(name: string): Promise<string> {
+function resolveRelativeModule(from: string, specifier: string) {
+  const absolute = from.startsWith("/");
+  const parts = `${from.slice(0, from.lastIndexOf("/"))}/${specifier}`.split("/");
+  const resolved: string[] = [];
+  for (const part of parts) {
+    if (!part || part === ".") continue;
+    if (part === "..") {
+      if (resolved.length && resolved.at(-1) !== "..") resolved.pop();
+      else if (!absolute) resolved.push(part);
+    } else resolved.push(part);
+  }
+  return `${absolute ? "/" : ""}${resolved.join("/")}`;
+}
+
+function relativeImports(source: string) {
+  return [...source.matchAll(/(?:from\s*|import\s*)["'](\.[^"']+\.(?:vue|ts))["']/gu)].map(
+    (match) => match[1] ?? "",
+  );
+}
+
+export async function loadBlueprintSources(name: string): Promise<BlueprintSourceFile[]> {
   const suffix = `/${componentFileName(name)}`;
-  const entry = Object.entries(blueprintModules).find(([path]) => path.endsWith(suffix));
-  if (!entry) throw new Error(`Blueprint source not found for ${name}`);
-  return (await entry[1]()) as string;
+  const main = Object.entries(blueprintModules).find(([path]) => path.endsWith(suffix));
+  if (!main) throw new Error(`Blueprint source not found for ${name}`);
+
+  const root = main[0].slice(0, main[0].lastIndexOf("/"));
+  const pending = [main[0]];
+  const visited = new Set<string>();
+  const files: BlueprintSourceFile[] = [];
+
+  while (pending.length) {
+    const path = pending.shift();
+    if (!path || visited.has(path)) continue;
+    const load = blueprintModules[path];
+    if (!load) continue;
+    visited.add(path);
+
+    const source = (await load()) as string;
+    const relativePath = path.slice(root.length + 1);
+    files.push({
+      path: relativePath,
+      kind:
+        path === main[0]
+          ? "public-component"
+          : path.endsWith(".vue")
+            ? "internal-component"
+            : "owned-helper",
+      source,
+    });
+
+    for (const specifier of relativeImports(source)) {
+      const dependency = resolveRelativeModule(path, specifier);
+      if (blueprintModules[dependency] && !visited.has(dependency)) pending.push(dependency);
+    }
+  }
+
+  return files;
+}
+
+export async function loadBlueprintSource(name: string): Promise<string> {
+  const [main] = await loadBlueprintSources(name);
+  if (!main) throw new Error(`Blueprint source not found for ${name}`);
+  return main.source;
 }
 
 export async function loadBlueprintBehaviorApis(source: string): Promise<BlueprintBehaviorApi[]> {

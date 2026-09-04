@@ -215,7 +215,7 @@ test("[CAR-SEM-01][CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-05][CAR-SEM-06][C
   const secondSlide = carouselRegion.getByRole("group", { name: /Second release.*2 \/ 3/ });
   await expect(secondSlide).toBeVisible();
   await expect(secondSlide).toHaveAttribute("aria-roledescription", "slide");
-  await expect(secondSlide.locator("..")).toHaveClass(/-slides/);
+  await expect(secondSlide.locator("..")).toHaveAttribute("data-part", "viewport");
   const carouselViewport = carouselRegion.getByRole("group", { name: "Release highlights", exact: true });
   await expect(carouselViewport).toHaveAttribute("aria-roledescription", "slides");
   await expect(carouselViewport).toHaveAttribute("data-scope", "carousel");
@@ -577,7 +577,7 @@ test("controlled overlay close rejection keeps the actual native surface operabl
 
 test("rejected overlay opens never commit a native toggle or suppress a touch click", async ({ page }) => {
   const menubar = page.getByRole("menubar", { name: "Locked application" });
-  const menubarPopup = menubar.locator("xpath=..").locator(".list.-popup");
+  const menubarPopup = menubar.locator("xpath=..").locator(".list[popover]");
   const navigation = page.getByRole("navigation", { name: "Locked navigation" });
   const navigationPopup = navigation.locator(".unit.-popup");
   for (const popup of [menubarPopup, navigationPopup]) {
@@ -600,7 +600,7 @@ test("rejected overlay opens never commit a native toggle or suppress a touch cl
   await expect(navigationPopup).toHaveAttribute("data-transitions", "");
 
   const touchTarget = page.getByRole("button", { name: "Locked context target" });
-  const contextPopup = touchTarget.locator("xpath=../..").locator(".list.-popup");
+  const contextPopup = touchTarget.locator("xpath=../..").locator(".list[popover]");
   await contextPopup.evaluate((element: HTMLElement) => {
     element.dataset.transitions = "";
     for (const type of ["beforetoggle", "toggle"]) {
@@ -717,7 +717,7 @@ test("expanded components are axe-clean in open interactive states", async ({ pa
 
   const menubar = page.getByRole("menubar", { name: "Application", exact: true });
   await menubar.getByRole("menuitem", { name: "File" }).click();
-  await expect(menubar.locator("xpath=..").locator(".list.-popup")).toBeVisible();
+  await expect(menubar.locator("xpath=..").locator(".list[popover]")).toBeVisible();
   await expectAxeClean(page);
   await expectNagiDomClean(page);
 

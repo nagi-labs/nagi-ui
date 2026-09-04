@@ -132,7 +132,7 @@ test("protects Combobox disabled and readonly behavior from DOM-only overrides",
 test("accepts owned Tabs wiring and protects its role relationships", () => {
   const valid = verify(`
     <template>
-      <div v-bind="tabs.tablistProps">
+      <div role="tablist" v-bind="tabs.tablistProps">
         <button
           v-for="item in items"
           :key="item.key"

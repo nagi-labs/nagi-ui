@@ -114,9 +114,11 @@ defineExpose({ show: popover.show, hide: popover.hide, toggle: popover.toggle })
 }
 
 @media (forced-colors: active) {
-  .n-popover > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-popover {
+    > .button:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
   }
 }
 </style>

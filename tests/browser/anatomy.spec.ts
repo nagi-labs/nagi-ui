@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+import { toastDefinition } from "../../packages/core/blueprints/toast/toast.definition.ts";
+import { inspectAnatomy } from "../../packages/core/src/definition.ts";
+
 /**
  * Functional anatomy contracts, verified against real rendered DOM.
  *
@@ -7,7 +10,9 @@ import { expect, test } from "@playwright/test";
  * viewport scopes semantic slide descendants without requiring direct parentage.
  */
 
-test("[BTN-SEM-01][BTN-ANAT-01] canonical Button and Carousel satisfy their declared anatomy", async ({ page }) => {
+test("[BTN-SEM-01][BTN-ANAT-01] canonical Button and Carousel satisfy their declared anatomy", async ({
+  page,
+}) => {
   await page.goto("/anatomy.html");
 
   await expect(page.locator("#anatomy-button")).toHaveText("ok");
@@ -34,4 +39,14 @@ test("the edited carousel still passes role and name discovery", async ({ page }
   await expect(region).toBeVisible();
   await expect(region.getByRole("group", { name: "First, 1 / 3" })).toBeVisible();
   await expect(region.getByRole("button", { name: "Next slide" })).toBeVisible();
+});
+
+test("[TST-ANAT-01][TST-ANAT-02][TST-ANAT-03] Toast satisfies its standard Blueprint anatomy", async ({
+  page,
+}) => {
+  await page.goto("/catalog.html");
+  await page.getByRole("button", { name: "Show toast" }).click();
+
+  const root = page.locator(".n-toast").first();
+  expect(await root.evaluate(inspectAnatomy, toastDefinition.anatomy)).toEqual([]);
 });

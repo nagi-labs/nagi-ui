@@ -3,17 +3,22 @@ import {
   buttonContract,
   carouselContract,
   comboboxContract,
+  datePickerContract,
   dialogContract,
   tabsContract,
+  toastContract,
 } from "@nagi-labs/nagi-ui/test";
 import { alertDialogDefinition } from "@nagi-labs/nagi-ui/blueprints/alert-dialog/alert-dialog.definition.ts";
 import { buttonDefinition } from "@nagi-labs/nagi-ui/blueprints/button/button.definition.ts";
 import { carouselDefinition } from "@nagi-labs/nagi-ui/blueprints/carousel/carousel.definition.ts";
 import { comboboxDefinition } from "@nagi-labs/nagi-ui/blueprints/combobox/combobox.definition.ts";
 import { dialogDefinition } from "@nagi-labs/nagi-ui/blueprints/dialog/dialog.definition.ts";
+import { datePickerDefinition } from "@nagi-labs/nagi-ui/blueprints/date-picker/date-picker.definition.ts";
+import { toastDefinition } from "@nagi-labs/nagi-ui/blueprints/toast/toast.definition.ts";
 
 buttonContract({
   definition: buttonDefinition,
+  fixture: "package",
   url: "/owned-contract.html",
   name: "Package save",
   nativeDisabledName: "Package native disabled",
@@ -27,8 +32,13 @@ buttonContract({
     attribute: { name: "data-contract-owner", value: "package" },
   },
   submission: {
+    defaultName: "Package form action",
     name: "Package submit",
+    resetName: "Package reset",
+    inputName: "Package form value",
+    initialInputValue: "initial",
     statusName: "Package submission result",
+    initialStatus: "none",
     expected: "submitted",
   },
   style: {
@@ -50,6 +60,8 @@ buttonContract({
 
 buttonContract({
   definition: buttonDefinition,
+  fixture: "owned",
+  includeStandardImplementation: false,
   url: "/owned-contract.html",
   name: "Owned save",
   nativeDisabledName: "Owned native disabled",
@@ -63,8 +75,13 @@ buttonContract({
     attribute: { name: "data-contract-owner", value: "owned" },
   },
   submission: {
+    defaultName: "Owned form action",
     name: "Owned submit",
+    resetName: "Owned reset",
+    inputName: "Owned form value",
+    initialInputValue: "initial",
     statusName: "Owned submission result",
+    initialStatus: "none",
     expected: "submitted",
   },
   style: {
@@ -86,6 +103,7 @@ buttonContract({
 
 carouselContract({
   definition: carouselDefinition,
+  fixture: "package",
   url: "/owned-contract.html",
   name: "Package release highlights",
   slidesName: "Package release slides",
@@ -97,6 +115,23 @@ carouselContract({
   rootRole: "region",
   modelStatusName: "Package carousel model",
   secondAnnouncement: "2 / 3",
+  externalUpdateName: "Set package carousel to third",
+  expectedExternalIndex: "2",
+  looped: {
+    name: "Package looped highlights",
+    modelStatusName: "Package looped carousel model",
+  },
+  rejected: {
+    name: "Package locked highlights",
+    modelStatusName: "Package locked carousel model",
+    requestStatusName: "Package locked carousel requests",
+  },
+  outOfRange: {
+    name: "Package bounded highlights",
+    modelStatusName: "Package bounded carousel model",
+    sourceIndex: "99",
+    acceptedIndex: 2,
+  },
   disabled: {
     name: "Package disabled highlights",
     slidesName: "Package disabled slides",
@@ -108,6 +143,8 @@ carouselContract({
 
 carouselContract({
   definition: carouselDefinition,
+  fixture: "owned",
+  includeStandardImplementation: false,
   url: "/owned-contract.html",
   name: "Owned release highlights",
   slidesName: "Owned release slides",
@@ -122,6 +159,23 @@ carouselContract({
   rootRole: "region",
   modelStatusName: "Owned carousel model",
   secondAnnouncement: "2 / 3",
+  externalUpdateName: "Set owned carousel to third",
+  expectedExternalIndex: "2",
+  looped: {
+    name: "Owned looped highlights",
+    modelStatusName: "Owned looped carousel model",
+  },
+  rejected: {
+    name: "Owned locked highlights",
+    modelStatusName: "Owned locked carousel model",
+    requestStatusName: "Owned locked carousel requests",
+  },
+  outOfRange: {
+    name: "Owned bounded highlights",
+    modelStatusName: "Owned bounded carousel model",
+    sourceIndex: "99",
+    acceptedIndex: 2,
+  },
   disabled: {
     name: "Owned disabled highlights",
     slidesName: "Owned disabled slides",
@@ -133,6 +187,7 @@ carouselContract({
 
 comboboxContract({
   definition: comboboxDefinition,
+  fixture: "package",
   url: "/owned-contract.html",
   name: "Package framework",
   inputStatusName: "Package combobox input",
@@ -143,6 +198,8 @@ comboboxContract({
 
 comboboxContract({
   definition: comboboxDefinition,
+  fixture: "owned",
+  includeStandardImplementation: false,
   url: "/owned-contract.html",
   name: "Owned framework",
   inputStatusName: "Owned combobox input",
@@ -150,24 +207,90 @@ comboboxContract({
   removeActiveName: "Remove owned active option",
 });
 
+datePickerContract({
+  definition: datePickerDefinition,
+  fixture: "package",
+  url: "/definition-stress.html",
+  triggerName: "Choose package delivery date",
+  fieldName: "Package delivery date",
+  calendarName: "Package delivery date calendar",
+  selectedDateName: "Friday, July 24, 2026",
+  nextDateName: "Saturday, July 25, 2026",
+  initialValue: "2026-07-24",
+  committedValue: "2026-07-25",
+  modelStatusName: "Package date model",
+  submission: {
+    buttonName: "Submit package date",
+    statusName: "Package date submission",
+    expected: '{"packageDeliveryDate":"2026-07-24"}',
+  },
+  constraints: {
+    beforeMinimumDateName: "Thursday, July 23, 2026",
+    unavailableDateName: "Sunday, July 26, 2026",
+    afterMaximumDateName: "Tuesday, July 28, 2026",
+    clearButtonName: "Clear package date",
+    forceInvalidButtonName: "Invalidate package date",
+    formName: "Package date form",
+    validationMessage: "Package delivery date is invalid.",
+    initialSubmissionStatus: "not submitted",
+  },
+});
+
+datePickerContract({
+  definition: datePickerDefinition,
+  fixture: "owned",
+  includeStandardImplementation: false,
+  url: "/definition-stress.html",
+  triggerName: "Choose owned delivery date",
+  fieldName: "Owned delivery date",
+  calendarName: "Owned delivery date calendar",
+  selectedDateName: "Friday, July 24, 2026",
+  nextDateName: "Saturday, July 25, 2026",
+  initialValue: "2026-07-24",
+  committedValue: "2026-07-25",
+  modelStatusName: "Owned date model",
+  submission: {
+    buttonName: "Submit owned date",
+    statusName: "Owned date submission",
+    expected: '{"ownedDeliveryDate":"2026-07-24"}',
+  },
+  constraints: {
+    beforeMinimumDateName: "Thursday, July 23, 2026",
+    unavailableDateName: "Sunday, July 26, 2026",
+    afterMaximumDateName: "Tuesday, July 28, 2026",
+    clearButtonName: "Clear owned date",
+    forceInvalidButtonName: "Invalidate owned date",
+    formName: "Owned date form",
+    validationMessage: "Owned delivery date is invalid.",
+    initialSubmissionStatus: "not submitted",
+  },
+  verifyPackageStyle: false,
+});
+
 dialogContract({
   definition: dialogDefinition,
+  fixture: "package",
   url: "/owned-contract.html",
   triggerName: "Open package definition dialog",
   dialogName: "Package definition dialog",
   description: "A package dialog exercising native modal state.",
   closeName: "Close",
+  actionName: "Save package dialog",
   modelStatusName: "Package dialog model",
   verifyPackageStyle: true,
 });
 
 dialogContract({
   definition: dialogDefinition,
+  fixture: "owned",
+  includeStandardImplementation: false,
   url: "/owned-contract.html",
   triggerName: "Open owned dialog",
   dialogName: "Owned profile editor",
   description: "Its footer moved before the title and body.",
   closeName: "Dismiss owned dialog",
+  actionName: "Save owned dialog",
+  modelStatusName: "Owned dialog model",
 });
 
 alertDialogContract({
@@ -181,6 +304,14 @@ alertDialogContract({
   initialFocusName: "Keep package contract",
   modelStatusName: "Package alert dialog model",
   verifyPackageStyle: true,
+});
+
+toastContract({
+  definition: toastDefinition,
+  fixture: "package",
+  url: "/catalog.html",
+  regionName: "Notifications",
+  secondaryRegionName: "Secondary notifications",
 });
 
 alertDialogContract({

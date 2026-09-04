@@ -97,9 +97,11 @@ defineExpose({ show: tooltip.show, hide: tooltip.hide });
 }
 
 @media (forced-colors: active) {
-  .n-tooltip > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-tooltip {
+    > .button:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
   }
 }
 </style>

@@ -23,24 +23,32 @@ to markup. An architecture audit across all 64 components showed that a strict
 an assembly graph:
 
 ```text
-                         Component Definition
-                    ┌──────────┼──────────┐
-                    │          │          │
-Web Platform ── Shared Mechanisms ── Behavior / Policy
-                    │          │          │
-                    └────── Visible Blueprint ◀── Nagi Design
+                   Portable Component Contract
+                              │
+                     Implementation
+                    ┌─────────┼─────────┐
+                    │         │         │
+Web Platform ─ Shared Mechanisms ─ Behavior / Policy
+                    │         │         │
+                    └── Visible Blueprint ◀── Nagi Design
                                   │
                            rendered DOM + CSS
 ```
 
-- **Component Definition** is the top-level contract: a behavioral contract
-  (semantics, state and interaction policy, functional anatomy and binding
-  requirements, platform capability and degradation rules) and a design
-  contract (canonical visual anatomy, tokens, variants, states, supported
-  scenarios). It is documentation and typed declarations, not a runtime layer
-  or DSL. See [CONCEPT.md](../CONCEPT.md) §4.
+- **Portable Component Contract** records guarantees that every conforming
+  implementation must preserve: semantics, state policy, interaction, focus,
+  and portable style axes. It must not fix a native element, mount lifecycle,
+  portal strategy, or animation library.
+- **Implementation** records how one concrete Blueprint realizes that
+  contract: native elements, state owner, presence lifecycle, functional
+  anatomy, binding destinations, and implementation-only functional style.
+  Component Contract plus Implementation resolves to the complete Component Definition consumed
+  by documentation and verification. The Definition is generated from ordinary
+  test-runner results and executable anatomy; it is not a runtime layer or a
+  second Requirement DSL. See [Component Definitions](component-definitions.md).
 - **Web Platform**: native elements, state, form behavior, focus, dialog and
-  popover top layer, and CSS are the first implementation choice.
+  popover top layer, and CSS are the first implementation choice for the
+  standard Blueprint Implementation.
 - **Shared Mechanisms**: concerns that belong to no single component —
   controlled-model acceptance, native form/reset/validity adapters, anchoring
   and element registration, link/navigation adaptation, ID and DOM relationship
@@ -63,13 +71,28 @@ Web Platform ── Shared Mechanisms ── Behavior / Policy
   [CSS style axes](style-axes.md).
 - **Visible Owned Blueprint** assembles all of the above. It is the only place
   that defines the final DOM and CSS.
+- **Nagi CSS identity follows semantic priority.** A styled `div` or `span`
+  with a static identifying ARIA role uses that role as its base class before
+  anatomy or STN: `class="group" role="group"`, not `class="unit"`. Native
+  element identities still take precedence on elements such as `li` and
+  `button`; non-identifying roles (`generic`, `none`, `presentation`) do not
+  become class names.
+- **UI Anatomy is reserved for `div` and `span`.** Names such as `field`,
+  `value`, `actions`, `media`, `icon`, and `text` must not replace the fixed
+  identity of a semantic element. In particular, prose is `<p class="p">`;
+  short title-like labels that must not impose a heading level are normally
+  `<span class="text">`. Whether content is genuinely a paragraph remains an
+  HTML review decision, while the Nagi CSS lint mechanically rejects `p.text`
+  and Element Class identities used on the wrong tag.
 
 ## Six governing principles
 
-1. **Platform first, with capability truth.** Delegate to native behavior and
-   document browser-dependent degradation or post-event repair honestly. Some
-   native transitions cannot be synchronously vetoed; controlled state is then
-   repaired, not prevented, and the Definition must say so.
+1. **The default Blueprint is platform first, with capability truth.** Delegate
+   to native behavior and document browser-dependent degradation or post-event
+   repair honestly. An alternative owned Implementation may delegate presence or
+   behavior to another library, but must name one state owner and supply its own
+   evidence. Some native transitions cannot be synchronously vetoed; controlled
+   state is then repaired, not prevented, and the Implementation must say so.
 2. **The Definition owns cross-cutting features.** A feature such as
    `orientation`, `disabled`, or `multiple` may affect semantics, behavior,
    structure, and design at once; the Definition assigns each effect rather
@@ -115,12 +138,12 @@ Composable output remains a small set of typed native-element binding bundles
 and actions:
 
 ```ts
-const tabs = useTabs(options)
+const tabs = useTabs(options);
 
-tabs.tablistProps
-tabs.tabProps(item)
-tabs.panelProps(item)
-tabs.select(item)
+tabs.tablistProps;
+tabs.tabProps(item);
+tabs.panelProps(item);
+tabs.select(item);
 ```
 
 The caller chooses the elements receiving those bindings. A composable must not
@@ -203,6 +226,38 @@ branches, rendering keys — stay beside the markup. The correct question is:
   roles and ARIA relationships may live in binding bundles because they must
   stay synchronized with state and IDs.
 
+### Split branch renderers by owned meaning, not line count
+
+A discriminated item schema may justify a private renderer when one branch has
+its own semantic root, repeated children, and component-local CSS. Keep that
+renderer in the same ownership bundle so the final DOM remains editable and
+traceable. DropdownMenu's labelled `group` and `radio-group`, for example,
+share one group renderer; action, link, and checkbox leaves remain together
+because splitting them would mostly duplicate the same menu-item presentation.
+
+Place private renderer SFCs under the Blueprint's `internal/` directory. They
+must not appear in the package component entrypoint, and the corresponding
+package subpath is blocked from direct import. “Internal” does not mean hidden
+from an owner: `nagi-ui own` copies the directory as part of the editable
+bundle, and the documentation site labels those files as **Internal
+component** beside the **Public component** entry SFC.
+
+Do not extract a renderer merely because markup is repeated. Calendar grids
+remain visible in Calendar, RangeCalendar, DatePicker, and DateRangePicker:
+moving the table to a child component would hide a primary structural decision
+and introduce a scoped-CSS ownership boundary. Prefer deliberate local
+repetition when sharing would make an owner cross files to discover the basic
+DOM or style path.
+
+Visible verbosity can also be contractual. Combobox and MultiSelect spell out
+the supported native input attributes and consumer events because root, input,
+popup, listbox, and form proxy are all plausible destinations; replacing those
+bindings with one broad forwarding object would make misrouting harder to
+review. RangeSlider likewise keeps its WebKit, Gecko, focus, disabled, and
+forced-colors thumb rules beside the two visible native range inputs. These are
+platform differences owned by the component, not evidence for a generic input
+or slider renderer.
+
 ## Verifying the Behavior API / Template boundary
 
 This responsibility boundary is an implementation contract, not something a
@@ -212,13 +267,13 @@ Both forms of evidence are required for a verified complex component.
 
 Review each binding destination from both directions:
 
-| Behavior API must own | Template must own |
-| --- | --- |
-| Element registration needed by behavior, exposed through the binding bundle's `ref` | Native element choice and visible DOM hierarchy |
-| State-dependent roles, ARIA relationships, `tabindex`, and event handlers | Slots, item rendering, structural branches, and rendering keys |
+| Behavior API must own                                                                | Template must own                                                         |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Element registration needed by behavior, exposed through the binding bundle's `ref`  | Native element choice and visible DOM hierarchy                           |
+| State-dependent roles, ARIA relationships, `tabindex`, and event handlers            | Slots, item rendering, structural branches, and rendering keys            |
 | Keyboard and pointer policy, focus movement/restoration, and controlled-state repair | Static local semantics such as `type="button"`, sectioning, and landmarks |
-| Lookup scoped to registered elements, their root, or their controlled surface | The destination receiving one complete `v-bind="...Props"` bundle |
-| Named reconciliation functions that preserve invariants after reactive changes | Presentation and layout that behavior does not need to interpret |
+| Lookup scoped to registered elements, their root, or their controlled surface        | The destination receiving one complete `v-bind="...Props"` bundle         |
+| Named reconciliation functions that preserve invariants after reactive changes       | Presentation and layout that behavior does not need to interpret          |
 
 A Blueprint normally fails this boundary when it contains any of the
 following:
@@ -322,9 +377,10 @@ Compound components route attributes to an explicit destination rather than
 forwarding one broad attrs object. See the
 [attribute forwarding policy](attribute-forwarding.md).
 
-## Native-first asymmetry
+## Platform-first Blueprint asymmetry
 
-Nagi intentionally varies JavaScript weight by platform capability:
+The standard Blueprint Implementation intentionally varies JavaScript weight by
+platform capability:
 
 - Card, Badge, native Table: almost entirely template and CSS;
 - Button, Select, Disclosure: native behavior plus a small adapter;

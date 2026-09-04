@@ -14,14 +14,16 @@ defineProps<{ name: string }>();
       >
         Definition
       </h2>
-      <small class="note -status">{{ name }} · WIP</small>
+      <small class="note -status">
+        {{ name }} · Contract audit WIP · Browser evidence not collected
+      </small>
     </header>
 
     <div class="unit -notice">
-      <strong class="strong">Formal maintenance contract in progress</strong>
+      <strong class="strong">Component Definition in progress</strong>
       <p class="text">
-        The component is available, but its semantics, state, interaction, focus, anatomy, and style
-        requirements have not yet been published with verified executable evidence.
+        The component is available, but its Component Contract and Implementation audit has not yet
+        been assembled. No runner-native browser evidence has been collected for this Definition.
       </p>
     </div>
   </section>

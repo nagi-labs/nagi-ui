@@ -2,10 +2,12 @@
 
 Status: Phase 4 consumer guidance (2026-07-21).
 
-Nagi UI gains a small custom vocabulary and HTML that works before hydration
-by delegating behavior to browser standards. In exchange, it does not replace
-the browser's state machines with library-owned implementations. This guide
-helps identify product requirements for which that tradeoff is a poor fit.
+Nagi UI's standard Blueprints gain a small custom vocabulary and HTML that
+works before hydration by delegating behavior to browser standards. That is a
+property of the standard Blueprint Implementation, not of the Component
+Contract. This guide distinguishes requirements that need another owned
+Implementation from requirements that are a poor fit for Nagi's contract and
+verification model altogether.
 
 Adopting Nagi UI does not have to be a single app-wide decision. Nagi has no
 required provider, portal root, or global state, so **only the components whose
@@ -20,35 +22,37 @@ choosing the appropriate state machine for each component.
 |---|---|---|
 | Theme tokens and small props/schema are sufficient | Use the Nagi package | Continue receiving ordinary package updates. |
 | Need to change DOM structure, item layout, or a framework node | Ownership candidate | Own the SFC with `nagi-ui own`, while keeping standard behavior in core. |
-| Need a dismiss, top-layer, focus, or gesture state machine different from the UA | Poor fit for Nagi | Delegate only that component to another library. |
-| Need identical appearance and behavior across browsers | Poor fit for Nagi | Choose a fully JavaScript-driven implementation instead of platform delegation. |
-| CSS entry/discrete transitions are sufficient | Good fit for Nagi | Use native state selectors and CSS. |
-| Springs, interruptible exits, swipe, or snap are product requirements | Poor fit for Nagi | Choose a dedicated Motion/gesture runtime. |
+| Need a dismiss, top-layer, focus, or gesture state machine different from the UA | Different Implementation | Own the component, replace its state owner as a whole, and run the shared Component Contract plus Implementation evidence. |
+| Need identical appearance and behavior across browsers | Different Implementation | Choose a fully JavaScript-driven implementation instead of platform delegation. |
+| CSS entry/discrete transitions are sufficient | Default Blueprint fit | Use native state selectors and CSS. |
+| Springs or interruptible exits are product requirements | Motion-owned Implementation | Let Motion or another presence runtime own mounting and exit completion; do not layer it over native visibility ownership. |
 
-The key point is that **source ownership is a way to change DOM and integration,
-not a way to replace the browser's state machine**. The hard constraints below
-do not disappear after owning the SFC.
+The key point is that **owning source may change the Implementation,
+but changing the Implementation changes the evidence obligation too**. A Motion-owned
+Toast is not verified merely because the native Toast Blueprint passed. It must
+re-run the portable contract and add evidence for delegated presence,
+interrupted exit, and unmount completion.
 
-## Hard constraints that require another library
+## Constraints of the standard Blueprint Implementation
 
-| Required capability | Why Nagi cannot provide it | Selection guidance |
+| Required capability | Why the default Blueprint does not provide it | Selection guidance |
 |---|---|---|
 | Per-event dismiss policy, such as "close on outside click but not Escape" | The UA owns light dismiss; Nagi's granularity is `popover="auto/manual/hint"`. Dropping to `manual` and rebuilding the dismiss state machine is forbidden by design. | Use a Reka UI/Base UI-style overlay with event-cancellation APIs. |
 | Arbitrary overlay order controlled by `z-index` or app-specific priority | Top-layer order follows open order and cannot be changed with `z-index`. Toast re-promotion is a narrow fix for the known Dialog coexistence case, not a general stack manager. | Delegate the whole overlay group to a library that owns a portal and stack manager. |
 | Interactive DOM such as a button, menu, or drag handle inside a backdrop | `::backdrop` is a pseudo-element and cannot contain child DOM. | Use an implementation that renders a real DOM overlay layer. Keep the native backdrop when only click-to-dismiss is needed. |
 | Legacy-browser support, library patches for UA bugs, or exactly identical behavior in every browser | Nagi treats UA implementations of Popover, Dialog, Invoker Commands, and related standards as canonical. It targets evergreen browsers and does not override behavioral differences with a custom runtime. | Fix a support matrix and choose a library that owns behavior in JavaScript. |
 | Trigger-to-popup id references across separate Shadow Roots | `popovertarget` / `aria-controls` idref wiring does not cross a Shadow Root. Version 1 waits for standards such as Reference Target. | Keep both nodes in the same root, or use an implementation that owns wiring across the shadow boundary. |
-| Motion-level orchestration that keeps content mounted through exit, springs, or animations that can reverse midway | Native popover/dialog visibility and a `v-if` / AnimatePresence-style lifecycle do not share the same state-ownership model. Nagi's canonical path is a CSS transition. | Delegate components whose contract requires an exit lifecycle to a Motion-capable runtime. |
+| Motion-level orchestration that keeps content mounted through exit, springs, or animations that can reverse midway | Native popover/dialog visibility and an AnimatePresence-style lifecycle do not share the same state owner. | Create a Motion-owned Implementation. Follow Ark/Zag Presence or Radix/Reka `forceMount` practice: separate requested visibility from mounted presence and let one runtime report exit completion. |
 | Drawer/bottom sheet with swipe-to-dismiss, interrupted drag, velocity, or snap points | Continuous pointer-gesture state has no native owner and requires a gesture runtime plus custom dismiss coordination. | Use a Vaul/vaul-vue-style sheet for that component. A static side panel can use Nagi Dialog styling. |
 | Select with rich options, complex trigger rendering, and identical appearance across engines | Nagi's stable path is native `<select>`. `appearance: base-select` is progressive enhancement, and `<selectedcontent>` is not a stable Blueprint prerequisite. | If native Select conflicts with product requirements, use a Reka UI/Base UI-style Select. For free-form input, also reconsider whether Combobox/Autocomplete semantics are more appropriate than Select. |
 | Build or CDN-only environment that cannot compile raw Vue SFCs from dependencies | Nagi package components and ownership sources distribute the same raw `.vue` files. A bundler/plugin that handles Vue SFCs is part of the distribution contract. | Use only core composables with caller-authored DOM, or choose a product that distributes precompiled components. |
 
-Adding these capabilities as options or modes in Nagi core would put platform
-delegation and a custom state machine in the same component. Every branch
+Adding these capabilities as modes in one standard Blueprint would put platform
+delegation and a custom state machine in the same implementation. Every branch
 multiplies the combinations of keyboard, focus, dismiss, and SSR behavior,
-removing the benefit of keeping Nagi a small platform layer. The decision is
-therefore not "can this be coded?" but "can this requirement be met under
-Nagi's state-ownership model?"
+removing the benefit of a small platform-first reference. The decision is
+therefore not "can this be coded?" but "which Implementation owns the lifecycle, and
+which evidence proves it?"
 
 ## Possible but high-cost requirements
 
@@ -72,8 +76,9 @@ vocabulary.
 
 ## When ownership is appropriate
 
-Ownership is appropriate when changing **structure and integration that the
-consumer should own**, rather than the state machine.
+Ownership is appropriate for structure and integration changes. It may also
+host a different state-machine or presence strategy, but that is a new
+implementation—not a cosmetic edit to the verified native Blueprint.
 
 - Add an avatar, description, or permission indicator to a Dropdown item.
 - Locally add an app-specific node to an items schema.
@@ -82,18 +87,13 @@ consumer should own**, rather than the state machine.
 - Adapt Card/Dialog anatomy, markup, or declared slots to a specific product.
 - Change component-specific CSS beyond the semantic theme-token layer.
 
-After ownership, continue passing standard props to `usePopover`, `useMenu`,
-and related composables, leaving keyboard, focus, and dismiss responsibilities
-in core/the UA. Keep running Nagi UI lint, Nagi CSS lint, conformance
-contracts, and real-browser tests so upstream accessibility and browser fixes
-can be adopted deliberately. To preserve the base for comparison, commit the
-unchanged source immediately after `own`. See the
+When retaining the platform-first Implementation, continue passing standard props to
+`usePopover`, `useMenu`, and related composables. When replacing it, do not keep
+those native bindings as a second hidden state owner: adopt the external
+runtime at the component boundary and write matching Implementation tests.
+In both cases keep running Nagi UI lint, Nagi CSS lint, portable conformance
+Component Contract tests, Implementation-specific browser tests, and visual review. See the
 [ownership model](./package-ownership-model.md).
-
-Conversely, if post-ownership changes require Teleport, a custom focus trap,
-custom light dismiss, a `data-state` that duplicates native state, or an
-animation runtime inside core, they exceed the ownership boundary. Delegate
-that component to another library.
 
 ## Rules for mixing libraries
 
@@ -113,7 +113,7 @@ that component to another library.
 
 ## Final checklist
 
-Do not choose Nagi UI for a component if any of these is mandatory:
+Do not use the **standard Blueprint Implementation** for a component if any of these is mandatory:
 
 - A dismiss/focus/stack state machine different from the UA.
 - Interactive backdrop or a portal-dependent DOM layer.

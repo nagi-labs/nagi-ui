@@ -28,8 +28,8 @@ export const displayOverlayExamples: Readonly<Record<string, string>> = {
   EmptyState: sfc(
     "NButton, NEmptyState",
     "",
-    `  <main class="app-empty-state-example">\n    <n-empty-state class="n-empty-state" title="No reports yet" description="Create the first scheduled report.">\n      <span class="actions -primary">\n        <n-button class="n-button">Create report</n-button>\n      </span>\n    </n-empty-state>\n  </main>`,
-    `.app-empty-state-example > .n-empty-state .actions.-primary > .n-button {\n  --button-tone: accent;\n  --button-appearance: solid;\n}`,
+    `  <main class="app-empty-state-example">\n    <n-empty-state class="n-empty-state" title="No reports yet" description="Create the first scheduled report.">\n      <span class="n-empty-state-action">\n        <n-button class="n-button">Create report</n-button>\n      </span>\n    </n-empty-state>\n  </main>`,
+    `.app-empty-state-example {\n  > .n-empty-state {\n    .n-empty-state-action {\n      > .n-button {\n        --button-tone: accent;\n        --button-appearance: solid;\n      }\n    }\n  }\n}`,
   ),
   Kbd: sfc(
     "NKbd",
@@ -89,8 +89,8 @@ export const displayOverlayExamples: Readonly<Record<string, string>> = {
   Dialog: sfc(
     "NButton, NDialog",
     `import { ref } from "vue";\nconst open = ref(false);`,
-    `  <main class="app-dialog-example">\n    <n-dialog\n      class="n-dialog"\n      v-model:open="open"\n      trigger-label="Invite teammate"\n      title="Invite teammate"\n      description="Add someone to this workspace."\n    >\n      Invitation settings.\n      <template #actions>\n        <span class="actions -primary">\n          <n-button class="n-button">Send invite</n-button>\n        </span>\n      </template>\n    </n-dialog>\n    <output>Open: {{ open }}</output>\n  </main>`,
-    `.app-dialog-example > .n-dialog .actions.-primary > .n-button {\n  --button-tone: accent;\n  --button-appearance: solid;\n}`,
+    `  <main class="app-dialog-example">\n    <n-dialog\n      class="n-dialog"\n      v-model:open="open"\n      trigger-label="Invite teammate"\n      title="Invite teammate"\n      description="Add someone to this workspace."\n    >\n      Invitation settings.\n      <template #actions>\n        <span class="n-dialog-actions">\n          <n-button class="n-button">Send invite</n-button>\n        </span>\n      </template>\n    </n-dialog>\n    <output>Open: {{ open }}</output>\n  </main>`,
+    `.app-dialog-example {\n  > .n-dialog {\n    .n-dialog-actions {\n      > .n-button {\n        --button-tone: accent;\n        --button-appearance: solid;\n      }\n    }\n  }\n}`,
   ),
   DropdownMenu: sfc(
     "NDropdownMenu",

@@ -79,7 +79,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
           data-scope="alert-dialog"
           data-part="description"
           :id="descriptionId"
-          class="text"
+          class="p"
         >
           <slot
             name="description"
@@ -163,7 +163,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         font-size: var(--n-font-size-5);
       }
 
-      > .text {
+      > .p {
         margin-block: var(--n-space-3) 0;
         color: var(--nagi-color-text-muted);
         font-size: var(--n-font-size-3);
@@ -213,10 +213,20 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 }
 
 @media (forced-colors: active) {
-  .n-alert-dialog > .button:focus-visible,
-  .n-alert-dialog > .dialog > .footer > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-alert-dialog {
+    > .button:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
+
+    > .dialog {
+      > .footer {
+        > .button:focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+    }
   }
 }
 </style>

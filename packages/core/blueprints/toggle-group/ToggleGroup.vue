@@ -118,13 +118,17 @@ const toggleGroup = useToggleGroup(
 }
 
 @media (forced-colors: active) {
-  .n-toggle-group > .button[aria-pressed="true"] {
-    border-width: var(--n-border-width-2);
-  }
+  .n-toggle-group {
+    > .button {
+      &[aria-pressed="true"] {
+        border-width: var(--n-border-width-2);
+      }
 
-  .n-toggle-group > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+      &:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: var(--n-border-width-2);
+      }
+    }
   }
 }
 </style>

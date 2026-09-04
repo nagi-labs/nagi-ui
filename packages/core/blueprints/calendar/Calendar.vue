@@ -81,19 +81,19 @@ useCalendarNativeForm(formControl, calendar);
       class="table"
       :aria-describedby="calendar.isInvalid.value ? `${calendar.gridProps.id}-error` : undefined"
     >
-      <thead class="thead -head">
+      <thead class="thead">
         <tr class="row">
           <th
             v-for="weekday in calendar.weekdayLabels.value"
             :key="weekday"
-            class="cell -head"
+            class="cell"
             scope="col"
           >
             {{ weekday }}
           </th>
         </tr>
       </thead>
-      <tbody class="tbody -dates">
+      <tbody class="tbody">
         <tr
           v-for="(week, index) in calendar.weeks.value"
           :key="index"
@@ -119,14 +119,14 @@ useCalendarNativeForm(formControl, calendar);
     <span
       v-if="calendar.isInvalid.value"
       :id="`${calendar.gridProps.id}-error`"
-      class="text -validation"
+      class="alert"
       role="alert"
       >{{ validationMessage }}</span
     >
     <input
       ref="formControl"
       v-bind="calendar.formValueProps"
-      class="input -form-value"
+      class="input"
     />
   </div>
 </template>
@@ -138,7 +138,7 @@ useCalendarNativeForm(formControl, calendar);
   inline-size: fit-content;
   color: var(--nagi-color-text);
 
-  > .text.-validation {
+  > .alert {
     color: var(--nagi-color-danger);
     font-size: var(--nagi-font-size-label);
   }
@@ -186,58 +186,70 @@ useCalendarNativeForm(formControl, calendar);
   > .table {
     border-collapse: collapse;
 
-    > .thead.-head > .row > .cell.-head {
-      min-inline-size: var(--nagi-size-control);
-      block-size: var(--nagi-size-control);
-      color: var(--nagi-color-text-muted);
-      font-size: var(--nagi-font-size-label);
-      font-weight: 650;
+    > .thead {
+      > .row {
+        > .cell {
+          min-inline-size: var(--nagi-size-control);
+          block-size: var(--nagi-size-control);
+          color: var(--nagi-color-text-muted);
+          font-size: var(--nagi-font-size-label);
+          font-weight: 650;
+        }
+      }
     }
 
-    > .tbody.-dates > .row > .cell {
-      padding: 0;
+    > .tbody {
+      > .row {
+        > .cell {
+          padding: 0;
 
-      > .button.-day {
-        inline-size: var(--nagi-size-control);
-        min-block-size: var(--nagi-size-control);
-        padding: 0;
-        border: var(--n-border-width-1) solid transparent;
-        border-radius: var(--nagi-radius-control);
-        background: transparent;
-        color: inherit;
-        font: inherit;
-        font-variant-numeric: tabular-nums;
-        cursor: pointer;
+          > .button.-day {
+            inline-size: var(--nagi-size-control);
+            min-block-size: var(--nagi-size-control);
+            padding: 0;
+            border: var(--n-border-width-1) solid transparent;
+            border-radius: var(--nagi-radius-control);
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            font-variant-numeric: tabular-nums;
+            cursor: pointer;
 
-        &:hover:not(:disabled) {
-          background: var(--nagi-color-surface-active);
+            &:hover:not(:disabled) {
+              background: var(--nagi-color-surface-active);
+            }
+
+            &:focus-visible {
+              outline: none;
+              border-color: var(--nagi-color-focus-ring);
+              box-shadow: var(--nagi-shadow-focus);
+            }
+
+            &:disabled {
+              color: var(--nagi-color-text-disabled);
+              cursor: not-allowed;
+            }
+          }
+
+          &[data-outside-month] {
+            > .button.-day {
+              color: var(--nagi-color-text-muted);
+            }
+          }
+
+          &[aria-selected="true"] {
+            > .button.-day {
+              background: var(--nagi-color-surface-accent);
+              color: var(--nagi-color-text);
+              box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
+            }
+          }
         }
-
-        &:focus-visible {
-          outline: none;
-          border-color: var(--nagi-color-focus-ring);
-          box-shadow: var(--nagi-shadow-focus);
-        }
-
-        &:disabled {
-          color: var(--nagi-color-text-disabled);
-          cursor: not-allowed;
-        }
-      }
-
-      &[data-outside-month] > .button.-day {
-        color: var(--nagi-color-text-muted);
-      }
-
-      &[aria-selected="true"] > .button.-day {
-        background: var(--nagi-color-surface-accent);
-        color: var(--nagi-color-text);
-        box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
       }
     }
   }
 
-  > .input.-form-value {
+  > .input {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -250,14 +262,32 @@ useCalendarNativeForm(formControl, calendar);
 }
 
 @media (forced-colors: active) {
-  .n-calendar > .header > .button:focus-visible,
-  .n-calendar > .table > .tbody.-dates > .row > .cell > .button.-day:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
-  }
+  .n-calendar {
+    > .header {
+      > .button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: var(--n-border-width-2);
+      }
+    }
 
-  .n-calendar > .table > .tbody.-dates > .row > .cell[aria-selected="true"] > .button.-day {
-    outline: 2px solid CanvasText;
+    > .table {
+      > .tbody {
+        > .row {
+          > .cell {
+            > .button.-day:focus-visible {
+              outline: 2px solid Highlight;
+              outline-offset: var(--n-border-width-2);
+            }
+
+            &[aria-selected="true"] {
+              > .button.-day {
+                outline: 2px solid CanvasText;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 </style>

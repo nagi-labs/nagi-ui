@@ -59,7 +59,7 @@ defineExpose({
       <p
         v-for="item in notifier.toasts.value"
         :key="`${item.id}-${item.revision}`"
-        class="text"
+        class="p"
         :role="item.priority === 'assertive' ? 'alert' : 'status'"
         aria-atomic="true"
       >
@@ -68,7 +68,7 @@ defineExpose({
     </div>
 
     <div
-      class="unit"
+      class="unit -stack"
       v-bind="notifier.regionProps"
     >
       <ol class="list">
@@ -77,17 +77,17 @@ defineExpose({
           :key="item.id"
           class="item"
           :data-tone="item.tone"
-          v-bind="notifier.toastItemProps"
+          v-bind="notifier.toastItemProps(item)"
         >
-          <div
+          <span
             v-if="item.title"
-            class="title"
+            class="text"
           >
             {{ item.title }}
-          </div>
+          </span>
           <p
             v-if="item.description"
-            class="text"
+            class="p"
           >
             {{ item.description }}
           </p>
@@ -127,12 +127,12 @@ defineExpose({
     clip-path: inset(50%);
     white-space: nowrap;
 
-    > .text {
+    > .p {
       margin: 0;
     }
   }
 
-  > .unit {
+  > .unit.-stack {
     position: fixed;
     inset: auto 1rem 1rem auto;
     margin: 0;
@@ -160,14 +160,14 @@ defineExpose({
         color: var(--nagi-color-text);
         box-shadow: var(--nagi-shadow-overlay);
 
-        > .title {
+        > .text {
           grid-column: 1;
           min-inline-size: 0;
           margin: 0 0 var(--n-space-1);
           font-weight: 750;
         }
 
-        > .text {
+        > .p {
           grid-column: 1;
           min-inline-size: 0;
           margin: 0;

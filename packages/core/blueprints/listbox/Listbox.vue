@@ -53,7 +53,7 @@ const listbox = useListbox(props, selected);
   >
     <p
       :id="labelId"
-      class="text"
+      class="p"
     >
       {{ label }}
     </p>
@@ -69,7 +69,7 @@ const listbox = useListbox(props, selected);
         v-bind="listbox.optionProps(item)"
       >
         <span
-          class="icon -check"
+          class="icon"
           aria-hidden="true"
           >✓</span
         >
@@ -86,7 +86,7 @@ const listbox = useListbox(props, selected);
   display: inline-block;
   min-inline-size: 14rem;
 
-  > .text {
+  > .p {
     margin-block: 0 var(--n-space-3);
     color: var(--nagi-color-text-muted);
     font-size: var(--nagi-font-size-label);

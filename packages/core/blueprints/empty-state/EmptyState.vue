@@ -16,13 +16,13 @@ const attrs = useAttrs();
     v-bind="attrs"
   >
     <div class="unit">
-      <div class="title">{{ title }}</div>
-      <div
+      <span class="text">{{ title }}</span>
+      <p
         v-if="description"
-        class="text"
+        class="p"
       >
         {{ description }}
-      </div>
+      </p>
     </div>
     <div
       v-if="$slots.default"
@@ -50,12 +50,13 @@ const attrs = useAttrs();
     gap: var(--n-space-2);
     max-inline-size: 32rem;
 
-    > .title {
+    > .text {
       font-size: var(--n-font-size-5);
       font-weight: 700;
     }
 
-    > .text {
+    > .p {
+      margin: 0;
       color: var(--nagi-color-text-muted);
       font-size: var(--n-font-size-3);
     }

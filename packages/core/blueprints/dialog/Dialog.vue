@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { StyleValue } from "vue";
-import { useDialog, vDialogClose, type DialogClosedBy } from "@nagi-labs/nagi-ui";
+import { useDialog, vDialogClose } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -11,19 +11,15 @@ const props = withDefaults(
     style?: StyleValue;
     description?: string;
     closeLabel?: string;
-    modal?: boolean;
-    closedby?: DialogClosedBy;
   }>(),
   {
     closeLabel: "Close",
-    modal: true,
-    closedby: "any",
   },
 );
 defineOptions({ inheritAttrs: false });
 
 const open = defineModel<boolean>("open", { default: false });
-const dialog = useDialog(props, open);
+const dialog = useDialog({ open, modal: true, closedby: "any" });
 const titleId = `${dialog.id}-title`;
 const descriptionId = `${dialog.id}-description`;
 
@@ -74,7 +70,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
           data-scope="dialog"
           data-part="description"
           :id="descriptionId"
-          class="text"
+          class="p"
         >
           <slot
             name="description"
@@ -87,7 +83,10 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         <slot />
       </section>
       <footer class="footer">
-        <slot name="actions" />
+        <slot
+          name="actions"
+          :close="dialog.close"
+        />
         <button
           v-dialog-close="dialog.id"
           data-scope="dialog"
@@ -149,7 +148,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         font-size: var(--n-font-size-5);
       }
 
-      > .text {
+      > .p {
         margin-block: var(--n-space-3) 0;
         color: var(--nagi-color-text-muted);
         font-size: var(--n-font-size-3);
@@ -191,10 +190,20 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
 }
 
 @media (forced-colors: active) {
-  .n-dialog > .button:focus-visible,
-  .n-dialog > .dialog > .footer > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-dialog {
+    > .button:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
+
+    > .dialog {
+      > .footer {
+        > .button:focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+    }
   }
 }
 </style>

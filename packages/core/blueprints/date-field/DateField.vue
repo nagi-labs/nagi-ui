@@ -87,13 +87,13 @@ const describedBy = computed(
       <input
         ref="formControl"
         v-bind="behavior.formValueProps"
-        class="input -form-value"
+        class="input"
       />
     </div>
     <span
       v-if="behavior.isInvalid.value"
       :id="`${behavior.fieldProps.id}-error`"
-      class="text -validation"
+      class="alert"
       role="alert"
       >{{ validationMessage }}</span
     >
@@ -112,7 +112,7 @@ const describedBy = computed(
     font-weight: 650;
   }
 
-  > .text.-validation {
+  > .alert {
     color: var(--nagi-color-danger);
   }
 
@@ -166,7 +166,7 @@ const describedBy = computed(
       }
     }
 
-    > .input.-form-value {
+    > .input {
       position: absolute;
       inline-size: 1px;
       block-size: 1px;
@@ -180,13 +180,17 @@ const describedBy = computed(
 }
 
 @media (forced-colors: active) {
-  .n-date-field > .field:focus-within {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
-  }
+  .n-date-field {
+    > .field {
+      &:focus-within {
+        outline: 2px solid Highlight;
+        outline-offset: var(--n-border-width-2);
+      }
 
-  .n-date-field > .field > .text.-segment:focus {
-    outline: 1px solid Highlight;
+      > .text.-segment:focus {
+        outline: 1px solid Highlight;
+      }
+    }
   }
 }
 </style>

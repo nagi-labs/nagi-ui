@@ -94,7 +94,7 @@ const trackStyle = computed(() => {
   >
     <legend class="legend">{{ label }}</legend>
     <div class="unit">
-      <div class="item -lower">
+      <div class="seg -lower">
         <label
           class="label"
           :for="lowerId ?? generatedLowerId"
@@ -106,7 +106,7 @@ const trackStyle = computed(() => {
           >{{ lowerValue }}</output
         >
       </div>
-      <div class="item -upper">
+      <div class="seg -upper">
         <label
           class="label"
           :for="upperId ?? generatedUpperId"
@@ -118,7 +118,7 @@ const trackStyle = computed(() => {
           >{{ upperValue }}</output
         >
       </div>
-      <div class="item -wide">
+      <div class="seg -wide">
         <span
           class="rail"
           aria-hidden="true"
@@ -164,7 +164,7 @@ const trackStyle = computed(() => {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--nagi-space-item-gap);
 
-    > .item {
+    > .seg {
       display: flex;
       gap: var(--nagi-space-item-gap);
       align-items: center;
@@ -188,7 +188,7 @@ const trackStyle = computed(() => {
       }
     }
 
-    > .item.-wide {
+    > .seg.-wide {
       position: relative;
       grid-column: 1 / -1;
       min-block-size: var(--nagi-size-control);
@@ -305,69 +305,85 @@ const trackStyle = computed(() => {
     }
   }
 
-  &:disabled > .unit > .item > :is(.label, .output) {
-    color: var(--nagi-color-text-disabled);
-  }
+  &:disabled {
+    > .unit {
+      > .seg {
+        > :is(.label, .output) {
+          color: var(--nagi-color-text-disabled);
+        }
 
-  &:disabled > .unit > .item.-wide {
-    > .rail {
-      cursor: not-allowed;
+        &.-wide {
+          > .rail {
+            cursor: not-allowed;
+          }
+        }
+      }
     }
   }
 }
 
 @media (forced-colors: active) {
-  .n-range-slider > .unit {
-    > .item.-wide {
-      > .rail::before {
-        background: CanvasText;
-      }
+  .n-range-slider {
+    > .unit {
+      > .seg.-wide {
+        > .rail::before {
+          background: CanvasText;
+        }
 
-      > .rail::after {
-        background: Highlight;
-      }
+        > .rail::after {
+          background: Highlight;
+        }
 
-      > .input::-webkit-slider-thumb {
-        border-color: Highlight;
-        background: Canvas;
-      }
+        > .input::-webkit-slider-thumb {
+          border-color: Highlight;
+          background: Canvas;
+        }
 
-      > .input::-moz-range-thumb {
-        border-color: Highlight;
-        background: Canvas;
-      }
+        > .input::-moz-range-thumb {
+          border-color: Highlight;
+          background: Canvas;
+        }
 
-      > .input:focus-visible::-webkit-slider-thumb {
-        outline: 2px solid Highlight;
-        outline-offset: var(--n-border-width-2);
-      }
+        > .input:focus-visible::-webkit-slider-thumb {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
 
-      > .input:focus-visible::-moz-range-thumb {
-        outline: 2px solid Highlight;
-        outline-offset: var(--n-border-width-2);
-      }
+        > .input:focus-visible::-moz-range-thumb {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
 
-      > .input:focus-visible {
-        outline: 2px solid Highlight;
-        outline-offset: var(--n-border-width-2);
-      }
+        > .input:focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
 
-      > .input:disabled::-webkit-slider-thumb {
-        border-color: GrayText;
-      }
+        > .input:disabled::-webkit-slider-thumb {
+          border-color: GrayText;
+        }
 
-      > .input:disabled::-moz-range-thumb {
-        border-color: GrayText;
+        > .input:disabled::-moz-range-thumb {
+          border-color: GrayText;
+        }
       }
     }
-  }
 
-  .n-range-slider:disabled > .unit > .item > :is(.label, .output) {
-    color: GrayText;
-  }
+    &:disabled {
+      > .unit {
+        > .seg {
+          > :is(.label, .output) {
+            color: GrayText;
+          }
 
-  .n-range-slider:disabled > .unit > .item.-wide > .rail::after {
-    background: GrayText;
+          &.-wide {
+            > .rail::after {
+              background: GrayText;
+            }
+          }
+        }
+      }
+    }
   }
 }
 </style>

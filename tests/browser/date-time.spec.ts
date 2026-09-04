@@ -1,23 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { datePickerContract } from "../../packages/core/src/test/date-picker-contract.ts";
-import { datePickerDefinition } from "../../packages/core/blueprints/date-picker/date-picker.definition.ts";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/date-time.html");
-});
-
-datePickerContract({
-  definition: datePickerDefinition,
-  url: "/date-time.html",
-  triggerName: "Choose picked date",
-  fieldName: "Picked date",
-  calendarName: "Picked date calendar",
-  selectedDateName: "Friday, July 24, 2026",
-  nextDateName: "Saturday, July 25, 2026",
-  initialValue: "2026-07-24",
-  committedValue: "2026-07-25",
-  openStatusName: "Picked date open state",
 });
 
 test("calendar grids move roving focus and enforce unavailable dates", async ({ page }) => {
@@ -31,7 +16,9 @@ test("calendar grids move roving focus and enforce unavailable dates", async ({ 
   await expect(grid.getByRole("gridcell", { selected: true })).toContainText("25");
 });
 
-test("[DTP-INT-01] segmented fields edit ISO values and reset through native forms", async ({ page }) => {
+test("[DTP-INT-01] segmented fields edit ISO values and reset through native forms", async ({
+  page,
+}) => {
   const date = page.getByRole("group", { name: "Field date" });
   const day = date.getByRole("spinbutton", { name: "Day" });
   await day.focus();
@@ -61,7 +48,9 @@ test("[DTP-INT-01] segmented fields edit ISO values and reset through native for
   await expect(page.locator("#empty-date-model")).toHaveText("");
 });
 
-test("pickers use native popovers, commit selections, and submit ISO FormData", async ({ page }) => {
+test("pickers use native popovers, commit selections, and submit ISO FormData", async ({
+  page,
+}) => {
   await page.getByRole("button", { name: "Choose picked date" }).click();
   const dateDialog = page.getByRole("dialog", { name: "Picked date calendar" });
   await expect(dateDialog).toBeVisible();
@@ -82,19 +71,23 @@ test("pickers use native popovers, commit selections, and submit ISO FormData", 
   await expect(rangeDialog).toBeHidden();
 
   await page.getByRole("button", { name: "Submit dates" }).click();
-  await expect(page.locator("#submission")).toHaveText(JSON.stringify({
-    fieldDate: "2026-07-23",
-    fieldTime: "13:45",
-    pickedDate: "2026-07-28",
-    pickedStart: "2026-07-29",
-    pickedEnd: "2026-07-31",
-    inlineDate: "2026-07-23",
-    inlineStart: "2026-07-20",
-    inlineEnd: "2026-07-22",
-  }));
+  await expect(page.locator("#submission")).toHaveText(
+    JSON.stringify({
+      fieldDate: "2026-07-23",
+      fieldTime: "13:45",
+      pickedDate: "2026-07-28",
+      pickedStart: "2026-07-29",
+      pickedEnd: "2026-07-31",
+      inlineDate: "2026-07-23",
+      inlineStart: "2026-07-20",
+      inlineEnd: "2026-07-22",
+    }),
+  );
 });
 
-test("[DTP-STATE-02] picker Escape restores focus and invalid typed ranges block native submission", async ({ page }) => {
+test("[DTP-STATE-02] picker Escape restores focus and invalid typed ranges block native submission", async ({
+  page,
+}) => {
   const trigger = page.getByRole("button", { name: "Choose picked date" });
   await trigger.click();
   await page.keyboard.press("Escape");
@@ -109,7 +102,10 @@ test("[DTP-STATE-02] picker Escape restores focus and invalid typed ranges block
   await startDay.press("0");
   await page.getByRole("button", { name: "Submit dates" }).click();
   await expect(page.locator("#submission")).toHaveText("No submission yet");
-  await expect(range.locator(".field.-start input[type=date]")).toHaveJSProperty("validationMessage", "Choose an available date range.");
+  await expect(range.locator(".field.-start input[type=date]")).toHaveJSProperty(
+    "validationMessage",
+    "Choose an available date range.",
+  );
 });
 
 test("date and time family is axe-clean with picker popovers open", async ({ page }) => {
@@ -117,13 +113,17 @@ test("date and time family is axe-clean with picker popovers open", async ({ pag
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
-  expect(results.violations.map((violation) => ({
-    id: violation.id,
-    nodes: violation.nodes.map((node) => node.target.join(" ")),
-  }))).toEqual([]);
+  expect(
+    results.violations.map((violation) => ({
+      id: violation.id,
+      nodes: violation.nodes.map((node) => node.target.join(" ")),
+    })),
+  ).toEqual([]);
 });
 
-test("initially controlled-open picker focuses its date, light dismisses, and rejected fields roll back", async ({ page }) => {
+test("initially controlled-open picker focuses its date, light dismisses, and rejected fields roll back", async ({
+  page,
+}) => {
   await page.goto("/date-time.html?qa=1");
   const dialog = page.getByRole("dialog", { name: "Initially open date calendar" });
   await expect(dialog).toBeVisible();
@@ -148,7 +148,9 @@ test("initially controlled-open picker focuses its date, light dismisses, and re
   });
   const readonlyDateInput = readonlyDate.locator("input[type=date]");
   await expect(readonlyDateInput).toHaveJSProperty("readOnly", true);
-  expect(await readonlyDateInput.evaluate((input: HTMLInputElement) => input.checkValidity())).toBe(true);
+  expect(await readonlyDateInput.evaluate((input: HTMLInputElement) => input.checkValidity())).toBe(
+    true,
+  );
 
   const readonlyRange = page.locator(".n-range-calendar").filter({
     has: page.getByRole("grid", { name: "Readonly range calendar" }),

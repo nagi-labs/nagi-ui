@@ -3,12 +3,13 @@ import test from "node:test"
 
 import { createToastManager, useToast } from "../packages/core/src/toast.ts"
 
+// Definition evidence: [TST-STATE-01][TST-STATE-02]
+
 test("useToast stays a setup-scoped DOM binding while the manager works outside Vue", () => {
   assert.throws(() => useToast(), /must run during Vue setup/)
   const manager = createToastManager({ duration: 0 })
   assert.equal(manager.add({ description: "Outside Vue" }), "nagi-toast-1")
 })
-
 test("explicit managers keep structured toast state isolated", () => {
   const first = createToastManager({ duration: 0 })
   const second = createToastManager({ duration: 0 })

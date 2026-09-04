@@ -332,14 +332,14 @@ test("RangeSlider leaves native keyboard behavior and constraints visible in the
   assert.match(source, /useRangeSlider\(\s*lowerInput,\s*upperInput,\s*model,?\s*\)/u);
   assert.match(source, /<span[\s\S]*?class="rail"[\s\S]*?v-bind="railProps"/u);
   assert.equal(source.match(/type="range"/gu)?.length, 2);
-  assert.match(source, /<div class="item -wide"[^>]*>[\s\S]*class="rail"[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u);
+  assert.match(source, /<div class="seg -wide"[^>]*>[\s\S]*class="rail"[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u);
   assert.match(source, /const lowerInputProps = computed\([\s\S]*name: props\.lowerName[\s\S]*form: props\.form[\s\S]*min: props\.min[\s\S]*max: props\.max[\s\S]*step: props\.step[\s\S]*"aria-valuemax": upperValue\.value/u);
   assert.match(source, /const upperInputProps = computed\([\s\S]*name: props\.upperName[\s\S]*form: props\.form[\s\S]*min: props\.min[\s\S]*max: props\.max[\s\S]*step: props\.step[\s\S]*"aria-valuemin": lowerValue\.value/u);
   assert.match(source, /<input[\s\S]*?class="input -lower"[\s\S]*?v-bind="lowerInputProps"/u);
   assert.match(source, /<input[\s\S]*?class="input -upper"[\s\S]*?v-bind="upperInputProps"/u);
   assert.match(source, /const fieldsetProps = computed\([\s\S]*disabled: props\.disabled/u);
   assert.match(source, /<fieldset[\s\S]*?class="n-range-slider"[\s\S]*?v-bind="fieldsetProps"[\s\S]*?>/u);
-  assert.match(source, /> \.item\.-wide[\s\S]*> \.rail[\s\S]*touch-action:\s*none/u);
+  assert.match(source, /> \.seg\.-wide[\s\S]*> \.rail[\s\S]*touch-action:\s*none/u);
   assert.match(source, /inset-inline:\s*calc\(var\(--nagi-size-control\) \/ 4\)/u);
   assert.match(source, /::-webkit-slider-thumb[\s\S]*inline-size:\s*calc\(var\(--nagi-size-control\) \/ 2\)/u);
   assert.match(source, /pointer-events:\s*none[\s\S]*::-webkit-slider-thumb[\s\S]*pointer-events:\s*none/u);

@@ -78,9 +78,11 @@ defineExpose({ show: disclosure.show, hide: disclosure.hide, toggle: disclosure.
 }
 
 @media (forced-colors: active) {
-  .n-disclosure > .summary:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-disclosure {
+    > .summary:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
   }
 }
 </style>

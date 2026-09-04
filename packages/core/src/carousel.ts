@@ -139,16 +139,15 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
     if (!currentViewport) return [];
     const candidates = Array.from(
       currentViewport.querySelectorAll<HTMLElement>(slideSelector),
-    ).filter(
-      (slide) =>
-        slide.closest<HTMLElement>(carouselRootSelector)?.id === id,
-    );
-    return candidates.filter(
-      (slide) =>
-        !candidates.some(
-          (possibleOwner) => possibleOwner !== slide && possibleOwner.contains(slide),
-        ),
-    ).slice(0, count.value);
+    ).filter((slide) => slide.closest<HTMLElement>(carouselRootSelector)?.id === id);
+    return candidates
+      .filter(
+        (slide) =>
+          !candidates.some(
+            (possibleOwner) => possibleOwner !== slide && possibleOwner.contains(slide),
+          ),
+      )
+      .slice(0, count.value);
   }
 
   function slideAt(index: number, currentViewport: HTMLElement | null = viewport) {
@@ -172,7 +171,9 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
     if (disabled() || count.value === 0) return;
     const current = currentIndex.value;
     const next = normalized(candidate);
-    programmaticTarget = viewport && next !== current ? next : null;
+    // Repeating a boundary request must not cancel a smooth transition that
+    // is still moving toward the already accepted target.
+    if (next !== current) programmaticTarget = viewport ? next : null;
     void requestModelValue(options.index, next).then((wasAccepted) => {
       const accepted = currentIndex.value;
       if (wasAccepted) return;
@@ -182,20 +183,21 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
   }
 
   function buttonProps(delta: -1 | 1): CarouselButtonProps {
-    const atBoundary = () => !loop() && (
-      delta < 0 ? currentIndex.value <= 0 : currentIndex.value >= count.value - 1
-    );
+    const atBoundary = () =>
+      !loop() && (delta < 0 ? currentIndex.value <= 0 : currentIndex.value >= count.value - 1);
     return reactive<CarouselButtonProps>({
       type: "button",
       get "aria-label"() {
-        return toValue(delta < 0 ? options.previousLabel : options.nextLabel)
-          ?? (delta < 0 ? "Previous slide" : "Next slide");
+        return (
+          toValue(delta < 0 ? options.previousLabel : options.nextLabel) ??
+          (delta < 0 ? "Previous slide" : "Next slide")
+        );
       },
       get disabled() {
         return disabled() || count.value < 2;
       },
       get "aria-disabled"() {
-        return !disabled() && count.value >= 2 && atBoundary() ? "true" as const : undefined;
+        return !disabled() && count.value >= 2 && atBoundary() ? ("true" as const) : undefined;
       },
       onClick: () => goTo(currentIndex.value + delta),
     });
@@ -216,21 +218,31 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
 
   const rootProps = reactive<CarouselRootProps>({
     id,
-    get role() { return landmark() ? "region" : "group"; },
-    get "aria-label"() { return toValue(options.label); },
+    get role() {
+      return landmark() ? "region" : "group";
+    },
+    get "aria-label"() {
+      return toValue(options.label);
+    },
     get "aria-roledescription"() {
       return localizedRoleDescription(options.carouselRoleDescription, "carousel");
     },
-    get "data-disabled"() { return disabled() ? "" : undefined; },
+    get "data-disabled"() {
+      return disabled() ? "" : undefined;
+    },
   });
   const viewportProps = reactive<CarouselViewportProps>({
     ref: setViewport,
     role: "group",
-    get "aria-label"() { return toValue(options.slidesLabel) ?? toValue(options.label); },
+    get "aria-label"() {
+      return toValue(options.slidesLabel) ?? toValue(options.label);
+    },
     get "aria-roledescription"() {
       return localizedRoleDescription(options.slidesRoleDescription, "slides");
     },
-    get tabindex() { return disabled() ? -1 : 0; },
+    get tabindex() {
+      return disabled() ? -1 : 0;
+    },
     onFocus() {
       const currentViewport = viewport;
       if (!currentViewport || count.value === 0) return;
@@ -268,11 +280,14 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
       let distance = Number.POSITIVE_INFINITY;
       renderedSlides.forEach((element, index) => {
         const childRect = element.getBoundingClientRect?.();
-        const nextDistance = viewportRect && childRect
-          ? Math.abs(direction === "rtl"
-            ? viewportRect.right - childRect.right
-            : childRect.left - viewportRect.left)
-          : Math.abs(Math.abs(element.offsetLeft - firstOffset) - start);
+        const nextDistance =
+          viewportRect && childRect
+            ? Math.abs(
+                direction === "rtl"
+                  ? viewportRect.right - childRect.right
+                  : childRect.left - viewportRect.left,
+              )
+            : Math.abs(Math.abs(element.offsetLeft - firstOffset) - start);
         if (nextDistance < distance) {
           closest = index;
           distance = nextDistance;
@@ -294,18 +309,24 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
         });
       }
     },
-    onPointerdown() { programmaticTarget = null; },
-    onWheel() { programmaticTarget = null; },
+    onPointerdown() {
+      programmaticTarget = null;
+    },
+    onWheel() {
+      programmaticTarget = null;
+    },
   });
 
   return {
     index: options.index,
     currentIndex,
     count,
-    announcement: computed(() => (options.formatAnnouncement ?? defaultPositionLabel)(
-      count.value === 0 ? null : currentIndex.value + 1,
-      count.value,
-    )),
+    announcement: computed(() =>
+      (options.formatAnnouncement ?? defaultPositionLabel)(
+        count.value === 0 ? null : currentIndex.value + 1,
+        count.value,
+      ),
+    ),
     rootProps,
     viewportProps,
     previousButtonProps: buttonProps(-1),
@@ -318,8 +339,12 @@ function createCarousel<Item>(options: UseCarouselOptions<Item>): CarouselBindin
       };
     },
     slideLabelProps: (index) => ({ id: `${id}-slide-${index + 1}-label` }),
-    slidePosition: (item, index) => (options.formatSlideLabel
-      ?? ((_, position, total) => defaultPositionLabel(position, total)))(item, index + 1, count.value),
+    slidePosition: (item, index) =>
+      (options.formatSlideLabel ?? ((_, position, total) => defaultPositionLabel(position, total)))(
+        item,
+        index + 1,
+        count.value,
+      ),
     goTo,
   };
 }

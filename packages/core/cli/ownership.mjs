@@ -39,8 +39,9 @@ export const components = {
     dir: "blueprints/menu",
     files: [
       "DropdownMenu.vue",
-      "DropdownMenuItem.vue",
-      "DropdownSubmenu.vue",
+      "internal/DropdownMenuGroup.vue",
+      "internal/DropdownMenuItem.vue",
+      "internal/DropdownSubmenu.vue",
       "dropdown-options.ts",
       "dropdown-schema.ts",
       "dropdown-menu.definition.ts",
@@ -84,7 +85,7 @@ export const components = {
   textarea: { dir: "blueprints/textarea", files: ["Textarea.vue"] },
   "time-field": { dir: "blueprints/time-field", files: ["TimeField.vue"] },
   toolbar: { dir: "blueprints/toolbar", files: ["Toolbar.vue"] },
-  toast: { dir: "blueprints/toast", files: ["Toast.vue"] },
+  toast: { dir: "blueprints/toast", files: ["Toast.vue", "toast.definition.ts"] },
   toggle: { dir: "blueprints/toggle", files: ["Toggle.vue"] },
   "toggle-group": { dir: "blueprints/toggle-group", files: ["ToggleGroup.vue"] },
   tree: { dir: "blueprints/tree", files: ["Tree.vue", "TreeBranch.vue"] },
@@ -132,6 +133,7 @@ export function ownComponent(name, { packageRoot, targetRoot, force = false }) {
   for (const file of spec.files) {
     const source = fs.readFileSync(path.join(packageRoot, spec.dir, file), "utf8")
     const dest = path.join(destDir, file)
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.writeFileSync(dest, markerLine(file, name, version) + source)
     files.push(dest)
   }

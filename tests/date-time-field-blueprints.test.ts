@@ -81,7 +81,7 @@ test("Date/time Blueprints expose policy and DOM without forbidden integration s
     const source = fs.readFileSync(sourcePath, "utf8");
     assert.match(source, /defineModel<string \| null>\(\{ default: null \}\)/u);
     assert.match(source, /role="spinbutton"|segmentProps\(segment\)/u);
-    assert.match(source, /class="input -form-value"/u);
+    assert.match(source, /class="input"/u);
     assert.doesNotMatch(source, /<slot\b|Teleport\b|data-state|provide\(|inject\(/u);
     assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|onUpdated)\s*\(/u);
     assert.doesNotMatch(source, /\b(?:document|window|ResizeObserver)\b/u);

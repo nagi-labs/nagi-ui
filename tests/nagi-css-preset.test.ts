@@ -87,13 +87,17 @@ test("kebab-case Nagi component tags use their fixed package boundary class", ()
   const valid = verifyConsumer(`<template>
   <main class="app-button-example">
     <div class="actions">
-      <n-button class="n-button -destructive">Delete</n-button>
+      <n-button class="n-button">Delete</n-button>
     </div>
   </main>
 </template>
 <style scoped>
-.app-button-example > .actions > .n-button.-destructive {
-  --button-tone: danger;
+.app-button-example {
+  > .actions {
+    > .n-button {
+      --button-tone: danger;
+    }
+  }
 }
 </style>`);
   assert.deepEqual(valid, []);

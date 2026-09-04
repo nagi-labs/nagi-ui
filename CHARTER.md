@@ -8,14 +8,41 @@ The product concept — Nagi UI as a system for building and maintaining the
 component library an application owns — is defined in [CONCEPT.md](CONCEPT.md).
 This charter governs how the canonical components are implemented.
 
-## Native platform first
+Nagi exposes maintenance knowledge instead of hiding flexibility inside a
+runtime abstraction. An owner should be able to read the concrete Vue source,
+read the tests that define its safe change boundary, modify either deliberately,
+and verify the result with ordinary repository tools. Generated documentation
+is an index of that process, not a substitute for it.
 
-Use HTML elements and platform behavior before implementing a JavaScript state
-machine. Popover, dialog, disclosure, form controls, links, and native
-validation remain native unless a concrete product requirement cannot be met.
+## Portable contract, platform-first Blueprints
 
-Native state stays native: use element state, ARIA, and `data-*` attributes
-instead of duplicating it in state classes.
+Nagi UI itself is not a native-only state machine. Component Contract requirement tests
+record observable public API, conceptual parts, semantics, state, interaction,
+focus, and visual guarantees without requiring one renderer or presence
+mechanism. Implementation requirement tests record how one concrete source
+provides them. The Component Definition is generated from one Component Contract suite,
+one Implementation suite, and their executable anatomy rules; it must not restate the
+same guarantees as a separate hand-maintained manifest.
+
+A named test function supplies the stable Requirement ID, its runner title
+supplies the human-readable guarantee, and its assertion body is evidence.
+Native runner tags classify component, Component Contract/Implementation layer,
+and one or more Definition section facets. File paths and external specification links may establish traceability
+or authoring context, but they are not verification by themselves. Keep
+external references in suite-level runner metadata unless one Requirement
+depends on a specific clause or Nagi explicitly claims conformance to a pinned
+upstream revision.
+
+The package's standard Blueprints are platform-first. They use HTML elements
+and platform behavior before implementing a JavaScript state machine. Popover,
+dialog, disclosure, form controls, links, and native validation remain native
+in that Implementation unless a concrete requirement cannot be met.
+
+Within a platform-first Blueprint, native state stays native: use element
+state, ARIA, and `data-*` attributes instead of duplicating it in state classes.
+An owned Motion- or library-driven implementation may choose another mechanism,
+but it must replace the relevant state owner as a whole and re-run the shared
+contract. It must not wrap a native state machine with a second competing one.
 
 ## Visible DOM ownership
 
@@ -59,8 +86,9 @@ owned SFC, and understand the structural decision there. Reading the composable
 may be necessary to understand complex behavior, but not to discover the basic
 DOM that the component renders.
 
-Avoid custom focus traps and custom top-layer stacks when the browser already
-owns those mechanisms.
+The default Blueprints avoid custom focus traps and custom top-layer stacks
+when the browser already owns those mechanisms. A different Implementation
+must name and test the replacement owner explicitly.
 
 ## Asymmetric JavaScript
 
@@ -130,13 +158,14 @@ source instead.
 
 Nagi UI is not:
 
-- a CSS or animation runtime;
-- a portal-based overlay framework;
+- itself a CSS, animation, presence, or portal runtime;
+- a promise that every Implementation can reuse the default Blueprint's Behavior API;
 - a schema-driven form system;
 - a virtualized data grid;
 - a replacement for gesture-heavy sheets or fully custom select widgets;
 - a promise of feature parity with every component library.
 
-Use another focused library when a product requires arbitrary overlay stacking,
-fine-grained dismiss policy, gesture physics, virtualization, spreadsheet
-interaction, or identical custom rendering across browsers.
+Use another focused library inside an owned Implementation when a
+product requires arbitrary overlay stacking, fine-grained dismiss policy,
+gesture physics, or custom presence. Use a different component product when the
+shared Nagi contract or verification model is also a poor fit.

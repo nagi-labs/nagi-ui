@@ -4,8 +4,9 @@
  * While DropdownMenu is consumed as a package component, this union is that
  * component's minimal props API, versioned with the component — new node
  * kinds are not added speculatively. After `own`, the union is yours: extend
- * it together with the renderer by adding a union member here, a template
- * branch in DropdownMenuItem.vue, and its CSS block, then run
+ * it together with the renderer by adding a union member here, the narrow
+ * renderer under `internal/` responsible for that node shape, and its CSS
+ * block, then run
  * `nagi-css check`.
  *
  * Keys must be unique within one menu level (radio item keys included).

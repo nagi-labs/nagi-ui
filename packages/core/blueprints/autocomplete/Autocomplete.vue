@@ -137,7 +137,7 @@ useNativeValueReset(behavior.inputElement, model);
       </ul>
       <p
         v-if="behavior.visibleItems.value.length === 0"
-        class="text -empty"
+        class="p"
         role="status"
       >
         {{ emptyText }}
@@ -197,21 +197,23 @@ useNativeValueReset(behavior.inputElement, model);
       padding: 0;
       list-style: none;
     }
-    > .list > .item {
-      min-block-size: var(--nagi-size-control);
-      padding: var(--nagi-space-item);
-      border-radius: var(--nagi-radius-item);
-      cursor: pointer;
-      &[aria-selected="true"] {
-        background: var(--nagi-color-surface-active);
-        outline: 2px solid var(--nagi-color-focus-ring);
-      }
-      &[aria-disabled="true"] {
-        color: var(--nagi-color-text-disabled);
-        cursor: not-allowed;
+    > .list {
+      > .item {
+        min-block-size: var(--nagi-size-control);
+        padding: var(--nagi-space-item);
+        border-radius: var(--nagi-radius-item);
+        cursor: pointer;
+        &[aria-selected="true"] {
+          background: var(--nagi-color-surface-active);
+          outline: 2px solid var(--nagi-color-focus-ring);
+        }
+        &[aria-disabled="true"] {
+          color: var(--nagi-color-text-disabled);
+          cursor: not-allowed;
+        }
       }
     }
-    > .text.-empty {
+    > .p {
       margin: 0;
       padding: var(--nagi-space-item);
       color: var(--nagi-color-text-muted);
@@ -219,8 +221,10 @@ useNativeValueReset(behavior.inputElement, model);
   }
 }
 @media (forced-colors: active) {
-  .n-autocomplete > .input:focus-visible {
-    outline: 2px solid Highlight;
+  .n-autocomplete {
+    > .input:focus-visible {
+      outline: 2px solid Highlight;
+    }
   }
 }
 </style>

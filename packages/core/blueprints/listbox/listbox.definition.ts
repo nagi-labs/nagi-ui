@@ -1,6 +1,8 @@
 import {
   adoptRequirementSet,
+  defineComponentContract,
   defineComponentDefinition,
+  defineComponentImplementation,
   nagiListboxRequirementsV1,
 } from "@nagi-labs/nagi-ui";
 
@@ -17,11 +19,24 @@ const standaloneListbox = adoptRequirementSet(nagiListboxRequirementsV1, {
   },
 });
 
-/** Observable guarantees owned with the editable Listbox Blueprint. */
-export const listboxDefinition = defineComponentDefinition({
-  name: "Listbox",
-  version: "1.0",
-  status: "verified",
+export const listboxContract = defineComponentContract({
+  id: "nagi/listbox",
+  revision: "1",
+  description:
+    "Listbox naming, selection, collection navigation, orientation, and active-descendant focus guarantees independent of concrete markup and styling.",
+  api: [
+    { name: "items", kind: "prop", description: "Provides the keyed option collection." },
+    { name: "selected", kind: "model", description: "Controls the selected option keys." },
+    { name: "label", kind: "prop", description: "Names the choice collection." },
+    { name: "mode", kind: "prop", description: "Selects single or multiple selection." },
+    { name: "orientation", kind: "prop", description: "Selects the navigation axis." },
+    { name: "dir", kind: "prop", description: "Selects logical inline direction." },
+    { name: "loop", kind: "prop", description: "Controls navigation at collection boundaries." },
+  ],
+  parts: [
+    { name: "listbox", description: "The named focus owner for the choice collection." },
+    { name: "option", description: "One selectable choice.", multiple: true },
+  ],
   adopts: [standaloneListbox],
 
   state: [
@@ -76,7 +91,35 @@ export const listboxDefinition = defineComponentDefinition({
       origin: { kind: "nagi", policy: "listbox-active-descendant-focus", policyVersion: "1" },
     },
   ],
+});
 
+export const activeDescendantListboxImplementation = defineComponentImplementation({
+  id: "nagi/blueprint/listbox-active-descendant",
+  title: "Active-descendant Listbox Blueprint",
+  version: "1",
+  strategy: "aria-composite",
+  description:
+    "The standard Blueprint renders one focusable listbox and keyed option elements while DOM focus remains on the collection.",
+  decisions: [
+    {
+      name: "focus",
+      value: "aria-activedescendant",
+      description: "Keep DOM focus on the listbox and identify its active option by ID.",
+      evidence: ["tests/listbox.test.ts", "tests/browser/listbox.spec.ts"],
+    },
+    {
+      name: "collection",
+      value: "keyed-vue-list",
+      description: "Register the rendered keyed options without document-global discovery.",
+      evidence: ["tests/listbox.test.ts"],
+    },
+    {
+      name: "presence",
+      value: "persistent",
+      description: "The listbox has no open or exit lifecycle.",
+      evidence: ["tests/listbox.test.ts"],
+    },
+  ],
   anatomy: [
     {
       id: "LST-ANAT-01",
@@ -84,6 +127,7 @@ export const listboxDefinition = defineComponentDefinition({
       name: "listbox",
       description: "The focusable listbox receiving the complete listboxProps binding.",
       match: { by: "role", role: "listbox" },
+      contractPart: "listbox",
     },
     {
       name: "option",
@@ -91,6 +135,15 @@ export const listboxDefinition = defineComponentDefinition({
       match: { by: "role", role: "option" },
       within: "listbox",
       multiple: true,
+      contractPart: "option",
     },
   ],
+});
+
+export const listboxDefinition = defineComponentDefinition({
+  name: "Listbox",
+  version: "2.0",
+  status: "verified",
+  contract: listboxContract,
+  implementation: activeDescendantListboxImplementation,
 });

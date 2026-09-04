@@ -1,6 +1,8 @@
 import {
   adoptRequirementSet,
+  defineComponentContract,
   defineComponentDefinition,
+  defineComponentImplementation,
   nagiListboxRequirementsV1,
   nagiPopupRequirementsV1,
 } from "@nagi-labs/nagi-ui";
@@ -32,11 +34,29 @@ const nativePopup = adoptRequirementSet(nagiPopupRequirementsV1, {
   },
 });
 
-/** Observable guarantees owned with the editable Combobox Blueprint. */
-export const comboboxDefinition = defineComponentDefinition({
-  name: "Combobox",
-  version: "2.0",
-  status: "verified",
+export const comboboxContract = defineComponentContract({
+  id: "nagi/combobox",
+  revision: "2",
+  description:
+    "Editable suggestion semantics, provisional navigation, controlled selection, dynamic collection repair, and input-retained focus independent of popup implementation.",
+  api: [
+    { name: "items", kind: "prop", description: "Provides the keyed suggestion collection." },
+    { name: "modelValue", kind: "model", description: "Controls the editable text value." },
+    { name: "selected", kind: "model", description: "Controls the committed selected key." },
+    { name: "label", kind: "prop", description: "Names the editable input." },
+    { name: "disabled", kind: "prop", description: "Blocks all interaction." },
+    {
+      name: "readonly",
+      kind: "prop",
+      description: "Allows inspection without editing or committing.",
+    },
+  ],
+  parts: [
+    { name: "input", description: "The editable focus owner." },
+    { name: "popup", description: "The visible suggestion surface." },
+    { name: "listbox", description: "The collection of available suggestions." },
+    { name: "option", description: "One suggestion.", multiple: true },
+  ],
   references: [
     {
       id: "apg-combobox",
@@ -55,13 +75,13 @@ export const comboboxDefinition = defineComponentDefinition({
       reviewedAt: "2026-09-01",
     },
   ],
-  adopts: [popupListbox, nativePopup],
+  adopts: [popupListbox],
   semantics: [
     {
       id: "CMB-SEM-01",
       classification: "conformant",
       source: "WAI-ARIA APG Combobox Pattern",
-      text: 'A labelled native text input exposes `role="combobox"` and `aria-autocomplete="list"`.',
+      text: 'A labelled editable input exposes `role="combobox"` and `aria-autocomplete="list"`.',
       evidence: ["packages/core/src/test/combobox-contract.ts", "tests/combobox.test.ts"],
       origin: { kind: "reference", referenceIds: ["apg-combobox"] },
     },
@@ -69,7 +89,7 @@ export const comboboxDefinition = defineComponentDefinition({
       id: "CMB-SEM-02",
       classification: "conformant",
       source: "WAI-ARIA APG Combobox Pattern and HTML Popover API",
-      text: "`aria-expanded` follows the native Popover state and `aria-controls` resolves to the component's listbox.",
+      text: "`aria-expanded` follows visible popup state and `aria-controls` resolves to the component's listbox.",
       evidence: [
         "packages/core/src/test/combobox-contract.ts",
         "tests/combobox.test.ts",
@@ -160,14 +180,6 @@ export const comboboxDefinition = defineComponentDefinition({
       evidence: ["packages/core/src/test/combobox-contract.ts", "tests/combobox.test.ts"],
       origin: { kind: "nagi", policy: "manual-selection-commit", policyVersion: "1" },
     },
-    {
-      id: "CMB-INT-04",
-      classification: "intentional-extension",
-      source: "Nagi native-layer policy",
-      text: "Suggestions use native Popover and browser-owned light dismissal without Teleport or a document-global rediscovery step.",
-      evidence: ["packages/core/src/test/combobox-contract.ts"],
-      origin: { kind: "nagi", policy: "native-popover-layer", policyVersion: "1" },
-    },
   ],
   focus: [
     {
@@ -181,6 +193,52 @@ export const comboboxDefinition = defineComponentDefinition({
         "tests/browser/definition-mutations.spec.ts",
       ],
       origin: { kind: "nagi", policy: "input-owned-active-descendant-focus", policyVersion: "1" },
+    },
+  ],
+});
+
+export const nativePopoverComboboxImplementation = defineComponentImplementation({
+  id: "nagi/blueprint/combobox-native-popover",
+  title: "Native-popover Combobox Blueprint",
+  version: "1",
+  strategy: "platform-first-composite",
+  description:
+    "The standard Blueprint keeps text focus on a native input and renders its registered listbox inside a root-local native Popover.",
+  adopts: [nativePopup],
+  decisions: [
+    {
+      name: "input",
+      value: "native-text-input",
+      description: "Leave text editing and IME behavior to the browser.",
+      evidence: ["packages/core/src/test/combobox-contract.ts", "tests/combobox.test.ts"],
+    },
+    {
+      name: "layer",
+      value: "native-auto-popover",
+      description: "Use native light dismissal and top-layer placement without Teleport.",
+      evidence: ["packages/core/src/test/combobox-contract.ts"],
+    },
+    {
+      name: "focus",
+      value: "input-aria-activedescendant",
+      description: "Keep DOM focus on the input while identifying one registered option.",
+      evidence: ["packages/core/src/test/combobox-contract.ts", "tests/combobox.test.ts"],
+    },
+    {
+      name: "presence",
+      value: "native-popover",
+      description: "The browser owns popup visibility; options remain a normal Vue collection.",
+      evidence: ["packages/core/src/test/combobox-contract.ts"],
+    },
+  ],
+  interaction: [
+    {
+      id: "CMB-INT-04",
+      classification: "intentional-extension",
+      source: "Nagi native-layer policy",
+      text: "Suggestions use native Popover and browser-owned light dismissal without Teleport or a document-global rediscovery step.",
+      evidence: ["packages/core/src/test/combobox-contract.ts"],
+      origin: { kind: "nagi", policy: "native-popover-layer", policyVersion: "1" },
     },
   ],
   anatomy: [
@@ -197,18 +255,21 @@ export const comboboxDefinition = defineComponentDefinition({
       description: "The native editable input receiving the complete inputProps bundle.",
       match: { by: "part", scope: "combobox", part: "input" },
       within: "root",
+      contractPart: "input",
     },
     {
       name: "popup",
       description: "The native Popover that owns suggestion visibility.",
       match: { by: "part", scope: "combobox", part: "popup" },
       within: "root",
+      contractPart: "popup",
     },
     {
       name: "listbox",
       description: "The controlled listbox receiving the complete listboxProps bundle.",
       match: { by: "part", scope: "combobox", part: "listbox" },
       within: "popup",
+      contractPart: "listbox",
     },
     {
       name: "option",
@@ -216,6 +277,7 @@ export const comboboxDefinition = defineComponentDefinition({
       match: { by: "part", scope: "combobox", part: "option" },
       within: "listbox",
       multiple: true,
+      contractPart: "option",
     },
   ],
   style: [
@@ -228,4 +290,12 @@ export const comboboxDefinition = defineComponentDefinition({
       origin: { kind: "nagi", policy: "functional-state-visibility", policyVersion: "1" },
     },
   ],
+});
+
+export const comboboxDefinition = defineComponentDefinition({
+  name: "Combobox",
+  version: "3.0",
+  status: "draft",
+  contract: comboboxContract,
+  implementation: nativePopoverComboboxImplementation,
 });

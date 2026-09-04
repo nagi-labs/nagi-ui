@@ -66,9 +66,9 @@ test("EmptyState keeps heading hierarchy neutral and omits absent optional anato
     );
 
     assert.match(html, /^<div class="n-empty-state">/);
-    assert.match(html, /<div class="unit"><div class="title">No projects yet<\/div><\/div>/);
+    assert.match(html, /<div class="unit"><span class="text">No projects yet<\/span><\/div>/);
     assert.doesNotMatch(html, /<h[1-6]\b/);
-    assert.doesNotMatch(html, /class="(?:text|actions)"/);
+    assert.doesNotMatch(html, /class="actions"/);
   });
 });
 
@@ -90,7 +90,7 @@ test("EmptyState renders the optional description and only action markup from it
       ),
     );
 
-    assert.match(html, /<div class="text">Try a broader query\.<\/div>/);
+    assert.match(html, /<p class="p">Try a broader query\.<\/p>/);
     assert.match(
       html,
       /<div class="actions"><button type="button">Clear search<\/button><\/div>/,

@@ -67,7 +67,6 @@ test("thin behavior SFCs use only the public component overload", () => {
   const controls = {
     "popover/Popover.vue": ["popover", "usePopover", "open"],
     "tooltip/Tooltip.vue": ["tooltip", "useTooltip", "open"],
-    "dialog/Dialog.vue": ["dialog", "useDialog", "open"],
     "disclosure/Disclosure.vue": ["disclosure", "useDisclosure", "open"],
     "toggle/Toggle.vue": ["toggle", "useToggle", "pressed"],
   } as const;
@@ -82,6 +81,16 @@ test("thin behavior SFCs use only the public component overload", () => {
     assert.doesNotMatch(source, new RegExp(`${composable}Control`));
     assert.doesNotMatch(source, /component-controls/);
   }
+
+  const dialogSource = fs.readFileSync(
+    path.join(repo, "packages/core/blueprints/dialog/Dialog.vue"),
+    "utf8",
+  );
+  assert.match(
+    dialogSource,
+    /const dialog = useDialog\(\{ open, modal: true, closedby: "any" \}\);/u,
+  );
+  assert.doesNotMatch(dialogSource, /modal\?:|closedby\?:/u);
 
   const adapters = fs.readFileSync(
     path.join(repo, "packages/core/src/component-controls.ts"),

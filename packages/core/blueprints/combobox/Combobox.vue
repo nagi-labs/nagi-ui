@@ -139,7 +139,7 @@ const { visibleItems } = combobox;
       />
       <button
         v-if="clearable && !disabled && !readOnly && (selected !== null || inputValue !== '')"
-        class="button -clear"
+        class="button"
         type="button"
         :aria-label="clearLabel"
         @click="combobox.clear"
@@ -255,18 +255,16 @@ const { visibleItems } = combobox;
       }
 
       > .button {
-        &.-clear {
-          position: absolute;
-          inset-block: 0;
-          inset-inline-end: 0.35rem;
-          inline-size: 1.75rem;
-          padding: 0;
-          border: 0;
-          background: transparent;
-          color: var(--nagi-color-text-muted);
-          font: inherit;
-          cursor: pointer;
-        }
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 0.35rem;
+        inline-size: 1.75rem;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--nagi-color-text-muted);
+        font: inherit;
+        cursor: pointer;
       }
     }
 
@@ -339,9 +337,13 @@ const { visibleItems } = combobox;
 }
 
 @media (forced-colors: active) {
-  .n-combobox > .unit.-control > .input:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-combobox {
+    > .unit.-control {
+      > .input:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: var(--n-border-width-2);
+      }
+    }
   }
 }
 </style>

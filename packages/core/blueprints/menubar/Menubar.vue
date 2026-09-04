@@ -58,7 +58,8 @@ function isLink(item: MenubarAction): item is MenubarLinkAction {
   >
     <div
       v-bind="menubar.menubarProps"
-      class="list -bar"
+      class="menubar"
+      role="menubar"
     >
       <button
         v-for="menu in items"
@@ -72,7 +73,7 @@ function isLink(item: MenubarAction): item is MenubarLinkAction {
     </div>
     <ul
       v-bind="menubar.menuProps"
-      class="list -popup"
+      class="list"
       popover
       :style="menubar.positionStyle.value"
     >
@@ -110,7 +111,7 @@ function isLink(item: MenubarAction): item is MenubarLinkAction {
 <style scoped>
 .n-menubar {
   color: var(--nagi-color-text);
-  > .list.-bar {
+  > .menubar {
     display: flex;
     gap: var(--nagi-space-item-gap);
     align-items: center;
@@ -119,30 +120,35 @@ function isLink(item: MenubarAction): item is MenubarLinkAction {
     border: var(--n-border-width-1) solid var(--nagi-color-border);
     border-radius: var(--nagi-radius-control);
     background: var(--nagi-color-surface);
+
+    > .button.-trigger {
+      min-block-size: var(--nagi-size-control);
+      padding: var(--nagi-space-control);
+      border: 0;
+      border-radius: var(--nagi-radius-control);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+
+      &:hover:not([aria-disabled="true"]),
+      &[aria-expanded="true"] {
+        background: var(--nagi-color-surface-active);
+      }
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: var(--nagi-shadow-focus);
+      }
+
+      &[aria-disabled="true"] {
+        color: var(--nagi-color-text-disabled);
+        cursor: not-allowed;
+      }
+    }
   }
-  > .list.-bar > .button.-trigger {
-    min-block-size: var(--nagi-size-control);
-    padding: var(--nagi-space-control);
-    border: 0;
-    border-radius: var(--nagi-radius-control);
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-  }
-  > .list.-bar > .button.-trigger:hover:not([aria-disabled="true"]),
-  > .list.-bar > .button.-trigger[aria-expanded="true"] {
-    background: var(--nagi-color-surface-active);
-  }
-  > .list.-bar > .button.-trigger:focus-visible {
-    outline: none;
-    box-shadow: var(--nagi-shadow-focus);
-  }
-  > .list.-bar > .button.-trigger[aria-disabled="true"] {
-    color: var(--nagi-color-text-disabled);
-    cursor: not-allowed;
-  }
-  > .list.-popup {
+
+  > .list {
     min-inline-size: 12rem;
     margin: 0;
     padding: var(--nagi-space-surface-inset);
@@ -152,37 +158,45 @@ function isLink(item: MenubarAction): item is MenubarLinkAction {
     background: var(--nagi-color-surface);
     box-shadow: var(--nagi-shadow-overlay);
     color: inherit;
+
     > .item {
       list-style: none;
-    }
-    > .item > :is(.link, .button) {
-      display: flex;
-      box-sizing: border-box;
-      inline-size: 100%;
-      min-block-size: var(--nagi-size-control);
-      align-items: center;
-      padding: var(--nagi-space-item);
-      border: 0;
-      border-radius: var(--nagi-radius-item);
-      background: transparent;
-      color: inherit;
-      font: inherit;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    > .item > :is(.link, .button):focus {
-      background: var(--nagi-color-surface-active);
-      outline: 2px solid var(--nagi-color-focus-ring);
-    }
-    > .item > :is(.link, .button)[aria-disabled="true"] {
-      color: var(--nagi-color-text-disabled);
-      cursor: not-allowed;
+
+      > :is(.link, .button) {
+        display: flex;
+        box-sizing: border-box;
+        inline-size: 100%;
+        min-block-size: var(--nagi-size-control);
+        align-items: center;
+        padding: var(--nagi-space-item);
+        border: 0;
+        border-radius: var(--nagi-radius-item);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:focus {
+          background: var(--nagi-color-surface-active);
+          outline: 2px solid var(--nagi-color-focus-ring);
+        }
+
+        &[aria-disabled="true"] {
+          color: var(--nagi-color-text-disabled);
+          cursor: not-allowed;
+        }
+      }
     }
   }
 }
 @media (forced-colors: active) {
-  .n-menubar > .list.-bar > .button.-trigger:focus-visible {
-    outline: 2px solid Highlight;
+  .n-menubar {
+    > .menubar {
+      > .button.-trigger:focus-visible {
+        outline: 2px solid Highlight;
+      }
+    }
   }
 }
 </style>

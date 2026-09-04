@@ -105,14 +105,14 @@ useDatePickerNativeForm(formControl, picker);
         v-bind="picker.field.formValueProps"
         data-scope="date-picker"
         data-part="form-control"
-        class="input -form-value"
+        class="input"
       />
     </div>
     <div
       v-bind="picker.popover.popoverProps"
       data-scope="date-picker"
       data-part="popup"
-      class="unit"
+      class="dialog"
       role="dialog"
       popover
       :aria-label="calendarLabel ?? label"
@@ -146,19 +146,19 @@ useDatePickerNativeForm(formControl, picker);
           picker.isInvalid.value ? `${picker.field.fieldProps.id}-error` : undefined
         "
       >
-        <thead class="thead -head">
+        <thead class="thead">
           <tr class="row">
             <th
               v-for="weekday in picker.calendar.weekdayLabels.value"
               :key="weekday"
-              class="cell -head"
+              class="cell"
               scope="col"
             >
               {{ weekday }}
             </th>
           </tr>
         </thead>
-        <tbody class="tbody -dates">
+        <tbody class="tbody">
           <tr
             v-for="(week, index) in picker.calendar.weeks.value"
             :key="index"
@@ -187,7 +187,7 @@ useDatePickerNativeForm(formControl, picker);
     <span
       v-if="picker.isInvalid.value"
       :id="`${picker.field.fieldProps.id}-error`"
-      class="text -validation"
+      class="alert"
       role="alert"
       >{{ validationMessage }}</span
     >
@@ -207,7 +207,7 @@ useDatePickerNativeForm(formControl, picker);
     font-weight: 650;
   }
 
-  > .text.-validation {
+  > .alert {
     color: var(--nagi-color-danger);
     font-size: var(--nagi-font-size-label);
   }
@@ -277,7 +277,7 @@ useDatePickerNativeForm(formControl, picker);
       }
     }
 
-    > .input.-form-value {
+    > .input {
       position: absolute;
       inline-size: 1px;
       block-size: 1px;
@@ -289,7 +289,7 @@ useDatePickerNativeForm(formControl, picker);
     }
   }
 
-  > .unit {
+  > .dialog {
     margin: 0;
     padding: var(--nagi-space-control);
     border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
@@ -336,45 +336,57 @@ useDatePickerNativeForm(formControl, picker);
 
     > .table {
       border-collapse: collapse;
-      > .thead.-head > .row > .cell.-head {
-        min-inline-size: var(--nagi-size-control);
-        block-size: var(--nagi-size-control);
-        color: var(--nagi-color-text-muted);
-        font-size: var(--nagi-font-size-label);
-        font-weight: 650;
+      > .thead {
+        > .row {
+          > .cell {
+            min-inline-size: var(--nagi-size-control);
+            block-size: var(--nagi-size-control);
+            color: var(--nagi-color-text-muted);
+            font-size: var(--nagi-font-size-label);
+            font-weight: 650;
+          }
+        }
       }
-      > .tbody.-dates > .row > .cell {
-        padding: 0;
-        > .button.-day {
-          inline-size: var(--nagi-size-control);
-          min-block-size: var(--nagi-size-control);
-          padding: 0;
-          border: var(--n-border-width-1) solid transparent;
-          border-radius: var(--nagi-radius-control);
-          background: transparent;
-          color: inherit;
-          font: inherit;
-          cursor: pointer;
-          &:hover:not(:disabled) {
-            background: var(--nagi-color-surface-active);
+      > .tbody {
+        > .row {
+          > .cell {
+            padding: 0;
+            > .button.-day {
+              inline-size: var(--nagi-size-control);
+              min-block-size: var(--nagi-size-control);
+              padding: 0;
+              border: var(--n-border-width-1) solid transparent;
+              border-radius: var(--nagi-radius-control);
+              background: transparent;
+              color: inherit;
+              font: inherit;
+              cursor: pointer;
+              &:hover:not(:disabled) {
+                background: var(--nagi-color-surface-active);
+              }
+              &:focus-visible {
+                outline: none;
+                border-color: var(--nagi-color-focus-ring);
+                box-shadow: var(--nagi-shadow-focus);
+              }
+              &:disabled {
+                color: var(--nagi-color-text-disabled);
+                cursor: not-allowed;
+              }
+            }
+            &[data-outside-month] {
+              > .button.-day {
+                color: var(--nagi-color-text-muted);
+              }
+            }
+            &[aria-selected="true"] {
+              > .button.-day {
+                background: var(--nagi-color-surface-accent);
+                color: var(--nagi-color-text);
+                box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
+              }
+            }
           }
-          &:focus-visible {
-            outline: none;
-            border-color: var(--nagi-color-focus-ring);
-            box-shadow: var(--nagi-shadow-focus);
-          }
-          &:disabled {
-            color: var(--nagi-color-text-disabled);
-            cursor: not-allowed;
-          }
-        }
-        &[data-outside-month] > .button.-day {
-          color: var(--nagi-color-text-muted);
-        }
-        &[aria-selected="true"] > .button.-day {
-          background: var(--nagi-color-surface-accent);
-          color: var(--nagi-color-text);
-          box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
         }
       }
     }
@@ -382,20 +394,41 @@ useDatePickerNativeForm(formControl, picker);
 }
 
 @media (forced-colors: active) {
-  .n-date-picker > .field > :is(.button, .text.-segment):focus-visible,
-  .n-date-picker > .unit > .header > .button:focus-visible,
-  .n-date-picker > .unit > .table > .tbody.-dates > .row > .cell > .button.-day:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
-  }
-  .n-date-picker
-    > .unit
-    > .table
-    > .tbody.-dates
-    > .row
-    > .cell[aria-selected="true"]
-    > .button.-day {
-    outline: 2px solid CanvasText;
+  .n-date-picker {
+    > .field {
+      > :is(.button, .text.-segment):focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: var(--n-border-width-2);
+      }
+    }
+
+    > .dialog {
+      > .header {
+        > .button:focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+
+      > .table {
+        > .tbody {
+          > .row {
+            > .cell {
+              > .button.-day:focus-visible {
+                outline: 2px solid Highlight;
+                outline-offset: var(--n-border-width-2);
+              }
+
+              &[aria-selected="true"] {
+                > .button.-day {
+                  outline: 2px solid CanvasText;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 </style>

@@ -34,24 +34,28 @@ import { NButton } from "@nagi-labs/nagi-ui/components";
 </template>
 <style scoped>
 .app-button-example {
-  > .section > .actions > .n-button {
-    &.-compact {
-      --button-size: small;
-    }
+  > .section {
+    > .actions {
+      > .n-button {
+        &.-compact {
+          --button-size: small;
+        }
 
-    &.-spacious {
-      --button-size: large;
-    }
+        &.-spacious {
+          --button-size: large;
+        }
 
-    &.-primary {
-      --button-tone: accent;
-      --button-appearance: solid;
-    }
+        &.-primary {
+          --button-tone: accent;
+          --button-appearance: solid;
+        }
 
-    &.-destructive {
-      --button-tone: danger;
-      --button-appearance: outlined;
-      --button-shape: rounded;
+        &.-destructive {
+          --button-tone: danger;
+          --button-appearance: outlined;
+          --button-shape: rounded;
+        }
+      }
     }
   }
 }
@@ -61,14 +65,23 @@ import { NButton, NButtonGroup } from "@nagi-labs/nagi-ui/components";
 </scr${"ipt"}>
 <template>
   <main class="app-button-group-example">
-    <n-button-group class="n-button-group -compact" label="History" orientation="horizontal">
-      <n-button class="n-button">Back</n-button><n-button class="n-button">Forward</n-button>
+    <n-button-group
+      class="n-button-group"
+      label="History"
+      orientation="horizontal"
+    >
+      <n-button class="n-button-group-content">Back</n-button>
+      <n-button class="n-button-group-content">Forward</n-button>
     </n-button-group>
   </main>
 </template>
 <style scoped>
-.app-button-group-example > .n-button-group.-compact .n-button {
-  --button-size: small;
+.app-button-group-example {
+  > .n-button-group {
+    .n-button-group-content {
+      --button-size: small;
+    }
+  }
 }
 </style>`,
   Toggle: `<script setup lang="ts">
@@ -160,17 +173,25 @@ import { NButton, NInput, NInputGroup } from "@nagi-labs/nagi-ui/components";
 </scr${"ipt"}>
 <template>
   <main class="app-input-group-example">
-    <n-input-group class="n-input-group -compact" prefix="https://" suffix=".nagi.dev">
+    <n-input-group
+      class="n-input-group"
+      prefix="https://"
+      suffix=".nagi.dev"
+    >
       <n-input label="Workspace URL" />
       <template #action>
-        <n-button class="n-button">Check</n-button>
+        <n-button class="n-input-group-action">Check</n-button>
       </template>
     </n-input-group>
   </main>
 </template>
 <style scoped>
-.app-input-group-example > .n-input-group.-compact .n-button {
-  --button-size: small;
+.app-input-group-example {
+  > .n-input-group {
+    .n-input-group-action {
+      --button-size: small;
+    }
+  }
 }
 </style>`,
   Listbox: `<script setup lang="ts">

@@ -32,12 +32,14 @@ async function renderStepper(props: Record<string, unknown>) {
   });
 
   try {
-    const stepper = (
-      await server.ssrLoadModule(`/@fs${sourcePath}`)
-    ).default as Component;
-    return normalizeSsrHtml(await renderToString(createSSRApp({
-      render: () => h(stepper, props),
-    })));
+    const stepper = (await server.ssrLoadModule(`/@fs${sourcePath}`)).default as Component;
+    return normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () => h(stepper, props),
+        }),
+      ),
+    );
   } finally {
     await server.close();
     fs.rmSync(cacheDir, { recursive: true, force: true });
@@ -69,7 +71,7 @@ test("Stepper renders one named native step navigation", async () => {
   assert.ok(disabled);
   assert.match(disabled, />Confirm</u);
 
-  assert.match(html, /<span class="text">Create credentials<\/span>/u);
+  assert.match(html, /<span class="text -secondary">Create credentials<\/span>/u);
 });
 
 test("Stepper does not invent a current step for an invalid controlled key", async () => {
@@ -99,7 +101,10 @@ test("Stepper delegates selection policy and keeps editable anatomy in its SFC",
   assert.match(source, /useStepper<StepperItem>\(currentKey\)/u);
   assert.match(source, /<nav[\s\S]*?class="n-stepper"[\s\S]*?:aria-label="props\.label"[\s\S]*?>/u);
   assert.match(source, /<ol class="list">/u);
-  assert.match(source, /<button[\s\S]*type="button"[\s\S]*:aria-current="stepper\.isCurrent\(item\) \? 'step' : undefined"/u);
+  assert.match(
+    source,
+    /<button[\s\S]*type="button"[\s\S]*:aria-current="stepper\.isCurrent\(item\) \? 'step' : undefined"/u,
+  );
   assert.match(source, /:disabled="item\.disabled"[\s\S]*@click="stepper\.select\(item\)"/u);
 
   assert.doesNotMatch(source, /<slot\b|Teleport|provide\(|inject\(|asChild|data-state/u);
@@ -110,9 +115,12 @@ test("Stepper delegates selection policy and keeps editable anatomy in its SFC",
   assert.doesNotMatch(source, /var\(--nagi-[^,)]+,/u, "theme tokens have no fallbacks");
   assert.doesNotMatch(source, /#[\da-f]{3,8}\b|\brgba?\(|\bhsla?\(/iu);
   assert.match(source, /@media \(forced-colors: active\)/u);
-  assert.match(source, /button\[aria-current="step"\] > \.icon \{\s*border-width: calc\(var\(--n-border-width-1\) \+ var\(--n-border-width-2\)\)/u);
-  assert.match(source, /button:focus-visible \{\s*outline: 2px solid Highlight/u);
-  assert.match(source, /&:disabled[\s\S]*> \.unit > :is\(\.title, \.text\)/u);
+  assert.match(
+    source,
+    /&\[aria-current="step"\][\s\S]{0,80}> \.icon \{\s*border-width: calc\(var\(--n-border-width-1\) \+ var\(--n-border-width-2\)\)/u,
+  );
+  assert.match(source, /&:focus-visible \{\s*outline: 2px solid Highlight/u);
+  assert.match(source, /&:disabled[\s\S]*> \.unit \{[\s\S]*> \.text/u);
 
   for (const match of source.matchAll(/var\((--nagi-[a-z0-9-]+)\)/g)) {
     assert.ok(manifest.has(match[1] as string), `unknown token ${match[1]}`);

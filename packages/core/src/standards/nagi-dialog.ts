@@ -103,3 +103,34 @@ export const nagiDialogRequirementsV1 = defineRequirementSet({
     },
   ],
 } as const)
+
+/**
+ * Modal-only revision used by shipped Dialog-family Blueprints. The low-level
+ * useDialog Behavior API may still implement non-modal or other native close
+ * policies, but those choices do not claim this Blueprint Requirement set.
+ */
+export const nagiDialogRequirementsV2 = defineRequirementSet({
+  ...nagiDialogRequirementsV1,
+  version: "2",
+  profile: {
+    role: ["dialog", "alertdialog"],
+    modality: ["modal-only"],
+    description: ["optional-simple", "required-message"],
+    dismissal: ["light-dismiss-any", "close-request-only"],
+  },
+  requirements: nagiDialogRequirementsV1.requirements.map((requirement) => {
+    if (requirement.id === "STATE-02") {
+      return {
+        ...requirement,
+        text: "The shipped component opens with `showModal()` and promises an inert outside page; non-modal `show()` is not part of this Requirement set.",
+      }
+    }
+    if (requirement.id === "INT-01") {
+      return {
+        ...requirement,
+        text: "Escape, visible close actions, and native light dismissal follow the fixed close policy selected by the adopted modal profile.",
+      }
+    }
+    return requirement
+  }),
+} as const)

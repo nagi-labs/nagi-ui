@@ -82,7 +82,7 @@ const tags = useTagsInput(props, { value: model, formControl, inputControl });
         <span class="value">{{ tag }}</span>
         <button
           v-if="!disabled && !readOnly"
-          class="button -remove"
+          class="button"
           type="button"
           :aria-label="`${removeLabel} ${tag}`"
           @click="tags.remove(index)"
@@ -121,7 +121,7 @@ const tags = useTagsInput(props, { value: model, formControl, inputControl });
     <select
       ref="formControl"
       v-bind="tags.formProps"
-      class="select -form-value"
+      class="select"
     >
       <option
         v-for="(tag, index) in model"
@@ -169,17 +169,19 @@ const tags = useTagsInput(props, { value: model, formControl, inputControl });
       align-items: center;
       border-radius: var(--nagi-radius-item);
       background: var(--nagi-color-surface-accent);
-    }
-    > .unit.-tag > .value {
-      padding-inline: var(--nagi-space-item);
-    }
-    > .unit.-tag > .button {
-      min-inline-size: var(--nagi-size-control);
-      min-block-size: var(--nagi-size-control);
-      border: 0;
-      background: transparent;
-      color: inherit;
-      cursor: pointer;
+
+      > .value {
+        padding-inline: var(--nagi-space-item);
+      }
+
+      > .button {
+        min-inline-size: var(--nagi-size-control);
+        min-block-size: var(--nagi-size-control);
+        border: 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+      }
     }
     > .input {
       flex: 1 1 8rem;
@@ -191,7 +193,7 @@ const tags = useTagsInput(props, { value: model, formControl, inputControl });
       font: inherit;
     }
   }
-  > .select.-form-value {
+  > .select {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -200,8 +202,10 @@ const tags = useTagsInput(props, { value: model, formControl, inputControl });
   }
 }
 @media (forced-colors: active) {
-  .n-tags-input > .field:focus-within {
-    outline: 2px solid Highlight;
+  .n-tags-input {
+    > .field:focus-within {
+      outline: 2px solid Highlight;
+    }
   }
 }
 </style>

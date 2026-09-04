@@ -9,7 +9,7 @@ defineProps<{ summary: string; html?: TrustedShikiHtml | "" }>();
 <template>
   <div class="site-code-disclosure">
     <n-disclosure
-      class="n-disclosure -wide"
+      class="n-disclosure"
       :summary="summary"
     >
       <div class="n-disclosure-content">
@@ -31,7 +31,7 @@ defineProps<{ summary: string; html?: TrustedShikiHtml | "" }>();
 </template>
 
 <style scoped>
-.site-code-disclosure > .n-disclosure.-wide {
+.site-code-disclosure > .n-disclosure {
   max-inline-size: none;
 
   .n-disclosure-content {

@@ -30,11 +30,21 @@ vp run typecheck
 vp run test
 vp run test:integration
 vp run test:browser
+vp run definitions:check
 ```
 
+`vp install` runs the workspace `prepare` script and installs the Lefthook
+pre-commit hook. Commits that include Blueprint changes run Nagi CSS and the
+Blueprint formatter against the staged Vue files. Changes to the Nagi CSS
+configuration, preset, or theme token sources run the complete Blueprint
+integration lint.
+
 Keep changes focused, add tests for behavior changes, and update public
-documentation when an API or workflow changes. Generated files and local
-dependency stores must not be committed.
+documentation when an API or workflow changes. The generated
+`site/data/generated/definition-tests.json` projection is committed so the
+static site can render tested guarantees; update it with
+`vp run definitions:generate`. Other generated files and local dependency
+stores must not be committed.
 
 Before changing public behavior or component structure, read
 [CONCEPT.md](CONCEPT.md), [CHARTER.md](CHARTER.md), and the

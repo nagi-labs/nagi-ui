@@ -26,8 +26,8 @@ const pickedRange = ref<RangeCalendarValue | null>({
 const fieldTime = ref<string | null>("13:45");
 const emptyDate = ref<string | null>(null);
 const emptyTime = ref<string | null>(null);
-const qaMode = typeof window !== "undefined"
-  && new URLSearchParams(window.location.search).has("qa");
+const qaMode =
+  typeof window !== "undefined" && new URLSearchParams(window.location.search).has("qa");
 const qaControlledDate = ref<string | null>("2026-07-23");
 const qaPickerDate = ref<string | null>("2026-07-24");
 const qaPickerOpen = ref(qaMode);
@@ -46,7 +46,10 @@ function submit(event: SubmitEvent) {
 <template>
   <main>
     <h1>Date and time components</h1>
-    <form id="date-time-form" @submit.prevent="submit">
+    <form
+      id="date-time-form"
+      @submit.prevent="submit"
+    >
       <n-date-field
         v-model="fieldDate"
         label="Field date"
@@ -61,8 +64,16 @@ function submit(event: SubmitEvent) {
         name="fieldTime"
         locale="en-US"
       />
-      <n-date-field v-model="emptyDate" label="Initially empty date" locale="en-US" />
-      <n-time-field v-model="emptyTime" label="Initially empty time" locale="en-GB" />
+      <n-date-field
+        v-model="emptyDate"
+        label="Initially empty date"
+        locale="en-US"
+      />
+      <n-time-field
+        v-model="emptyTime"
+        label="Initially empty time"
+        locale="en-GB"
+      />
       <n-date-picker
         v-model="pickedDate"
         v-model:open="pickedDateOpen"
@@ -75,7 +86,16 @@ function submit(event: SubmitEvent) {
         min="2026-07-01"
         max="2026-08-31"
       />
-      <output role="status" aria-label="Picked date open state">{{ pickedDateOpen }}</output>
+      <output
+        role="status"
+        aria-label="Picked date open state"
+        >{{ pickedDateOpen }}</output
+      >
+      <output
+        role="status"
+        aria-label="Picked date model"
+        >{{ pickedDate }}</output
+      >
       <n-date-range-picker
         v-model="pickedRange"
         label="Picked range"
@@ -122,7 +142,10 @@ function submit(event: SubmitEvent) {
     <output id="empty-time-model">{{ emptyTime }}</output>
     <output id="submission">{{ submission }}</output>
 
-    <section v-if="qaMode" aria-label="Date and time QA fixtures">
+    <section
+      v-if="qaMode"
+      aria-label="Date and time QA fixtures"
+    >
       <n-date-field
         :model-value="qaControlledDate"
         label="Rejected controlled date"

@@ -53,8 +53,9 @@ const tabs = useTabs(props, selectedModel);
     :title="props.title"
   >
     <div
-      class="list"
       v-bind="tabs.tablistProps"
+      class="tablist"
+      role="tablist"
     >
       <button
         v-for="item in items"
@@ -77,7 +78,7 @@ const tabs = useTabs(props, selectedModel);
       >
         <p
           v-if="item.content"
-          class="text"
+          class="p"
         >
           {{ item.content }}
         </p>
@@ -92,12 +93,12 @@ const tabs = useTabs(props, selectedModel);
   gap: var(--nagi-space-item-gap);
   color: var(--nagi-color-text);
 
-  &:has(> .list[aria-orientation="vertical"]) {
+  &:has(> .tablist[aria-orientation="vertical"]) {
     grid-template-columns: minmax(9rem, max-content) minmax(0, 1fr);
     align-items: start;
   }
 
-  > .list {
+  > .tablist {
     display: flex;
     gap: var(--n-space-2);
     padding: var(--n-space-2);
@@ -157,7 +158,7 @@ const tabs = useTabs(props, selectedModel);
       box-shadow: var(--nagi-shadow-focus);
     }
 
-    > .text {
+    > .p {
       margin: 0;
       padding: var(--n-space-6);
       color: var(--nagi-color-text-muted);
@@ -166,24 +167,30 @@ const tabs = useTabs(props, selectedModel);
 }
 
 @media (max-width: 38rem) {
-  .n-tabs:has(> .list[aria-orientation="vertical"]) {
+  .n-tabs:has(> .tablist[aria-orientation="vertical"]) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (forced-colors: active) {
-  .n-tabs > .list > .button[aria-selected="true"] {
-    border-width: var(--n-border-width-2);
-  }
+  .n-tabs {
+    > .tablist {
+      > .button {
+        &[aria-selected="true"] {
+          border-width: var(--n-border-width-2);
+        }
 
-  .n-tabs > .list > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
-  }
+        &:focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+    }
 
-  .n-tabs > .section:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+    > .section:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
   }
 }
 </style>

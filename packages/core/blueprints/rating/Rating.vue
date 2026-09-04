@@ -142,21 +142,25 @@ useNativeRadioGroupReset(inputs, model);
 }
 
 @media (forced-colors: active) {
-  .n-rating > .unit > .label {
-    display: inline-flex;
-    gap: var(--nagi-space-item-gap);
-    align-items: center;
+  .n-rating {
+    > .unit {
+      > .label {
+        display: inline-flex;
+        gap: var(--nagi-space-item-gap);
+        align-items: center;
 
-    > .input {
-      position: static;
-      inline-size: 1rem;
-      block-size: 1rem;
-      overflow: visible;
-      clip-path: none;
-    }
+        > .input {
+          position: static;
+          inline-size: 1rem;
+          block-size: 1rem;
+          overflow: visible;
+          clip-path: none;
+        }
 
-    > .icon {
-      display: none;
+        > .icon {
+          display: none;
+        }
+      }
     }
   }
 }

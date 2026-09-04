@@ -59,7 +59,7 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
   >
     <span
       :id="`${context.menu.id}-trigger`"
-      class="unit -assistive"
+      class="text"
       >{{ label }}</span
     >
     <span
@@ -77,7 +77,7 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
     </div>
     <ul
       v-bind="context.menu.menuProps"
-      class="list -popup"
+      class="list"
       popover
       :aria-label="label"
       :style="context.positionStyle.value"
@@ -116,7 +116,7 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
 <style scoped>
 .n-context-menu {
   display: contents;
-  > .unit.-assistive {
+  > .text {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -129,7 +129,7 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
   > .unit.-target {
     display: block;
   }
-  > .list.-popup {
+  > .list {
     min-inline-size: 12rem;
     margin: 0;
     padding: var(--nagi-space-surface-inset);
@@ -169,8 +169,14 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
   }
 }
 @media (forced-colors: active) {
-  .n-context-menu > .list.-popup > .item > :is(.link, .button):focus {
-    outline: 2px solid Highlight;
+  .n-context-menu {
+    > .list {
+      > .item {
+        > :is(.link, .button):focus {
+          outline: 2px solid Highlight;
+        }
+      }
+    }
   }
 }
 </style>

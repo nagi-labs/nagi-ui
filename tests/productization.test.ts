@@ -63,13 +63,17 @@ test("the npm package exposes opt-in base, theme, and combined styles", () => {
 
 test("the npm package exposes shared conformance contracts without requiring Playwright at runtime", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")) as {
-    exports?: Record<string, string>;
+    exports?: Record<string, string | { types: string; default: string }>;
     peerDependencies?: Record<string, string>;
     peerDependenciesMeta?: Record<string, { optional?: boolean }>;
   };
 
-  assert.equal(manifest.exports?.["./test"], "./src/test/index.ts");
+  assert.deepEqual(manifest.exports?.["./test"], {
+    types: "./src/test/index.ts",
+    default: "./dist/test/index.js",
+  });
   assert.ok(fs.existsSync(path.join(packageRoot, "src/test/index.ts")));
+  assert.ok(fs.existsSync(path.join(packageRoot, "dist/test/index.js")));
   assert.equal(manifest.peerDependencies?.["@playwright/test"], ">=1.50.0");
   assert.equal(manifest.peerDependenciesMeta?.["@playwright/test"]?.optional, true);
 });

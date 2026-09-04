@@ -22,7 +22,7 @@ export interface UseDialogOptions {
   defaultOpen?: boolean;
   /** Override the generated id (SSR-stable ids come from Vue's useId). */
   id?: string;
-  /** `showModal()` (default, focus trap delegated to the UA) vs non-modal `show()`. */
+  /** `showModal()` (default, with the Chromium-tested Tab-boundary repair) vs non-modal `show()`. */
   modal?: boolean;
   /**
    * Native light-dismiss policy (`<dialog closedby>`), adopted via feature
@@ -53,6 +53,7 @@ export interface DialogProps {
   closedby?: DialogClosedBy;
   onClose: (event: Event) => void;
   onToggle: (event: ToggleEvent) => void;
+  onKeydown: (event: KeyboardEvent) => void;
 }
 
 export interface UseDialogReturn {
@@ -158,6 +159,29 @@ export function useDialog(
     open.value = true;
   };
 
+  function containModalFocus(event: KeyboardEvent) {
+    if (!modal || event.key !== "Tab" || event.defaultPrevented) return;
+    const dialog = resolve();
+    if (!dialog) return;
+    const candidates = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((candidate) => candidate.getClientRects().length > 0);
+    const first = candidates[0];
+    const last = candidates.at(-1);
+    if (!first || !last) return;
+    const root = dialog.getRootNode();
+    const active =
+      "activeElement" in root
+        ? (root as Document | ShadowRoot).activeElement
+        : dialog.ownerDocument.activeElement;
+    if (event.shiftKey ? active === first || active === dialog : active === last) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    }
+  }
+
   return {
     id,
     open,
@@ -176,6 +200,7 @@ export function useDialog(
       // version that emits `toggle` for <dialog>. The native `open` property is
       // the interoperable source of truth after the event has fired.
       onToggle: (event: ToggleEvent) => mirror(event, (event.target as DialogElement).open),
+      onKeydown: containModalFocus,
     },
   };
 }

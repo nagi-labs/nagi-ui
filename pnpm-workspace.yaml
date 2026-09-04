@@ -12,7 +12,8 @@ allowBuilds:
   # Unovis pulls maplibre-gl transitively; its published postinstall is empty.
   # Nuxt/Vite uses esbuild's platform binary during generation.
   esbuild: true
+  lefthook: true
   maplibre-gl: false
 minimumReleaseAgeExclude:
-  - '@nagi-labs/eslint-plugin-nagi-css@0.1.0'
-  - '@nagi-labs/nagi-css-core@0.1.0'
+  - '@nagi-labs/eslint-plugin-nagi-css@0.4.0'
+  - '@nagi-labs/nagi-css-core@0.4.0'

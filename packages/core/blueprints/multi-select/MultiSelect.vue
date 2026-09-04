@@ -87,7 +87,7 @@ const selectedItems = computed(() =>
         <span class="text">{{ item.label }}</span>
         <button
           v-if="!disabled && !readOnly"
-          class="button -remove"
+          class="button"
           type="button"
           :aria-label="`${removeLabel} ${item.label}`"
           @click="select.remove(item.key)"
@@ -123,7 +123,7 @@ const selectedItems = computed(() =>
     </div>
     <select
       v-bind="select.formProps"
-      class="select -form-value"
+      class="select"
     >
       <option
         v-for="item in selectedItems"
@@ -154,7 +154,7 @@ const selectedItems = computed(() =>
       </ul>
       <p
         v-if="select.visibleItems.value.length === 0"
-        class="text -empty"
+        class="p"
         role="status"
       >
         {{ emptyText }}
@@ -219,7 +219,7 @@ const selectedItems = computed(() =>
       font: inherit;
     }
   }
-  > .select.-form-value {
+  > .select {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -242,34 +242,47 @@ const selectedItems = computed(() =>
       margin: 0;
       padding: 0;
       list-style: none;
+
+      > .item {
+        min-block-size: var(--nagi-size-control);
+        padding: var(--nagi-space-item);
+        border-radius: var(--nagi-radius-item);
+        cursor: pointer;
+
+        &[aria-selected="true"] {
+          background: var(--nagi-color-surface-accent);
+        }
+
+        &[data-active] {
+          outline: 2px solid var(--nagi-color-focus-ring);
+          outline-offset: calc(-1 * var(--n-border-width-2));
+        }
+
+        &[aria-disabled="true"] {
+          color: var(--nagi-color-text-disabled);
+          cursor: not-allowed;
+        }
+      }
     }
-    > .list > .item {
-      min-block-size: var(--nagi-size-control);
-      padding: var(--nagi-space-item);
-      border-radius: var(--nagi-radius-item);
-      cursor: pointer;
-    }
-    > .list > .item[aria-selected="true"] {
-      background: var(--nagi-color-surface-accent);
-    }
-    > .list > .item[data-active] {
-      outline: 2px solid var(--nagi-color-focus-ring);
-      outline-offset: calc(-1 * var(--n-border-width-2));
-    }
-    > .list > .item[aria-disabled="true"] {
-      color: var(--nagi-color-text-disabled);
-      cursor: not-allowed;
-    }
-    > .text.-empty {
+    > .p {
       margin: 0;
       color: var(--nagi-color-text-muted);
     }
   }
 }
 @media (forced-colors: active) {
-  .n-multi-select > .field:focus-within,
-  .n-multi-select > .unit.-popup > .list > .item[data-active] {
-    outline: 2px solid Highlight;
+  .n-multi-select {
+    > .field:focus-within {
+      outline: 2px solid Highlight;
+    }
+
+    > .unit.-popup {
+      > .list {
+        > .item[data-active] {
+          outline: 2px solid Highlight;
+        }
+      }
+    }
   }
 }
 </style>

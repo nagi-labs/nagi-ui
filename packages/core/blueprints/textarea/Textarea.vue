@@ -126,9 +126,11 @@ useNativeValueReset(textarea, model);
 }
 
 @media (forced-colors: active) {
-  .n-textarea > .textarea:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-textarea {
+    > .textarea:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
   }
 }
 </style>

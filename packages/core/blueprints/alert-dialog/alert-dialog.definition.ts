@@ -1,10 +1,10 @@
 import {
   adoptRequirementSet,
   defineComponentDefinition,
-  nagiDialogRequirementsV1,
+  nagiDialogRequirementsV2,
 } from "@nagi-labs/nagi-ui";
 
-const nativeAlertDialog = adoptRequirementSet(nagiDialogRequirementsV1, {
+const nativeAlertDialog = adoptRequirementSet(nagiDialogRequirementsV2, {
   prefix: "ALD-DIALOG",
   profile: {
     role: "alertdialog",

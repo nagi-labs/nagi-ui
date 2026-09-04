@@ -25,12 +25,14 @@ jobs:
       - run: vp run lint
       - run: vp run test:integration
       - run: vp run test
+      - run: vp run test:package
       - run: vp run audit:definitions
       - run: vp run audit:templates
       - run: vp run audit:slot-format
       - run: vp run typecheck:vue
       - run: vp exec playwright install --with-deps chromium
       - run: vp run test:browser
+      - run: vp run definitions:check
       - run: vp install --frozen-lockfile
         working-directory: demos/nuxt
       - run: vp run check

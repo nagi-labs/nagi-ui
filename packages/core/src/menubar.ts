@@ -38,7 +38,6 @@ export interface UseMenubarOptions<Menu, Action, Key extends string = string, Ac
 
 export interface MenubarProps {
   id: string;
-  role: "menubar";
   "aria-orientation": "horizontal";
   "aria-label": string;
   dir: "ltr" | "rtl";
@@ -358,7 +357,6 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
     activeItems,
     menubarProps: {
       id,
-      role: "menubar",
       "aria-orientation": "horizontal",
       get "aria-label"() { return toValue(options.label); },
       get dir() { return toValue(options.dir) ?? "ltr"; },

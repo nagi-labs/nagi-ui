@@ -1,20 +1,30 @@
 # Nagi UI
 
-Nagi UI is a system for building and maintaining the component library you
-own. It ships native-first Vue components as canonical reference
-implementations: use them from the package for evaluation and light use, or
-own their source — together with the definitions, tests, and verification that
-keep an owned UI system correct over time.
+Nagi UI provides concrete, readable Vue components together with the tests that
+explain how to change them safely. Instead of hiding structural flexibility
+behind a large runtime API, compound-component language, or opaque renderer,
+Nagi moves that flexibility into source ownership.
+
+The package ships complete Vue Blueprints for evaluation and light use. For
+full adoption, own the same source together with its executable maintenance
+knowledge: Component Contract tests describe what every compatible implementation
+must preserve, Implementation tests describe how this source provides it, and the generated Definition
+makes those guarantees browsable.
 
 ## Principles
 
-- Prefer native HTML behavior, attributes, and top-layer APIs.
-- Keep component DOM visible and avoid wrapper component families.
-- Confine complex behavior to narrow composables; keep structure and styling
-  in ordinary Vue SFCs.
-- Ship one canonical Vue SFC for package use and source ownership.
+- Make the implementation understandable from its ordinary Vue SFC before
+  requiring knowledge of a component framework hidden inside Vue.
+- Publish Component Contract and Implementation tests as the component's maintenance interface,
+  not merely as private regression coverage.
+- Keep Component Contracts independent of rendering and presence mechanisms; make
+  every concrete Implementation explicit and executable.
+- Prefer native HTML behavior in the default Blueprints, while allowing an
+  owned implementation to use a different tested mechanism under the same Contract revision.
+- Confine necessary behavioral abstraction to narrow composables. Do not add
+  abstraction solely to simulate structural flexibility that ownership already provides.
 - Use semantic design tokens and the [Nagi CSS contract](https://github.com/nagi-labs/nagi-css).
-- Keep package APIs small; own the source for structural customization.
+- Keep package APIs small; use source ownership for structural customization.
 
 See [CONCEPT.md](CONCEPT.md) for the product concept, [CHARTER.md](CHARTER.md)
 for the architecture contract, and
@@ -39,13 +49,8 @@ vp add @nagi-labs/nagi-ui
 Import components and the default theme:
 
 ```ts
-import {
-  NButton,
-  NDialog,
-  NDropdownMenu,
-  NTable,
-} from "@nagi-labs/nagi-ui/components"
-import "@nagi-labs/nagi-ui/styles.css"
+import { NButton, NDialog, NDropdownMenu, NTable } from "@nagi-labs/nagi-ui/components";
+import "@nagi-labs/nagi-ui/styles.css";
 ```
 
 The root package export contains composables and runtime helpers. The
@@ -90,7 +95,7 @@ The combined stylesheet provides the complete semantic token set and a small,
 opt-in native-element baseline:
 
 ```ts
-import "@nagi-labs/nagi-ui/styles.css"
+import "@nagi-labs/nagi-ui/styles.css";
 ```
 
 Its visual baseline is a dense, flat product UI: neutral surfaces, hairline
@@ -103,8 +108,8 @@ Applications that already own their global baseline can import only the token
 theme. The layers can also be imported separately:
 
 ```ts
-import "@nagi-labs/nagi-ui/default-theme.css"
-import "@nagi-labs/nagi-ui/base.css"
+import "@nagi-labs/nagi-ui/default-theme.css";
+import "@nagi-labs/nagi-ui/base.css";
 ```
 
 See the [base styles guide](docs/base-styles.md) for the exact boundary and
@@ -124,10 +129,12 @@ vp exec nagi-ui status
 vp exec nagi-ui status src/styles/nagi-theme.css
 ```
 
-## Own component source
+## Own the implementation
 
 Owning the source is Nagi UI's primary model; the package is the light-use
-tier. When an application adopts a component fully, copy its canonical source:
+tier. A package library needs broad runtime flexibility because consumers
+cannot edit its implementation. Nagi ships the implementation and its tests
+together, so structural customization can remain ordinary source editing:
 
 ```sh
 vp exec nagi-ui own dropdown-menu
@@ -138,9 +145,14 @@ repository is the source of truth: divergence is managed through provenance,
 git history, and executable verification rather than central drift tracking.
 
 Where a component has one, a [Component Definition](docs/component-definitions.md)
-travels with the source. It records the guarantees the component makes, and its
-functional anatomy is executable: `verifyAnatomy` fails when an owner's edit
-breaks a structural requirement the behavior depends on.
+travels with the source. Its behavioral rows are generated from named
+Component Contract/Implementation tests as components migrate; functional anatomy remains
+executable, so `verifyAnatomy` fails when an owner's edit breaks a structural
+requirement the behavior depends on. Button, Carousel, Combobox, Dialog, and
+DatePicker are the first runner-native catalog pilots. A Requirement is one
+meaningful observable guarantee; semantics, state, interaction, focus, anatomy,
+and style are non-exclusive facets, so one Escape flow can appear under several
+headings without being duplicated.
 
 Package and owned components may coexist. See the
 [ownership model](docs/package-ownership-model.md).
@@ -178,6 +190,7 @@ vp run test
 vp run audit:definitions
 vp run typecheck:vue
 vp run test:browser
+vp run definitions:check
 ```
 
 `agents:setup` installs the repository-pinned APM 0.28.0 when necessary, then

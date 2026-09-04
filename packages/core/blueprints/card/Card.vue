@@ -19,26 +19,26 @@ const attrs = useAttrs();
       v-if="title || description || $slots.title || $slots.description"
       class="header"
     >
-      <div
+      <span
         v-if="title || $slots.title"
-        class="title"
+        class="text"
       >
         <slot
           name="title"
           :title="title"
           >{{ title }}</slot
         >
-      </div>
-      <div
+      </span>
+      <p
         v-if="description || $slots.description"
-        class="text"
+        class="p"
       >
         <slot
           name="description"
           :description="description"
           >{{ description }}</slot
         >
-      </div>
+      </p>
     </header>
     <div class="unit">
       <slot />
@@ -64,12 +64,13 @@ const attrs = useAttrs();
   > .header {
     padding: var(--n-space-8) var(--n-space-8) 0;
 
-    > .title {
+    > .text {
       margin: 0;
       font-size: var(--n-font-size-5);
+      font-weight: 700;
     }
 
-    > .text {
+    > .p {
       margin-block: var(--n-space-3) 0;
       color: var(--nagi-color-text-muted);
       font-size: var(--n-font-size-3);

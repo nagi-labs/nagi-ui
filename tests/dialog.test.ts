@@ -52,6 +52,7 @@ test("[DLG-SEM-03] emits Invoker Command attributes and standard handlers", () =
   assert.equal(dialogProps.id, "dlg-1");
   assert.equal(typeof dialogProps.onClose, "function");
   assert.equal(typeof dialogProps.onToggle, "function");
+  assert.equal(typeof dialogProps.onKeydown, "function");
 });
 
 test("[DLG-STATE-02] non-modal dialog omits invalid command wiring and uses show()", (t) => {

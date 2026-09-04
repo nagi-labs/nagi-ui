@@ -4,7 +4,10 @@ import path from "node:path";
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const root = path.join(repositoryRoot, "site/.output/public/components");
 const entries = await readdir(root, { withFileTypes: true });
-const routes = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+const routes = entries
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
 const failures = [];
 
 for (const route of routes) {
@@ -23,8 +26,18 @@ for (const route of routes) {
     const found = typeof needle === "string" ? html.includes(needle) : needle.test(html);
     if (!found) failures.push(`${route}: missing ${label}`);
   }
-  if (!html.includes("· Verified") && !html.includes("· WIP")) {
-    failures.push(`${route}: missing Definition status`);
+  if (
+    !html.includes("Contract audit ready") &&
+    !html.includes("Contract audit WIP")
+  ) {
+    failures.push(`${route}: missing Contract audit status`);
+  }
+  if (
+    !html.includes("Browser evidence passed") &&
+    !html.includes("Browser evidence failed") &&
+    !html.includes("Browser evidence not collected")
+  ) {
+    failures.push(`${route}: missing browser evidence status`);
   }
   if (html.includes("Usage guidance is under review.")) {
     failures.push(`${route}: Basic usage guidance is still a fallback`);
@@ -40,8 +53,8 @@ for (const route of routes) {
 }
 
 const previewSources = await Promise.all(
-  ["ActionsFormsPreview.vue", "DateNavigationPreview.vue", "DisplayOverlayPreview.vue"].map((file) =>
-    readFile(path.join(repositoryRoot, "site/components/previews", file), "utf8"),
+  ["ActionsFormsPreview.vue", "DateNavigationPreview.vue", "DisplayOverlayPreview.vue"].map(
+    (file) => readFile(path.join(repositoryRoot, "site/components/previews", file), "utf8"),
   ),
 );
 const previewNames = new Set(

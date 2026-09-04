@@ -74,7 +74,7 @@ const accordion = useAccordion(props, openKeys);
         >
           <p
             v-if="item.content"
-            class="text"
+            class="p"
           >
             {{ item.content }}
           </p>
@@ -117,7 +117,7 @@ const accordion = useAccordion(props, openKeys);
       padding: var(--nagi-space-control);
       color: var(--nagi-color-text-muted);
 
-      > .text {
+      > .p {
         margin: 0;
       }
     }
@@ -125,9 +125,13 @@ const accordion = useAccordion(props, openKeys);
 }
 
 @media (forced-colors: active) {
-  .n-accordion > .details > .summary:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: calc(-1 * var(--n-border-width-2));
+  .n-accordion {
+    > .details {
+      > .summary:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: calc(-1 * var(--n-border-width-2));
+      }
+    }
   }
 }
 </style>

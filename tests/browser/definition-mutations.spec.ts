@@ -8,14 +8,14 @@ import { dialogDefinition } from "../../packages/core/blueprints/dialog/dialog.d
 import { datePickerDefinition } from "../../packages/core/blueprints/date-picker/date-picker.definition.ts";
 
 import {
-  assertButtonDisabledPolicy,
-  assertButtonSemantics,
+  assertFocusableDisabledButton,
+  assertNativeButtonSemantics,
   assertButtonStyle,
   type ButtonContractOptions,
 } from "../../packages/core/src/test/button-contract.ts";
 import {
   assertCarouselInteraction,
-  assertCarouselSemantics,
+  assertCarouselAnatomy,
   assertCarouselStyle,
   type CarouselContractOptions,
 } from "../../packages/core/src/test/carousel-contract.ts";
@@ -26,10 +26,14 @@ import {
 import {
   assertDialogCloseAction,
   assertDialogSemantics,
+  assertNativeDialogSemantics,
   type DialogContractOptions,
 } from "../../packages/core/src/test/dialog-contract.ts";
 import {
-  assertDatePickerSemantics,
+  assertDatePickerCalendarSemantics,
+  assertDatePickerEscapeCancellation,
+  assertDatePickerSelectionConstraints,
+  assertNativePopoverDatePickerSemantics,
   type DatePickerContractOptions,
 } from "../../packages/core/src/test/date-picker-contract.ts";
 
@@ -39,10 +43,7 @@ const buttonBase: ButtonContractOptions = {
   name: "Mutated non-native button",
 };
 
-async function rejectsAt(
-  run: () => Promise<void>,
-  expected: readonly RegExp[],
-): Promise<void> {
+async function rejectsAt(run: () => Promise<void>, expected: readonly RegExp[]): Promise<void> {
   await assert.rejects(run, (error: unknown) => {
     assert.ok(error instanceof Error);
     for (const pattern of expected) assert.match(error.message, pattern);
@@ -74,72 +75,87 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/definition-mutations.html");
 });
 
-test("[BTN-SEM-01] rejects a semantic role substituted for the required native element", async ({ page }) => {
+test("Button Implementation rejects a semantic role substituted for its native element", async ({
+  page,
+}) => {
   await rejectsAt(
-    () => assertButtonSemantics(page, buttonBase),
+    () => assertNativeButtonSemantics(page, buttonBase),
     [/toHaveJSProperty/u, /BUTTON/u, /DIV/u],
   );
 });
 
-test("[BTN-INT-02] rejects focusable-disabled activation leaking to the consumer", async ({ page }) => {
+test("[BTN-INT-02] rejects focusable-disabled activation leaking to the consumer", async ({
+  page,
+}) => {
   await rejectsAt(
-    () => assertButtonDisabledPolicy(page, {
-      ...buttonBase,
-      name: "Mutated focusable disabled",
-      focusableDisabled: {
+    () =>
+      assertFocusableDisabledButton(page, {
         name: "Mutated focusable disabled",
         statusName: "Mutated disabled activations",
-      },
-    }),
+      }),
     [/toHaveText/u, /Expected.*0/su, /Received.*1/su],
   );
 });
 
 test("[BTN-STYLE-01] rejects a missing finite style-axis declaration", async ({ page }) => {
   await rejectsAt(
-    () => assertButtonStyle(page, {
-      ...buttonBase,
-      name: "Mutated unstyled button",
-      style: {
+    () =>
+      assertButtonStyle(page, {
+        ...buttonBase,
         name: "Mutated unstyled button",
-        axes: { "--button-tone": "danger" },
-      },
-    }),
+        style: {
+          name: "Mutated unstyled button",
+          axes: { "--button-tone": "danger" },
+        },
+      }),
     [/--button-tone/u, /danger/u],
   );
 });
 
-test("[CAR-ANAT-01] rejects semantics that no longer identify the behavior viewport", async ({ page }) => {
+test("Carousel Implementation rejects markup that no longer identifies its behavior viewport", async ({
+  page,
+}) => {
   await rejectsAt(
-    () => assertCarouselSemantics(
-      page,
-      carouselOptions("Mutated anatomy carousel", "Mutated anatomy slides", "Anatomy"),
-    ),
+    () =>
+      assertCarouselAnatomy(
+        page,
+        carouselOptions("Mutated anatomy carousel", "Mutated anatomy slides", "Anatomy"),
+      ),
     [/missing-part/u, /viewport/u],
   );
 });
 
 test("[CAR-INT-01] rejects a next action that no longer updates owned state", async ({ page }) => {
   await rejectsAt(
-    () => assertCarouselInteraction(
-      page,
-      carouselOptions("Mutated interaction carousel", "Mutated interaction slides", "Interaction"),
-    ),
+    () =>
+      assertCarouselInteraction(
+        page,
+        carouselOptions(
+          "Mutated interaction carousel",
+          "Mutated interaction slides",
+          "Interaction",
+        ),
+      ),
     [/toHaveText/u, /Expected.*1/su, /Received.*0/su],
   );
 });
 
-test("[CAR-STYLE-01] rejects removal of the declared native scroll-snap style", async ({ page }) => {
+test("[CAR-STYLE-01] rejects removal of the declared native scroll-snap style", async ({
+  page,
+}) => {
   await rejectsAt(
-    () => assertCarouselStyle(
-      page,
-      carouselOptions("Mutated style carousel", "Mutated style slides", "Style"),
-    ),
+    () =>
+      assertCarouselStyle(
+        page,
+        carouselOptions("Mutated style carousel", "Mutated style slides", "Style"),
+      ),
     [/mandatory/u],
   );
 });
 
-test("[CMB-SEM-04][CMB-STATE-02] rejects a stale active descendant after collection removal", async ({ page }) => {
+test("[CMB-SEM-04][CMB-STATE-02] rejects a stale active descendant after collection removal", async ({
+  page,
+}) => {
   const options: ComboboxContractOptions = {
     definition: comboboxDefinition,
     url: "/definition-mutations.html",
@@ -154,7 +170,9 @@ test("[CMB-SEM-04][CMB-STATE-02] rejects a stale active descendant after collect
   );
 });
 
-test("[CMB-FOCUS-01] rejects moving DOM focus from the input to the active option", async ({ page }) => {
+test("[CMB-FOCUS-01] rejects moving DOM focus from the input to the active option", async ({
+  page,
+}) => {
   const options: ComboboxContractOptions = {
     definition: comboboxDefinition,
     url: "/definition-mutations.html",
@@ -167,10 +185,7 @@ test("[CMB-FOCUS-01] rejects moving DOM focus from the input to the active optio
     (listbox.parentElement as HTMLElement & { showPopover: () => void }).showPopover();
   });
   await page.locator("#mutated-focus-option").focus();
-  await rejectsAt(
-    () => assertComboboxActiveRelationship(page, options, true),
-    [/toBeFocused/u],
-  );
+  await rejectsAt(() => assertComboboxActiveRelationship(page, options, true), [/toBeFocused/u]);
 });
 
 test("[DLG-SEM-01] rejects a role-equivalent non-native Dialog surface", async ({ page }) => {
@@ -183,12 +198,14 @@ test("[DLG-SEM-01] rejects a role-equivalent non-native Dialog surface", async (
     closeName: "Close fake dialog",
   };
   await rejectsAt(
-    () => assertDialogSemantics(page, options),
+    () => assertNativeDialogSemantics(page, options),
     [/Expected.*true/su, /Received.*false/su],
   );
 });
 
-test("[DLG-STATE-02] rejects a native Dialog opened outside its modal-default profile", async ({ page }) => {
+test("[DLG-STATE-02] rejects a native Dialog opened outside its modal-default profile", async ({
+  page,
+}) => {
   const options: DialogContractOptions = {
     definition: dialogDefinition,
     url: "/definition-mutations.html",
@@ -198,12 +215,14 @@ test("[DLG-STATE-02] rejects a native Dialog opened outside its modal-default pr
     closeName: "Close mutated non-modal dialog",
   };
   await rejectsAt(
-    () => assertDialogSemantics(page, options),
+    () => assertNativeDialogSemantics(page, options),
     [/Expected.*true/su, /Received.*false/su],
   );
 });
 
-test("[DLG-FOCUS-02] rejects close restoration redirected away from the invoker", async ({ page }) => {
+test("[DLG-FOCUS-02] rejects close restoration redirected away from the invoker", async ({
+  page,
+}) => {
   const options: DialogContractOptions = {
     definition: dialogDefinition,
     url: "/definition-mutations.html",
@@ -211,13 +230,12 @@ test("[DLG-FOCUS-02] rejects close restoration redirected away from the invoker"
     dialogName: "Mutated restoration dialog",
     closeName: "Close mutated restoration dialog",
   };
-  await rejectsAt(
-    () => assertDialogCloseAction(page, options),
-    [/toBeFocused/u],
-  );
+  await rejectsAt(() => assertDialogCloseAction(page, options), [/toBeFocused/u]);
 });
 
-test("[ALD-DIALOG-SEM-02] rejects an AlertDialog whose required message is no longer described", async ({ page }) => {
+test("[ALD-DIALOG-SEM-02] rejects an AlertDialog whose required message is no longer described", async ({
+  page,
+}) => {
   await page.goto("/owned-contract.html");
   const options: DialogContractOptions = {
     definition: alertDialogDefinition,
@@ -228,7 +246,8 @@ test("[ALD-DIALOG-SEM-02] rejects an AlertDialog whose required message is no lo
     role: "alertdialog",
     scope: "alert-dialog",
   };
-  await page.locator('[data-scope="alert-dialog"][data-part="surface"]')
+  await page
+    .locator('[data-scope="alert-dialog"][data-part="surface"]')
     .filter({ hasText: "Delete package contract?" })
     .evaluate((surface) => surface.removeAttribute("aria-describedby"));
 
@@ -238,7 +257,9 @@ test("[ALD-DIALOG-SEM-02] rejects an AlertDialog whose required message is no lo
   );
 });
 
-test("[DTP-SEM-02] rejects a modal claim added to the non-modal DatePicker surface", async ({ page }) => {
+test("[DTP_IMPLEMENTATION_01] rejects a modal claim added to the native-popover DatePicker surface", async ({
+  page,
+}) => {
   await page.goto("/date-time.html");
   const options: DatePickerContractOptions = {
     definition: datePickerDefinition,
@@ -250,14 +271,120 @@ test("[DTP-SEM-02] rejects a modal claim added to the non-modal DatePicker surfa
     nextDateName: "Saturday, July 25, 2026",
     initialValue: "2026-07-24",
     committedValue: "2026-07-25",
+    modelStatusName: "Picked date model",
     openStatusName: "Picked date open state",
   };
-  await page.locator('[data-scope="date-picker"][data-part="popup"]')
+  await page
+    .locator('[data-scope="date-picker"][data-part="popup"]')
     .filter({ has: page.getByRole("grid", { name: options.calendarName, includeHidden: true }) })
     .evaluate((surface) => surface.setAttribute("aria-modal", "true"));
 
   await rejectsAt(
-    () => assertDatePickerSemantics(page, options),
+    () => assertNativePopoverDatePickerSemantics(page, options),
     [/not.*toHaveAttribute/su, /aria-modal/u],
+  );
+});
+
+test("[DTP_CONTRACT_08] rejects a selectable date below the declared minimum", async ({ page }) => {
+  await page.goto("/definition-stress.html");
+  const options: DatePickerContractOptions = {
+    definition: datePickerDefinition,
+    url: "/definition-stress.html",
+    triggerName: "Choose package delivery date",
+    fieldName: "Package delivery date",
+    calendarName: "Package delivery date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    nextDateName: "Saturday, July 25, 2026",
+    initialValue: "2026-07-24",
+    committedValue: "2026-07-25",
+    modelStatusName: "Package date model",
+    submission: {
+      buttonName: "Submit package date",
+      statusName: "Package date submission",
+      expected: '{"packageDeliveryDate":"2026-07-24"}',
+    },
+    constraints: {
+      beforeMinimumDateName: "Thursday, July 23, 2026",
+      unavailableDateName: "Sunday, July 26, 2026",
+      afterMaximumDateName: "Tuesday, July 28, 2026",
+      clearButtonName: "Clear package date",
+      forceInvalidButtonName: "Invalidate package date",
+      formName: "Package date form",
+      validationMessage: "Package delivery date is invalid.",
+      initialSubmissionStatus: "not submitted",
+    },
+  };
+  await page.getByRole("button", { name: options.triggerName, exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: options.calendarName, exact: true });
+  await dialog
+    .getByRole("button", { name: options.constraints.beforeMinimumDateName, exact: true })
+    .evaluate((button) => button.remove());
+  await dialog
+    .getByRole("button", { name: options.nextDateName, exact: true })
+    .evaluate(
+      (button, name) => button.setAttribute("aria-label", name),
+      options.constraints.beforeMinimumDateName,
+    );
+
+  await rejectsAt(() => assertDatePickerSelectionConstraints(page, options), [/toBeDisabled/u]);
+});
+
+test("[DTP_CONTRACT_06] rejects committing provisional navigation on Escape", async ({ page }) => {
+  await page.goto("/date-time.html");
+  const options: DatePickerContractOptions = {
+    definition: datePickerDefinition,
+    url: "/date-time.html",
+    triggerName: "Choose picked date",
+    fieldName: "Picked date",
+    calendarName: "Picked date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    nextDateName: "Saturday, July 25, 2026",
+    initialValue: "2026-07-24",
+    committedValue: "2026-07-25",
+    modelStatusName: "Picked date model",
+    openStatusName: "Picked date open state",
+  };
+  await page.evaluate(() => {
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key !== "Escape") return;
+        if (document.activeElement instanceof HTMLButtonElement) {
+          document.activeElement.click();
+        }
+      },
+      { capture: true },
+    );
+  });
+
+  await rejectsAt(
+    () => assertDatePickerEscapeCancellation(page, options),
+    [/toHaveText/u, /Expected:/u, /Received:/u],
+  );
+});
+
+test("[DTP_CONTRACT_02] rejects a calendar without its selected date state", async ({ page }) => {
+  await page.goto("/date-time.html");
+  const options: DatePickerContractOptions = {
+    definition: datePickerDefinition,
+    url: "/date-time.html",
+    triggerName: "Choose picked date",
+    fieldName: "Picked date",
+    calendarName: "Picked date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    nextDateName: "Saturday, July 25, 2026",
+    initialValue: "2026-07-24",
+    committedValue: "2026-07-25",
+    modelStatusName: "Picked date model",
+    openStatusName: "Picked date open state",
+  };
+  await page
+    .getByRole("grid", { name: options.calendarName, includeHidden: true })
+    .getByRole("gridcell", { selected: true, includeHidden: true })
+    .evaluate((cell) => cell.setAttribute("aria-selected", "false"));
+
+  await rejectsAt(
+    () => assertDatePickerCalendarSemantics(page, options),
+    [/toHaveCount/u, /Expected.*1/su, /Received.*0/su],
   );
 });

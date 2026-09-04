@@ -50,7 +50,7 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "Nagi UI documentation and a real Nuxt application built with Nagi UI and Nagi CSS.",
+            "Readable Vue components and the executable maintenance tests needed to own and change them.",
         },
         { name: "theme-color", content: "#315fbd" },
       ],

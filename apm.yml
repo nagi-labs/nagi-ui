@@ -9,7 +9,7 @@ targets:
   - copilot
 dependencies:
   apm:
-    - git: nagi-labs/nagi-css#afc9447ca094319819017ea0163951b718c9847c
+    - git: nagi-labs/nagi-css#f47f5bbfa9ffe70fb910092809103fdb314c4c6d
       skills:
         - nagi-css
   mcp: []

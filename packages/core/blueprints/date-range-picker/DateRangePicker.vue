@@ -73,7 +73,7 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
   >
     <span class="text -field-title">{{ label }}</span>
     <div
-      class="unit -fields"
+      class="group"
       role="group"
       :aria-label="label"
     >
@@ -84,7 +84,6 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
           picker.isInvalid.value ? `${picker.startField.fieldProps.id}-error` : undefined
         "
       >
-        <span class="text -assistive">{{ startLabel }}</span>
         <template
           v-for="segment in picker.startField.segments.value"
           :key="segment.key"
@@ -115,7 +114,6 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
           picker.isInvalid.value ? `${picker.startField.fieldProps.id}-error` : undefined
         "
       >
-        <span class="text -assistive">{{ endLabel }}</span>
         <template
           v-for="segment in picker.endField.segments.value"
           :key="segment.key"
@@ -178,19 +176,19 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
           picker.isInvalid.value ? `${picker.startField.fieldProps.id}-error` : undefined
         "
       >
-        <thead class="thead -head">
+        <thead class="thead">
           <tr class="row">
             <th
               v-for="weekday in picker.calendar.weekdayLabels.value"
               :key="weekday"
-              class="cell -head"
+              class="cell"
               scope="col"
             >
               {{ weekday }}
             </th>
           </tr>
         </thead>
-        <tbody class="tbody -dates">
+        <tbody class="tbody">
           <tr
             v-for="(week, index) in picker.calendar.weeks.value"
             :key="index"
@@ -217,7 +215,7 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
         </tbody>
       </table>
       <span
-        class="text -assistive"
+        class="status"
         role="status"
         aria-live="polite"
         aria-atomic="true"
@@ -228,7 +226,7 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
     <span
       v-if="picker.isInvalid.value"
       :id="`${picker.startField.fieldProps.id}-error`"
-      class="text -validation"
+      class="alert"
       role="alert"
       >{{ validationMessage }}</span
     >
@@ -248,12 +246,12 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
     font-weight: 650;
   }
 
-  > .text.-validation {
+  > .alert {
     color: var(--nagi-color-danger);
     font-size: var(--nagi-font-size-label);
   }
 
-  > .unit.-fields {
+  > .group {
     display: flex;
     align-items: stretch;
     border: var(--n-border-width-1) solid var(--nagi-color-border);
@@ -274,14 +272,6 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
       padding-inline: var(--nagi-space-control);
       font-variant-numeric: tabular-nums;
 
-      > .text.-assistive {
-        position: absolute;
-        inline-size: 1px;
-        block-size: 1px;
-        clip-path: inset(50%);
-        overflow: hidden;
-        white-space: nowrap;
-      }
       > .text.-segment {
         border-radius: var(--nagi-radius-control);
         outline: none;
@@ -354,7 +344,7 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
     color: var(--nagi-color-text);
     box-shadow: var(--nagi-shadow-overlay);
 
-    > .text.-assistive {
+    > .status {
       position: absolute;
       inline-size: 1px;
       block-size: 1px;
@@ -400,57 +390,75 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
 
     > .table {
       border-collapse: collapse;
-      > .thead.-head > .row > .cell.-head {
-        min-inline-size: var(--nagi-size-control);
-        block-size: var(--nagi-size-control);
-        color: var(--nagi-color-text-muted);
-        font-size: var(--nagi-font-size-label);
-        font-weight: 650;
+      > .thead {
+        > .row {
+          > .cell {
+            min-inline-size: var(--nagi-size-control);
+            block-size: var(--nagi-size-control);
+            color: var(--nagi-color-text-muted);
+            font-size: var(--nagi-font-size-label);
+            font-weight: 650;
+          }
+        }
       }
-      > .tbody.-dates > .row > .cell {
-        padding: 0;
-        > .button.-day {
-          inline-size: var(--nagi-size-control);
-          min-block-size: var(--nagi-size-control);
-          padding: 0;
-          border: var(--n-border-width-1) solid transparent;
-          border-radius: var(--nagi-radius-control);
-          background: transparent;
-          color: inherit;
-          font: inherit;
-          cursor: pointer;
-          &:hover:not(:disabled) {
-            background: var(--nagi-color-surface-active);
+      > .tbody {
+        > .row {
+          > .cell {
+            padding: 0;
+            > .button.-day {
+              inline-size: var(--nagi-size-control);
+              min-block-size: var(--nagi-size-control);
+              padding: 0;
+              border: var(--n-border-width-1) solid transparent;
+              border-radius: var(--nagi-radius-control);
+              background: transparent;
+              color: inherit;
+              font: inherit;
+              cursor: pointer;
+              &:hover:not(:disabled) {
+                background: var(--nagi-color-surface-active);
+              }
+              &:focus-visible {
+                outline: none;
+                border-color: var(--nagi-color-focus-ring);
+                box-shadow: var(--nagi-shadow-focus);
+              }
+              &:disabled {
+                color: var(--nagi-color-text-disabled);
+                cursor: not-allowed;
+              }
+            }
+            &[data-outside-month] {
+              > .button.-day {
+                color: var(--nagi-color-text-muted);
+              }
+            }
+            &[data-preview] {
+              > .button.-day {
+                background: var(--nagi-color-surface-active);
+              }
+            }
+            &[aria-selected="true"] {
+              > .button.-day {
+                border-radius: 0;
+                background: var(--nagi-color-surface-accent);
+                color: var(--nagi-color-text);
+                box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
+              }
+            }
+            &[data-range-start] {
+              > .button.-day {
+                border-start-start-radius: var(--nagi-radius-control);
+                border-end-start-radius: var(--nagi-radius-control);
+              }
+            }
+            &[data-range-end] {
+              > .button.-day {
+                border-start-end-radius: var(--nagi-radius-control);
+                border-end-end-radius: var(--nagi-radius-control);
+              }
+            }
           }
-          &:focus-visible {
-            outline: none;
-            border-color: var(--nagi-color-focus-ring);
-            box-shadow: var(--nagi-shadow-focus);
-          }
-          &:disabled {
-            color: var(--nagi-color-text-disabled);
-            cursor: not-allowed;
-          }
-        }
-        &[data-outside-month] > .button.-day {
-          color: var(--nagi-color-text-muted);
-        }
-        &[data-preview] > .button.-day {
-          background: var(--nagi-color-surface-active);
-        }
-        &[aria-selected="true"] > .button.-day {
-          border-radius: 0;
-          background: var(--nagi-color-surface-accent);
-          color: var(--nagi-color-text);
-          box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
-        }
-        &[data-range-start] > .button.-day {
-          border-start-start-radius: var(--nagi-radius-control);
-          border-end-start-radius: var(--nagi-radius-control);
-        }
-        &[data-range-end] > .button.-day {
-          border-start-end-radius: var(--nagi-radius-control);
-          border-end-end-radius: var(--nagi-radius-control);
         }
       }
     }
@@ -458,26 +466,43 @@ useDateRangePickerNativeForm({ start: startFormControl, end: endFormControl }, p
 }
 
 @media (forced-colors: active) {
-  .n-date-range-picker > .unit.-fields > .field > :is(.button, .text.-segment):focus-visible,
-  .n-date-range-picker > .dialog > .header > .button:focus-visible,
-  .n-date-range-picker
-    > .dialog
-    > .table
-    > .tbody.-dates
-    > .row
-    > .cell
-    > .button.-day:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
-  }
-  .n-date-range-picker
-    > .dialog
-    > .table
-    > .tbody.-dates
-    > .row
-    > .cell[aria-selected="true"]
-    > .button.-day {
-    outline: 2px solid CanvasText;
+  .n-date-range-picker {
+    > .group {
+      > .field {
+        > :is(.button, .text.-segment):focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+    }
+
+    > .dialog {
+      > .header {
+        > .button:focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+
+      > .table {
+        > .tbody {
+          > .row {
+            > .cell {
+              > .button.-day:focus-visible {
+                outline: 2px solid Highlight;
+                outline-offset: var(--n-border-width-2);
+              }
+
+              &[aria-selected="true"] {
+                > .button.-day {
+                  outline: 2px solid CanvasText;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 </style>

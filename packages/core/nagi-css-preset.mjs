@@ -10,7 +10,15 @@ export { nagiThemeTokens as nagiUiThemeTokens } from "./theme/tokens.mjs";
 export const nagiUiSurfaceRootPrefixes = ["n-"];
 
 /** UI anatomy used by owned Nagi component sources. */
-export const nagiUiAnatomyClasses = ["actions", "field", "icon", "media", "rail", "value"];
+export const nagiUiAnatomyClasses = [
+  "actions",
+  "field",
+  "icon",
+  "media",
+  "rail",
+  "text",
+  "value",
+];
 
 /** Blueprint identities used to derive the public `N*` component boundary map. */
 const nagiUiBlueprintNames = [

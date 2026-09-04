@@ -54,10 +54,10 @@ const stepper = useStepper<StepperItem>(currentKey);
             >{{ index + 1 }}</span
           >
           <span class="unit">
-            <span class="title">{{ item.label }}</span>
+            <span class="text -primary">{{ item.label }}</span>
             <span
               v-if="item.description"
-              class="text"
+              class="text -secondary"
             >
               {{ item.description }}
             </span>
@@ -122,8 +122,10 @@ const stepper = useStepper<StepperItem>(currentKey);
             color: var(--nagi-color-accent);
           }
 
-          > .unit > .title {
-            color: var(--nagi-color-accent);
+          > .unit {
+            > .text.-primary {
+              color: var(--nagi-color-accent);
+            }
           }
         }
 
@@ -137,8 +139,10 @@ const stepper = useStepper<StepperItem>(currentKey);
             color: var(--nagi-color-text-disabled);
           }
 
-          > .unit > :is(.title, .text) {
-            color: var(--nagi-color-text-disabled);
+          > .unit {
+            > .text {
+              color: var(--nagi-color-text-disabled);
+            }
           }
         }
 
@@ -159,11 +163,11 @@ const stepper = useStepper<StepperItem>(currentKey);
           gap: var(--n-space-1);
           min-inline-size: 0;
 
-          > .title {
+          > .text.-primary {
             font-weight: 650;
           }
 
-          > .text {
+          > .text.-secondary {
             color: var(--nagi-color-text-muted);
             font-size: var(--nagi-font-size-label);
             line-height: 1.35;
@@ -175,13 +179,23 @@ const stepper = useStepper<StepperItem>(currentKey);
 }
 
 @media (forced-colors: active) {
-  .n-stepper > .list > .item > .button[aria-current="step"] > .icon {
-    border-width: calc(var(--n-border-width-1) + var(--n-border-width-2));
-  }
+  .n-stepper {
+    > .list {
+      > .item {
+        > .button {
+          &[aria-current="step"] {
+            > .icon {
+              border-width: calc(var(--n-border-width-1) + var(--n-border-width-2));
+            }
+          }
 
-  .n-stepper > .list > .item > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+          &:focus-visible {
+            outline: 2px solid Highlight;
+            outline-offset: var(--n-border-width-2);
+          }
+        }
+      }
+    }
   }
 }
 </style>

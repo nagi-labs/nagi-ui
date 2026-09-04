@@ -11,31 +11,44 @@ import { useToolbar } from "../packages/core/src/toolbar.ts";
 function keyboard(key: string) {
   let prevented = false;
   return {
-    event: { key, preventDefault() { prevented = true; } } as KeyboardEvent,
+    event: {
+      key,
+      preventDefault() {
+        prevented = true;
+      },
+    } as KeyboardEvent,
     prevented: () => prevented,
   };
 }
 
 test("Toolbar roves across enabled items and follows RTL", async () => {
   const scope = effectScope();
-  const items = ref([
-    { key: "bold" },
-    { key: "italic", disabled: true },
-    { key: "link" },
-  ]);
+  const items = ref([{ key: "bold" }, { key: "italic", disabled: true }, { key: "link" }]);
   const focused: string[] = [];
-  const toolbar = scope.run(() => useToolbar({
-    items,
-    getKey: (item) => item.key,
-    isDisabled: (item) => item.disabled ?? false,
-    label: "Formatting",
-    dir: "rtl",
-  }));
+  const toolbar = scope.run(() =>
+    useToolbar({
+      items,
+      getKey: (item) => item.key,
+      isDisabled: (item) => item.disabled ?? false,
+      label: "Formatting",
+      dir: "rtl",
+    }),
+  );
   assert.ok(toolbar);
   const first = toolbar.itemProps(items.value[0]);
-  first.ref({ isConnected: true, focus() { focused.push(first.id); } } as unknown as HTMLElement);
+  first.ref({
+    isConnected: true,
+    focus() {
+      focused.push(first.id);
+    },
+  } as unknown as HTMLElement);
   const link = toolbar.itemProps(items.value[2]);
-  link.ref({ isConnected: true, focus() { focused.push(link.id); } } as unknown as HTMLElement);
+  link.ref({
+    isConnected: true,
+    focus() {
+      focused.push(link.id);
+    },
+  } as unknown as HTMLElement);
   first.onFocus({ currentTarget: {} } as unknown as FocusEvent);
   const next = keyboard("ArrowLeft");
   toolbar.toolbarProps.onKeydown(next.event);
@@ -50,12 +63,14 @@ test("OTPField keeps one normalized real-input value and rolls rejected writes b
   const source = ref("");
   const controlled = computed({ get: () => source.value, set: () => {} });
   const scope = effectScope();
-  const field = scope.run(() => useOTPField({
-    value: controlled,
-    label: "Verification code",
-    length: 4,
-    kind: "numeric",
-  }));
+  const field = scope.run(() =>
+    useOTPField({
+      value: controlled,
+      label: "Verification code",
+      length: 4,
+      kind: "numeric",
+    }),
+  );
   assert.ok(field);
   const input = { value: "１２a34" } as HTMLInputElement;
   field.otpInputProps.onInput({ currentTarget: input } as unknown as Event);
@@ -70,12 +85,14 @@ test("OTPField keeps one normalized real-input value and rolls rejected writes b
 test("OTPField normalizes external models and accepts Unicode decimal digits", async () => {
   const source = ref("１２٣a");
   const scope = effectScope();
-  const field = scope.run(() => useOTPField({
-    value: source,
-    label: "Verification code",
-    length: 3,
-    kind: "numeric",
-  }));
+  const field = scope.run(() =>
+    useOTPField({
+      value: source,
+      label: "Verification code",
+      length: 3,
+      kind: "numeric",
+    }),
+  );
   assert.ok(field);
   assert.equal(source.value, "12٣");
   assert.equal(field.isComplete.value, true);
@@ -83,12 +100,14 @@ test("OTPField normalizes external models and accepts Unicode decimal digits", a
 
   const rejectedSource = ref("12x");
   const controlled = computed({ get: () => rejectedSource.value, set: () => {} });
-  const rejected = scope.run(() => useOTPField({
-    value: controlled,
-    label: "Locked code",
-    length: 3,
-    kind: "numeric",
-  }));
+  const rejected = scope.run(() =>
+    useOTPField({
+      value: controlled,
+      label: "Locked code",
+      length: 3,
+      kind: "numeric",
+    }),
+  );
   await nextTick();
   assert.equal(rejected?.isComplete.value, false);
   assert.equal(rejected?.otpInputProps.value, "12x");
@@ -140,13 +159,21 @@ test("Resizable supports keyboard bounds, RTL, and pointer capture", () => {
 
     const captures: number[] = [];
     const target = {
-      parentElement: { getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 100 }) },
-      setPointerCapture(id: number) { captures.push(id); },
+      parentElement: {
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 100 }),
+      },
+      setPointerCapture(id: number) {
+        captures.push(id);
+      },
       releasePointerCapture() {},
     };
     binding.separatorProps.onPointerdown({
-      button: 0, pointerId: 7, clientX: 150, clientY: 0,
-      currentTarget: target, preventDefault() {},
+      button: 0,
+      pointerId: 7,
+      clientX: 150,
+      clientY: 0,
+      currentTarget: target,
+      preventDefault() {},
     } as unknown as PointerEvent);
     assert.deepEqual(captures, [7]);
     assert.equal(value.value, 25);
@@ -244,10 +271,7 @@ test("[CAR-SEM-01][CAR-SEM-02][CAR-SEM-06] Carousel chooses landmark and viewpor
   assert.equal(grouped.viewportProps["aria-roledescription"], "slides");
   assert.equal(blankDescriptions.rootProps["aria-roledescription"], "carousel");
   assert.equal(blankDescriptions.viewportProps["aria-roledescription"], "slides");
-  assert.equal(
-    blankDescriptions.slideProps({ key: "a" }, 0)["aria-roledescription"],
-    "slide",
-  );
+  assert.equal(blankDescriptions.slideProps({ key: "a" }, 0)["aria-roledescription"], "slide");
   assert.equal(typeof grouped.viewportProps.ref, "function");
 });
 
@@ -264,7 +288,8 @@ test("[CAR-SEM-02][CAR-SEM-04][CAR-SEM-05][CAR-STATE-03] Carousel localizes role
       slidesRoleDescription: "スライド一覧",
       slideRoleDescription: "スライド",
       disabled: true,
-      formatAnnouncement: (position, count) => position === null ? "記事なし" : `${count}件中${position}件目`,
+      formatAnnouncement: (position, count) =>
+        position === null ? "記事なし" : `${count}件中${position}件目`,
       formatSlideLabel: (_item, position, count) => `${count}件中${position}件目の記事`,
     });
     assert.equal(carousel.announcement.value, "2件中2件目");
@@ -287,7 +312,11 @@ test("[CAR-SEM-02][CAR-SEM-04][CAR-SEM-05][CAR-STATE-03] Carousel localizes role
     carousel.goTo(0);
     assert.equal(carousel.currentIndex.value, 1, "disabled user navigation is ignored");
     carousel.index.value = 0;
-    assert.equal(carousel.currentIndex.value, 0, "external controlled updates remain authoritative");
+    assert.equal(
+      carousel.currentIndex.value,
+      0,
+      "external controlled updates remain authoritative",
+    );
   });
   scope.stop();
 });
@@ -340,6 +369,33 @@ test("Carousel ignores smooth-scroll intermediates during an external index tran
     carousel.viewportProps.onScroll({ currentTarget: viewport } as unknown as Event);
     assert.equal(index.value, 2);
     assert.ok(scrolled.includes(2));
+  });
+  scope.stop();
+});
+
+test("Carousel keeps its smooth-scroll target after a repeated boundary request", async () => {
+  const scope = effectScope();
+  await scope.run(async () => {
+    const index = ref(1);
+    const carousel = useCarousel({
+      items: [{ key: "a" }, { key: "b" }, { key: "c" }],
+      index,
+      label: "Boundary transition",
+    });
+    const slides = mockCarouselSlides(carousel.rootProps.id, 3, () => undefined);
+    const viewport = {
+      querySelectorAll: () => slides,
+      scrollLeft: 100,
+      ownerDocument: { defaultView: { getComputedStyle: () => ({ direction: "ltr" }) } },
+    } as unknown as HTMLElement;
+    carousel.viewportProps.ref(viewport);
+
+    carousel.goTo(2);
+    carousel.goTo(3);
+    carousel.viewportProps.onScroll({ currentTarget: viewport } as unknown as Event);
+    await nextTick();
+
+    assert.equal(index.value, 2);
   });
   scope.stop();
 });

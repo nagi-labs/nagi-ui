@@ -36,7 +36,7 @@ vp exec nagi-ui own dropdown-menu
 The package component and the owned source come from the same implementation —
 the Blueprint is a reference implementation in the literal sense. The planned
 workspace workflow (`nagi-ui init` / `add`, bundling each component's source
-with its definition, tests, and scenarios) is described in
+with its Component Contract/Implementation tests, generated Definition, and scenarios) is described in
 [CONCEPT.md](../CONCEPT.md); the `own` command is today's mechanism for the
 source-copy step.
 
@@ -53,7 +53,9 @@ divergence or automate upstream synchronization. Divergence is managed with:
 
 Verification is the load-bearing part. Structural changes are expected; the
 question is whether the component still behaves like the component it claims
-to be. The experimental shared [conformance contracts](conformance-contracts.md)
+to be. Tests are therefore a public maintenance interface, not merely Nagi's
+private regression suite: they show an owner what must remain true and how the
+edit will be judged. The experimental shared [conformance contracts](conformance-contracts.md)
 keep the reusable minimum behavior and accessibility invariants upstream while
 allowing the owned DOM to change. Owned Blueprints also remain covered by
 `verified-bindings`, Nagi CSS checks, and the application's own keyboard,

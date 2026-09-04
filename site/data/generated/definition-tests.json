@@ -1,0 +1,1326 @@
+{
+  "schemaVersion": 5,
+  "components": {
+    "Button": {
+      "status": "passing",
+      "componentContract": {
+        "id": "nagi/button",
+        "revision": "2"
+      },
+      "implementations": [
+        {
+          "id": "nagi/blueprint/button",
+          "version": "1"
+        }
+      ],
+      "references": [
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/TR/accname-1.1/"
+        },
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/button/"
+        },
+        {
+          "layer": "implementation",
+          "url": "https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element"
+        }
+      ],
+      "requirements": [
+        {
+          "key": "BTN_CONTRACT_01",
+          "layer": "component-contract",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Exposes one visible, named button",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned save",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "BTN_CONTRACT_02",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state",
+            "interaction"
+          ],
+          "title": "Exposes unavailable controls and suppresses their activation",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned save",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "BTN_CONTRACT_03",
+          "layer": "component-contract",
+          "sections": [
+            "interaction",
+            "focus"
+          ],
+          "title": "Accepts pointer, Enter, and Space activation while keyboard focus remains on the control",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned save",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "BTN_CONTRACT_04",
+          "layer": "component-contract",
+          "sections": [
+            "style"
+          ],
+          "title": "Exposes the authored style axes as computed properties",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned save",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "BTN_CONTRACT_05",
+          "layer": "component-contract",
+          "sections": [
+            "focus",
+            "style"
+          ],
+          "title": "Keeps keyboard focus visible in forced colors",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned save",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "BTN_CONTRACT_06",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Preserves button, submit, and reset intent in the owning form",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned save",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "BTN_IMPLEMENTATION_01",
+          "layer": "implementation",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Uses native button elements with explicit types",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/button",
+            "version": "1"
+          }
+        },
+        {
+          "key": "BTN_IMPLEMENTATION_03",
+          "layer": "implementation",
+          "sections": [
+            "anatomy"
+          ],
+          "title": "Binds behavior and the root part to the same element",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/button",
+            "version": "1"
+          }
+        },
+        {
+          "key": "BTN_IMPLEMENTATION_04",
+          "layer": "implementation",
+          "sections": [
+            "style"
+          ],
+          "title": "Compiles local axes without modifier attributes or classes",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package save",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/button",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "Carousel": {
+      "status": "passing",
+      "componentContract": {
+        "id": "nagi/carousel",
+        "revision": "1"
+      },
+      "implementations": [
+        {
+          "id": "nagi/blueprint/carousel-native-scroll",
+          "version": "1"
+        }
+      ],
+      "references": [
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/TR/wai-aria-1.2/#aria-roledescription"
+        },
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/carousel/"
+        },
+        {
+          "layer": "implementation",
+          "url": "https://www.w3.org/TR/css-scroll-snap-1/"
+        }
+      ],
+      "requirements": [
+        {
+          "key": "CAR_CONTRACT_01",
+          "layer": "component-contract",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Exposes a named carousel, its accepted named slide, controls, and position status",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned release highlights",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CAR_CONTRACT_02",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Navigation visits ordered named slides, honors bounded and looping edges, announces position, and retains focus",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned release highlights",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CAR_CONTRACT_03",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Disabled blocks user navigation while accepting external state",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned release highlights",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CAR_CONTRACT_04",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "External state stays authoritative, derives a bounded view without write-back, and preserves rejected positions",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned release highlights",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CAR_CONTRACT_05",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state"
+          ],
+          "title": "Remains manual and exposes its accepted position through a polite atomic status",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned release highlights",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_01",
+          "layer": "implementation",
+          "sections": [
+            "semantics",
+            "focus"
+          ],
+          "title": "Makes the native scroll viewport keyboard reachable",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_02",
+          "layer": "implementation",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Browser scrolling reconciles the model to the nearest owned slide",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_03",
+          "layer": "implementation",
+          "sections": [
+            "semantics",
+            "state",
+            "interaction"
+          ],
+          "title": "Disables native viewport navigation and restores its accepted position",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_04",
+          "layer": "implementation",
+          "sections": [
+            "anatomy"
+          ],
+          "title": "Scopes slide discovery to the marked native scroll viewport",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_05",
+          "layer": "implementation",
+          "sections": [
+            "style"
+          ],
+          "title": "Preserves one-slide native scroll snap geometry",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_06",
+          "layer": "implementation",
+          "sections": [
+            "style"
+          ],
+          "title": "Removes smooth scrolling when reduced motion is requested",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_07",
+          "layer": "implementation",
+          "sections": [
+            "focus",
+            "style"
+          ],
+          "title": "Keeps navigation focus visible in forced colors",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CAR_IMPLEMENTATION_08",
+          "layer": "implementation",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Reconciles accepted controlled state into the native scroll position",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package release highlights",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/carousel-native-scroll",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "Combobox": {
+      "status": "passing",
+      "componentContract": {
+        "id": "nagi/combobox",
+        "revision": "2"
+      },
+      "implementations": [
+        {
+          "id": "nagi/blueprint/combobox-native-popover",
+          "version": "1"
+        }
+      ],
+      "references": [
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/TR/wai-aria-1.2/#aria-activedescendant"
+        },
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/combobox/"
+        },
+        {
+          "layer": "implementation",
+          "url": "https://html.spec.whatwg.org/multipage/popover.html#the-popover-attribute"
+        }
+      ],
+      "requirements": [
+        {
+          "key": "CMB_CONTRACT_01",
+          "layer": "component-contract",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Connects one named editable input to a single-selection listbox",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_02",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Navigates enabled suggestions with input focus and commits or cancels explicitly",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_03",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state",
+            "focus"
+          ],
+          "title": "Clears a removed active reference while preserving input focus and accepted selection",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_IMPLEMENTATION_01",
+          "layer": "implementation",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Places the controlled listbox inside one native popover",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/combobox-native-popover",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CMB_IMPLEMENTATION_02",
+          "layer": "implementation",
+          "sections": [
+            "anatomy"
+          ],
+          "title": "Scopes the input, popup, listbox, and dynamic options to one root",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/combobox-native-popover",
+            "version": "1"
+          }
+        },
+        {
+          "key": "CMB_IMPLEMENTATION_03",
+          "layer": "implementation",
+          "sections": [
+            "focus",
+            "style"
+          ],
+          "title": "Keeps active and forced-colors focus states visible",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/combobox-native-popover",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "DatePicker": {
+      "status": "passing",
+      "componentContract": {
+        "id": "nagi/date-picker",
+        "revision": "1"
+      },
+      "implementations": [
+        {
+          "id": "nagi/blueprint/date-picker-native-popover",
+          "version": "1"
+        }
+      ],
+      "references": [
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/"
+        },
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/"
+        },
+        {
+          "layer": "implementation",
+          "url": "https://html.spec.whatwg.org/multipage/input.html#date-state-(type=date)"
+        },
+        {
+          "layer": "implementation",
+          "url": "https://html.spec.whatwg.org/multipage/popover.html#the-popover-attribute"
+        }
+      ],
+      "requirements": [
+        {
+          "key": "DTP_CONTRACT_01",
+          "layer": "component-contract",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Exposes one named segmented date field with three spinbuttons",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_02",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state"
+          ],
+          "title": "Exposes one named calendar grid with selected date state",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_03",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Activating an available day commits the date and closes the controlled popup",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_04",
+          "layer": "component-contract",
+          "sections": [
+            "interaction",
+            "focus"
+          ],
+          "title": "ArrowRight moves roving focus to the next date",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_05",
+          "layer": "component-contract",
+          "sections": [
+            "interaction",
+            "focus"
+          ],
+          "title": "Opening places focus on the selected date",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_06",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Escape closes the popup without committing and restores the local trigger",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_07",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state",
+            "interaction"
+          ],
+          "title": "Submits the accepted ISO date under the authored field name",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_08",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Rejects dates below minimum, above maximum, or explicitly unavailable",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_09",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Blocks form submission when the required accepted date is empty",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_10",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state"
+          ],
+          "title": "Exposes forced invalidity with the authored validation message",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_IMPLEMENTATION_01",
+          "layer": "implementation",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Uses native trigger and day buttons with one date form control and popover",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/date-picker-native-popover",
+            "version": "1"
+          }
+        },
+        {
+          "key": "DTP_IMPLEMENTATION_02",
+          "layer": "implementation",
+          "sections": [
+            "anatomy"
+          ],
+          "title": "Scopes the field, form channel, popup, grid, and days to one root",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/date-picker-native-popover",
+            "version": "1"
+          }
+        },
+        {
+          "key": "DTP_IMPLEMENTATION_03",
+          "layer": "implementation",
+          "sections": [
+            "focus",
+            "style"
+          ],
+          "title": "Keeps calendar focus visible in forced colors",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/date-picker-native-popover",
+            "version": "1"
+          }
+        }
+      ]
+    },
+    "Dialog": {
+      "status": "passing",
+      "componentContract": {
+        "id": "nagi/dialog",
+        "revision": "2"
+      },
+      "implementations": [
+        {
+          "id": "nagi/blueprint/dialog-native",
+          "version": "1"
+        }
+      ],
+      "references": [
+        {
+          "layer": "component-contract",
+          "url": "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/"
+        },
+        {
+          "layer": "implementation",
+          "url": "https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element"
+        }
+      ],
+      "requirements": [
+        {
+          "key": "DLG_CONTRACT_01",
+          "layer": "component-contract",
+          "sections": [
+            "semantics"
+          ],
+          "title": "Exposes one named dialog with its authored description",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_02",
+          "layer": "component-contract",
+          "sections": [
+            "interaction",
+            "focus"
+          ],
+          "title": "Moves focus to the declared initial destination",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_03",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Escape closes the visible dialog, synchronizes its model, and restores trigger focus",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_04",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Light dismisses through the declared close policy",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_05",
+          "layer": "component-contract",
+          "sections": [
+            "focus"
+          ],
+          "title": "Contains sequential focus while open",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_06",
+          "layer": "component-contract",
+          "sections": [
+            "interaction",
+            "focus"
+          ],
+          "title": "Restores trigger focus after the visible close action",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_07",
+          "layer": "component-contract",
+          "sections": [
+            "interaction",
+            "focus"
+          ],
+          "title": "Closes through its primary action and restores the trigger",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_IMPLEMENTATION_01",
+          "layer": "implementation",
+          "sections": [
+            "semantics",
+            "state"
+          ],
+          "title": "Uses one native dialog opened with the declared modality",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/dialog-native",
+            "version": "1"
+          }
+        },
+        {
+          "key": "DLG_IMPLEMENTATION_02",
+          "layer": "implementation",
+          "sections": [
+            "anatomy"
+          ],
+          "title": "Binds the invoker and native surface inside one owned scope",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/dialog-native",
+            "version": "1"
+          }
+        },
+        {
+          "key": "DLG_IMPLEMENTATION_03",
+          "layer": "implementation",
+          "sections": [
+            "focus",
+            "style"
+          ],
+          "title": "Preserves backdrop, viewport bounds, and forced-colors focus",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ],
+          "implementation": {
+            "id": "nagi/blueprint/dialog-native",
+            "version": "1"
+          }
+        }
+      ]
+    }
+  }
+}

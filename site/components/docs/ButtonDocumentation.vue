@@ -114,24 +114,28 @@ import { NButton } from "@nagi-labs/nagi-ui/components";
 
 <style scoped>
 .app-button-example {
-  > .section > .actions > .n-button {
-    &.-compact {
-      --button-size: small;
-    }
+  > .section {
+    > .actions {
+      > .n-button {
+        &.-compact {
+          --button-size: small;
+        }
 
-    &.-spacious {
-      --button-size: large;
-    }
+        &.-spacious {
+          --button-size: large;
+        }
 
-    &.-primary {
-      --button-tone: accent;
-      --button-appearance: solid;
-    }
+        &.-primary {
+          --button-tone: accent;
+          --button-appearance: solid;
+        }
 
-    &.-destructive {
-      --button-tone: danger;
-      --button-appearance: outlined;
-      --button-shape: rounded;
+        &.-destructive {
+          --button-tone: danger;
+          --button-appearance: outlined;
+          --button-shape: rounded;
+        }
+      }
     }
   }
 }
@@ -155,10 +159,16 @@ interface ButtonControl {
 function useButton(props: ButtonControlProps): ButtonControl;`;
 
 const compiledCss = `/* authored */
-.app-button-example > .section > .actions > .n-button.-destructive {
-  --button-tone: danger;
-  --button-appearance: outlined;
-  --button-shape: rounded;
+.app-button-example {
+  > .section {
+    > .actions {
+      > .n-button.-destructive {
+        --button-tone: danger;
+        --button-appearance: outlined;
+        --button-shape: rounded;
+      }
+    }
+  }
 }
 
 /* added at build time; the public declarations remain */

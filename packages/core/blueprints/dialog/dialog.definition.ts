@@ -1,16 +1,20 @@
 import {
   adoptRequirementSet,
+  defineComponentContract,
   defineComponentDefinition,
-  nagiDialogRequirementsV1,
+  defineComponentImplementation,
+  nagiDialogRequirementsV2,
 } from "@nagi-labs/nagi-ui";
 
-const nativeDialog = adoptRequirementSet(nagiDialogRequirementsV1, {
+export { nagiDialogRequirementsV2 };
+
+const nativeDialog = adoptRequirementSet(nagiDialogRequirementsV2, {
   prefix: "DLG",
   profile: {
     role: "dialog",
-    modality: "modal-default",
+    modality: "modal-only",
     description: "optional-simple",
-    dismissal: "configurable",
+    dismissal: "light-dismiss-any",
   },
   evidence: {
     "SEM-01": [
@@ -35,11 +39,66 @@ const nativeDialog = adoptRequirementSet(nagiDialogRequirementsV1, {
   },
 });
 
-/** Observable guarantees owned with the native Dialog Blueprint. */
-export const dialogDefinition = defineComponentDefinition({
-  name: "Dialog",
-  version: "2.0",
-  status: "verified",
+export const dialogComponentContract = defineComponentContract({
+  id: "nagi/dialog",
+  revision: "2",
+  description:
+    "Named modal-surface, dismissal, controlled visibility, focus containment, and invoker-restoration guarantees shared by interchangeable Dialog implementations.",
+  api: [
+    { name: "open", kind: "model", description: "Controls accepted dialog visibility." },
+    { name: "triggerLabel", kind: "prop", description: "Names the visible invoker." },
+    { name: "title", kind: "prop", description: "Supplies the dialog's accessible name." },
+    {
+      name: "description",
+      kind: "prop",
+      description: "Optionally supplies a concise accessible description.",
+    },
+    { name: "closeLabel", kind: "prop", description: "Names the visible close action." },
+    { name: "default", kind: "slot", description: "Supplies dialog content." },
+    { name: "title", kind: "slot", description: "Overrides the visible title content." },
+    {
+      name: "description",
+      kind: "slot",
+      description: "Overrides the visible description content.",
+    },
+    {
+      name: "actions",
+      kind: "slot",
+      description: "Supplies visible actions and exposes the Contract close operation.",
+    },
+    { name: "show", kind: "method", description: "Requests accepted open state." },
+    { name: "close", kind: "method", description: "Requests accepted closed state." },
+    { name: "toggle", kind: "method", description: "Requests the opposite open state." },
+  ],
+  parts: [
+    { name: "invoker", description: "The control that opens the dialog." },
+    { name: "surface", description: "The named modal interaction surface." },
+  ],
+});
+
+/** The standard package implementation backed by the native dialog element. */
+export const nativeDialogImplementation = defineComponentImplementation({
+  id: "nagi/blueprint/dialog-native",
+  title: "Native Dialog Blueprint",
+  version: "1",
+  strategy: "platform-first",
+  description:
+    "The standard Blueprint realizes the Dialog Component Contract with a native modal dialog, a Chromium-tested Tab-boundary repair, and browser-owned dismissal.",
+  decisions: [
+    {
+      name: "surface",
+      value: "native-dialog",
+      description:
+        "Use the platform dialog element as the modal owner and repair Chromium's observed transient body-focus boundary so the adopted focus loop remains intact.",
+      evidence: ["packages/core/src/test/dialog-contract.ts"],
+    },
+    {
+      name: "presence",
+      value: "native-dialog",
+      description: "Let the native open state own immediate surface presence.",
+      evidence: ["packages/core/src/test/dialog-contract.ts"],
+    },
+  ],
   adopts: [nativeDialog],
   anatomy: [
     {
@@ -95,4 +154,12 @@ export const dialogDefinition = defineComponentDefinition({
       },
     },
   ],
+});
+
+export const dialogDefinition = defineComponentDefinition({
+  name: "Dialog",
+  version: "3.0",
+  status: "draft",
+  contract: dialogComponentContract,
+  implementation: nativeDialogImplementation,
 });

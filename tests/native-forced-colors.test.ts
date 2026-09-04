@@ -29,15 +29,19 @@ const focusFallbacks = [
 test("native form controls retain a system focus outline in forced colors", () => {
   for (const [file, selector] of focusFallbacks) {
     const source = fs.readFileSync(path.join(blueprints, file), "utf8");
-    const forcedColors =
-      source.match(/@media \(forced-colors: active\) \{[\s\S]*\n\}/u)?.[0] ?? "";
+    const forcedColors = source.match(/@media \(forced-colors: active\) \{[\s\S]*\n\}/u)?.[0] ?? "";
 
+    const selectorParts = selector
+      .split(" > ")
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const nestedOrFlatSelector = selectorParts.join("[\\s\\S]*>\\s*");
+
+    assert.match(forcedColors, new RegExp(nestedOrFlatSelector, "u"), file);
     assert.match(
       forcedColors,
-      new RegExp(selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "u"),
+      /outline:\s*(?:2px|var\(--n-border-width-2\)) solid Highlight/u,
       file,
     );
-    assert.match(forcedColors, /outline:\s*(?:2px|var\(--n-border-width-2\)) solid Highlight/u, file);
     assert.match(forcedColors, /outline-offset:\s*(?:2px|var\(--n-border-width-2\))/u, file);
   }
 });
@@ -51,10 +55,12 @@ test("generic Input keeps its string model contract by leaving numbers to Number
 
 test("Toggle keeps a non-color pressed indicator in forced colors", () => {
   const source = fs.readFileSync(path.join(blueprints, "toggle/Toggle.vue"), "utf8");
-  const forcedColors =
-    source.match(/@media \(forced-colors: active\) \{[\s\S]*\n\}/u)?.[0] ?? "";
+  const forcedColors = source.match(/@media \(forced-colors: active\) \{[\s\S]*\n\}/u)?.[0] ?? "";
 
-  assert.match(forcedColors, /\.n-toggle\[aria-pressed="true"\]\s*\{[\s\S]*border-width:\s*calc\(var\(--n-border-width-1\) \+ var\(--n-border-width-2\)\)/u);
+  assert.match(
+    forcedColors,
+    /\.n-toggle\[aria-pressed="true"\]\s*\{[\s\S]*border-width:\s*calc\(var\(--n-border-width-1\) \+ var\(--n-border-width-2\)\)/u,
+  );
 });
 
 test("activedescendant containers keep a real item outline instead of duplicating focus", () => {
@@ -74,8 +80,9 @@ test("activedescendant containers keep a real item outline instead of duplicatin
 
 test("Menu items use their native focus state instead of a duplicated data attribute", () => {
   for (const file of [
-    "menu/DropdownMenuItem.vue",
-    "menu/DropdownSubmenu.vue",
+    "menu/internal/DropdownMenuItem.vue",
+    "menu/internal/DropdownMenuGroup.vue",
+    "menu/internal/DropdownSubmenu.vue",
   ] as const) {
     const source = fs.readFileSync(path.join(blueprints, file), "utf8");
     assert.match(

@@ -1,0 +1,17 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: Blueprint Nagi CSS
+      glob: "packages/core/blueprints/**/*.vue"
+      run: vp exec eslint --config eslint.nagi.config.mjs {staged_files}
+
+    - name: Blueprint formatting
+      glob: "packages/core/blueprints/**/*.vue"
+      run: vp exec oxfmt --check {staged_files}
+
+    - name: Blueprint lint configuration
+      glob:
+        - "eslint.nagi.config.mjs"
+        - "packages/core/nagi-css-preset.mjs"
+        - "packages/core/theme/*.css"
+      run: vp run test:integration

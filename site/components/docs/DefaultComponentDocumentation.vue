@@ -14,7 +14,11 @@ const props = defineProps<{
   models: BlueprintChannel[];
   events: BlueprintChannel[];
   documentedSlots: BlueprintChannel[];
-  highlightedBlueprint: TrustedShikiHtml | "";
+  blueprintSources: readonly {
+    path: string;
+    kind: "public-component" | "internal-component" | "owned-helper";
+    html: TrustedShikiHtml | "";
+  }[];
   usage: string;
   nativeAttributeTarget?: string;
   behaviorApis: readonly { names: readonly string[]; html: TrustedShikiHtml | "" }[];
@@ -34,6 +38,12 @@ const staticComponents = new Set([
   "Table",
 ]);
 const interactive = computed(() => !staticComponents.has(props.name));
+
+const sourceKindLabels = {
+  "public-component": "Public component",
+  "internal-component": "Internal component",
+  "owned-helper": "Owned helper",
+} as const;
 
 const columns = [
   { key: "name", label: "Property", rowHeader: true },
@@ -182,12 +192,16 @@ if (import.meta.server && !highlightedUsage.value) {
 
     <template #source>
       <p class="text">
-        <inline-code>vp exec nagi-ui own {{ slug }}</inline-code> copies the shipped canonical Vue
-        SFC. The displayed source is loaded from the Blueprint rather than duplicated in the docs.
+        <inline-code>vp exec nagi-ui own {{ slug }}</inline-code> copies an editable bundle. Its
+        connected implementation files are shown below; the Definition is documented separately.
+        Only files marked <strong>Public component</strong> are package component exports; internal
+        components and helpers are owned implementation details.
       </p>
       <code-disclosure
-        summary="View code"
-        :html="highlightedBlueprint"
+        v-for="source in blueprintSources"
+        :key="source.path"
+        :summary="`View ${source.path} · ${sourceKindLabels[source.kind]}`"
+        :html="source.html"
       />
     </template>
 

@@ -117,8 +117,10 @@ const toolbar = useToolbar(props);
 }
 
 @media (forced-colors: active) {
-  .n-toolbar > :is(.link, .button):focus-visible {
-    outline: 2px solid Highlight;
+  .n-toolbar {
+    > :is(.link, .button):focus-visible {
+      outline: 2px solid Highlight;
+    }
   }
 }
 </style>

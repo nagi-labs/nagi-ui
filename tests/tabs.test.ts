@@ -173,7 +173,6 @@ test("emits tablist, tab, and panel ARIA with encoded stable id references", () 
   assert.deepEqual(
     {
       id: result.tablistProps.id,
-      role: result.tablistProps.role,
       dir: result.tablistProps.dir,
       label: result.tablistProps["aria-label"],
       labelledBy: result.tablistProps["aria-labelledby"],
@@ -181,7 +180,6 @@ test("emits tablist, tab, and panel ARIA with encoded stable id references", () 
     },
     {
       id: "account-tabs",
-      role: "tablist",
       dir: "ltr",
       label: "Account sections",
       labelledBy: undefined,

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { componentCategories, componentDocuments } from "~/data/components";
-import { componentDefinitionStatus } from "~/data/component-definitions";
+import {
+  componentDefinitionAuditStatus,
+  componentDefinitionEvidenceStatus,
+} from "~/data/component-definitions";
 
 useHead({ title: "Components" });
 </script>
@@ -32,13 +35,26 @@ useHead({ title: "Components" });
         >
           <span class="seg -name">
             <strong class="strong">{{ entry.name }}</strong>
-            <small
-              class="note -status"
-              :data-definition-status="componentDefinitionStatus(entry.name)"
-            >
-              Definition
-              {{ componentDefinitionStatus(entry.name) === "verified" ? "Verified" : "WIP" }}
-            </small>
+            <span class="fr -statuses">
+              <small
+                class="note -status"
+                :data-audit-status="componentDefinitionAuditStatus(entry.name)"
+              >
+                Contract audit
+                {{ componentDefinitionAuditStatus(entry.name) === "ready" ? "ready" : "WIP" }}
+              </small>
+              <small
+                class="note -status"
+                :data-evidence-status="componentDefinitionEvidenceStatus(entry.name)"
+              >
+                Browser evidence
+                {{
+                  componentDefinitionEvidenceStatus(entry.name) === "not-collected"
+                    ? "not collected"
+                    : componentDefinitionEvidenceStatus(entry.name)
+                }}
+              </small>
+            </span>
           </span>
           <p class="text">{{ entry.description }}</p>
           <span
@@ -118,23 +134,36 @@ useHead({ title: "Components" });
             font-size: var(--n-font-size-4);
           }
 
-          > .note.-status {
-            padding: var(--n-space-1) var(--n-space-2);
-            border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
-            border-radius: var(--local-status-radius);
-            color: var(--nagi-color-text-muted);
-            font-size: var(--n-font-size-1);
+          > .fr.-statuses {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--n-space-2);
 
-            &[data-definition-status="verified"] {
-              border-color: var(--nagi-color-accent);
-              background: var(--nagi-color-surface-accent);
-              color: var(--nagi-color-text);
-            }
+            > .note.-status {
+              padding: var(--n-space-1) var(--n-space-2);
+              border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+              border-radius: var(--local-status-radius);
+              color: var(--nagi-color-text-muted);
+              font-size: var(--n-font-size-1);
 
-            &[data-definition-status="wip"] {
-              border-color: var(--nagi-color-warning);
-              background: var(--nagi-color-surface-warning);
-              color: var(--nagi-color-warning);
+              &[data-audit-status="ready"],
+              &[data-evidence-status="passed"] {
+                border-color: var(--nagi-color-accent);
+                background: var(--nagi-color-surface-accent);
+                color: var(--nagi-color-text);
+              }
+
+              &[data-audit-status="wip"] {
+                border-color: var(--nagi-color-warning);
+                background: var(--nagi-color-surface-warning);
+                color: var(--nagi-color-warning);
+              }
+
+              &[data-evidence-status="failed"] {
+                border-color: var(--nagi-color-danger);
+                background: var(--nagi-color-surface-danger);
+                color: var(--nagi-color-danger);
+              }
             }
           }
         }

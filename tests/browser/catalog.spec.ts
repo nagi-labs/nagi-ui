@@ -1,5 +1,9 @@
 import { expect, test, type Locator } from "@playwright/test";
 
+// Toast Definition evidence:
+// [TST-SEM-01][TST-SEM-02][TST-STATE-02][TST-INT-01][TST-INT-02]
+// [TST-FOCUS-01][TST-FOCUS-02]
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/catalog.html");
 });

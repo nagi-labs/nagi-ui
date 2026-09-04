@@ -8,7 +8,7 @@ import {
   NCombobox,
   NDialog,
 } from "@nagi-labs/nagi-ui/components";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const comboboxSeed: ReadonlyArray<{ key: string; label: string; disabled?: boolean }> = [
   { key: "vue", label: "Vue" },
@@ -81,6 +81,32 @@ const ownedCarousel = useCarousel({
   slideRoleDescription: "owned slide",
   landmark: true,
 });
+const ownedLoopedCarouselIndex = ref(0);
+const ownedLoopedCarousel = useCarousel({
+  items: carouselItems,
+  index: ownedLoopedCarouselIndex,
+  label: "Owned looped highlights",
+  loop: true,
+});
+const ownedRejectedCarouselSource = ref(0);
+const ownedRejectedCarouselRequests = ref(0);
+const ownedRejectedCarouselIndex = computed({
+  get: () => ownedRejectedCarouselSource.value,
+  set: () => {
+    ownedRejectedCarouselRequests.value += 1;
+  },
+});
+const ownedRejectedCarousel = useCarousel({
+  items: carouselItems,
+  index: ownedRejectedCarouselIndex,
+  label: "Owned locked highlights",
+});
+const ownedOutOfRangeCarouselIndex = ref(99);
+const ownedOutOfRangeCarousel = useCarousel({
+  items: carouselItems,
+  index: ownedOutOfRangeCarouselIndex,
+  label: "Owned bounded highlights",
+});
 const disabledCarouselIndex = ref(0);
 const disabledCarousel = useCarousel({
   items: carouselItems,
@@ -99,6 +125,10 @@ const packageButtonActivations = ref(0);
 const packageSubmission = ref("none");
 const packageCarouselIndex = ref(0);
 const packageDisabledCarouselIndex = ref(0);
+const packageLoopedCarouselIndex = ref(0);
+const packageRejectedCarouselIndex = ref(0);
+const packageRejectedCarouselRequests = ref(0);
+const packageOutOfRangeCarouselIndex = ref(99);
 </script>
 
 <template>
@@ -132,7 +162,16 @@ const packageDisabledCarouselIndex = ref(0);
         {{ packageButtonActivations }}
       </output>
       <form @submit.prevent="packageSubmission = 'submitted'">
+        <label>
+          Package form value
+          <input
+            aria-label="Package form value"
+            value="initial"
+          />
+        </label>
+        <n-button>Package form action</n-button>
         <n-button type="submit">Package submit</n-button>
+        <n-button type="reset">Package reset</n-button>
       </form>
       <output
         role="status"
@@ -153,6 +192,53 @@ const packageDisabledCarouselIndex = ref(0);
         aria-label="Package carousel model"
         >{{ packageCarouselIndex }}</output
       >
+      <button
+        type="button"
+        @click="packageCarouselIndex = 2"
+      >
+        Set package carousel to third
+      </button>
+      <n-carousel
+        v-model="packageLoopedCarouselIndex"
+        :items="carouselItems"
+        label="Package looped highlights"
+        loop
+      />
+      <output
+        role="status"
+        aria-label="Package looped carousel model"
+      >
+        {{ packageLoopedCarouselIndex }}
+      </output>
+      <n-carousel
+        :model-value="packageRejectedCarouselIndex"
+        :items="carouselItems"
+        label="Package locked highlights"
+        @update:model-value="packageRejectedCarouselRequests += 1"
+      />
+      <output
+        role="status"
+        aria-label="Package locked carousel model"
+      >
+        {{ packageRejectedCarouselIndex }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package locked carousel requests"
+      >
+        {{ packageRejectedCarouselRequests }}
+      </output>
+      <n-carousel
+        v-model="packageOutOfRangeCarouselIndex"
+        :items="carouselItems"
+        label="Package bounded highlights"
+      />
+      <output
+        role="status"
+        aria-label="Package bounded carousel model"
+      >
+        {{ packageOutOfRangeCarouselIndex }}
+      </output>
       <n-carousel
         v-model="packageDisabledCarouselIndex"
         :items="carouselItems"
@@ -205,6 +291,9 @@ const packageDisabledCarouselIndex = ref(0);
         description="A package dialog exercising native modal state."
       >
         <p>Package modal content.</p>
+        <template #actions="{ close }">
+          <n-button @click="close"> Save package dialog </n-button>
+        </template>
       </n-dialog>
       <output
         role="status"
@@ -283,6 +372,22 @@ const packageDisabledCarouselIndex = ref(0);
         {{ ownedButtonActivations }}
       </output>
       <form @submit.prevent="submittedAction = 'submitted'">
+        <label>
+          Owned form value
+          <input
+            aria-label="Owned form value"
+            value="initial"
+          />
+        </label>
+        <button
+          v-bind="enabledButton.buttonProps"
+          type="button"
+          data-scope="button"
+          data-part="root"
+          class="owned-button"
+        >
+          Owned form action
+        </button>
         <button
           v-bind="enabledButton.buttonProps"
           type="submit"
@@ -291,6 +396,15 @@ const packageDisabledCarouselIndex = ref(0);
           class="owned-button"
         >
           Owned submit
+        </button>
+        <button
+          v-bind="enabledButton.buttonProps"
+          type="reset"
+          data-scope="button"
+          data-part="root"
+          class="owned-button"
+        >
+          Owned reset
         </button>
       </form>
       <output
@@ -359,6 +473,171 @@ const packageDisabledCarouselIndex = ref(0);
         aria-label="Owned carousel model"
         >{{ ownedCarouselIndex }}</output
       >
+      <button
+        type="button"
+        @click="ownedCarouselIndex = 2"
+      >
+        Set owned carousel to third
+      </button>
+
+      <section
+        v-bind="ownedLoopedCarousel.rootProps"
+        data-scope="carousel"
+        data-part="root"
+        class="owned-carousel"
+      >
+        <div
+          v-bind="ownedLoopedCarousel.viewportProps"
+          data-scope="carousel"
+          data-part="viewport"
+          class="viewport"
+        >
+          <div class="owned-layout-wrapper">
+            <div class="slides">
+              <article
+                v-for="(item, itemIndex) in carouselItems"
+                :key="item.key"
+                v-bind="ownedLoopedCarousel.slideProps(item, itemIndex)"
+                data-scope="carousel"
+                data-part="slide"
+                class="slide"
+              >
+                <h2 v-bind="ownedLoopedCarousel.slideLabelProps(itemIndex)">
+                  {{ item.label }}
+                  <span class="position">
+                    , {{ ownedLoopedCarousel.slidePosition(item, itemIndex) }}
+                  </span>
+                </h2>
+              </article>
+            </div>
+          </div>
+        </div>
+        <nav aria-label="Owned looped carousel actions">
+          <button v-bind="ownedLoopedCarousel.previousButtonProps">‹</button>
+          <output
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {{ ownedLoopedCarousel.announcement.value }}
+          </output>
+          <button v-bind="ownedLoopedCarousel.nextButtonProps">›</button>
+        </nav>
+      </section>
+      <output
+        role="status"
+        aria-label="Owned looped carousel model"
+      >
+        {{ ownedLoopedCarouselIndex }}
+      </output>
+
+      <section
+        v-bind="ownedRejectedCarousel.rootProps"
+        data-scope="carousel"
+        data-part="root"
+        class="owned-carousel"
+      >
+        <div
+          v-bind="ownedRejectedCarousel.viewportProps"
+          data-scope="carousel"
+          data-part="viewport"
+          class="viewport"
+        >
+          <div class="owned-layout-wrapper">
+            <div class="slides">
+              <article
+                v-for="(item, itemIndex) in carouselItems"
+                :key="item.key"
+                v-bind="ownedRejectedCarousel.slideProps(item, itemIndex)"
+                data-scope="carousel"
+                data-part="slide"
+                class="slide"
+              >
+                <h2 v-bind="ownedRejectedCarousel.slideLabelProps(itemIndex)">
+                  {{ item.label }}
+                  <span class="position">
+                    , {{ ownedRejectedCarousel.slidePosition(item, itemIndex) }}
+                  </span>
+                </h2>
+              </article>
+            </div>
+          </div>
+        </div>
+        <nav aria-label="Owned locked carousel actions">
+          <button v-bind="ownedRejectedCarousel.previousButtonProps">‹</button>
+          <output
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {{ ownedRejectedCarousel.announcement.value }}
+          </output>
+          <button v-bind="ownedRejectedCarousel.nextButtonProps">›</button>
+        </nav>
+      </section>
+      <output
+        role="status"
+        aria-label="Owned locked carousel model"
+      >
+        {{ ownedRejectedCarouselSource }}
+      </output>
+      <output
+        role="status"
+        aria-label="Owned locked carousel requests"
+      >
+        {{ ownedRejectedCarouselRequests }}
+      </output>
+
+      <section
+        v-bind="ownedOutOfRangeCarousel.rootProps"
+        data-scope="carousel"
+        data-part="root"
+        class="owned-carousel"
+      >
+        <div
+          v-bind="ownedOutOfRangeCarousel.viewportProps"
+          data-scope="carousel"
+          data-part="viewport"
+          class="viewport"
+        >
+          <div class="owned-layout-wrapper">
+            <div class="slides">
+              <article
+                v-for="(item, itemIndex) in carouselItems"
+                :key="item.key"
+                v-bind="ownedOutOfRangeCarousel.slideProps(item, itemIndex)"
+                data-scope="carousel"
+                data-part="slide"
+                class="slide"
+              >
+                <h2 v-bind="ownedOutOfRangeCarousel.slideLabelProps(itemIndex)">
+                  {{ item.label }}
+                  <span class="position">
+                    , {{ ownedOutOfRangeCarousel.slidePosition(item, itemIndex) }}
+                  </span>
+                </h2>
+              </article>
+            </div>
+          </div>
+        </div>
+        <nav aria-label="Owned bounded carousel actions">
+          <button v-bind="ownedOutOfRangeCarousel.previousButtonProps">‹</button>
+          <output
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {{ ownedOutOfRangeCarousel.announcement.value }}
+          </output>
+          <button v-bind="ownedOutOfRangeCarousel.nextButtonProps">›</button>
+        </nav>
+      </section>
+      <output
+        role="status"
+        aria-label="Owned bounded carousel model"
+      >
+        {{ ownedOutOfRangeCarouselIndex }}
+      </output>
 
       <section
         v-bind="disabledCarousel.rootProps"
@@ -511,6 +790,12 @@ const packageDisabledCarouselIndex = ref(0);
           >
             Dismiss owned dialog
           </button>
+          <button
+            v-dialog-close="ownedDialog.id"
+            type="button"
+          >
+            Save owned dialog
+          </button>
         </nav>
         <article>
           <p
@@ -531,6 +816,12 @@ const packageDisabledCarouselIndex = ref(0);
         </article>
       </dialog>
     </div>
+    <output
+      role="status"
+      aria-label="Owned dialog model"
+    >
+      {{ ownedDialog.open }}
+    </output>
 
     <div
       data-scope="alert-dialog"
@@ -604,7 +895,10 @@ const packageDisabledCarouselIndex = ref(0);
       >
         <p>{{ item.label }} panel</p>
       </section>
-      <nav v-bind="ownedTabs.tablistProps">
+      <div
+        v-bind="ownedTabs.tablistProps"
+        role="tablist"
+      >
         <button
           v-for="item in items"
           :key="item.key"
@@ -612,7 +906,7 @@ const packageDisabledCarouselIndex = ref(0);
         >
           {{ item.label }}
         </button>
-      </nav>
+      </div>
     </section>
   </main>
 </template>

@@ -1,4 +1,4 @@
-import { defineRequirementSet } from "../definition.ts"
+import { defineRequirementSet } from "../definition.ts";
 
 /**
  * Nagi-owned snapshot of the platform requirements adopted by Button.
@@ -65,4 +65,62 @@ export const nagiButtonRequirementsV1 = defineRequirementSet({
       referenceIds: ["html-button-ls", "apg-button"],
     },
   ],
-} as const)
+} as const);
+
+/**
+ * Renderer-independent Button contract. Revision 1 remains available as the
+ * historical native-element requirement choices; revision 2 describes observable Button
+ * guarantees so native and delegated implementations can adopt the same set.
+ */
+export const nagiButtonRequirementsV2 = defineRequirementSet({
+  id: "nagi/button",
+  title: "Nagi Button requirements",
+  version: "2",
+  profile: {
+    semantics: ["button"],
+    naming: ["accessible-name"],
+    disabled: ["perceivable-inoperable"],
+    activation: ["click-enter-space"],
+  },
+  references: [
+    {
+      id: "accname-1.1",
+      title: "Accessible Name and Description Computation 1.1",
+      url: "https://www.w3.org/TR/2018/REC-accname-1.1-20181218/",
+      kind: "standard",
+      revision: "1.1 Recommendation (2018-12-18)",
+      reviewedAt: "2026-09-02",
+    },
+    {
+      id: "apg-button",
+      title: "WAI-ARIA APG Button Pattern",
+      url: "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+      kind: "pattern",
+      revision: "Rolling guidance snapshot",
+      reviewedAt: "2026-09-02",
+    },
+  ],
+  requirements: [
+    {
+      id: "SEM-01",
+      section: "semantics",
+      classification: "conformant",
+      text: "The root exposes button semantics and an accessible name from its content or consumer-provided naming attributes.",
+      referenceIds: ["accname-1.1", "apg-button"],
+    },
+    {
+      id: "STATE-01",
+      section: "state",
+      classification: "conformant",
+      text: "Disabled state remains perceivable and makes the Button unavailable for activation.",
+      referenceIds: ["apg-button"],
+    },
+    {
+      id: "INT-01",
+      section: "interaction",
+      classification: "conformant",
+      text: "An enabled Button supports pointer click, Enter, and Space activation.",
+      referenceIds: ["apg-button"],
+    },
+  ],
+} as const);

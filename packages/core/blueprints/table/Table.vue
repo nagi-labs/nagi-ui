@@ -212,23 +212,33 @@ function cellSlotName(column: TableColumn<Row>) {
       }
     }
 
-    > .thead > .row > .cell {
-      background: var(--nagi-color-surface-accent);
-      font-weight: 700;
+    > .thead {
+      > .row {
+        > .cell {
+          background: var(--nagi-color-surface-accent);
+          font-weight: 700;
+        }
+      }
     }
 
     > .tbody {
-      > .row:last-child > .cell {
-        border-block-end: 0;
-      }
+      > .row {
+        &:last-child {
+          > .cell {
+            border-block-end: 0;
+          }
+        }
 
-      > .row > .cell[scope="row"] {
-        font-weight: 650;
-      }
+        > .cell[scope="row"] {
+          font-weight: 650;
+        }
 
-      > .row.-empty > .cell {
-        color: var(--nagi-color-text-muted);
-        text-align: center;
+        &.-empty {
+          > .cell {
+            color: var(--nagi-color-text-muted);
+            text-align: center;
+          }
+        }
       }
     }
   }

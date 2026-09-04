@@ -19,10 +19,10 @@ const props = defineProps<{
     v-bind="tree.treeItemProps(node)"
     class="n-tree-branch"
   >
-    <div class="row">
+    <div class="field">
       <button
         v-if="node.hasChildren || node.children?.length"
-        class="button -toggle"
+        class="button"
         type="button"
         tabindex="-1"
         :aria-label="`${tree.expanded.value.includes(node.key) ? collapseLabel : expandLabel} ${node.label}`"
@@ -41,7 +41,7 @@ const props = defineProps<{
     <ul
       v-if="node.children?.length && tree.expanded.value.includes(node.key)"
       v-bind="tree.groupProps"
-      class="list -children"
+      class="list"
     >
       <TreeBranch
         :nodes="node.children"
@@ -71,7 +71,7 @@ const props = defineProps<{
     color: var(--nagi-color-text-disabled);
   }
 
-  > .row {
+  > .field {
     display: flex;
     gap: var(--nagi-space-item-gap);
     align-items: center;
@@ -90,7 +90,7 @@ const props = defineProps<{
     }
   }
 
-  > .list.-children {
+  > .list {
     margin: 0;
     padding-block: 0;
     padding-inline: var(--nagi-space-surface-inset) 0;

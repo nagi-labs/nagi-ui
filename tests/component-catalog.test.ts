@@ -11,14 +11,17 @@ import { renderToString } from "vue/server-renderer";
 
 import { createToastManager } from "../packages/core/src/toast.ts";
 
+// Toast Definition evidence: [TST-SEM-03]
+
 const repo = path.join(import.meta.dirname, "..");
 
 test("compound Blueprints do not fall through unknown attributes", () => {
   for (const blueprint of [
     "menu/ActionMenu.vue",
     "menu/DropdownMenu.vue",
-    "menu/DropdownMenuItem.vue",
-    "menu/DropdownSubmenu.vue",
+    "menu/internal/DropdownMenuGroup.vue",
+    "menu/internal/DropdownMenuItem.vue",
+    "menu/internal/DropdownSubmenu.vue",
     "context-menu/ContextMenu.vue",
     "dialog/Dialog.vue",
     "alert-dialog/AlertDialog.vue",
@@ -44,10 +47,7 @@ test("compound Blueprints do not fall through unknown attributes", () => {
     assert.doesNotMatch(source, /\$attrs|mergeElementProps/u, blueprint);
   }
 });
-
-async function withComponents(
-  run: (components: Record<string, Component>) => Promise<void>,
-) {
+async function withComponents(run: (components: Record<string, Component>) => Promise<void>) {
   const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-catalog-vite-"));
   const server = await createServer({
     configFile: false,
@@ -86,13 +86,14 @@ function renderSlots(
 ) {
   return renderToString(
     createSSRApp({
-      render: () => h(
-        component,
-        props,
-        Object.fromEntries(
-          Object.entries(slots).map(([name, content]) => [name, () => h("span", content)]),
+      render: () =>
+        h(
+          component,
+          props,
+          Object.fromEntries(
+            Object.entries(slots).map(([name, content]) => [name, () => h("span", content)]),
+          ),
         ),
-      ),
     }),
   );
 }
@@ -180,7 +181,10 @@ test("components entry exposes the complete date and time family", async () => {
       timeZone: "UTC",
       modelValue: { start: "2026-07-23", end: "2026-07-25" },
     });
-    assert.match(range, /<div[^>]*class="dialog"[^>]*role="dialog"[^>]*popover|<div[^>]*class="dialog"[^>]*popover[^>]*role="dialog"/u);
+    assert.match(
+      range,
+      /<div[^>]*class="dialog"[^>]*role="dialog"[^>]*popover|<div[^>]*class="dialog"[^>]*popover[^>]*role="dialog"/u,
+    );
     assert.equal(range.match(/role="spinbutton"/gu)?.length, 6);
     assert.equal(range.match(/aria-selected="true"/gu)?.length, 3);
 
@@ -345,15 +349,21 @@ test("components entry exposes the first anatomy-sensitive catalog slice", async
       components.NInputGroup as Component,
       { prefix: "https://", suffix: ".dev" },
       {
-        default: () => h("input", {
-          class: "n-input-group-control",
-          name: "project",
-          "aria-label": "Project URL",
-        }),
-        action: () => h("button", {
-          class: "n-input-group-action",
-          type: "button",
-        }, "Open"),
+        default: () =>
+          h("input", {
+            class: "n-input-group-control",
+            name: "project",
+            "aria-label": "Project URL",
+          }),
+        action: () =>
+          h(
+            "button",
+            {
+              class: "n-input-group-action",
+              type: "button",
+            },
+            "Open",
+          ),
       },
     );
     assert.match(inputGroup, /class="n-input-group"/);
@@ -420,10 +430,15 @@ test("components entry exposes PreviewCard as a real link with an interactive pr
         description: "Native-first Vue components.",
       },
       {
-        default: () => h("a", {
-          class: "n-preview-card-content",
-          href: "/packages/nagi-ui/compatibility",
-        }, "Compatibility notes"),
+        default: () =>
+          h(
+            "a",
+            {
+              class: "n-preview-card-content",
+              href: "/packages/nagi-ui/compatibility",
+            },
+            "Compatibility notes",
+          ),
       },
     );
     assert.match(preview, /<a[^>]*class="link"[^>]*href="\/packages\/nagi-ui"/);
@@ -466,13 +481,10 @@ test("Accordion and AlertDialog preserve their native SSR contracts", async () =
       },
       {
         summary: (slotProps) => h("strong", String(slotProps.summary)),
-        panel: (slotProps) => h("p", String(
-          (slotProps.item as { content: string }).content,
-        )),
+        panel: (slotProps) => h("p", String((slotProps.item as { content: string }).content)),
       },
     );
-    const names = [...accordion.matchAll(/<details[^>]* name="([^"]+)"/g)]
-      .map((match) => match[1]);
+    const names = [...accordion.matchAll(/<details[^>]* name="([^"]+)"/g)].map((match) => match[1]);
     assert.deepEqual(names.length, 2);
     assert.equal(new Set(names).size, 1);
     assert.equal(accordion.match(/<details[^>]* open(?:="")?/g)?.length, 1);
@@ -759,7 +771,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     );
     assert.match(richDialog, /<h2[^>]*class="title"/);
     assert.match(richDialog, /<span>Confirm now<\/span>/);
-    assert.match(richDialog, /<p[^>]*class="text"/);
+    assert.match(richDialog, /<p[^>]*class="p"/);
     assert.match(richDialog, /<strong>Review this action<\/strong>/);
     const richDescriptionTarget = richDialog.match(/aria-describedby="([^"]+)"/)?.[1];
     assert.ok(richDescriptionTarget);
@@ -895,7 +907,7 @@ test("[BTN-SEM-01][BTN-SEM-02][BTN-STATE-01][BTN-INT-03][BTN-STYLE-01][BTN-STYLE
       "Card body",
     );
     assert.match(card, /<div[^>]*class="n-card"/);
-    assert.match(card, /<div[^>]*class="title"/);
+    assert.match(card, /<span[^>]*class="text"/);
     assert.match(card, /Profile/);
     assert.match(card, /Owned when needed/);
     assert.match(card, /Card body/);
@@ -916,9 +928,9 @@ test("[BTN-SEM-01][BTN-SEM-02][BTN-STATE-01][BTN-INT-03][BTN-STYLE-01][BTN-STYLE
         description: (slotProps) => h("span", `Rich ${String(slotProps.description)}`),
       },
     );
-    assert.match(cardWithRichHeader, /<div[^>]*class="title"/);
+    assert.match(cardWithRichHeader, /<span[^>]*class="text"/);
     assert.match(cardWithRichHeader, /<span>Rich Base title<\/span>/);
-    assert.match(cardWithRichHeader, /<div[^>]*class="text"/);
+    assert.match(cardWithRichHeader, /<p[^>]*class="p"/);
     assert.match(cardWithRichHeader, /<span>Rich Base description<\/span>/);
 
     const cardWithSlotOnlyHeader = await renderSlots(
@@ -1033,34 +1045,55 @@ test("[CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-06] components entry exposes 
       assert.ok(components[exportName], `${exportName} is exported from /components`);
     }
 
-    const choices = [{ key: "jp", label: "Japan" }, { key: "jm", label: "Jamaica" }];
+    const choices = [
+      { key: "jp", label: "Japan" },
+      { key: "jm", label: "Jamaica" },
+    ];
     const autocomplete = await render(components.NAutocomplete as Component, {
-      label: "Destination", items: choices, modelValue: "Ja", name: "destination",
+      label: "Destination",
+      items: choices,
+      modelValue: "Ja",
+      name: "destination",
     });
     assert.match(autocomplete, /role="combobox"/u);
     assert.match(autocomplete, /<input[^>]*name="destination"/u);
     assert.match(autocomplete, /popover/u);
 
     const multi = await render(components.NMultiSelect as Component, {
-      label: "Countries", items: choices, modelValue: ["jp"], name: "countries",
+      label: "Countries",
+      items: choices,
+      modelValue: ["jp"],
+      name: "countries",
       ariaDescribedby: "countries-help",
     });
     assert.match(multi, /role="combobox"/u);
-    assert.match(multi, /<select[^>]*multiple[^>]*name="countries"|<select[^>]*name="countries"[^>]*multiple/u);
+    assert.match(
+      multi,
+      /<select[^>]*multiple[^>]*name="countries"|<select[^>]*name="countries"[^>]*multiple/u,
+    );
     assert.match(multi, /<option[^>]*value="jp"[^>]*selected/u);
     assert.match(multi, /<input[^>]*aria-describedby="countries-help"/u);
 
     const tags = await render(components.NTagsInput as Component, {
-      label: "Topics", modelValue: ["vue", "aria"], name: "topics",
+      label: "Topics",
+      modelValue: ["vue", "aria"],
+      name: "topics",
       ariaDescribedby: "topics-help",
     });
     assert.equal(tags.match(/<option/gu)?.length, 2);
-    assert.match(tags, /<select[^>]*multiple[^>]*name="topics"|<select[^>]*name="topics"[^>]*multiple/u);
+    assert.match(
+      tags,
+      /<select[^>]*multiple[^>]*name="topics"|<select[^>]*name="topics"[^>]*multiple/u,
+    );
     assert.match(tags, /<input[^>]*aria-describedby="topics-help"/u);
 
     const otp = await render(components.NOtpField as Component, {
-      label: "Verification code", modelValue: "12", name: "code", length: 4,
-      ariaDescribedby: "code-help", enterkeyhint: "done",
+      label: "Verification code",
+      modelValue: "12",
+      name: "code",
+      length: 4,
+      ariaDescribedby: "code-help",
+      enterkeyhint: "done",
     });
     assert.equal(otp.match(/<input/gu)?.length, 1);
     const otpInput = otp.match(/<input[^>]*>/u)?.[0] ?? "";
@@ -1068,11 +1101,17 @@ test("[CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-06] components entry exposes 
     assert.match(otpInput, /value="12"/u);
     assert.match(otpInput, /aria-describedby="code-help"/u);
     assert.match(otpInput, /enterkeyhint="done"/u);
-    assert.equal(otp.match(/class="cell"/gu)?.length, 4);
+    assert.equal(otp.match(/class="value"/gu)?.length, 4);
 
     const carousel = await render(components.NCarousel as Component, {
-      label: "Highlights", slidesLabel: "Highlight slides", landmark: true, modelValue: 0,
-      items: [{ key: "a", label: "First" }, { key: "b", label: "Second" }],
+      label: "Highlights",
+      slidesLabel: "Highlight slides",
+      landmark: true,
+      modelValue: 0,
+      items: [
+        { key: "a", label: "First" },
+        { key: "b", label: "Second" },
+      ],
     });
     assert.match(carousel, /role="region"/u);
     assert.match(carousel, /aria-roledescription="carousel"/u);
@@ -1083,30 +1122,49 @@ test("[CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-06] components entry exposes 
     assert.equal(carousel.match(/data-part="slide"/gu)?.length, 2);
     assert.equal(carousel.match(/aria-labelledby="[^"]+-slide-[12]-label"/gu)?.length, 2);
     assert.doesNotMatch(carousel, /data-nagi-carousel-track/u);
-    assert.match(carousel, /role="group" aria-label="Highlight slides" aria-roledescription="slides" tabindex="0"/u);
-    assert.match(carousel, /aria-label="Highlight slides"[\s\S]*class="seg -slides"[\s\S]*aria-roledescription="slide"/u);
+    assert.match(
+      carousel,
+      /role="group" aria-label="Highlight slides" aria-roledescription="slides" tabindex="0"/u,
+    );
+    assert.doesNotMatch(carousel, /class="seg -slides"/u);
+    assert.match(
+      carousel,
+      /data-part="viewport"[^>]*class="unit -viewport"[^>]*>(?:<!--\[-->)?<article[^>]*data-part="slide"/u,
+    );
     assert.match(carousel, />First[\s\S]*?1 \/ 2/u);
 
-    const resizable = await renderSlots(components.NResizable as Component, {
-      label: "Panels", modelValue: 50,
-    }, { first: "Editor", second: "Preview" });
+    const resizable = await renderSlots(
+      components.NResizable as Component,
+      {
+        label: "Panels",
+        modelValue: 50,
+      },
+      { first: "Editor", second: "Preview" },
+    );
     assert.match(resizable, /role="separator"/u);
     assert.match(resizable, /aria-valuenow="50"/u);
 
     const toolbar = await render(components.NToolbar as Component, {
       label: "Formatting",
-      items: [{ key: "bold", label: "Bold" }, { key: "link", label: "Link" }],
+      items: [
+        { key: "bold", label: "Bold" },
+        { key: "link", label: "Link" },
+      ],
     });
     assert.match(toolbar, /role="toolbar"/u);
     assert.equal(toolbar.match(/tabindex="0"/gu)?.length, 1);
 
-    const context = await render(components.NContextMenu as Component, {
-      items: [{ key: "copy", label: "Copy" }],
-    }, "Context target");
+    const context = await render(
+      components.NContextMenu as Component,
+      {
+        items: [{ key: "copy", label: "Copy" }],
+      },
+      "Context target",
+    );
     assert.match(context, /Context target/u);
     assert.match(context, /role="menu"/u);
     assert.match(context, /aria-label="Context menu"/u);
-    assert.match(context, /class="unit -assistive"/u);
+    assert.match(context, /class="text"/u);
     assert.doesNotMatch(context, /class="value -assistive"/u);
 
     const menubar = await render(components.NMenubar as Component, {
@@ -1124,7 +1182,9 @@ test("[CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-06] components entry exposes 
     assert.doesNotMatch(navigation, /role="menu(?:bar|item)?"/u);
 
     const tree = await render(components.NTree as Component, {
-      label: "Files", modelValue: null, expanded: [],
+      label: "Files",
+      modelValue: null,
+      expanded: [],
       items: [{ key: "src", label: "Source", children: [{ key: "app", label: "App" }] }],
     });
     assert.match(tree, /role="tree"/u);

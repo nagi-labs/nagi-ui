@@ -36,6 +36,8 @@ const sectionProps = computed(() =>
 
 <style scoped>
 .n-sidebar-section {
+  --local-title-tracking: 0.06em;
+
   display: grid;
   gap: var(--n-space-1);
 
@@ -44,7 +46,7 @@ const sectionProps = computed(() =>
     color: var(--nagi-color-text-muted);
     font-size: var(--nagi-font-size-label);
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--local-title-tracking);
     text-transform: uppercase;
   }
 

@@ -149,8 +149,12 @@ const attrs = useAttrs();
     outline-offset: var(--n-border-width-2);
   }
 
-  .n-input-group > .unit > :slotted(.n-input-group-action:focus-visible) {
-    outline-color: Highlight;
+  .n-input-group {
+    > .unit {
+      > :slotted(.n-input-group-action:focus-visible) {
+        outline-color: Highlight;
+      }
+    }
   }
 }
 </style>

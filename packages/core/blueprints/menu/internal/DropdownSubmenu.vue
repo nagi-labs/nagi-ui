@@ -7,7 +7,7 @@ import {
   submenuEntry,
   type DropdownMenuEntry,
   type DropdownMenuSubmenuNode,
-} from "./dropdown-schema.ts";
+} from "../dropdown-schema.ts";
 
 const props = defineProps<{
   menu: UseMenuReturn<DropdownMenuEntry>;
@@ -50,7 +50,7 @@ const submenu = useSubmenu(props.menu, submenuEntry(props.node), {
     </button>
 
     <ul
-      class="list -submenu"
+      class="list"
       data-scope="dropdown-menu"
       data-part="submenu"
       popover

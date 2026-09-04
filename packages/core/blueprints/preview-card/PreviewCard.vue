@@ -97,17 +97,17 @@ defineExpose({ show: preview.show, hide: preview.hide });
       popover
       v-bind="preview.previewProps"
     >
-      <span class="item -metadata">
-        <span class="title">{{ title }}</span>
+      <span class="seg -metadata">
+        <span class="text -primary">{{ title }}</span>
         <span
           v-if="description"
-          class="text"
+          class="text -secondary"
           >{{ description }}</span
         >
       </span>
       <span
         v-if="$slots.default"
-        class="item -extra"
+        class="seg -extra"
       >
         <slot />
       </span>
@@ -152,24 +152,27 @@ defineExpose({ show: preview.show, hide: preview.hide });
       overlay 0.16s allow-discrete,
       display 0.16s allow-discrete;
 
-    > .item.-metadata,
-    > .item.-metadata > .title,
-    > .item.-metadata > .text,
-    > .item.-extra {
+    > .seg {
       display: block;
     }
 
-    > .item.-metadata > .title {
-      font-weight: 700;
+    > .seg.-metadata {
+      > .text {
+        display: block;
+      }
+
+      > .text.-primary {
+        font-weight: 700;
+      }
+
+      > .text.-secondary {
+        margin-block-start: var(--n-space-3);
+        color: var(--nagi-color-text-muted);
+        font-size: var(--nagi-font-size-label);
+      }
     }
 
-    > .item.-metadata > .text {
-      margin-block-start: var(--n-space-3);
-      color: var(--nagi-color-text-muted);
-      font-size: var(--nagi-font-size-label);
-    }
-
-    > .item.-extra {
+    > .seg.-extra {
       margin-block-start: var(--n-space-7);
     }
 
@@ -187,22 +190,26 @@ defineExpose({ show: preview.show, hide: preview.hide });
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .n-preview-card > .unit {
-    translate: 0;
-    transition-duration: 0s;
+  .n-preview-card {
+    > .unit {
+      translate: 0;
+      transition-duration: 0s;
+    }
   }
 }
 
 @media (forced-colors: active) {
-  .n-preview-card > .link:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
-    box-shadow: none;
-  }
+  .n-preview-card {
+    > .link:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+      box-shadow: none;
+    }
 
-  .n-preview-card > .unit {
-    border-color: CanvasText;
-    box-shadow: none;
+    > .unit {
+      border-color: CanvasText;
+      box-shadow: none;
+    }
   }
 }
 </style>

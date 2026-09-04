@@ -162,7 +162,6 @@ const contracts: Record<string, BindingContract> = {
     tags: ["div"],
     protectedAttributes: set(
       "id",
-      "role",
       "dir",
       "aria-label",
       "aria-labelledby",
@@ -393,7 +392,7 @@ const contracts: Record<string, BindingContract> = {
   },
   menubarProps: {
     tags: ["div"],
-    protectedAttributes: set("id", "role", "aria-orientation", "aria-label", "dir"),
+    protectedAttributes: set("id", "aria-orientation", "aria-label", "dir"),
   },
   actionProps: {
     tags: ["button", "a"],

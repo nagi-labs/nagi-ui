@@ -71,7 +71,7 @@ function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePane
         <button
           v-if="isPanel(item)"
           v-bind="navigation.navigationTriggerProps(item)"
-          class="button -trigger"
+          class="button"
         >
           {{ item.label }}
         </button>
@@ -112,7 +112,7 @@ function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePane
             @click="activateLink(child, $event, true)"
             @pointerenter="prefetchLink(child)"
           >
-            <span class="title">{{ child.label }}</span>
+            <span class="text">{{ child.label }}</span>
             <span
               v-if="child.description"
               class="seg -description"
@@ -134,29 +134,35 @@ function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePane
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-  > .list > .item > .link,
-  > .list > .item > .button.-trigger {
-    display: inline-flex;
-    min-block-size: var(--nagi-size-control);
-    align-items: center;
-    padding: var(--nagi-space-control);
-    border: 0;
-    border-radius: var(--nagi-radius-control);
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  > .list > .item > .link:hover,
-  > .list > .item > .button.-trigger:hover,
-  > .list > .item > .button.-trigger[aria-expanded="true"] {
-    background: var(--nagi-color-surface-active);
-  }
-  > .list > .item > :is(.link, .button.-trigger):focus-visible {
-    outline: none;
-    box-shadow: var(--nagi-shadow-focus);
+
+    > .item {
+      > :is(.link, .button) {
+        display: inline-flex;
+        min-block-size: var(--nagi-size-control);
+        align-items: center;
+        padding: var(--nagi-space-control);
+        border: 0;
+        border-radius: var(--nagi-radius-control);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-decoration: none;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--nagi-color-surface-active);
+        }
+
+        &:focus-visible {
+          outline: none;
+          box-shadow: var(--nagi-shadow-focus);
+        }
+      }
+
+      > .button[aria-expanded="true"] {
+        background: var(--nagi-color-surface-active);
+      }
+    }
   }
   > .unit.-popup {
     inline-size: min(20rem, calc(100vw - 1rem));
@@ -168,34 +174,46 @@ function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePane
     background: var(--nagi-color-surface);
     box-shadow: var(--nagi-shadow-overlay);
     color: inherit;
-  }
-  > .unit.-popup > .list {
-    display: grid;
-    gap: var(--nagi-space-item-gap);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  > .unit.-popup > .list > .item > .link {
-    display: grid;
-    gap: var(--nagi-space-item-gap);
-    min-block-size: var(--nagi-size-control);
-    padding: var(--nagi-space-item);
-    border-radius: var(--nagi-radius-item);
-    color: inherit;
-    text-decoration: none;
-  }
-  > .unit.-popup > .list > .item > .link:hover {
-    background: var(--nagi-color-surface-active);
-  }
-  > .unit.-popup > .list > .item > .link > .seg.-description {
-    color: var(--nagi-color-text-muted);
-    font-size: var(--nagi-font-size-label);
+
+    > .list {
+      display: grid;
+      gap: var(--nagi-space-item-gap);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+      > .item {
+        > .link {
+          display: grid;
+          gap: var(--nagi-space-item-gap);
+          min-block-size: var(--nagi-size-control);
+          padding: var(--nagi-space-item);
+          border-radius: var(--nagi-radius-item);
+          color: inherit;
+          text-decoration: none;
+
+          &:hover {
+            background: var(--nagi-color-surface-active);
+          }
+
+          > .seg.-description {
+            color: var(--nagi-color-text-muted);
+            font-size: var(--nagi-font-size-label);
+          }
+        }
+      }
+    }
   }
 }
 @media (forced-colors: active) {
-  .n-navigation-menu > .list > .item > :is(.link, .button.-trigger):focus-visible {
-    outline: 2px solid Highlight;
+  .n-navigation-menu {
+    > .list {
+      > .item {
+        > :is(.link, .button):focus-visible {
+          outline: 2px solid Highlight;
+        }
+      }
+    }
   }
 }
 </style>

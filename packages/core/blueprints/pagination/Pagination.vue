@@ -152,14 +152,19 @@ const pagination = usePagination<PaginationItem>(
 }
 
 @media (forced-colors: active) {
-  .n-pagination > .list > .item > [aria-current="page"] {
-    border-width: var(--n-border-width-2);
-  }
+  .n-pagination {
+    > .list {
+      > .item {
+        > [aria-current="page"] {
+          border-width: var(--n-border-width-2);
+        }
 
-  .n-pagination > .list > .item > .link:focus-visible,
-  .n-pagination > .list > .item > .button:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+        > :is(.link, .button):focus-visible {
+          outline: 2px solid Highlight;
+          outline-offset: var(--n-border-width-2);
+        }
+      }
+    }
   }
 }
 </style>

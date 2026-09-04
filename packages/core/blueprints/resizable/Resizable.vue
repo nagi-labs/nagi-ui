@@ -115,8 +115,10 @@ const divProps = computed(() =>
 }
 
 @media (forced-colors: active) {
-  .n-resizable > .unit.-separator:focus-visible {
-    outline: 2px solid Highlight;
+  .n-resizable {
+    > .unit.-separator:focus-visible {
+      outline: 2px solid Highlight;
+    }
   }
 }
 </style>

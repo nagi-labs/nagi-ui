@@ -133,9 +133,11 @@ function onChange(event: Event) {
 }
 
 @media (forced-colors: active) {
-  .n-select > .select:focus-visible {
-    outline: 2px solid Highlight;
-    outline-offset: var(--n-border-width-2);
+  .n-select {
+    > .select:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: var(--n-border-width-2);
+    }
   }
 }
 </style>

@@ -1,8 +1,13 @@
 # Nagi UI
 
-Nagi UI is a native-first Vue component system designed to become application
-source. Use the package for evaluation and light use, or copy the canonical Vue
-components into your repository with the ownership CLI.
+Nagi UI provides readable Vue components together with the executable tests
+that explain how to change them safely. Its standard Blueprints are
+platform-first, but Nagi itself is not tied to one renderer: Component Contract
+tests describe what compatible implementations preserve and Implementation tests
+describe how one concrete source provides it.
+
+Use the package for evaluation and light use, or copy the canonical Vue source
+and its maintenance knowledge into your repository with the ownership CLI.
 
 ```sh
 vp add @nagi-labs/nagi-ui
@@ -19,8 +24,11 @@ Own the exact component source shipped by the installed version:
 vp exec nagi-ui own button dialog
 ```
 
-Owned files carry `@nagi-source` provenance markers. Components with a verified
-Definition also copy that maintenance contract beside the Vue source.
+Owned files carry `@nagi-source` provenance markers. Components with migrated
+Definitions keep their immutable Component Contract identity with the source.
+The shared runner remains available from the package's development-only
+`@nagi-labs/nagi-ui/test` entrypoint, while owned or Motion implementations
+supply their own Implementation evidence.
 
 - [Documentation and application showcase](https://nagi-labs.github.io/nagi-ui/)
 - [Concept](https://github.com/nagi-labs/nagi-ui/blob/main/CONCEPT.md)

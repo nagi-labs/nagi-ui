@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test"
 
+// Toast Definition evidence: [TST-STATE-03]
+
 test("Toast region re-promotes when a modal opens after a live notification", async ({ page }) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Fire toast" }).first().click()

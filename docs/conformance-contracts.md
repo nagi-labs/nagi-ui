@@ -7,9 +7,9 @@ owned component still behaves like a Dialog or Tabs. The experimental
 observable semantics, keyboard interaction, state, and focus.
 
 ```ts
-import { alertDialogContract, dialogContract, tabsContract } from "@nagi-labs/nagi-ui/test"
-import { dialogDefinition } from "./owned/dialog.definition.ts"
-import { alertDialogDefinition } from "./owned/alert-dialog.definition.ts"
+import { alertDialogContract, dialogContract, tabsContract } from "@nagi-labs/nagi-ui/test";
+import { dialogDefinition } from "./owned/dialog.definition.ts";
+import { alertDialogDefinition } from "./owned/alert-dialog.definition.ts";
 
 dialogContract({
   definition: dialogDefinition,
@@ -17,7 +17,7 @@ dialogContract({
   triggerName: "Edit profile",
   dialogName: "Profile",
   closeName: "Cancel",
-})
+});
 
 alertDialogContract({
   definition: alertDialogDefinition,
@@ -28,22 +28,27 @@ alertDialogContract({
   closeName: "Keep account",
   actionName: "Delete account",
   initialFocusName: "Keep account",
-})
+});
 
 tabsContract({
   url: "/account",
   name: "Account sections",
   activation: "automatic",
-})
+});
 ```
 
-Definition-aware contracts consume the typed value owned with the component.
-This lets the browser contract execute the same anatomy rules and prevents a
-test title from claiming an undeclared requirement ID:
+Definition-aware contracts consume the compatibility typed value owned with
+the component so the browser contract executes the same anatomy rules. Button
+and Carousel additionally expose their behavioral guarantees through ordinary
+Playwright metadata: the named test function is the stable Requirement ID, the
+title is its description, tags classify its Component Contract/Implementation layer and one or
+more non-exclusive section facets, and the body is the evidence. A temporal
+flow may therefore verify state, interaction, and focus in one Requirement
+when those observations form one promise:
 
 ```ts
-import { carouselContract } from "@nagi-labs/nagi-ui/test"
-import { carouselDefinition } from "./owned/carousel.definition.ts"
+import { carouselContract } from "@nagi-labs/nagi-ui/test";
+import { carouselDefinition } from "./owned/carousel.definition.ts";
 
 carouselContract({
   definition: carouselDefinition,
@@ -64,13 +69,21 @@ carouselContract({
     externalUpdateName: "Set disabled carousel to second",
     expectedExternalIndex: "1",
   },
-})
+});
 ```
 
-The invocation stays in the application; the implementation stays in the
-installed package. An upgrade can add newly learned invariants without copying
-test logic into every owned source. Names and capability flags are the thin
-adapter between an application's fixture and the shared suite.
+An owned source that still uses the native-scroll mechanism keeps the standard
+Implementation checks. A Motion-owned source passes
+`includeStandardImplementation: false` and registers its own
+`CAR_IMPLEMENTATION_NN` tests while retaining the same Component Contract
+runner.
+
+The fixture stays in the application and the shared Component Contract runner
+stays in the development dependency. A runner upgrade may improve test
+sensitivity for the same guarantee, but it cannot add, remove, or reinterpret a
+Requirement under the same Contract revision. Changed guarantees use a new
+revision. Names and capability flags are the thin adapter between an
+application's fixture and the shared suite.
 
 ## Existing architecture
 
@@ -90,16 +103,17 @@ This layer complements, rather than replaces, Nagi UI's existing boundaries:
 The missing boundary was a reusable behavioral suite that can be run against a
 consumer-owned component without importing its DOM hierarchy into the contract.
 
-## Contract guarantees
+## Component Contract guarantees
 
 `dialogContract` discovers a trigger and surface by accessible role and name.
-It checks the native surface, actual `:modal` state, optional accessible
-description, opening focus, Escape and light dismissal, sequential focus
-containment, close actions, model synchronization, and focus restoration. It
-does not require a header/body/footer order or any Nagi class.
+Its Component Contract checks naming and description, opening focus, declared
+dismissal outcomes, sequential focus containment, close actions, accepted open
+state, and focus restoration. The standard Implementation additionally checks
+the native dialog element and actual `:modal` state. Neither layer requires a
+header/body/footer order or any Nagi class.
 
 `alertDialogContract` runs the same native modal boundary with the stricter
-AlertDialog profile. It requires an exposed warning description, cancel-first
+AlertDialog implementation choices. It requires an exposed warning description, cancel-first
 focus, resistance to backdrop light dismissal, and explicit cancel and primary
 actions. Package and owned fixtures share the assertions while keeping their
 DOM order independent.
@@ -145,7 +159,7 @@ The same architecture extends to Select without sharing its exact suite with
 Tabs: discover the trigger by role/name; assert `aria-expanded` and popup
 relationships; exercise open, option navigation, disabled options, selection,
 Escape, and focus restoration. Native-select and custom-listbox modes need
-separate capability profiles because both are valid.
+separate Implementations because both are valid.
 
 ComboBox needs a component-specific contract with explicit capabilities, for
 example `editable`, `selection: "automatic" | "manual"`, and
@@ -166,8 +180,12 @@ usually keep only semantic and axe coverage. Each suite needs browser fixtures,
 capability documentation, and upstream-spec review, so adding a contract where
 no meaningful keyboard/state behavior exists costs more than it protects.
 
-This PoC intentionally exports a package subpath with Playwright as an optional
-peer. If consumer validation proves the API stable, a separate test package may
+This PoC intentionally exports package subpaths for pure Contract metadata
+(`@nagi-labs/nagi-ui/contracts/carousel`,
+`@nagi-labs/nagi-ui/contracts/dialog`, and
+`@nagi-labs/nagi-ui/contracts/toast`, and
+`@nagi-labs/nagi-ui/contracts/combobox`) alongside the runner entrypoint, with
+Playwright as an optional peer. If consumer validation proves the API stable, a separate test package may
 provide cleaner dependency and versioning boundaries. Until then, keeping the
 surface experimental avoids prematurely creating another package or behavior
 abstraction.

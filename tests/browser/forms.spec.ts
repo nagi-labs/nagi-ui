@@ -257,7 +257,7 @@ test("RangeSlider keeps two native thumbs ordered, form-associated, and resettab
   await expect(upper).toHaveAttribute("aria-valuemin", "35");
   await expect(page.locator("#price-range-value")).toHaveText("price range: 35–65");
   const alignment = await rangeFieldset.evaluate((element) => {
-    const track = element.querySelector<HTMLElement>(".item.-wide > .rail");
+    const track = element.querySelector<HTMLElement>(".seg.-wide > .rail");
     const inputs = element.querySelectorAll<HTMLInputElement>('input[type="range"]');
     if (!track || inputs.length !== 2) throw new Error("RangeSlider geometry is incomplete");
 

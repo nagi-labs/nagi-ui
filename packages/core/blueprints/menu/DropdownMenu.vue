@@ -2,7 +2,7 @@
 import type { StyleValue } from "vue";
 import { useMenu, type MenuDirection } from "@nagi-labs/nagi-ui";
 
-import DropdownMenuItem from "./DropdownMenuItem.vue";
+import DropdownMenuItem from "./internal/DropdownMenuItem.vue";
 import { menuEntries, type DropdownMenuEntry, type DropdownMenuNode } from "./dropdown-schema.ts";
 
 const props = withDefaults(
@@ -38,7 +38,7 @@ const menu = useMenu<DropdownMenuEntry>({
     :style="props.style"
   >
     <button
-      class="button -trigger"
+      class="button"
       data-scope="dropdown-menu"
       data-part="trigger"
       type="button"
@@ -46,7 +46,7 @@ const menu = useMenu<DropdownMenuEntry>({
     >
       {{ label }}
       <span
-        class="icon -trigger"
+        class="icon"
         aria-hidden="true"
         >⌄</span
       >
@@ -74,28 +74,26 @@ const menu = useMenu<DropdownMenuEntry>({
   display: inline-block;
 
   > .button {
-    &.-trigger {
-      display: inline-flex;
-      gap: var(--n-space-5);
-      align-items: center;
-      padding: var(--nagi-space-control);
-      border: var(--n-border-width-1) solid var(--nagi-color-border);
-      border-radius: var(--nagi-radius-control);
-      background: var(--nagi-color-surface);
-      color: var(--nagi-color-text);
-      font: inherit;
-      font-weight: 650;
-      cursor: pointer;
+    display: inline-flex;
+    gap: var(--n-space-5);
+    align-items: center;
+    padding: var(--nagi-space-control);
+    border: var(--n-border-width-1) solid var(--nagi-color-border);
+    border-radius: var(--nagi-radius-control);
+    background: var(--nagi-color-surface);
+    color: var(--nagi-color-text);
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
 
-      &:hover,
-      &[aria-expanded="true"] {
-        background: var(--nagi-color-surface-active);
-      }
+    &:hover,
+    &[aria-expanded="true"] {
+      background: var(--nagi-color-surface-active);
+    }
 
-      > .icon {
-        color: var(--nagi-color-text-muted);
-        line-height: 1;
-      }
+    > .icon {
+      color: var(--nagi-color-text-muted);
+      line-height: 1;
     }
   }
 

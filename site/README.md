@@ -14,10 +14,14 @@ Nagi CSS is a separate product. The site names it as the CSS contract used here,
 but links to the [official Nagi CSS documentation](https://nagi-labs.github.io/nagi-css/)
 instead of maintaining a second explanation inside the Nagi UI site.
 
-Every component page also publishes Definition progress. Verified Definitions show their
-requirements and executable evidence; components that have not completed that audit show
-`Definition · WIP` instead of silently omitting the section. The catalog cards expose the same
-status so migration progress is visible before opening a component page.
+Every component page also publishes Definition progress. Runner catalogs show their
+Component Contract/Implementation requirements collected from executable tests. The site keeps
+`Browser evidence: passed/failed/not collected` separate from `Contract audit: ready/WIP`, so a
+passing subset of browser checks is never presented as a completed Contract audit. The catalog
+cards expose both states before a component page is opened.
+Runner Requirements are stored once by stable ID and may carry several section
+facets. The site cross-lists the same guarantee under Semantics, State,
+Interaction, Focus, Anatomy, or Style rather than duplicating its evidence.
 
 ## Local development
 
@@ -67,12 +71,13 @@ frame during full-page navigation or reload while dark mode is active.
 
 ## Relationship to Nagi
 
-Nagi UI supplies the native-first Vue components and semantic theme tokens. Nagi CSS checks the
-site's actual Vue templates and scoped plain CSS, including surface roots, anatomy, variants, and
-runtime state. The site imports Nagi UI's combined `styles.css` entry and therefore dogfoods both
-the default tokens and the opt-in native-element baseline; `site.css` contains only site-specific
-decisions and token overrides. The source deliberately keeps ordinary Nuxt, Vue, HTML, and CSS
-visible.
+Nagi UI supplies readable Vue Blueprints, their Component Contract/Implementation maintenance tests, and semantic
+theme tokens. The standard Blueprint Implementation is platform-first; Nagi itself is not a native-only
+runtime. Nagi CSS checks the site's actual Vue templates and scoped plain CSS, including surface
+roots, anatomy, variants, and runtime state. The site imports Nagi UI's combined `styles.css` entry
+and therefore dogfoods both the default tokens and the opt-in native-element baseline; `site.css`
+contains only site-specific decisions and token overrides. The source deliberately keeps ordinary
+Nuxt, Vue, HTML, and CSS visible.
 
 The Nuxt Vite CSS pipeline also runs `nagiStyleCompiler()`. Button contexts in `site.css` select
 the concrete `.n-button` and author the public `--button-tone`, `--button-appearance`,

@@ -93,7 +93,7 @@ useNativeValueReset(input, model);
         <span
           v-for="(_cell, index) in field.cells.value"
           :key="index"
-          class="cell"
+          class="value"
           >{{ field.cells.value[index] || "·" }}</span
         >
       </span>
@@ -140,7 +140,7 @@ useNativeValueReset(input, model);
       grid-template-columns: repeat(var(--local-otp-columns), minmax(0, 1fr));
       gap: var(--nagi-space-item-gap);
 
-      > .cell {
+      > .value {
         display: grid;
         place-items: center;
         min-inline-size: 0;
@@ -152,29 +152,49 @@ useNativeValueReset(input, model);
       }
     }
 
-    &:focus-within > .unit.-digits > .cell {
-      border-color: var(--nagi-color-focus-ring);
-    }
     &:focus-within {
       border-radius: var(--nagi-radius-control);
       box-shadow: var(--nagi-shadow-focus);
+
+      > .unit.-digits {
+        > .value {
+          border-color: var(--nagi-color-focus-ring);
+        }
+      }
     }
-    &:has(> :is(.input:invalid, .input[aria-invalid="true"])) > .unit.-digits > .cell {
-      border-color: var(--nagi-color-danger);
+
+    &:has(> :is(.input:invalid, .input[aria-invalid="true"])) {
+      > .unit.-digits {
+        > .value {
+          border-color: var(--nagi-color-danger);
+        }
+      }
     }
-    &:has(> .input:disabled) > .unit.-digits > .cell {
-      background: var(--nagi-color-surface-active);
-      color: var(--nagi-color-text-disabled);
+
+    &:has(> .input:disabled) {
+      > .unit.-digits {
+        > .value {
+          background: var(--nagi-color-surface-active);
+          color: var(--nagi-color-text-disabled);
+        }
+      }
     }
-    &:has(> .input:read-only) > .unit.-digits > .cell {
-      background: var(--nagi-color-surface-active);
+
+    &:has(> .input:read-only) {
+      > .unit.-digits {
+        > .value {
+          background: var(--nagi-color-surface-active);
+        }
+      }
     }
   }
 }
 
 @media (forced-colors: active) {
-  .n-otp-field > .field:focus-within {
-    outline: 2px solid Highlight;
+  .n-otp-field {
+    > .field:focus-within {
+      outline: 2px solid Highlight;
+    }
   }
 }
 </style>

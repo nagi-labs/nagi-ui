@@ -5,20 +5,20 @@ export {
   type PopoverTriggerProps,
   type UsePopoverOptions,
   type UsePopoverReturn,
-} from "./popover.ts"
+} from "./popover.ts";
 export {
   usePreviewCard,
   type PreviewCardProps,
   type PreviewCardTriggerProps,
   type UsePreviewCardOptions,
   type UsePreviewCardReturn,
-} from "./preview-card.ts"
+} from "./preview-card.ts";
 export {
   createAnchorPair,
   type AnchorArea,
   type AnchorOptions,
   type AnchorPair,
-} from "./anchor.ts"
+} from "./anchor.ts";
 export {
   createToastManager,
   useToast,
@@ -37,18 +37,10 @@ export {
   type ToastUpdateOptions,
   type UseToastOptions,
   type UseToastReturn,
-} from "./toast.ts"
-export {
-  type ToastRendererItemProps,
-  type UseToastRendererReturn,
-} from "./toast-renderer.ts"
-export {
-  useAvatar,
-  type UseAvatarOptions,
-} from "./avatar.ts"
-export {
-  useFocusableDisabled,
-} from "./button.ts"
+} from "./toast.ts";
+export { type ToastRendererItemProps, type UseToastRendererReturn } from "./toast-renderer.ts";
+export { useAvatar, type UseAvatarOptions } from "./avatar.ts";
+export { useFocusableDisabled } from "./button.ts";
 export {
   useDialog,
   vDialogClose,
@@ -59,21 +51,21 @@ export {
   type DialogTriggerProps,
   type UseDialogOptions,
   type UseDialogReturn,
-} from "./dialog.ts"
+} from "./dialog.ts";
 export {
   useTooltip,
   type TooltipProps,
   type TooltipTriggerProps,
   type UseTooltipOptions,
   type UseTooltipReturn,
-} from "./tooltip.ts"
+} from "./tooltip.ts";
 export {
   useDisclosure,
   type DisclosureProps,
   type DisclosureSummaryProps,
   type UseDisclosureOptions,
   type UseDisclosureReturn,
-} from "./disclosure.ts"
+} from "./disclosure.ts";
 export {
   useMenu,
   useSubmenu,
@@ -90,7 +82,7 @@ export {
   type MenuTriggerProps,
   type UseMenuOptions,
   type UseMenuReturn,
-} from "./menu.ts"
+} from "./menu.ts";
 export {
   useContextMenu,
   type ContextMenuBinding,
@@ -98,7 +90,7 @@ export {
   type ContextMenuComponentProps,
   type ContextMenuTriggerProps,
   type UseContextMenuOptions,
-} from "./context-menu.ts"
+} from "./context-menu.ts";
 export {
   useMenubar,
   type MenubarActionProps,
@@ -109,14 +101,14 @@ export {
   type MenubarProps,
   type MenubarTriggerProps,
   type UseMenubarOptions,
-} from "./menubar.ts"
+} from "./menubar.ts";
 export {
   useNavigationMenu,
   type NavigationMenuBinding,
   type NavigationMenuComponentProps,
   type NavigationMenuTriggerProps,
   type UseNavigationMenuOptions,
-} from "./navigation-menu.ts"
+} from "./navigation-menu.ts";
 export {
   useTree,
   type TreeBinding,
@@ -127,7 +119,7 @@ export {
   type TreeItemProps,
   type TreeProps,
   type UseTreeOptions,
-} from "./tree.ts"
+} from "./tree.ts";
 export {
   useListbox,
   type ListboxOptionProps,
@@ -136,7 +128,7 @@ export {
   type ListboxSelectionMode,
   type UseListboxOptions,
   type UseListboxReturn,
-} from "./listbox.ts"
+} from "./listbox.ts";
 export {
   useTabs,
   type TabsAccessibleName,
@@ -147,36 +139,28 @@ export {
   type TabsTabProps,
   type UseTabsOptions,
   type UseTabsReturn,
-} from "./tabs.ts"
+} from "./tabs.ts";
 export {
   useToggle,
   type ToggleButtonProps,
   type UseToggleOptions,
   type UseToggleReturn,
-} from "./toggle.ts"
+} from "./toggle.ts";
 export {
   useToggleGroup,
   type ToggleGroupMode,
   type ToggleGroupValue,
   type UseToggleGroupOptions,
   type UseToggleGroupReturn,
-} from "./toggle-group.ts"
+} from "./toggle-group.ts";
 export {
   usePagination,
   type PaginationBehaviorItem,
   type UsePaginationOptions,
   type UsePaginationReturn,
-} from "./pagination.ts"
-export {
-  useStepper,
-  type StepperBehaviorItem,
-  type UseStepperReturn,
-} from "./stepper.ts"
-export {
-  handleLinkClick,
-  prefetchLink,
-  type LinkNavigationOptions,
-} from "./link.ts"
+} from "./pagination.ts";
+export { useStepper, type StepperBehaviorItem, type UseStepperReturn } from "./stepper.ts";
+export { handleLinkClick, prefetchLink, type LinkNavigationOptions } from "./link.ts";
 export {
   useCombobox,
   type ComboboxInputProps,
@@ -185,13 +169,13 @@ export {
   type ComboboxPopupProps,
   type UseComboboxOptions,
   type UseComboboxReturn,
-} from "./combobox.ts"
+} from "./combobox.ts";
 export {
   useAutocomplete,
   type AutocompleteBinding,
   type AutocompleteComponentProps,
   type UseAutocompleteOptions,
-} from "./autocomplete.ts"
+} from "./autocomplete.ts";
 export {
   useMultiSelect,
   type MultiSelectBinding,
@@ -201,7 +185,7 @@ export {
   type MultiSelectInputProps,
   type MultiSelectOptionProps,
   type UseMultiSelectOptions,
-} from "./multi-select.ts"
+} from "./multi-select.ts";
 export {
   useTagsInput,
   type TagsInputBinding,
@@ -210,7 +194,7 @@ export {
   type TagsInputFormProps,
   type TagsInputProps,
   type UseTagsInputOptions,
-} from "./tags-input.ts"
+} from "./tags-input.ts";
 export {
   useCalendar,
   useRangeCalendar,
@@ -228,7 +212,7 @@ export {
   type RangeCalendarValue,
   type UseCalendarOptions,
   type UseRangeCalendarOptions,
-} from "./calendar.ts"
+} from "./calendar.ts";
 export {
   useDateField,
   type DateFieldBinding,
@@ -241,7 +225,7 @@ export {
   type DateFieldSegmentProps,
   type DateFieldSegmentType,
   type UseDateFieldOptions,
-} from "./date-field.ts"
+} from "./date-field.ts";
 export {
   useTimeField,
   type TimeFieldBinding,
@@ -255,7 +239,7 @@ export {
   type TimeFieldSegmentProps,
   type TimeFieldSegmentType,
   type UseTimeFieldOptions,
-} from "./time-field.ts"
+} from "./time-field.ts";
 export {
   useDatePicker,
   useDateRangePicker,
@@ -267,7 +251,7 @@ export {
   type DateRangePickerComponentProps,
   type UseDatePickerOptions,
   type UseDateRangePickerOptions,
-} from "./date-picker.ts"
+} from "./date-picker.ts";
 export {
   useCarousel,
   type CarouselBinding,
@@ -278,7 +262,7 @@ export {
   type CarouselSlideLabelProps,
   type CarouselViewportProps,
   type UseCarouselOptions,
-} from "./carousel.ts"
+} from "./carousel.ts";
 export {
   useOTPField,
   type OTPFieldBinding,
@@ -286,7 +270,7 @@ export {
   type OTPFieldInputProps,
   type OTPFieldKind,
   type UseOTPFieldOptions,
-} from "./otp-field.ts"
+} from "./otp-field.ts";
 export {
   useResizable,
   type ResizableBinding,
@@ -295,7 +279,7 @@ export {
   type ResizableOrientation,
   type ResizableSeparatorProps,
   type UseResizableOptions,
-} from "./resizable.ts"
+} from "./resizable.ts";
 export {
   useToolbar,
   type ToolbarBinding,
@@ -305,7 +289,7 @@ export {
   type ToolbarOrientation,
   type ToolbarProps,
   type UseToolbarOptions,
-} from "./toolbar.ts"
+} from "./toolbar.ts";
 export {
   useNativeCheckedReset,
   useNativeCheckbox,
@@ -315,24 +299,26 @@ export {
   useNativeRadioGroupReset,
   useNativeRadioReset,
   useNativeValueReset,
-} from "./native-form.ts"
+} from "./native-form.ts";
 export {
   missingNagiThemeTokens,
   requiredNagiThemeTokens,
   warnMissingNagiThemeTokens,
-} from "./theme.ts"
+} from "./theme.ts";
 export {
   mergeElementProps,
   withoutClassToken,
   ElementPropConflictError,
   type MergedElementProps,
-} from "./merge-props.ts"
-export type { WritableRef } from "./model-sync.ts"
+} from "./merge-props.ts";
+export type { WritableRef } from "./model-sync.ts";
 export {
   assertDefinition,
   adoptRequirementSet,
   assertAnatomy,
+  defineComponentContract,
   defineComponentDefinition,
+  defineComponentImplementation,
   defineRequirementSet,
   inspectAnatomy,
   validateDefinition,
@@ -343,7 +329,11 @@ export {
   type AnatomyIssueCode,
   type AnatomyMatch,
   type AnatomyPart,
+  type ComponentApiMember,
+  type ComponentContract,
   type ComponentDefinition,
+  type ComponentImplementation,
+  type ComponentPart,
   type DefinitionClassification,
   type DefinitionEntry,
   type DefinitionOrigin,
@@ -351,16 +341,20 @@ export {
   type DefinitionSection,
   type DefinitionStatement,
   type DefinitionStatus,
+  type ImplementationDecision,
   type RequirementSet,
   type RequirementSetAdoption,
   type RequirementSetStatement,
-} from "./definition.ts"
-export { nagiButtonRequirementsV1 } from "./standards/nagi-button.ts"
-export { nagiCalendarRequirementsV1 } from "./standards/nagi-calendar.ts"
-export { nagiDialogRequirementsV1 } from "./standards/nagi-dialog.ts"
-export { nagiListboxRequirementsV1 } from "./standards/nagi-listbox.ts"
-export { nagiMenuRequirementsV1 } from "./standards/nagi-menu.ts"
-export { nagiPopupRequirementsV1 } from "./standards/nagi-popup.ts"
+} from "./definition.ts";
+export { nagiButtonRequirementsV1, nagiButtonRequirementsV2 } from "./standards/nagi-button.ts";
+export {
+  nagiCalendarRequirementsV1,
+  nagiCalendarRequirementsV2,
+} from "./standards/nagi-calendar.ts";
+export { nagiDialogRequirementsV1, nagiDialogRequirementsV2 } from "./standards/nagi-dialog.ts";
+export { nagiListboxRequirementsV1 } from "./standards/nagi-listbox.ts";
+export { nagiMenuRequirementsV1 } from "./standards/nagi-menu.ts";
+export { nagiPopupRequirementsV1 } from "./standards/nagi-popup.ts";
 export {
   assertNagiDom,
   observeNagiDom,
@@ -368,4 +362,4 @@ export {
   type NagiDomIssue,
   type NagiDomIssueCode,
   type ObserveNagiDomOptions,
-} from "./verify-dom.ts"
+} from "./verify-dom.ts";

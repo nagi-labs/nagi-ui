@@ -68,7 +68,7 @@ const carousel = useCarousel(props, index);
         ‹
       </button>
       <output
-        class="output -announcement"
+        class="output"
         role="status"
         aria-live="polite"
         aria-atomic="true"
@@ -88,36 +88,34 @@ const carousel = useCarousel(props, index);
       data-part="viewport"
       class="unit -viewport"
     >
-      <div class="seg -slides">
-        <article
-          v-for="(item, itemIndex) in items"
-          :key="item.key"
-          v-bind="carousel.slideProps(item, itemIndex)"
-          data-scope="carousel"
-          data-part="slide"
-          class="article -slide"
+      <article
+        v-for="(item, itemIndex) in items"
+        :key="item.key"
+        v-bind="carousel.slideProps(item, itemIndex)"
+        data-scope="carousel"
+        data-part="slide"
+        class="article"
+      >
+        <img
+          v-if="item.imageSrc"
+          class="image"
+          :src="item.imageSrc"
+          :alt="item.imageAlt ?? ''"
+        />
+        <h2
+          v-bind="carousel.slideLabelProps(itemIndex)"
+          class="title"
         >
-          <img
-            v-if="item.imageSrc"
-            class="image"
-            :src="item.imageSrc"
-            :alt="item.imageAlt ?? ''"
-          />
-          <h2
-            v-bind="carousel.slideLabelProps(itemIndex)"
-            class="title"
-          >
-            {{ item.label }}
-            <span class="text -position">, {{ carousel.slidePosition(item, itemIndex) }}</span>
-          </h2>
-          <p
-            v-if="item.description"
-            class="text -description"
-          >
-            {{ item.description }}
-          </p>
-        </article>
-      </div>
+          {{ item.label }}
+          <span class="text">, {{ carousel.slidePosition(item, itemIndex) }}</span>
+        </h2>
+        <p
+          v-if="item.description"
+          class="p"
+        >
+          {{ item.description }}
+        </p>
+      </article>
     </div>
   </section>
 </template>
@@ -154,13 +152,15 @@ const carousel = useCarousel(props, index);
       }
     }
 
-    > .output.-announcement {
+    > .output {
       color: var(--nagi-color-text-muted);
       font-size: var(--nagi-font-size-label);
     }
   }
 
   > .unit.-viewport {
+    display: flex;
+    inline-size: 100%;
     overflow: auto;
     scroll-snap-type: inline mandatory;
     scroll-behavior: smooth;
@@ -170,12 +170,7 @@ const carousel = useCarousel(props, index);
       box-shadow: var(--nagi-shadow-focus);
     }
 
-    > .seg.-slides {
-      display: flex;
-      inline-size: 100%;
-    }
-
-    .article.-slide {
+    > .article {
       box-sizing: border-box;
       flex: 0 0 100%;
       padding: var(--nagi-space-surface-inset);
@@ -194,7 +189,7 @@ const carousel = useCarousel(props, index);
         margin: 0;
         font-size: inherit;
 
-        > .text.-position {
+        > .text {
           position: absolute;
           inset: 0 auto auto 0;
           inline-size: 1px;
@@ -204,27 +199,38 @@ const carousel = useCarousel(props, index);
           white-space: nowrap;
         }
       }
-      > .text.-description {
+      > .p {
         margin-block: var(--nagi-space-item-gap) 0;
         color: var(--nagi-color-text-muted);
       }
     }
   }
 
-  &[data-disabled] > .unit.-viewport {
-    overflow: hidden;
+  &[data-disabled] {
+    > .unit.-viewport {
+      overflow: hidden;
+    }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .n-carousel > .unit.-viewport {
-    scroll-behavior: auto;
+  .n-carousel {
+    > .unit.-viewport {
+      scroll-behavior: auto;
+    }
   }
 }
 @media (forced-colors: active) {
-  .n-carousel > .actions > .button:focus-visible,
-  .n-carousel > .unit.-viewport:focus-visible {
-    outline: 2px solid Highlight;
+  .n-carousel {
+    > .actions {
+      > .button:focus-visible {
+        outline: 2px solid Highlight;
+      }
+    }
+
+    > .unit.-viewport:focus-visible {
+      outline: 2px solid Highlight;
+    }
   }
 }
 </style>

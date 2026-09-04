@@ -45,7 +45,6 @@ export type UseTabsOptions<Item, Key extends string = string> = TabsAccessibleNa
 export interface TabsListProps {
   ref: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
-  role: "tablist";
   dir: MenuDirection;
   "aria-label"?: string;
   "aria-labelledby"?: string;
@@ -319,7 +318,6 @@ function createTabs<Item, Key extends string = string>(
       tablistElement = element as HTMLElement | null;
     },
     id,
-    role: "tablist",
     dir: direction,
     ...(options.label === undefined ? {} : { "aria-label": options.label }),
     ...(options.labelledBy === undefined
