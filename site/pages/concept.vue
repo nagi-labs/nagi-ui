@@ -35,7 +35,9 @@ dialog/
         <code class="code">useDialog</code> behavior and <code class="code">vDialogClose</code>
         directive from the installed package.
       </span>
-      <pre class="pre"><code class="code">Canonical: header(title + description) → section(body) → footer(actions)
+      <pre
+        class="pre"
+      ><code class="code">Canonical: header(title + description) → section(body) → footer(actions)
 Owned:     nav(actions) → article(description + body + title)</code></pre>
       <div class="actions">
         <a
@@ -54,8 +56,8 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
       <h2 class="title">2. Preserve the portable behavior with a shared Contract</h2>
       <span class="text">
         The shared Dialog Contract checks observable behavior such as a named modal surface,
-        accepted open state, explicit close, focus containment, and restoration to the invoker.
-        It discovers behavior through roles, names, state, and relationships rather than Nagi CSS
+        accepted open state, explicit close, focus containment, and restoration to the invoker. It
+        discovers behavior through roles, names, state, and relationships rather than Nagi CSS
         classes or a fixed child index.
       </span>
       <pre class="pre"><code class="code">dialogContract({
@@ -66,9 +68,9 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
 })</code></pre>
       <span class="text">
         This is an explanatory excerpt, not a directly executable call. The complete existing
-        invocation also supplies the Definition, fixture URL, accessible names, model status,
-        and controlled-mode expectations required by the public API. The repository runs that
-        rearranged owned fixture against the same
+        invocation also supplies the Definition, fixture URL, accessible names, model status, and
+        controlled-mode expectations required by the public API. The repository runs that rearranged
+        owned fixture against the same
         <code class="code">nagi/dialog</code> requirement set used by the package Blueprint.
       </span>
       <a
@@ -83,9 +85,9 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
       <span class="text">
         The standard Blueprint delegates presence and modal behavior to native
         <code class="code">&lt;dialog&gt;</code>. Deep Sea owns a different Dialog implementation,
-        retains its surface for Motion exit, and documents that choice separately while adopting
-        the same Nagi Dialog requirement set. Its local tests cover the retained presence and
-        motion policy; those are not portable guarantees imposed on every Dialog.
+        retains its surface for Motion exit, and documents that choice separately while adopting the
+        same Nagi Dialog requirement set. Its local tests cover the retained presence and motion
+        policy; those are not portable guarantees imposed on every Dialog.
       </span>
       <div class="actions">
         <a
@@ -109,8 +111,8 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
       <span class="text">
         The isolated mutation suite intentionally redirects focus after close. The shared
         <code class="code">DLG-FOCUS-02</code> assertion rejects it because focus no longer returns
-        to the invoker. The broken fixture stays outside the normal implementation; the Contract
-        is not weakened to make it pass.
+        to the invoker. The broken fixture stays outside the normal implementation; the Contract is
+        not weakened to make it pass.
       </span>
       <a
         class="link"
@@ -123,8 +125,8 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
       <h2 class="title">What remains yours</h2>
       <span class="text">
         A Contract verifies only its named requirements and tested browsers. It does not prove the
-        whole Definition, every accessibility requirement, visual correctness, animation quality,
-        or application-specific policy. Draft and WIP Definitions remain labeled as such. After
+        whole Definition, every accessibility requirement, visual correctness, animation quality, or
+        application-specific policy. Draft and WIP Definitions remain labeled as such. After
         ownership, your repository decides when source, local tests, and requirements intentionally
         diverge; package runtime and shared Contract dependencies remain until you replace or vendor
         them deliberately.
@@ -214,8 +216,7 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
       line-height: 1.7;
     }
 
-    > .link,
-    > .actions > .link {
+    > .link {
       color: var(--nagi-color-accent);
       font-weight: 600;
       text-underline-offset: var(--local-link-offset);
@@ -225,6 +226,12 @@ Owned:     nav(actions) → article(description + body + title)</code></pre>
       display: flex;
       flex-wrap: wrap;
       gap: var(--n-space-6);
+
+      > .link {
+        color: var(--nagi-color-accent);
+        font-weight: 600;
+        text-underline-offset: var(--local-link-offset);
+      }
     }
   }
 }

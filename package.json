@@ -29,7 +29,7 @@
     "site:typecheck": "vp run nagi-ui-site#typecheck",
     "site:generate": "vp run nagi-ui-site#generate",
     "site:audit-components": "node scripts/audit-site-components.mjs",
-    "evaluate:naming": "node scripts/evaluations/naming-derivation.mjs --check docs/evaluations/naming-derivation.json && node scripts/evaluations/semantic-erasure.mjs --check docs/evaluations/semantic-erasure.json",
+    "evaluate:naming": "vp run site:lint && node scripts/evaluations/naming-derivation.mjs --check docs/evaluations/naming-derivation.json && node scripts/evaluations/semantic-erasure.mjs --check docs/evaluations/semantic-erasure.json",
     "format:blueprints": "oxfmt packages/core/blueprints",
     "format:blueprints:check": "oxfmt --check packages/core/blueprints",
     "audit:definitions": "node scripts/audits/component-definition-audit.mjs",
@@ -45,6 +45,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@nagi-labs/eslint-plugin-nagi-css": "0.4.0",
+    "@nagi-labs/nagi-css-core": "0.4.0",
     "@nagi-labs/nagi-ui": "workspace:*",
     "@playwright/test": "1.61.1",
     "@typescript/native": "npm:typescript@7.0.2",

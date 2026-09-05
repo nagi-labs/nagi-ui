@@ -4,31 +4,32 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
+import {
+  defineNagiConfig,
+  deriveAllowedSurfaceRootNames,
+  mappingBase,
+} from "@nagi-labs/nagi-css-core";
+import nagiCss from "@nagi-labs/eslint-plugin-nagi-css";
+
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const require = createRequire(path.join(repository, "package.json"));
 const { parseForESLint } = require("vue-eslint-parser");
 const preset = await import(path.join(repository, "packages/core/nagi-css-preset.mjs"));
 
 const ignoredDirectories = new Set([".nuxt", ".output", "node_modules"]);
-const elementClasses = new Map([
-  ...["h1", "h2", "h3", "h4", "h5", "h6"].map((tag) => [tag, "title"]),
-  ...["ul", "ol", "dl"].map((tag) => [tag, "list"]),
-  ["p", "text"],
-  ["small", "note"],
-  ["a", "link"],
-  ["li", "item"],
-  ["dt", "term"],
-  ["dd", "definition"],
-  ["img", "image"],
-  ["tr", "row"],
-  ["th", "cell"],
-  ["td", "cell"],
-]);
-const anatomy = new Set(preset.nagiUiAnatomyClasses);
-const stn = new Set(["stratum", "region", "block", "unit", "seg", "fr", "g"]);
-const componentClasses = new Set(Object.values(preset.nagiUiComponentClasses));
+const contract = defineNagiConfig({
+  ...preset.default,
+  emitPolicy: "when-styled",
+  surfaceRootPrefixes: ["site-"],
+});
+const elementClasses = new Map(
+  Object.entries(contract.elementClasses).map(([tag, value]) => [tag, mappingBase(value)]),
+);
+const anatomy = new Set(contract.anatomyClasses);
+const stn = new Set(contract.tiers);
+const componentClasses = new Set(Object.values(contract.componentClasses).map(mappingBase));
 const slotClasses = new Set(
-  Object.values(preset.nagiUiComponentSlots).flatMap((slots) => Object.values(slots)),
+  Object.values(contract.componentSlots).flatMap((slots) => Object.values(slots)),
 );
 const excludedSelfMap = new Set(["div", "span", "b", "i", "u", "s", "template", "slot"]);
 const fullyDerivedCategories = new Set([
@@ -40,14 +41,6 @@ const fullyDerivedCategories = new Set([
   "element-map",
   "self-map",
 ]);
-
-function kebabCase(value) {
-  return value
-    .replace(/^\[|\]$/gu, "")
-    .replace(/([A-Z]+)([A-Z][a-z])/gu, "$1-$2")
-    .replace(/([a-z0-9])([A-Z])/gu, "$1-$2")
-    .toLowerCase();
-}
 
 function vueFiles(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -79,13 +72,9 @@ function tagName(node) {
   return String(node.rawName ?? node.name).toLowerCase();
 }
 
-function surfaceName(file) {
-  return `site-${kebabCase(path.basename(file, ".vue"))}`;
-}
-
-function classCategory({ token, tag, role, surface }) {
+function classCategory({ token, tag, role, surfaces }) {
   if (token.startsWith("-")) return "variant";
-  if (token === surface || token.startsWith("site-")) return "surface";
+  if (surfaces.has(token)) return "surface";
   if (componentClasses.has(token)) return "component-boundary";
   if (slotClasses.has(token)) return "component-slot";
   if (role && token === role) return "role";
@@ -94,7 +83,7 @@ function classCategory({ token, tag, role, surface }) {
   const expected =
     elementClasses.get(tag) ??
     (!excludedSelfMap.has(tag) && !tag.includes("-") ? tag : null);
-  if (expected === token) return elementClasses.has(tag) ? "element-map" : "self-map";
+  if (expected === token) return expected === tag ? "self-map" : "element-map";
   if (anatomy.has(token)) return "anatomy";
   return "unclassified";
 }
@@ -118,7 +107,9 @@ for (const file of files) {
   });
   const template = parsed.ast.templateBody;
   if (!template) continue;
-  const surface = surfaceName(file);
+  const surfaces = new Set(
+    deriveAllowedSurfaceRootNames(file, contract.surfaceRootPrefixes),
+  );
 
   function countAstElements(node) {
     if (node.type === "VElement") templateAstElements += 1;
@@ -143,7 +134,7 @@ for (const file of files) {
         records.push({
           ...element,
           token,
-          category: classCategory({ token, tag, role, surface }),
+          category: classCategory({ token, tag, role, surfaces }),
         });
       }
     }
@@ -208,6 +199,7 @@ const implicitComponentIdentities = nagiComponentElements.length;
 const result = {
   methodology: {
     parser: "vue-eslint-parser",
+    nagiCssVersion: nagiCss.meta.version,
     scope: "site/**/*.vue",
     excludedDirectories: [...ignoredDirectories].sort(),
     explicitTokenDefinition: "tokens in literal class attributes on template-owned elements",

@@ -59,7 +59,7 @@ if (import.meta.server && !highlightedUsage.value) {
       />
     </template>
     <template #basic-description>
-      <p class="text -guidance">{{ basicGuidance }}</p>
+      <span class="text -guidance">{{ basicGuidance }}</span>
     </template>
     <template #basic>
       <example-frame>
@@ -91,10 +91,10 @@ if (import.meta.server && !highlightedUsage.value) {
       />
     </template>
     <template #source>
-      <p class="text">
+      <span class="text">
         <inline-code>vp exec nagi-ui own date-picker</inline-code> copies the shipped canonical Vue
         SFC.
-      </p>
+      </span>
       <code-disclosure
         summary="View code"
         :html="highlightedBlueprint"
@@ -112,9 +112,9 @@ if (import.meta.server && !highlightedUsage.value) {
           Constraints
         </h2>
       </header>
-      <p class="text">
+      <span class="text">
         Min, max, and unavailable ISO dates constrain both fields and calendar navigation.
-      </p>
+      </span>
       <example-frame>
         <n-date-picker
           v-model="constrainedDate"
@@ -138,9 +138,9 @@ if (import.meta.server && !highlightedUsage.value) {
           Behavior API
         </h2>
       </header>
-      <p class="text">
+      <span class="text">
         The public composables keep field, calendar, popover, and native form state synchronized.
-      </p>
+      </span>
       <code-disclosure
         v-for="api in behaviorApis"
         :key="api.names.join('-')"

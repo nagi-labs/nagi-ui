@@ -28,7 +28,7 @@ import { NButton } from "@nagi-labs/nagi-ui/components";
         <n-button class="n-button -destructive" disabled>Danger</n-button>
         <n-button class="n-button" focusable-when-disabled aria-describedby="button-disabled-note">Unavailable action</n-button>
       </div>
-      <p id="button-disabled-note">The last button remains discoverable by keyboard.</p>
+      <span id="button-disabled-note">The last button remains discoverable by keyboard.</span>
     </section>
   </main>
 </template>

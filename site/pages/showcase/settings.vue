@@ -75,7 +75,7 @@ useHead({ title: "Settings" });
           />
         </div>
         <template #footer>
-          <span class="actions -primary">
+          <span class="actions">
             <n-button
               class="n-button"
               type="submit"
@@ -112,13 +112,13 @@ useHead({ title: "Settings" });
         description="Destructive actions remain explicit and browser-native."
       >
         <div class="n-card-content -danger">
-          <p class="text">
+          <span class="text">
             <strong class="strong">Delete this workspace</strong
             ><small class="note"
               >This showcase does not send data anywhere, but the interaction demonstrates a guarded
               destructive action.</small
             >
-          </p>
+          </span>
           <n-checkbox
             v-model="confirmed"
             label="I understand this action cannot be undone"
@@ -146,10 +146,12 @@ useHead({ title: "Settings" });
     gap: var(--n-space-8);
 
     > .n-card {
-      .n-card-content.-danger > .n-button {
-        --button-tone: danger;
-        --button-appearance: outlined;
-        --button-shape: rounded;
+      .n-card-content.-danger {
+        > .n-button {
+          --button-tone: danger;
+          --button-appearance: outlined;
+          --button-shape: rounded;
+        }
       }
 
       .n-card-content.-fields {

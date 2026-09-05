@@ -208,7 +208,7 @@ if (
       />
     </template>
     <template #basic-description>
-      <p class="text -guidance">{{ basicGuidance }}</p>
+      <span class="text -guidance">{{ basicGuidance }}</span>
     </template>
     <template #basic>
       <component-preview component-name="Button" />
@@ -239,10 +239,10 @@ if (
     </template>
 
     <template #source>
-      <p class="text">
+      <span class="text">
         <inline-code>vp exec nagi-ui own button</inline-code> copies this canonical Vue SFC. The
         code below is loaded directly from the shipped Blueprint, not duplicated in the docs.
-      </p>
+      </span>
       <code-disclosure
         summary="View code"
         :html="highlightedBlueprint"
@@ -262,18 +262,18 @@ if (
           CSS style axes
         </h2>
       </header>
-      <p class="text">
+      <span class="text">
         Set each visual decision independently in consumer CSS. Tone supplies a palette; appearance
         decides how to use it; shape and size own separate geometry. The build compiler validates
         each literal value and adds the private variables consumed by Button.
-      </p>
-      <p class="text">
+      </span>
+      <span class="text">
         The source example follows Nagi CSS: <inline-code>app-button-example</inline-code> is the
         <inline-code>ButtonExample.vue</inline-code> surface, <inline-code>n-button</inline-code> is
         the package boundary, and the leading-hyphen names are static context variants. The
         native-only <inline-code>button</inline-code> class is not placed on
         <inline-code>&lt;n-button&gt;</inline-code>.
-      </p>
+      </span>
       <n-table
         :rows="styleAxisRows"
         :columns="styleAxisColumns"
@@ -305,10 +305,10 @@ if (
           useButton
         </h2>
       </header>
-      <p class="text">
+      <span class="text">
         The owned source passes its reactive props to <inline-code>useButton</inline-code> and binds
         the returned <inline-code>buttonProps</inline-code> to the native button.
-      </p>
+      </span>
       <code-disclosure
         summary="View types"
         :html="highlightedControlApi"

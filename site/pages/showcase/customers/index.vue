@@ -10,7 +10,7 @@ useHead({ title: "Customers" });
       title="Customers"
       description="Search, sort, filter, and act on realistic local records—without turning the presentational Nagi Table into a data grid."
     >
-      <span class="actions -primary"><n-button> Add customer </n-button></span>
+      <span class="actions"><n-button> Add customer </n-button></span>
     </page-heading>
     <customer-directory />
   </div>

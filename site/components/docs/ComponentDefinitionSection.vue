@@ -294,7 +294,7 @@ const constrained = computed(() =>
         </small>
       </header>
 
-      <p class="text">
+      <span class="text">
         The maintenance view for this concrete component: a portable Contract plus one
         Implementation.
         <template v-if="testCatalog">
@@ -310,7 +310,7 @@ const constrained = computed(() =>
         Running
         <inline-code>vp exec nagi-ui own {{ definition.name.toLowerCase() }}</inline-code> copies it
         with the Blueprint.
-      </p>
+      </span>
     </section>
 
     <section
@@ -328,11 +328,11 @@ const constrained = computed(() =>
           </h3>
           <span class="text -status">Authoring context</span>
         </div>
-        <p class="text">
+        <span class="text">
           These references are collected once from Component Contract or Implementation suite
           annotations. They explain the design baseline; the test assertions are the executable
           evidence.
-        </p>
+        </span>
       </header>
       <ul class="list -sources">
         <li
@@ -365,18 +365,18 @@ const constrained = computed(() =>
           </h3>
           <span class="text -status">Separated</span>
         </div>
-        <p class="text">
+        <span class="text">
           These are not runtime variants. The Component Contract records what every compatible
           implementation must preserve. The Implementation records how this source provides it. An
           owned or Motion implementation may replace the mechanism while retaining the same Contract
           revision and supplying its own Implementation evidence.
-        </p>
+        </span>
       </header>
 
       <div class="unit -composition">
         <article class="article">
           <h4 class="title">Component Contract · shared compatibility</h4>
-          <p class="text">{{ contract.description }}</p>
+          <span class="text">{{ contract.description }}</span>
           <small class="note">
             <inline-code>{{ contract.id }}</inline-code> revision {{ contract.revision }}
           </small>
@@ -384,7 +384,7 @@ const constrained = computed(() =>
 
         <article class="article">
           <h4 class="title">Implementation · how this source provides it</h4>
-          <p class="text">{{ implementation.description }}</p>
+          <span class="text">{{ implementation.description }}</span>
           <small class="note">
             {{ implementation.title }} · <inline-code>{{ implementation.id }}</inline-code> revision
             {{ implementation.version }} · {{ implementation.strategy }}
@@ -447,10 +447,10 @@ const constrained = computed(() =>
           </h3>
           <span class="text -status">Reviewed locally</span>
         </div>
-        <p class="text">
+        <span class="text">
           Component-specific sources remain pinned here when their Requirements are not shared by
           another component.
-        </p>
+        </span>
       </header>
       <ul class="list -sources">
         <li
@@ -485,10 +485,10 @@ const constrained = computed(() =>
           </h3>
           <span class="text -status">Locally versioned</span>
         </div>
-        <p class="text">
+        <span class="text">
           Existing platform requirements are reviewed, versioned by Nagi, and expanded into the
           complete requirements below. Upstream changes never alter this Definition automatically.
-        </p>
+        </span>
       </header>
 
       <div class="unit -foundations">
@@ -502,7 +502,7 @@ const constrained = computed(() =>
             <small class="note">Revision {{ adoption.requirementSetVersion }}</small>
           </header>
 
-          <div class="seg -foundation">
+          <section class="section">
             <h5 class="title">Adopted choices</h5>
             <span class="text -profile">
               <inline-code
@@ -511,9 +511,9 @@ const constrained = computed(() =>
                 >{{ entry }}</inline-code
               >
             </span>
-          </div>
+          </section>
 
-          <div class="seg -foundation">
+          <section class="section">
             <h5 class="title">Reviewed sources</h5>
             <ul class="list -sources">
               <li
@@ -531,7 +531,7 @@ const constrained = computed(() =>
                 </small>
               </li>
             </ul>
-          </div>
+          </section>
         </article>
       </div>
     </section>
@@ -550,19 +550,19 @@ const constrained = computed(() =>
           </h3>
           <span class="text -status">Executed in browser contracts</span>
         </div>
-        <p class="text">
+        <span class="text">
           The Implementation maps portable concepts to concrete DOM locators and structural scope.
           Parts without a Component Contract concept exist only to support this implementation.
-        </p>
+        </span>
       </header>
 
-      <p class="text">
+      <span class="text">
         CSS classes are deliberately excluded because they are derived from the DOM being checked.
         <template v-if="constrained">
           An inserted wrapper violates an immediate-child requirement and produces
           <inline-code>misplaced-part</inline-code>.
         </template>
-      </p>
+      </span>
       <n-table
         class="n-table"
         :rows="anatomyRows"
@@ -598,7 +598,7 @@ const constrained = computed(() =>
           </h3>
           <span class="text -declared -status">{{ browserEvidenceStatus }}</span>
         </div>
-        <p class="text">
+        <span class="text">
           <template v-if="testCatalog">
             Each row below is collected from a normal Playwright test. The named function supplies
             the stable ID, native tags attach one or more Definition facets, the test title supplies
@@ -609,14 +609,14 @@ const constrained = computed(() =>
             This compatibility view still maps manually authored Requirements to repository paths
             while its runner-native catalog is being migrated. It is not presented as verified.
           </template>
-        </p>
+        </span>
       </header>
 
       <div class="unit -guarantees">
         <details
           v-for="group in guarantees"
           :key="group.key"
-          class="details -guarantee"
+          class="details"
           :open="group.key === 'semantics'"
         >
           <summary class="summary">
@@ -624,7 +624,7 @@ const constrained = computed(() =>
             <span class="text -meta"> {{ guaranteeCount(group.entries, group.key) }} tests </span>
           </summary>
           <div class="seg -content">
-            <p class="text -description">{{ group.description }}</p>
+            <span class="text -description">{{ group.description }}</span>
             <n-table
               class="n-table"
               :rows="guaranteeRows(group.entries, group.key)"
@@ -782,7 +782,7 @@ const constrained = computed(() =>
           }
         }
 
-        > .seg.-foundation {
+        > .section {
           display: grid;
           gap: var(--n-space-3);
 
@@ -880,7 +880,7 @@ const constrained = computed(() =>
       display: grid;
       gap: calc(2 * var(--n-space-8));
 
-      > .details.-guarantee {
+      > .details {
         border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
         border-radius: var(--nagi-radius-control);
         background: var(--nagi-color-surface);

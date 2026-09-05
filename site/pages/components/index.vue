@@ -56,7 +56,7 @@ useHead({ title: "Components" });
               </small>
             </span>
           </span>
-          <p class="text">{{ entry.description }}</p>
+          <span class="text">{{ entry.description }}</span>
           <span
             class="icon"
             aria-hidden="true"

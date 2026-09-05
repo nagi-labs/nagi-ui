@@ -137,9 +137,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         max="2026-09-30"
         :unavailable-dates="['2026-08-21']"
       />
-      <p class="text">
+      <span class="text">
         Selected: <strong class="strong">{{ date }}</strong>
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'DateField'"
@@ -156,9 +156,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         invalid
         validation-message="Enter a date in the reporting period."
       />
-      <p class="text">
+      <span class="text">
         Value: <strong class="strong">{{ date }}</strong>
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'TimeField'"
@@ -175,9 +175,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         model-value="09:00"
         read-only
       />
-      <p class="text">
+      <span class="text">
         Value: <strong class="strong">{{ time }}</strong>
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'DatePicker'"
@@ -190,10 +190,10 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         min="2026-08-01"
         max="2026-09-30"
       />
-      <p class="text">
+      <span class="text">
         Selected: <strong class="strong">{{ date }}</strong> ·
         {{ datePickerOpen ? "Open" : "Closed" }}
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'DateRangePicker'"
@@ -206,10 +206,10 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         min="2026-08-01"
         max="2026-09-30"
       />
-      <p class="text">
+      <span class="text">
         Range: <strong class="strong">{{ range?.start }} – {{ range?.end }}</strong> ·
         {{ rangePickerOpen ? "Open" : "Closed" }}
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'RangeCalendar'"
@@ -222,9 +222,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         max="2026-09-30"
         :unavailable-dates="['2026-08-21']"
       />
-      <p class="text">
+      <span class="text">
         Range: <strong class="strong">{{ range?.start }} – {{ range?.end }}</strong>
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'Accordion'"
@@ -239,7 +239,7 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
           <strong class="strong">{{ item.summary }}</strong>
         </template>
         <template #panel="{ item }">
-          <p class="text">{{ item.content }}</p>
+          <span class="text">{{ item.content }}</span>
         </template>
       </n-accordion>
     </div>
@@ -259,7 +259,7 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         <template #summary="{ summary }">
           <strong class="strong">{{ summary }}</strong>
         </template>
-        <p class="text">The content remains ordinary HTML inside native details.</p>
+        <span class="text">The content remains ordinary HTML inside native details.</span>
       </n-disclosure>
     </div>
     <div
@@ -271,7 +271,7 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         :items="menus"
         @select="selectedCommand = $event.label"
       />
-      <p class="text">{{ selectedCommand }}</p>
+      <span class="text">{{ selectedCommand }}</span>
     </div>
     <n-navigation-menu
       v-else-if="componentName === 'NavigationMenu'"
@@ -289,9 +289,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         :items="pages"
         @select="lastPageAction = `Selected page ${$event.label}`"
       />
-      <p class="text">
+      <span class="text">
         {{ lastPageAction }} · current: <strong class="strong">{{ currentPage }}</strong>
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'Sidebar'"
@@ -342,9 +342,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         label="Workspace setup"
         :items="steps"
       />
-      <p class="text">
+      <span class="text">
         Current step: <strong class="strong">{{ currentStep }}</strong>
-      </p>
+      </span>
     </div>
     <div
       v-else-if="componentName === 'Tabs'"
@@ -357,10 +357,10 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         activation-mode="manual"
       >
         <template #panel="{ item }">
-          <p class="text">
+          <span class="text">
             Custom panel for <strong class="strong">{{ item.label }}</strong
             >.
-          </p>
+          </span>
         </template>
       </n-tabs>
     </div>
@@ -374,9 +374,9 @@ const expandedTreeNodes = ref<readonly string[]>(["src", "components"]);
         label="Project files"
         :items="treeNodes"
       />
-      <p class="text">
+      <span class="text">
         Selected: <strong class="strong">{{ selectedTreeNode }}</strong>
-      </p>
+      </span>
     </div>
   </div>
 </template>

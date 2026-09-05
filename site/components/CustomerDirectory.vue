@@ -77,7 +77,7 @@ function refresh() {
           :options="statusOptions"
         />
       </div>
-      <div class="actions -compact">
+      <div class="actions">
         <n-button @click="sort = sort === 'company' ? 'revenue' : 'company'">
           Sort: {{ sort }}
         </n-button>
@@ -157,7 +157,7 @@ function refresh() {
     </n-empty-state>
 
     <footer class="footer">
-      <p class="text">Showing {{ filtered.length }} of {{ customers.length }} customers</p>
+      <span class="text">Showing {{ filtered.length }} of {{ customers.length }} customers</span>
       <n-pagination
         v-model:current-key="page"
         :items="pageItems"
