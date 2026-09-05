@@ -31,6 +31,7 @@ jobs:
       - run: vp run audit:slot-format
       - run: vp run typecheck:vue
       - run: vp run site:lint
+      - run: vp run evaluate:naming
       - run: vp run site:typecheck
       - run: vp run site:generate
       - name: Upload generated site
