@@ -228,29 +228,31 @@ const previewColumns = [
         }
       }
 
-      &.-preview {
-        gap: var(--n-space-7);
-        justify-items: stretch;
-        padding: var(--n-space-8);
-        border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
-        border-radius: var(--n-radius-3);
-        background: var(--nagi-color-surface);
+    }
 
-        > .header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+    > .unit.-preview {
+      display: grid;
+      gap: var(--n-space-7);
+      justify-items: stretch;
+      padding: var(--n-space-8);
+      border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+      border-radius: var(--n-radius-3);
+      background: var(--nagi-color-surface);
 
-          > .value {
-            font-weight: 600;
-          }
+      > .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        > .value {
+          font-weight: 600;
         }
+      }
 
-        > .seg.-metrics {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--n-space-5);
-        }
+      > .seg.-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--n-space-5);
       }
     }
   }
