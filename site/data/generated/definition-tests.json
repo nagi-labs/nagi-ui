@@ -564,7 +564,7 @@
       "status": "passing",
       "componentContract": {
         "id": "nagi/combobox",
-        "revision": "2"
+        "revision": "3"
       },
       "implementations": [
         {
@@ -644,6 +644,154 @@
             "focus"
           ],
           "title": "Clears a removed active reference while preserving input focus and accepted selection",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_04",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state",
+            "interaction"
+          ],
+          "title": "Blocks disabled interaction while accepting an external state change",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_05",
+          "layer": "component-contract",
+          "sections": [
+            "semantics",
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Keeps read-only suggestions inspectable without editing or committing",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_06",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Synchronizes popup-boundary dismissal without committing provisional state",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_07",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Defers filtering and navigation until IME composition is committed",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_08",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Keeps pointer focus on the input and commits only enabled options",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned framework",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package framework",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "CMB_CONTRACT_09",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction"
+          ],
+          "title": "Repairs rejected controlled input and selection writes to accepted state",
           "runner": "playwright",
           "evidence": [
             {

@@ -71,6 +71,36 @@ function carouselOptions(
   };
 }
 
+function comboboxOptions(name: string): ComboboxContractOptions {
+  return {
+    definition: comboboxDefinition,
+    url: "/definition-mutations.html",
+    name,
+    inputStatusName: "unused",
+    selectionStatusName: "unused",
+    removeActiveName: "unused",
+    dismissName: "unused",
+    disabled: {
+      name: "unused",
+      inputStatusName: "unused",
+      selectionStatusName: "unused",
+      externalUpdateName: "unused",
+    },
+    readOnly: {
+      name: "unused",
+      inputStatusName: "unused",
+      selectionStatusName: "unused",
+    },
+    controlled: {
+      name: "unused",
+      inputStatusName: "unused",
+      selectionStatusName: "unused",
+      inputRequestsStatusName: "unused",
+      selectionRequestsStatusName: "unused",
+    },
+  };
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/definition-mutations.html");
 });
@@ -156,14 +186,7 @@ test("[CAR-STYLE-01] rejects removal of the declared native scroll-snap style", 
 test("[CMB-SEM-04][CMB-STATE-02] rejects a stale active descendant after collection removal", async ({
   page,
 }) => {
-  const options: ComboboxContractOptions = {
-    definition: comboboxDefinition,
-    url: "/definition-mutations.html",
-    name: "Mutated stale framework",
-    inputStatusName: "unused",
-    selectionStatusName: "unused",
-    removeActiveName: "unused",
-  };
+  const options = comboboxOptions("Mutated stale framework");
   await rejectsAt(
     () => assertComboboxActiveRelationship(page, options),
     [/toHaveCount/u, /Expected.*1/su, /Received.*0/su],
@@ -173,14 +196,7 @@ test("[CMB-SEM-04][CMB-STATE-02] rejects a stale active descendant after collect
 test("[CMB-FOCUS-01] rejects moving DOM focus from the input to the active option", async ({
   page,
 }) => {
-  const options: ComboboxContractOptions = {
-    definition: comboboxDefinition,
-    url: "/definition-mutations.html",
-    name: "Mutated focus framework",
-    inputStatusName: "unused",
-    selectionStatusName: "unused",
-    removeActiveName: "unused",
-  };
+  const options = comboboxOptions("Mutated focus framework");
   await page.locator("#mutated-focus-combobox-list").evaluate((listbox) => {
     (listbox.parentElement as HTMLElement & { showPopover: () => void }).showPopover();
   });

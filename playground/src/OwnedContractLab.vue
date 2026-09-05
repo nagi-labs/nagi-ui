@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useCarousel, useCombobox, useDialog, useTabs, vDialogClose } from "@nagi-labs/nagi-ui";
+import { useCarousel, useDialog, useTabs, vDialogClose } from "@nagi-labs/nagi-ui";
 import { useAlertDialog, useButton } from "@nagi-labs/nagi-ui/component-controls";
 import {
   NAlertDialog,
@@ -10,6 +10,8 @@ import {
 } from "@nagi-labs/nagi-ui/components";
 import { computed, ref } from "vue";
 
+import OwnedComboboxContractFixture from "./OwnedComboboxContractFixture.vue";
+
 const comboboxSeed: ReadonlyArray<{ key: string; label: string; disabled?: boolean }> = [
   { key: "vue", label: "Vue" },
   { key: "react", label: "React", disabled: true },
@@ -19,18 +21,37 @@ const comboboxSeed: ReadonlyArray<{ key: string; label: string; disabled?: boole
 const packageComboboxItems = ref([...comboboxSeed]);
 const packageComboboxInput = ref("");
 const packageComboboxSelected = ref<string | null>(null);
+const packageDisabledComboboxInput = ref("Vue");
+const packageDisabledComboboxSelected = ref<string | null>("vue");
+const packageReadOnlyComboboxInput = ref("");
+const packageReadOnlyComboboxSelected = ref<string | null>("vue");
+const packageControlledComboboxInput = ref("");
+const packageControlledComboboxSelected = ref<string | null>("vue");
+const packageControlledComboboxInputRequests = ref(0);
+const packageControlledComboboxSelectionRequests = ref(0);
 const ownedComboboxItems = ref([...comboboxSeed]);
 const ownedComboboxInput = ref("");
 const ownedComboboxSelected = ref<string | null>(null);
-const ownedCombobox = useCombobox({
-  items: ownedComboboxItems,
-  getKey: (item) => item.key,
-  getTextValue: (item) => item.label,
-  isDisabled: (item) => item.disabled ?? false,
-  inputValue: ownedComboboxInput,
-  selected: ownedComboboxSelected,
+const ownedDisabledComboboxInput = ref("Vue");
+const ownedDisabledComboboxSelected = ref<string | null>("vue");
+const ownedReadOnlyComboboxInput = ref("");
+const ownedReadOnlyComboboxSelected = ref<string | null>("vue");
+const ownedControlledComboboxInputSource = ref("");
+const ownedControlledComboboxSelectedSource = ref<string | null>("vue");
+const ownedControlledComboboxInputRequests = ref(0);
+const ownedControlledComboboxSelectionRequests = ref(0);
+const ownedControlledComboboxInput = computed({
+  get: () => ownedControlledComboboxInputSource.value,
+  set: () => {
+    ownedControlledComboboxInputRequests.value += 1;
+  },
 });
-const ownedComboboxLabelId = `${ownedCombobox.id}-label`;
+const ownedControlledComboboxSelected = computed({
+  get: () => ownedControlledComboboxSelectedSource.value,
+  set: () => {
+    ownedControlledComboboxSelectionRequests.value += 1;
+  },
+});
 
 const ownedDialog = useDialog({ modal: true, closedby: "any" });
 const titleId = `${ownedDialog.id}-title`;
@@ -282,6 +303,86 @@ const packageOutOfRangeCarouselIndex = ref(99);
       >
         Remove package active option
       </button>
+      <button type="button">Dismiss package combobox popup</button>
+
+      <n-combobox
+        v-model="packageDisabledComboboxInput"
+        v-model:selected="packageDisabledComboboxSelected"
+        label="Package disabled framework"
+        :items="comboboxSeed"
+        disabled
+      />
+      <output
+        role="status"
+        aria-label="Package disabled combobox input"
+      >
+        {{ packageDisabledComboboxInput }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package disabled combobox selection"
+      >
+        {{ packageDisabledComboboxSelected ?? "none" }}
+      </output>
+      <button
+        type="button"
+        @click="packageDisabledComboboxSelected = 'solid'"
+      >
+        Set package disabled combobox to Solid
+      </button>
+
+      <n-combobox
+        v-model="packageReadOnlyComboboxInput"
+        v-model:selected="packageReadOnlyComboboxSelected"
+        label="Package readonly framework"
+        :items="comboboxSeed"
+        read-only
+      />
+      <output
+        role="status"
+        aria-label="Package readonly combobox input"
+      >
+        {{ packageReadOnlyComboboxInput }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package readonly combobox selection"
+      >
+        {{ packageReadOnlyComboboxSelected ?? "none" }}
+      </output>
+
+      <n-combobox
+        :model-value="packageControlledComboboxInput"
+        :selected="packageControlledComboboxSelected"
+        label="Package controlled framework"
+        :items="comboboxSeed"
+        @update:model-value="packageControlledComboboxInputRequests += 1"
+        @update:selected="packageControlledComboboxSelectionRequests += 1"
+      />
+      <output
+        role="status"
+        aria-label="Package controlled combobox input"
+      >
+        {{ packageControlledComboboxInput }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package controlled combobox selection"
+      >
+        {{ packageControlledComboboxSelected ?? "none" }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package controlled combobox input requests"
+      >
+        {{ packageControlledComboboxInputRequests }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package controlled combobox selection requests"
+      >
+        {{ packageControlledComboboxSelectionRequests }}
+      </output>
 
       <n-dialog
         v-model:open="packageDialogOpen"
@@ -699,51 +800,12 @@ const packageOutOfRangeCarouselIndex = ref(99);
 
     <section aria-labelledby="owned-combobox-heading">
       <h1 id="owned-combobox-heading">Owned Combobox contract</h1>
-      <div
-        data-scope="combobox"
-        data-part="root"
-        class="owned-combobox"
-      >
-        <label
-          :id="ownedComboboxLabelId"
-          :for="ownedCombobox.inputId"
-          >Owned framework</label
-        >
-        <div class="owned-control-wrapper">
-          <input
-            data-scope="combobox"
-            data-part="input"
-            type="text"
-            :aria-labelledby="ownedComboboxLabelId"
-            v-bind="ownedCombobox.inputProps"
-          />
-        </div>
-        <div
-          data-scope="combobox"
-          data-part="popup"
-          popover
-          v-bind="ownedCombobox.popupProps"
-        >
-          <div class="owned-popup-wrapper">
-            <ul
-              data-scope="combobox"
-              data-part="listbox"
-              :aria-labelledby="ownedComboboxLabelId"
-              v-bind="ownedCombobox.listboxProps"
-            >
-              <li
-                v-for="item in ownedCombobox.visibleItems.value"
-                :key="item.key"
-                data-scope="combobox"
-                data-part="option"
-                v-bind="ownedCombobox.optionProps(item)"
-              >
-                {{ item.label }}
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <owned-combobox-contract-fixture
+        v-model="ownedComboboxInput"
+        v-model:selected="ownedComboboxSelected"
+        label="Owned framework"
+        :items="ownedComboboxItems"
+      />
       <output
         role="status"
         aria-label="Owned combobox input"
@@ -760,6 +822,84 @@ const packageOutOfRangeCarouselIndex = ref(99);
       >
         Remove owned active option
       </button>
+      <button type="button">Dismiss owned combobox popup</button>
+
+      <owned-combobox-contract-fixture
+        v-model="ownedDisabledComboboxInput"
+        v-model:selected="ownedDisabledComboboxSelected"
+        label="Owned disabled framework"
+        :items="comboboxSeed"
+        disabled
+      />
+      <output
+        role="status"
+        aria-label="Owned disabled combobox input"
+      >
+        {{ ownedDisabledComboboxInput }}
+      </output>
+      <output
+        role="status"
+        aria-label="Owned disabled combobox selection"
+      >
+        {{ ownedDisabledComboboxSelected ?? "none" }}
+      </output>
+      <button
+        type="button"
+        @click="ownedDisabledComboboxSelected = 'solid'"
+      >
+        Set owned disabled combobox to Solid
+      </button>
+
+      <owned-combobox-contract-fixture
+        v-model="ownedReadOnlyComboboxInput"
+        v-model:selected="ownedReadOnlyComboboxSelected"
+        label="Owned readonly framework"
+        :items="comboboxSeed"
+        read-only
+      />
+      <output
+        role="status"
+        aria-label="Owned readonly combobox input"
+      >
+        {{ ownedReadOnlyComboboxInput }}
+      </output>
+      <output
+        role="status"
+        aria-label="Owned readonly combobox selection"
+      >
+        {{ ownedReadOnlyComboboxSelected ?? "none" }}
+      </output>
+
+      <owned-combobox-contract-fixture
+        v-model="ownedControlledComboboxInput"
+        v-model:selected="ownedControlledComboboxSelected"
+        label="Owned controlled framework"
+        :items="comboboxSeed"
+      />
+      <output
+        role="status"
+        aria-label="Owned controlled combobox input"
+      >
+        {{ ownedControlledComboboxInputSource }}
+      </output>
+      <output
+        role="status"
+        aria-label="Owned controlled combobox selection"
+      >
+        {{ ownedControlledComboboxSelectedSource ?? "none" }}
+      </output>
+      <output
+        role="status"
+        aria-label="Owned controlled combobox input requests"
+      >
+        {{ ownedControlledComboboxInputRequests }}
+      </output>
+      <output
+        role="status"
+        aria-label="Owned controlled combobox selection requests"
+      >
+        {{ ownedControlledComboboxSelectionRequests }}
+      </output>
     </section>
 
     <div

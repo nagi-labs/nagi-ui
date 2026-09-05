@@ -12,6 +12,12 @@ const comboboxContractRequirementIds = [
   "CMB_CONTRACT_01",
   "CMB_CONTRACT_02",
   "CMB_CONTRACT_03",
+  "CMB_CONTRACT_04",
+  "CMB_CONTRACT_05",
+  "CMB_CONTRACT_06",
+  "CMB_CONTRACT_07",
+  "CMB_CONTRACT_08",
+  "CMB_CONTRACT_09",
 ] as const;
 
 const nativePopoverComboboxImplementationRequirementIds = [
@@ -31,6 +37,25 @@ export interface ComboboxContractOptions {
   inputStatusName: string;
   selectionStatusName: string;
   removeActiveName: string;
+  dismissName: string;
+  disabled: {
+    name: string;
+    inputStatusName: string;
+    selectionStatusName: string;
+    externalUpdateName: string;
+  };
+  readOnly: {
+    name: string;
+    inputStatusName: string;
+    selectionStatusName: string;
+  };
+  controlled: {
+    name: string;
+    inputStatusName: string;
+    selectionStatusName: string;
+    inputRequestsStatusName: string;
+    selectionRequestsStatusName: string;
+  };
   /** The package Blueprint's functional styling is not imposed on owned markup. */
   verifyPackageStyle?: boolean;
 }
@@ -169,6 +194,168 @@ export async function assertComboboxDynamicCollection(
   await expect(page.getByRole("status", { name: options.selectionStatusName })).toHaveText("none");
 }
 
+/** Disabled blocks user input while still accepting externally owned state. */
+export async function assertComboboxDisabled(page: Page, options: ComboboxContractOptions) {
+  const control = input(page, { ...options, name: options.disabled.name });
+  await expect(control).toBeDisabled();
+  await expect(control).toHaveAttribute("aria-expanded", "false");
+
+  await control.evaluate((element) => {
+    element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    element.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }));
+  });
+  await expect(control).toHaveAttribute("aria-expanded", "false");
+  await expect(control).not.toHaveAttribute("aria-activedescendant");
+  await expect(page.getByRole("status", { name: options.disabled.inputStatusName })).toHaveText(
+    "Vue",
+  );
+  await expect(page.getByRole("status", { name: options.disabled.selectionStatusName })).toHaveText(
+    "vue",
+  );
+
+  await page.getByRole("button", { name: options.disabled.externalUpdateName }).click();
+  await expect(control).toHaveValue("Solid");
+  await expect(page.getByRole("status", { name: options.disabled.inputStatusName })).toHaveText(
+    "Solid",
+  );
+  await expect(page.getByRole("status", { name: options.disabled.selectionStatusName })).toHaveText(
+    "solid",
+  );
+}
+
+/** Read-only preserves accepted state while leaving suggestions inspectable. */
+export async function assertComboboxReadOnly(page: Page, options: ComboboxContractOptions) {
+  const control = input(page, { ...options, name: options.readOnly.name });
+  await expect(control).toHaveAttribute("readonly", "");
+  await control.click();
+  const listbox = await controlledListbox(control);
+  await expect(listbox).toBeVisible();
+
+  await control.press("ArrowDown");
+  await control.press("ArrowDown");
+  const active = await assertComboboxActiveRelationship(
+    page,
+    { ...options, name: options.readOnly.name },
+    true,
+  );
+  await expect(active).toHaveText("Svelte");
+  await active.click();
+  await expect(control).toBeFocused();
+  await expect(control).toHaveValue("");
+  await expect(page.getByRole("status", { name: options.readOnly.selectionStatusName })).toHaveText(
+    "vue",
+  );
+
+  await control.press("Enter");
+  await expect(listbox).toBeHidden();
+  await expect(page.getByRole("status", { name: options.readOnly.inputStatusName })).toHaveText("");
+  await expect(page.getByRole("status", { name: options.readOnly.selectionStatusName })).toHaveText(
+    "vue",
+  );
+}
+
+/** Dismissal at the popup boundary synchronizes state without committing navigation. */
+export async function assertComboboxPopupBoundary(page: Page, options: ComboboxContractOptions) {
+  const control = input(page, options);
+  await control.fill("s");
+  const listbox = await controlledListbox(control);
+  await expect(listbox).toBeVisible();
+  await control.press("ArrowDown");
+  await expect(control).toHaveAttribute("aria-activedescendant", /-option-svelte$/);
+
+  await page.getByRole("button", { name: options.dismissName }).click();
+  await expect(listbox).toBeHidden();
+  await expect(control).toHaveAttribute("aria-expanded", "false");
+  await expect(control).not.toHaveAttribute("aria-activedescendant");
+  await expect(control).toHaveValue("s");
+  await expect(page.getByRole("status", { name: options.selectionStatusName })).toHaveText("none");
+}
+
+/** Composition stays browser-owned until one compositionend update is accepted. */
+export async function assertComboboxIme(page: Page, options: ComboboxContractOptions) {
+  const control = input(page, options);
+  await control.focus();
+  await control.evaluate((element: HTMLInputElement) => {
+    element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
+    element.value = "s";
+    element.dispatchEvent(
+      new InputEvent("input", {
+        bubbles: true,
+        data: "s",
+        inputType: "insertCompositionText",
+        isComposing: true,
+      }),
+    );
+    element.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown", isComposing: true }),
+    );
+  });
+  await expect(page.getByRole("status", { name: options.inputStatusName })).toHaveText("");
+  await expect(page.getByRole("status", { name: options.selectionStatusName })).toHaveText("none");
+  await expect(control).not.toHaveAttribute("aria-activedescendant");
+
+  await control.evaluate((element) => {
+    element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "s" }));
+  });
+  await expect(page.getByRole("status", { name: options.inputStatusName })).toHaveText("s");
+  await expect(page.getByRole("status", { name: options.selectionStatusName })).toHaveText("none");
+  await expect(control).toHaveAttribute("aria-expanded", "true");
+  await expect(control).not.toHaveAttribute("aria-activedescendant");
+}
+
+/** Pointer activation keeps input focus, rejects disabled options, and commits enabled ones. */
+export async function assertComboboxPointer(page: Page, options: ComboboxContractOptions) {
+  const control = input(page, options);
+  await control.click();
+  const listbox = await controlledListbox(control);
+  const disabledOption = listbox.getByRole("option", { name: "React", exact: true });
+  await disabledOption.dispatchEvent("pointerdown");
+  await disabledOption.dispatchEvent("click");
+  await expect(control).toBeFocused();
+  await expect(control).toHaveValue("");
+  await expect(page.getByRole("status", { name: options.selectionStatusName })).toHaveText("none");
+  await expect(listbox).toBeVisible();
+
+  await listbox.getByRole("option", { name: "Solid", exact: true }).click();
+  await expect(control).toBeFocused();
+  await expect(control).toHaveValue("Solid");
+  await expect(page.getByRole("status", { name: options.selectionStatusName })).toHaveText("solid");
+  await expect(listbox).toBeHidden();
+}
+
+/** Rejected controlled writes repair rendered input and selection to the accepted source. */
+export async function assertComboboxControlledState(page: Page, options: ComboboxContractOptions) {
+  const control = input(page, { ...options, name: options.controlled.name });
+  await control.fill("s");
+  await expect(control).toHaveValue("");
+  await expect(
+    page.getByRole("status", { name: options.controlled.inputStatusName, exact: true }),
+  ).toHaveText("");
+  await expect(
+    page.getByRole("status", { name: options.controlled.selectionStatusName, exact: true }),
+  ).toHaveText("vue");
+  await expect(
+    page.getByRole("status", { name: options.controlled.inputRequestsStatusName }),
+  ).toHaveText("1");
+
+  await control.press("ArrowDown");
+  await control.press("ArrowDown");
+  await control.press("Enter");
+  await expect(control).toHaveValue("");
+  await expect(
+    page.getByRole("status", { name: options.controlled.inputStatusName, exact: true }),
+  ).toHaveText("");
+  await expect(
+    page.getByRole("status", { name: options.controlled.selectionStatusName, exact: true }),
+  ).toHaveText("vue");
+  await expect(
+    page.getByRole("status", { name: options.controlled.inputRequestsStatusName }),
+  ).toHaveText("2");
+  await expect(
+    page.getByRole("status", { name: options.controlled.selectionRequestsStatusName }),
+  ).toHaveText("1");
+}
+
 /** Functional styling is checked independently from semantic anatomy. */
 export async function assertComboboxStyle(page: Page, options: ComboboxContractOptions) {
   const control = input(page, options);
@@ -237,6 +424,30 @@ export function comboboxContract(options: ComboboxContractOptions): void {
         await assertComboboxDynamicCollection(page, options);
       }
 
+      async function CMB_CONTRACT_04({ page }: { page: Page }) {
+        await assertComboboxDisabled(page, options);
+      }
+
+      async function CMB_CONTRACT_05({ page }: { page: Page }) {
+        await assertComboboxReadOnly(page, options);
+      }
+
+      async function CMB_CONTRACT_06({ page }: { page: Page }) {
+        await assertComboboxPopupBoundary(page, options);
+      }
+
+      async function CMB_CONTRACT_07({ page }: { page: Page }) {
+        await assertComboboxIme(page, options);
+      }
+
+      async function CMB_CONTRACT_08({ page }: { page: Page }) {
+        await assertComboboxPointer(page, options);
+      }
+
+      async function CMB_CONTRACT_09({ page }: { page: Page }) {
+        await assertComboboxControlledState(page, options);
+      }
+
       test(
         "Connects one named editable input to a single-selection listbox",
         { tag: ["@semantics", `@${CMB_CONTRACT_01.name}`] },
@@ -254,60 +465,99 @@ export function comboboxContract(options: ComboboxContractOptions): void {
         { tag: ["@semantics", "@state", "@focus", `@${CMB_CONTRACT_03.name}`] },
         CMB_CONTRACT_03,
       );
+
+      test(
+        "Blocks disabled interaction while accepting an external state change",
+        { tag: ["@semantics", "@state", "@interaction", `@${CMB_CONTRACT_04.name}`] },
+        CMB_CONTRACT_04,
+      );
+
+      test(
+        "Keeps read-only suggestions inspectable without editing or committing",
+        {
+          tag: ["@semantics", "@state", "@interaction", "@focus", `@${CMB_CONTRACT_05.name}`],
+        },
+        CMB_CONTRACT_05,
+      );
+
+      test(
+        "Synchronizes popup-boundary dismissal without committing provisional state",
+        { tag: ["@state", "@interaction", `@${CMB_CONTRACT_06.name}`] },
+        CMB_CONTRACT_06,
+      );
+
+      test(
+        "Defers filtering and navigation until IME composition is committed",
+        { tag: ["@state", "@interaction", `@${CMB_CONTRACT_07.name}`] },
+        CMB_CONTRACT_07,
+      );
+
+      test(
+        "Keeps pointer focus on the input and commits only enabled options",
+        { tag: ["@state", "@interaction", "@focus", `@${CMB_CONTRACT_08.name}`] },
+        CMB_CONTRACT_08,
+      );
+
+      test(
+        "Repairs rejected controlled input and selection writes to accepted state",
+        { tag: ["@state", "@interaction", `@${CMB_CONTRACT_09.name}`] },
+        CMB_CONTRACT_09,
+      );
     },
   );
 
-  if (options.includeStandardImplementation !== false) test.describe(
-    `Combobox / Implementation / ${options.name}`,
-    {
-      tag: [
-        "@definition",
-        "@combobox",
-        "@implementation",
-        ...(options.fixture ? [`@fixture-${options.fixture}`] : []),
-      ],
-      annotation: [
-        ...nativePopoverComboboxImplementationReferences,
-        componentImplementationAnnotation(options.definition),
-        componentImplementationRequirementsAnnotation(
-          nativePopoverComboboxImplementationRequirementIds,
-        ),
-      ],
-    },
-    () => {
-      test.beforeEach(async ({ page }) => page.goto(options.url));
+  if (options.includeStandardImplementation !== false)
+    test.describe(
+      `Combobox / Implementation / ${options.name}`,
+      {
+        tag: [
+          "@definition",
+          "@combobox",
+          "@implementation",
+          ...(options.fixture ? [`@fixture-${options.fixture}`] : []),
+        ],
+        annotation: [
+          ...nativePopoverComboboxImplementationReferences,
+          componentImplementationAnnotation(options.definition),
+          componentImplementationRequirementsAnnotation(
+            nativePopoverComboboxImplementationRequirementIds,
+          ),
+        ],
+      },
+      () => {
+        test.beforeEach(async ({ page }) => page.goto(options.url));
 
-      async function CMB_IMPLEMENTATION_01({ page }: { page: Page }) {
-        await assertNativePopoverComboboxSemantics(page, options);
-      }
+        async function CMB_IMPLEMENTATION_01({ page }: { page: Page }) {
+          await assertNativePopoverComboboxSemantics(page, options);
+        }
 
-      async function CMB_IMPLEMENTATION_02({ page }: { page: Page }) {
-        await assertComboboxAnatomy(page, options);
-      }
-
-      test(
-        "Places the controlled listbox inside one native popover",
-        { tag: ["@semantics", `@${CMB_IMPLEMENTATION_01.name}`] },
-        CMB_IMPLEMENTATION_01,
-      );
-
-      test(
-        "Scopes the input, popup, listbox, and dynamic options to one root",
-        { tag: ["@anatomy", `@${CMB_IMPLEMENTATION_02.name}`] },
-        CMB_IMPLEMENTATION_02,
-      );
-
-      if (options.verifyPackageStyle) {
-        async function CMB_IMPLEMENTATION_03({ page }: { page: Page }) {
-          await assertComboboxStyle(page, options);
+        async function CMB_IMPLEMENTATION_02({ page }: { page: Page }) {
+          await assertComboboxAnatomy(page, options);
         }
 
         test(
-          "Keeps active and forced-colors focus states visible",
-          { tag: ["@style", "@focus", `@${CMB_IMPLEMENTATION_03.name}`] },
-          CMB_IMPLEMENTATION_03,
+          "Places the controlled listbox inside one native popover",
+          { tag: ["@semantics", `@${CMB_IMPLEMENTATION_01.name}`] },
+          CMB_IMPLEMENTATION_01,
         );
-      }
-    },
-  );
+
+        test(
+          "Scopes the input, popup, listbox, and dynamic options to one root",
+          { tag: ["@anatomy", `@${CMB_IMPLEMENTATION_02.name}`] },
+          CMB_IMPLEMENTATION_02,
+        );
+
+        if (options.verifyPackageStyle) {
+          async function CMB_IMPLEMENTATION_03({ page }: { page: Page }) {
+            await assertComboboxStyle(page, options);
+          }
+
+          test(
+            "Keeps active and forced-colors focus states visible",
+            { tag: ["@style", "@focus", `@${CMB_IMPLEMENTATION_03.name}`] },
+            CMB_IMPLEMENTATION_03,
+          );
+        }
+      },
+    );
 }

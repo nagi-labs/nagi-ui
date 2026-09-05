@@ -193,6 +193,25 @@ comboboxContract({
   inputStatusName: "Package combobox input",
   selectionStatusName: "Package combobox selection",
   removeActiveName: "Remove package active option",
+  dismissName: "Dismiss package combobox popup",
+  disabled: {
+    name: "Package disabled framework",
+    inputStatusName: "Package disabled combobox input",
+    selectionStatusName: "Package disabled combobox selection",
+    externalUpdateName: "Set package disabled combobox to Solid",
+  },
+  readOnly: {
+    name: "Package readonly framework",
+    inputStatusName: "Package readonly combobox input",
+    selectionStatusName: "Package readonly combobox selection",
+  },
+  controlled: {
+    name: "Package controlled framework",
+    inputStatusName: "Package controlled combobox input",
+    selectionStatusName: "Package controlled combobox selection",
+    inputRequestsStatusName: "Package controlled combobox input requests",
+    selectionRequestsStatusName: "Package controlled combobox selection requests",
+  },
   verifyPackageStyle: true,
 });
 
@@ -205,6 +224,25 @@ comboboxContract({
   inputStatusName: "Owned combobox input",
   selectionStatusName: "Owned combobox selection",
   removeActiveName: "Remove owned active option",
+  dismissName: "Dismiss owned combobox popup",
+  disabled: {
+    name: "Owned disabled framework",
+    inputStatusName: "Owned disabled combobox input",
+    selectionStatusName: "Owned disabled combobox selection",
+    externalUpdateName: "Set owned disabled combobox to Solid",
+  },
+  readOnly: {
+    name: "Owned readonly framework",
+    inputStatusName: "Owned readonly combobox input",
+    selectionStatusName: "Owned readonly combobox selection",
+  },
+  controlled: {
+    name: "Owned controlled framework",
+    inputStatusName: "Owned controlled combobox input",
+    selectionStatusName: "Owned controlled combobox selection",
+    inputRequestsStatusName: "Owned controlled combobox input requests",
+    selectionRequestsStatusName: "Owned controlled combobox selection requests",
+  },
 });
 
 datePickerContract({

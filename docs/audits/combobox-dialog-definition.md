@@ -13,6 +13,12 @@ provenance split and additional `:modal`/dismissal probes are recorded in
 below remains the pre-implementation baseline against which that migration was
 reviewed.
 
+Combobox revision 3 was audited on 2026-09-05. Its package and owned fixtures
+now execute the same additional disabled, read-only, popup-boundary, IME,
+pointer, and controlled-rejection flows. Deep Sea remains on revision 2 until
+the next package update, so this follow-up does not claim replacement proof for
+those added guarantees yet.
+
 ## Method gates
 
 | Gate                    | Pass condition                                                                                                                    | Failure condition                                                                             |
@@ -25,7 +31,10 @@ reviewed.
 | Owned structure         | Package and owned markup run the same Definition anatomy and behavioral contract.                                                 | The owned example is merely a copy of canonical DOM, or the contract locates by a Nagi class. |
 | Mutation sensitivity    | A representative break in semantics, state, interaction, focus, and anatomy fails at the intended assertion.                      | Mutations fail for unrelated setup errors or are not rejected.                                |
 
-## Combobox requirements fixed before implementation
+## Combobox requirements (baseline plus revision follow-ups)
+
+`CMB-STATE-04` was added by revision 3 after the original baseline; the other
+rows were fixed before the first implementation audit.
 
 | ID               | Classification            | Requirement                                                                                                                                            | Intended evidence                         |
 | ---------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
@@ -41,7 +50,8 @@ reviewed.
 | CMB-SEM-04       | conformant                | While an option is active, `aria-activedescendant` resolves to that option inside the controlled listbox; otherwise it is absent.                      | shared browser + mutation                 |
 | CMB-STATE-01     | intentional-extension     | Editable text, provisional active option, and committed selection are distinct states. Filtering or navigation does not commit.                        | shared browser + Node                     |
 | CMB-STATE-02     | conformant                | When a dynamic collection removes the active option, the active reference clears; filtering does not remove a committed selection.                     | shared browser + Node + mutation          |
-| CMB-STATE-03     | conformant                | Native disabled blocks interaction; read-only remains inspectable but cannot edit, clear, or commit.                                                   | Node + existing browser                   |
+| CMB-STATE-03     | conformant                | Native disabled blocks interaction; read-only remains inspectable but cannot edit, clear, or commit.                                                   | shared browser + Node                     |
+| CMB-STATE-04     | intentional-extension     | Rejected controlled input or selection writes repair rendered state to the externally accepted values.                                                | shared browser                            |
 | CMB-INT-01       | conformant                | Typing filters and opens suggestions without intercepting standard single-line editing or IME keys.                                                    | shared browser + Node                     |
 | CMB-INT-02       | conformant                | Arrow keys move provisional activity through enabled options, with boundary and optional loop policy.                                                  | shared browser + Node                     |
 | CMB-INT-03       | conformant                | Enter and pointer commit; Escape dismisses without committing provisional navigation.                                                                  | shared browser + Node                     |
@@ -96,11 +106,18 @@ the final result matrix are appended only after the probes run.
 | Close action deliberately restores a different target | rejected at the invoker-focus assertion                                        | The contract includes the close transition and its aftermath.                                                    |
 | Package Dialog receives an explicit `id`              | one occurrence on the public root; native surface keeps a separate internal ID | The suspected duplicate-ID defect was disproved; changing the existing destination would have been a regression. |
 | Combobox, Dialog, and Popover global rediscovery      | removed from their behavior paths                                              | Complete binding bundles register local input/listbox, trigger/surface, and native popup elements.               |
+| Disabled package and owned Comboboxes                  | block user interaction but accept external state                               | Disabled is an interaction policy, not a prohibition on owner-controlled state updates.                          |
+| Read-only package and owned Comboboxes                 | allow option inspection without editing or commit                              | Read-only differs observably from disabled while preserving the accepted value and selection.                    |
+| IME composition in package and owned Comboboxes        | defers filtering and navigation until composition ends                         | Browser-owned composition is preserved by both Blueprint and owned wiring.                                       |
+| Pointer activation of disabled and enabled options     | ignores disabled options, commits enabled options, and retains input focus      | Pointer handling preserves the active-descendant focus model.                                                     |
+| Rejected controlled input and selection writes        | repairs both rendered implementations to their accepted owner state            | Controlled rejection is now part of `nagi/combobox@3`, rather than an inferred Vue implementation detail.        |
 
-The focused browser run contains 52 passing contracts and mutations, including
-package and owned instances. Final repository verification passed 414 Node
-tests and 177 browser tests, plus lint, typecheck, Blueprint integration lint,
-site lint/typecheck, 64/64 documentation-route audit, and static generation.
+The original focused browser run contained 52 passing contracts and mutations,
+including package and owned instances. The revision 3 Combobox runner now adds
+six flows to both fixtures: its focused run passes 21 Component Contract and
+Implementation tests. Repository verification on 2026-09-05 passed 481 Node
+tests and 271 Chromium browser tests, plus lint, typecheck, Blueprint
+integration lint, Definition generation, and source audits.
 
 ## Evaluation
 

@@ -36,7 +36,7 @@ const nativePopup = adoptRequirementSet(nagiPopupRequirementsV1, {
 
 export const comboboxContract = defineComponentContract({
   id: "nagi/combobox",
-  revision: "2",
+  revision: "3",
   description:
     "Editable suggestion semantics, provisional navigation, controlled selection, dynamic collection repair, and input-retained focus independent of popup implementation.",
   api: [
@@ -151,8 +151,16 @@ export const comboboxContract = defineComponentContract({
       classification: "conformant",
       source: "HTML disabled/read-only semantics and Nagi read-only inspection policy",
       text: "Native disabled blocks interaction; read-only options remain inspectable but editing, clearing, and committing are blocked.",
-      evidence: ["tests/combobox.test.ts"],
+      evidence: ["packages/core/src/test/combobox-contract.ts", "tests/combobox.test.ts"],
       origin: { kind: "nagi", policy: "read-only-inspection", policyVersion: "1" },
+    },
+    {
+      id: "CMB-STATE-04",
+      classification: "intentional-extension",
+      source: "Nagi controlled-state rejection policy",
+      text: "When an input or selection write is rejected, the rendered input and committed option repair to the externally accepted state.",
+      evidence: ["packages/core/src/test/combobox-contract.ts"],
+      origin: { kind: "nagi", policy: "controlled-rejection-repair", policyVersion: "1" },
     },
   ],
   interaction: [
@@ -294,7 +302,7 @@ export const nativePopoverComboboxImplementation = defineComponentImplementation
 
 export const comboboxDefinition = defineComponentDefinition({
   name: "Combobox",
-  version: "3.0",
+  version: "4.0",
   status: "draft",
   contract: comboboxContract,
   implementation: nativePopoverComboboxImplementation,

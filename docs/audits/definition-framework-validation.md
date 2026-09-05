@@ -203,8 +203,11 @@ the removed DOM for visual exit.
 
 Combobox adds a popup and active-descendant replacement proof. Its public Vue
 API was first corrected in `nagi/combobox@2`: `modelValue` is the editable text
-and the named `selected` model is the committed option key. The package and Deep
-Sea fixtures execute that same Contract revision. Deep Sea keeps the native
+and the named `selected` model is the committed option key. `nagi/combobox@3`
+adds package/owned evidence for disabled and read-only policy, popup-boundary
+dismissal, IME composition, pointer focus/commit, and rejected controlled
+writes. Deep Sea currently executes revision 2 and must move to revision 3 after
+that package revision is published. Deep Sea keeps the native
 input and auto popover as focus and visibility owners, while an inner Motion
 surface handles spring entry and a scoped shared-layout indicator follows the
 provisional active option. An initial attempt to bind Behavior-owned popup refs
@@ -220,9 +223,11 @@ identity-first gaps are closed:
   Deep Sea Motion fixtures. Native scroll position, viewport anatomy, keyed
   presence, and reduced-motion timing remain in their respective Implementation
   suites rather than leaking into the shared Contract.
-- Combobox now aligns `modelValue`/`selected` with the shipped Vue API in
-  `nagi/combobox@2`, but still needs disabled, read-only, popup visibility,
-  boundary, IME, pointer, and controlled-state evidence.
+- Combobox revision 3 now exercises disabled, read-only, popup-boundary, IME,
+  pointer, and rejected controlled-state behavior against package and owned
+  fixtures. Its materially different Deep Sea implementation remains on
+  revision 2 until the next package update, so replacement evidence for the six
+  added guarantees is not yet claimed.
 - Dialog still needs an external controlled-open/rejected-write scenario.
 - DatePicker still needs disabled/read-only, segmented editing, broader calendar
   keyboard navigation, external form association, controlled-open, and
