@@ -8,6 +8,7 @@ const componentDocs = computed(() => route.path.startsWith("/components"));
 const hasSidebar = computed(() => Boolean(showcase || componentDocs.value));
 const navigation = [
   { label: "Overview", path: "/" },
+  { label: "Concept", path: "/concept/" },
   { label: "Showcase", path: "/showcase/" },
   { label: "Components", path: "/components/" },
   { label: "Nagi CSS", href: "https://nagi-labs.github.io/nagi-css/" },

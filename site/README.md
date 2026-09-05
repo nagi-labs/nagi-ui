@@ -58,7 +58,11 @@ Highlighted code HTML is a deliberate rendering boundary: only
 
 ## GitHub Pages
 
-The Pages workflow generates and deploys the site on pushes to `main` and by manual dispatch.
+Pull-request CI generates the site and uploads `site/.output/public` as a seven-day
+Actions artifact for review. The Pages workflow generates and deploys the site on
+pushes to `main` and by manual dispatch, but repository Pages must first be enabled
+with GitHub Actions as its source by a repository administrator. The workflow token
+cannot perform that one-time enablement.
 In GitHub Actions, Nuxt derives the project-page base path from `GITHUB_REPOSITORY`, so assets
 and navigation work at `https://<owner>.github.io/<repository>/`.
 
