@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useDatePicker, useMenu, useSubmenu } from "@nagi-labs/nagi-ui";
 import { NDatePicker, NDropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
-import { useDatePickerNativeForm } from "@nagi-labs/nagi-ui/component-controls";
 import { computed, ref } from "vue";
 
 const packageMenuAction = ref("none");
@@ -93,8 +92,8 @@ const ownedDatePicker = useDatePicker({
   required: true,
   invalid: ownedDateInvalid,
   validationMessage: "Owned delivery date is invalid.",
+  formControl: ownedDateFormControl,
 });
-useDatePickerNativeForm(ownedDateFormControl, ownedDatePicker);
 
 function submitPackageDate(event: SubmitEvent) {
   const form = event.currentTarget;

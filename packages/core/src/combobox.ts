@@ -50,8 +50,10 @@ export interface UseComboboxOptions<Item, Key extends string = string> {
   disabled?: MaybeRefOrGetter<boolean>;
   /** Allow inspection, but prevent editing, clearing, and selection changes. */
   readOnly?: MaybeRefOrGetter<boolean>;
-  /** Expose aria-required; the renderer owns form constraint validation. */
+  /** Expose aria-required and drive selected-value form constraint validation. */
   required?: MaybeRefOrGetter<boolean>;
+  /** Native constraint message when a required Combobox has no committed option. */
+  validationMessage?: MaybeRefOrGetter<string | undefined>;
   /** Keep the popup available for an application-owned empty/loading status. */
   openWhenEmpty?: MaybeRefOrGetter<boolean>;
   /** Position the listbox against the input. Defaults to native/fallback anchoring. */
@@ -99,6 +101,10 @@ export interface ComboboxOptionProps {
   onClick: (event: MouseEvent) => void;
 }
 
+export interface ComboboxClearButtonProps {
+  onClick: () => void;
+}
+
 export interface UseComboboxReturn<Item, Key extends string = string> {
   id: string;
   inputId: string;
@@ -113,6 +119,7 @@ export interface UseComboboxReturn<Item, Key extends string = string> {
   hide: () => void;
   select: (item: Item) => void;
   clear: () => void;
+  clearButtonProps: ComboboxClearButtonProps;
   inputProps: ComboboxInputProps;
   popupProps: ComboboxPopupProps;
   listboxProps: ComboboxListboxProps;
@@ -133,41 +140,6 @@ interface ComboboxComponentProps<Item extends ComboboxComponentItem> {
   readonly readOnly: boolean;
   readonly required: boolean;
   readonly validationMessage: string;
-}
-
-/** Keeps form/reset/validity/focus mechanics intact around custom Combobox behavior. */
-export function useNativeCombobox<Item, Key extends string>(
-  props: Pick<ComboboxComponentProps<ComboboxComponentItem>, "required" | "validationMessage">,
-  input: Readonly<Ref<HTMLInputElement | null>>,
-  behavior: UseComboboxReturn<Item, Key>,
-) {
-  const initialInputValue = behavior.inputValue.value;
-  const initialSelected = behavior.selectedKey.value;
-
-  useNativeFormReset(input, (control) => {
-    behavior.selectedKey.value = initialSelected;
-    behavior.hide();
-    // Selection watchers canonicalize text to the option label. Reset owns
-    // both initial models, so restore deliberately non-canonical initial text
-    // after those watchers settle.
-    void nextTick(() => {
-      behavior.inputValue.value = initialInputValue;
-      control.value = initialInputValue;
-    });
-  });
-
-  useNativeCustomValidity(input, () =>
-    props.required && behavior.selectedKey.value === null
-      ? props.validationMessage
-      : "",
-  );
-
-  function clear() {
-    behavior.clear();
-    input.value?.focus();
-  }
-
-  return { clear };
 }
 
 /**
@@ -257,10 +229,7 @@ function createCombobox<Item, Key extends string = string>(
 
   function recordInput(event: Event) {
     const candidate = event.currentTarget ?? event.target;
-    if (
-      typeof HTMLInputElement !== "undefined" &&
-      candidate instanceof HTMLInputElement
-    ) {
+    if (typeof HTMLInputElement !== "undefined" && candidate instanceof HTMLInputElement) {
       inputElement.value = candidate;
     }
   }
@@ -342,6 +311,13 @@ function createCombobox<Item, Key extends string = string>(
     writeInputValue("");
     hide();
   }
+
+  const clearButtonProps: ComboboxClearButtonProps = {
+    onClick() {
+      clear();
+      inputElement.value?.focus();
+    },
+  };
 
   function move(delta: -1 | 1) {
     const enabled = enabledItems();
@@ -475,9 +451,8 @@ function createCombobox<Item, Key extends string = string>(
       const target = event.currentTarget as HTMLInputElement;
       queueMicrotask(() => {
         const root = target.getRootNode();
-        const active = "activeElement" in root
-          ? (root as Document | ShadowRoot).activeElement
-          : null;
+        const active =
+          "activeElement" in root ? (root as Document | ShadowRoot).activeElement : null;
         if (active === target) return;
         hide();
       });
@@ -507,16 +482,12 @@ function createCombobox<Item, Key extends string = string>(
     };
   }
 
-  function reconcileCollection(
-    [keys, openWhenEmpty]: readonly [readonly Key[], boolean],
-  ) {
+  function reconcileCollection([keys, openWhenEmpty]: readonly [readonly Key[], boolean]) {
     if (activeKey.value !== null && !keys.includes(activeKey.value)) setActive(undefined);
     if (keys.length === 0 && !openWhenEmpty && popover.open.value) hide();
   }
 
-  function reconcileInteractionMode(
-    [disabled, readOnly]: readonly [boolean, boolean],
-  ) {
+  function reconcileInteractionMode([disabled, readOnly]: readonly [boolean, boolean]) {
     if ((disabled || readOnly) && popover.open.value) hide();
   }
 
@@ -526,19 +497,31 @@ function createCombobox<Item, Key extends string = string>(
     if (item !== undefined) writeInputValue(options.getTextValue(item));
   }
 
-  watch(
-    () => [enabledItems().map(keyOf), opensWhenEmpty()] as const,
-    reconcileCollection,
-  );
+  watch(() => [enabledItems().map(keyOf), opensWhenEmpty()] as const, reconcileCollection);
 
-  watch(
-    () => [componentDisabled(), componentReadOnly()] as const,
-    reconcileInteractionMode,
-  );
+  watch(() => [componentDisabled(), componentReadOnly()] as const, reconcileInteractionMode);
 
   watch(selectedKey, syncInputFromSelection);
 
   if (instance) {
+    const initialInputValue = inputValue.value;
+    const initialSelected = selectedKey.value;
+    useNativeFormReset(inputElement, (control) => {
+      selectedKey.value = initialSelected;
+      hide();
+      // Selection watchers canonicalize text to the option label. Reset owns
+      // both initial models, so restore deliberately non-canonical initial text
+      // after those watchers settle.
+      void nextTick(() => {
+        inputValue.value = initialInputValue;
+        control.value = initialInputValue;
+      });
+    });
+    useNativeCustomValidity(inputElement, () =>
+      (toValue(options.required) ?? false) && selectedKey.value === null
+        ? (toValue(options.validationMessage) ?? "Select an option.")
+        : "",
+    );
     onBeforeUnmount(() => {
       detachAnchor?.();
       detachAnchor = null;
@@ -558,6 +541,7 @@ function createCombobox<Item, Key extends string = string>(
     hide,
     select,
     clear,
+    clearButtonProps,
     inputProps,
     popupProps,
     listboxProps,
@@ -592,12 +576,12 @@ export function useCombobox(
     return createCombobox(optionsOrProps as UseComboboxOptions<unknown>);
   }
 
-  const inputValue = selected === undefined
-    ? inputOrInputValue as Ref<string>
-    : inputValueOrSelected as Ref<string>;
-  const selectedKey = selected === undefined
-    ? inputValueOrSelected as Ref<string | null>
-    : selected;
+  const inputValue =
+    selected === undefined
+      ? (inputOrInputValue as Ref<string>)
+      : (inputValueOrSelected as Ref<string>);
+  const selectedKey =
+    selected === undefined ? (inputValueOrSelected as Ref<string | null>) : selected;
 
   const props = optionsOrProps as ComboboxComponentProps<ComboboxComponentItem>;
   const behavior = createCombobox<ComboboxComponentItem>({
@@ -608,17 +592,13 @@ export function useCombobox(
     disabled: () => props.disabled,
     readOnly: () => props.readOnly,
     required: () => props.required,
+    validationMessage: () => props.validationMessage,
     openWhenEmpty: true,
     items: () => (props.loading ? [] : props.items),
     inputValue,
     selected: selectedKey,
   });
-  const nativeBinding = useNativeCombobox(props, behavior.inputElement, behavior);
-
-  return {
-    ...behavior,
-    clear: nativeBinding.clear,
-  };
+  return behavior;
 }
 
 let comboboxCount = 0;

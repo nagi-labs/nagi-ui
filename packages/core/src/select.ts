@@ -2,8 +2,14 @@ import {
   getCurrentInstance,
   onMounted,
   onUpdated,
+  shallowRef,
+  toValue,
+  useId,
+  type ComponentPublicInstance,
+  type MaybeRefOrGetter,
 } from "vue";
 
+import { mergeElementProps, withoutClassToken } from "./merge-props.ts";
 import { useNativeFormReset } from "./native-form.ts";
 
 type ReadonlySelectRef = Readonly<{
@@ -19,11 +25,32 @@ export interface SelectBinding {
   onChange: (event: Event) => void;
 }
 
+export interface SelectControlProps {
+  readonly [key: string]: unknown;
+  ref: (element: Element | ComponentPublicInstance | null) => void;
+  onChange: (event: Event) => void;
+}
+
+export interface SelectLabelProps {
+  readonly for?: string | undefined;
+}
+
+export interface SelectComponentBinding {
+  selectProps: SelectControlProps;
+  labelProps: SelectLabelProps;
+  selectedProps: SelectBinding["selectedProps"];
+}
+
+export interface UseSelectComponentOptions {
+  attrs?: Readonly<Record<string, unknown>>;
+  id?: MaybeRefOrGetter<string | undefined>;
+  disabled?: MaybeRefOrGetter<boolean | undefined>;
+  required?: MaybeRefOrGetter<boolean | undefined>;
+  onChange?: (event: Event) => void;
+}
+
 /** Keeps the Select model aligned with native default-option and reset rules. */
-export function useSelect(
-  select: ReadonlySelectRef,
-  model: WritableSelectModel,
-): SelectBinding {
+function createSelectBinding(select: ReadonlySelectRef, model: WritableSelectModel): SelectBinding {
   let initialValue = model.value;
   let initialCaptured = model.value !== undefined;
 
@@ -69,6 +96,59 @@ export function useSelect(
     },
     onChange(event) {
       syncNativeValue(event.currentTarget as HTMLSelectElement);
+    },
+  };
+}
+
+export function useSelect(select: ReadonlySelectRef, model: WritableSelectModel): SelectBinding;
+export function useSelect(
+  model: WritableSelectModel,
+  options?: UseSelectComponentOptions,
+): SelectComponentBinding;
+/**
+ * Keeps a native select synchronized. The component overload owns its element
+ * ref so a shipped or owned template needs only this one composable.
+ */
+export function useSelect(
+  selectOrModel: ReadonlySelectRef | WritableSelectModel,
+  modelOrOptions: WritableSelectModel | UseSelectComponentOptions = {},
+): SelectBinding | SelectComponentBinding {
+  if ("value" in modelOrOptions) {
+    return createSelectBinding(selectOrModel as ReadonlySelectRef, modelOrOptions);
+  }
+
+  const model = selectOrModel as WritableSelectModel;
+  const options = modelOrOptions;
+  const select = shallowRef<HTMLSelectElement | null>(null);
+  const binding = createSelectBinding(select, model);
+  const generatedId = getCurrentInstance() ? useId() : undefined;
+  const controlId = () => toValue(options.id) ?? generatedId;
+  const controlProps = {
+    ref(element: Element | ComponentPublicInstance | null) {
+      select.value = element as HTMLSelectElement | null;
+    },
+    onChange(event: Event) {
+      binding.onChange(event);
+      options.onChange?.(event);
+    },
+  };
+
+  return {
+    selectedProps: binding.selectedProps,
+    get labelProps() {
+      return { for: controlId() };
+    },
+    get selectProps() {
+      const attrs = options.attrs ?? {};
+      return mergeElementProps(
+        { ...attrs, class: withoutClassToken(attrs.class, "n-select") },
+        controlProps,
+        {
+          id: controlId(),
+          disabled: toValue(options.disabled) ?? false,
+          required: toValue(options.required) ?? false,
+        },
+      ) as SelectControlProps;
     },
   };
 }

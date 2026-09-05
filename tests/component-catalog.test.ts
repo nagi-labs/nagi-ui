@@ -183,7 +183,7 @@ test("components entry exposes the complete date and time family", async () => {
     });
     assert.match(
       range,
-      /<div[^>]*class="dialog"[^>]*role="dialog"[^>]*popover|<div[^>]*class="dialog"[^>]*popover[^>]*role="dialog"/u,
+      /<div[^>]*class="n-date-range-picker-popup"[^>]*role="dialog"[^>]*popover|<div[^>]*class="n-date-range-picker-popup"[^>]*popover[^>]*role="dialog"/u,
     );
     assert.equal(range.match(/role="spinbutton"/gu)?.length, 6);
     assert.equal(range.match(/aria-selected="true"/gu)?.length, 3);
@@ -771,7 +771,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     );
     assert.match(richDialog, /<h2[^>]*class="title"/);
     assert.match(richDialog, /<span>Confirm now<\/span>/);
-    assert.match(richDialog, /<p[^>]*class="p"/);
+    assert.match(richDialog, /<div[^>]*data-part="description"[^>]*class="unit"/);
     assert.match(richDialog, /<strong>Review this action<\/strong>/);
     const richDescriptionTarget = richDialog.match(/aria-describedby="([^"]+)"/)?.[1];
     assert.ok(richDescriptionTarget);
@@ -830,6 +830,7 @@ test("thin package Blueprints emit native relationship attributes during SSR", a
     assert.match(toast, /aria-label="Notifications"/);
     assert.match(toast, /aria-keyshortcuts="F6"/);
     assert.match(toast, /role="alert"/);
+    assert.match(toast, /Connection lost\. Changes are not being saved\./);
     assert.match(toast, /Connection lost/);
     assert.match(toast, /Changes are not being saved/);
     assert.match(toast, />Retry</);
@@ -930,7 +931,7 @@ test("[BTN-SEM-01][BTN-SEM-02][BTN-STATE-01][BTN-INT-03][BTN-STYLE-01][BTN-STYLE
     );
     assert.match(cardWithRichHeader, /<span[^>]*class="text"/);
     assert.match(cardWithRichHeader, /<span>Rich Base title<\/span>/);
-    assert.match(cardWithRichHeader, /<p[^>]*class="p"/);
+    assert.match(cardWithRichHeader, /<div[^>]*class="unit"/);
     assert.match(cardWithRichHeader, /<span>Rich Base description<\/span>/);
 
     const cardWithSlotOnlyHeader = await renderSlots(
@@ -1073,6 +1074,7 @@ test("[CAR-SEM-02][CAR-SEM-03][CAR-SEM-04][CAR-SEM-06] components entry exposes 
     );
     assert.match(multi, /<option[^>]*value="jp"[^>]*selected/u);
     assert.match(multi, /<input[^>]*aria-describedby="countries-help"/u);
+    assert.match(multi, /<button[^>]*aria-label="Remove Japan"/u);
 
     const tags = await render(components.NTagsInput as Component, {
       label: "Topics",

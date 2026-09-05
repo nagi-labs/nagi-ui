@@ -7,8 +7,6 @@ defineOptions({ name: "TreeBranch", inheritAttrs: false });
 const props = defineProps<{
   nodes: readonly TreeNode[];
   tree: TreeBinding<TreeNode, string>;
-  expandLabel: string;
-  collapseLabel: string;
 }>();
 </script>
 
@@ -21,15 +19,12 @@ const props = defineProps<{
   >
     <div class="field">
       <button
-        v-if="node.hasChildren || node.children?.length"
+        v-if="tree.entryFor(node).hasChildren"
+        v-bind="tree.toggleControlProps(node)"
         class="button"
         type="button"
-        tabindex="-1"
-        :aria-label="`${tree.expanded.value.includes(node.key) ? collapseLabel : expandLabel} ${node.label}`"
-        :disabled="node.disabled || node.loading"
-        @click.stop="tree.toggleFromControl(node, $event)"
       >
-        {{ tree.expanded.value.includes(node.key) ? "−" : "+" }}
+        {{ tree.isExpanded(node) ? "−" : "+" }}
       </button>
       <span
         v-else
@@ -39,15 +34,13 @@ const props = defineProps<{
       <span class="text">{{ node.label }}</span>
     </div>
     <ul
-      v-if="node.children?.length && tree.expanded.value.includes(node.key)"
+      v-if="node.children?.length && tree.isExpanded(node)"
       v-bind="tree.groupProps"
       class="list"
     >
       <TreeBranch
         :nodes="node.children"
         :tree="tree"
-        :expand-label="expandLabel"
-        :collapse-label="collapseLabel"
       />
     </ul>
   </li>

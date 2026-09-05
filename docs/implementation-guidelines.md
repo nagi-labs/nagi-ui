@@ -79,11 +79,15 @@ Web Platform ─ Shared Mechanisms ─ Behavior / Policy
   become class names.
 - **UI Anatomy is reserved for `div` and `span`.** Names such as `field`,
   `value`, `actions`, `media`, `icon`, and `text` must not replace the fixed
-  identity of a semantic element. In particular, prose is `<p class="p">`;
-  short title-like labels that must not impose a heading level are normally
-  `<span class="text">`. Whether content is genuinely a paragraph remains an
-  HTML review decision, while the Nagi CSS lint mechanically rejects `p.text`
-  and Element Class identities used on the wrong tag.
+  identity of a semantic element. Treat `<p class="p">` as uncommon and use it
+  only for intentionally authored prose whose paragraph boundary matters. A
+  complete sentence or a prop named `description` is not sufficient; labels,
+  hints, statuses, and short component microcopy normally use
+  `<span class="text">`. A rich slot that may contain several paragraphs or
+  other block content owns those elements and must not be wrapped in `p`.
+  Whether content is genuinely a paragraph remains an HTML review decision,
+  while the Nagi CSS lint mechanically rejects `p.text` and Element Class
+  identities used on the wrong tag.
 
 ## Six governing principles
 
@@ -104,19 +108,40 @@ Web Platform ─ Shared Mechanisms ─ Behavior / Policy
    explicit, testable, and independent of Nagi visual classes. Declare them in
    the component's Definition, where they are executable; see
    [Component Definitions](component-definitions.md).
-4. **The Blueprint is the final assembler.** Final native elements, hierarchy,
-   branches, slots, anatomy bindings, attribute destinations, and CSS remain
-   visible in the owned SFC. A primitive may require functional anatomy, but
-   the Blueprint must visibly render and bind it — never hide the DOM.
+4. **The Blueprint tree is the final assembler.** Final native elements,
+   hierarchy, branches, slots, anatomy bindings, attribute destinations, and
+   CSS remain visible in the owning Vue sources. A parent may assemble an
+   independently contracted child component instead of repeating its DOM; the
+   child source remains the visible owner of those native elements. A Behavior
+   API must not become a hidden renderer.
 5. **Every owned dependency is governed.** An ownable Blueprint may depend only
    on a stable public API or files included in its ownership bundle. Shared
    behavior upgrades require browser-contract verification, because an owned
    SFC can change behavior without changing textually.
+   Public child Blueprints are component dependencies: `nagi-ui own` resolves
+   them recursively and keeps the parent connected through the same relative
+   import used by the package source. Private child renderers remain files in
+   the parent's own bundle.
 6. **Extract mechanisms from evidence, not symmetry.** Share behavior when
    multiple components demonstrably maintain the same invariant. Do not create
    a generic framework merely to make the architecture diagram uniform.
 
 ## When behavior belongs in a composable
+
+Before moving a derivation into a composable, first ask whether JavaScript is
+needed at all. Layout that follows child count, intrinsic size, or state already
+represented in the DOM should be derived by CSS. A Blueprint may generate a
+component-local CSS property only when a reviewed platform limitation requires
+one; for example, native range values are not exposed to CSS and a controlled
+splitter value must cross the script/CSS boundary. `vp run audit:templates`
+guards this boundary with a narrow, explicit exception list.
+
+Function length is not a responsibility boundary. Even a one-line function
+belongs in the Behavior API when it decides state, interaction, focus, DOM
+synchronization, or the ordered composition of those effects with a native
+event. Blueprint-local functions are reserved for rendering-only derivations
+such as a row identity or dynamic slot name. `vp run audit:templates` records
+those rare exceptions explicitly and rejects an unreviewed local function.
 
 Move behavior into a composable when one or more of the following is true:
 
@@ -166,6 +191,14 @@ binding destination. The Definition explains what the behavior guarantees,
 the binding type exposes what must be attached, and the Behavior API owns how
 the attached ref and handlers maintain those guarantees.
 
+State-dependent DOM relationships follow the same rule. When validity decides
+whether a field or grid receives `aria-describedby`, the Behavior binding
+exposes both the stable message target ID and the reactive relationship token.
+The Blueprint still renders the visible message element, but it must not rebuild
+an ID from another binding or repeat the invalid-state condition. Keep these two
+values distinct: `error.id` names the target for its whole lifetime, while
+`error.describedBy` becomes defined only while that relationship applies.
+
 ### Register elements at the smallest useful scope
 
 A single trigger, input, surface, or region needs a local element variable (or
@@ -214,6 +247,33 @@ branches, rendering keys — stay beside the markup. The correct question is:
 
 ## What remains in the template
 
+A public component should normally invoke one primary `useX` binding. Native
+form synchronization, element refs, renderer ordering, and other behavior that
+the component always needs must not be assembled in the SFC through an extra
+`useXRenderer` or `useXNativeForm` call. The component overload of the primary
+Behavior API returns that complete binding.
+
+That binding also owns the final props for an element whose behavior it owns.
+Do not call `useX` and then rebuild the same element's binding with a local
+`computed(() => mergeElementProps(...))`; pass consumer attrs into the component
+overload and bind its returned object once. This keeps ref registration,
+behavior-dependent ARIA, native attributes, and listener composition in one
+reviewable boundary. A template-local conversion from behavior output to a
+visual CSS custom property is different: it remains beside the CSS it drives
+because the Behavior must not own presentation. `Resizable`'s panel percentage
+to `--local-first-basis` mapping is an example of an intentional visible bridge.
+
+Before composing another Behavior implementation, check whether its component
+can be rendered instead. Prefer component composition when the child keeps an
+independent Contract and can coordinate through public props, models, events,
+and slots. The parent Behavior then owns only parent state and integration
+policy; it must not instantiate a second copy of the child's Behavior.
+
+Compose Behaviors directly only when the parent must coordinate intermediate
+state or registered elements that the child cannot expose without leaking its
+Implementation. Private named helpers may divide a long algorithm without
+creating another public composable layer.
+
 - **Native elements and hierarchy.** The composable must not generate them.
 - **Structural branches** (`v-if="description"`): whether and where content
   appears is an ownership-visible decision.
@@ -242,12 +302,28 @@ from an owner: `nagi-ui own` copies the directory as part of the editable
 bundle, and the documentation site labels those files as **Internal
 component** beside the **Public component** entry SFC.
 
-Do not extract a renderer merely because markup is repeated. Calendar grids
-remain visible in Calendar, RangeCalendar, DatePicker, and DateRangePicker:
-moving the table to a child component would hide a primary structural decision
-and introduce a scoped-CSS ownership boundary. Prefer deliberate local
-repetition when sharing would make an owner cross files to discover the basic
-DOM or style path.
+Private renderers do not need to be reusable. A coherent region may move to an
+owner-specific private SFC when it has its own rendered surface, owns a closed
+CSS subtree, and can consume existing Behavior bindings without moving their
+logic. DatePicker and DateRangePicker therefore keep their field composition
+and Behavior creation in their public entry SFCs while their popup calendars
+live in separate private renderers. A typed instance-local context connects the
+two without adding a DOM wrapper; `nagi-ui own` copies both files.
+
+Repeated markup is evidence to inspect, not proof that a shared renderer is
+needed. Extract a child component when the repeated region has one stable
+Contract and public coordination boundary. DateField controls and Calendar
+surfaces are candidates because standalone and picker components should not
+reimplement the same child Behavior. An owner-specific private renderer remains
+appropriate when the region has no independent Contract; it may inject its
+owner's binding, but it must not reimplement commit, popup, focus, or controlled
+state transitions.
+
+Nagi CSS ownership follows the component boundary. The parent may style the
+child root for external layout but must not select into the child's internals.
+If composition requires the parent to reach through the child with scoped CSS,
+the child is missing a public styling contract or is not yet a sound component
+boundary.
 
 Visible verbosity can also be contractual. Combobox and MultiSelect spell out
 the supported native input attributes and consumer events because root, input,
@@ -317,7 +393,8 @@ vp exec playwright test tests/browser/conformance-contract.spec.ts tests/browser
 ```
 
 `vp run audit:templates` applies the catalog-wide baseline: every Blueprint is
-formatted consistently, inline ref callbacks and template-local state
+formatted consistently, invokes at most one non-Vue Behavior composable,
+rejects inline ref callbacks and template-local state
 transitions are rejected, and lifecycle reconciliation or document-global
 lookup cannot live in an SFC setup block. It also maintains an explicit list of
 Behavior-owned binding destinations: each destination must consume one complete
@@ -347,13 +424,16 @@ API, but too easy to implement incorrectly in every Blueprint. It lives in the
 ownership-support API: it is public, versioned, and importable by owned
 Blueprints.
 
-`useButton` is the representative example. It implements only Nagi Button's
-focusable-disabled policy, keeping one invariant together: omit native
+`useButton` is the representative example. It connects the one native root and
+implements Nagi Button's focusable-disabled policy, keeping one invariant
+together: omit native
 `disabled`, stay in the tab order, expose `aria-disabled="true"`, and suppress
 activation in the capture phase before consumer click handlers run. It is
-justified despite being short — the decision is semantic coupling, not line
-count. It must not expand into ownership of Button markup, style axes, slots,
-events, or CSS.
+also the single composition point for consumer root attributes and the safe
+native `type`; the Blueprint must not reconstruct those props after calling it.
+It is justified despite being short — the decision is semantic coupling, not
+line count. It must not expand into ownership of Button markup, style axes,
+slots, declared consumer events, or CSS declarations.
 
 ## Attribute composition
 

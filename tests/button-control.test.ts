@@ -61,22 +61,37 @@ test("Button control props remain reactive getters", () => {
   assert.equal(buttonProps["aria-disabled"], "true");
 });
 
+test("Button control returns the complete native root binding", () => {
+  const props: {
+    type: "button" | "submit" | "reset";
+    disabled: boolean;
+    focusableWhenDisabled: boolean;
+  } = { type: "submit", disabled: false, focusableWhenDisabled: false };
+  const attrs = { class: "n-button -primary", "data-testid": "save" };
+  const button = useButton(props, attrs);
+
+  assert.equal(button.buttonProps.type, "submit");
+  assert.equal(button.buttonProps.class, "-primary");
+  assert.equal(button.buttonProps["data-testid"], "save");
+
+  props.type = "reset";
+  attrs.class = "n-button -destructive";
+  assert.equal(button.buttonProps.type, "reset");
+  assert.equal(button.buttonProps.class, "-destructive");
+});
+
 test("[BTN-SEM-02][BTN-INT-03][BTN-ANAT-01] Button SFC merges consumer attrs with behavior-owned props in one binding", () => {
   const source = fs.readFileSync(
-    path.join(
-      import.meta.dirname,
-      "../packages/core/blueprints/button/Button.vue",
-    ),
+    path.join(import.meta.dirname, "../packages/core/blueprints/button/Button.vue"),
     "utf8",
   );
 
-  assert.match(source, /const attrs = useAttrs\(\)/u);
-  assert.match(source, /const button = useButton\(props\)/u);
-  assert.match(
-    source,
-    /mergeElementProps\([\s\S]*button\.buttonProps,[\s\S]*withoutClassToken\(attrs\.class, "n-button"\)[\s\S]*\{ type: props\.type \},[\s\S]*\)/u,
-  );
-  assert.match(source, /v-bind="buttonProps"/u);
+  assert.match(source, /const button = useButton\(props, useAttrs\(\)\)/u);
+  assert.doesNotMatch(source, /mergeElementProps|withoutClassToken|computed\(/u);
+  assert.match(source, /v-bind="button\.buttonProps"/u);
   assert.match(source, /data-scope="button"[\s\S]*data-part="root"/u);
-  assert.doesNotMatch(source, /:disabled="button\.|:aria-disabled="button\.|@click\.capture="button\./u);
+  assert.doesNotMatch(
+    source,
+    /:disabled="button\.|:aria-disabled="button\.|@click\.capture="button\./u,
+  );
 });

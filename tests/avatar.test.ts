@@ -35,38 +35,53 @@ test("Avatar SSR keeps image and fallback semantics deterministic", async () => 
       )
     ).default as Component;
 
-    const imageHtml = normalizeSsrHtml(await renderToString(
-      createSSRApp({
-        render: () => h(avatar, { src: "/ada.jpg", alt: "Ada Lovelace" }),
-      }),
-    ));
-    assert.match(imageHtml, /<span[^>]*class="n-avatar"[^>]*role="img"/);
+    const imageHtml = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+        render: () => h(avatar, {
+          src: "/ada.jpg",
+          alt: "Ada Lovelace",
+          class: "n-avatar -small",
+          "data-testid": "owner",
+        }),
+        }),
+      ),
+    );
+    assert.match(imageHtml, /<span[^>]*class="n-avatar -small"[^>]*role="img"/);
+    assert.match(imageHtml, /class="n-avatar -small"/);
+    assert.doesNotMatch(imageHtml, /class="n-avatar n-avatar/);
+    assert.match(imageHtml, /data-testid="owner"/);
     assert.match(imageHtml, /aria-label="Ada Lovelace"/);
     assert.match(imageHtml, /<span class="unit">AL<\/span>/);
     assert.match(imageHtml, /<img[^>]*class="image"[^>]*src="\/ada.jpg"[^>]*alt=""/);
 
-    const fallbackHtml = normalizeSsrHtml(await renderToString(
-      createSSRApp({
-        render: () => h(avatar, { alt: "Account owner", fallback: "AO" }),
-      }),
-    ));
+    const fallbackHtml = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () => h(avatar, { alt: "Account owner", fallback: "AO" }),
+        }),
+      ),
+    );
     assert.match(fallbackHtml, /<span class="unit">AO<\/span>/);
     assert.doesNotMatch(fallbackHtml, /<img/);
 
-    const slotHtml = normalizeSsrHtml(await renderToString(
-      createSSRApp({
-        render: () => h(
-          avatar,
-          { alt: "Account owner", fallback: "AO" },
-          { fallback: ({ fallback }: { fallback: string }) => h("b", fallback) },
-        ),
-      }),
-    ));
+    const slotHtml = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(
+              avatar,
+              { alt: "Account owner", fallback: "AO" },
+              { fallback: ({ fallback }: { fallback: string }) => h("b", fallback) },
+            ),
+        }),
+      ),
+    );
     assert.match(slotHtml, /<span class="unit"><b>AO<\/b><\/span>/);
 
-    const decorativeHtml = normalizeSsrHtml(await renderToString(
-      createSSRApp({ render: () => h(avatar, { alt: "" }) }),
-    ));
+    const decorativeHtml = normalizeSsrHtml(
+      await renderToString(createSSRApp({ render: () => h(avatar, { alt: "" }) })),
+    );
     assert.match(decorativeHtml, /aria-hidden="true"/);
     assert.doesNotMatch(decorativeHtml, /role="img"/);
   } finally {

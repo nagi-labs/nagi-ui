@@ -1,4 +1,8 @@
-import { Time, parseTime, type TimeField as InternationalizedTimeField } from "@internationalized/date";
+import {
+  Time,
+  parseTime,
+  type TimeField as InternationalizedTimeField,
+} from "@internationalized/date";
 import {
   computed,
   getCurrentInstance,
@@ -15,7 +19,11 @@ import {
   type Ref,
 } from "vue";
 
-import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
+import {
+  nativeFormControlRef,
+  useNativeCustomValidity,
+  useNativeFormReset,
+} from "./native-form.ts";
 import { createElementRegistry } from "./element-registry.ts";
 import { createSegmentDigitBuffer, localeDigit } from "./segmented-field.ts";
 
@@ -70,6 +78,7 @@ export interface TimeFieldSegmentProps {
 }
 
 export interface TimeFieldFormValueProps {
+  ref?: (element: Element | ComponentPublicInstance | null) => void;
   type: "time";
   tabindex: -1;
   "aria-hidden": "true";
@@ -110,6 +119,7 @@ export interface UseTimeFieldOptions {
   required?: MaybeRefOrGetter<boolean | undefined>;
   invalid?: MaybeRefOrGetter<boolean | undefined>;
   validationMessage?: MaybeRefOrGetter<string | undefined>;
+  describedBy?: MaybeRefOrGetter<string | undefined>;
   name?: MaybeRefOrGetter<string | undefined>;
   form?: MaybeRefOrGetter<string | undefined>;
   segmentLabels?: Partial<TimeFieldSegmentLabels>;
@@ -122,6 +132,10 @@ export interface TimeFieldBinding {
   fieldProps: TimeFieldProps;
   segmentProps: (segment: TimeFieldSegment) => TimeFieldSegmentProps;
   formValueProps: TimeFieldFormValueProps;
+  error: {
+    id: string;
+    describedBy: ComputedRef<string | undefined>;
+  };
   isInvalid: ComputedRef<boolean>;
   validationMessage: ComputedRef<string>;
   focusFirst: () => void;
@@ -144,6 +158,7 @@ export interface TimeFieldComponentProps {
   readonly required: boolean;
   readonly invalid: boolean;
   readonly validationMessage: string;
+  readonly ariaDescribedby?: string | undefined;
   readonly hourLabel: string;
   readonly minuteLabel: string;
   readonly secondLabel: string;
@@ -173,9 +188,7 @@ function parseIsoTime(
   granularity: TimeFieldGranularity,
 ): Time | null {
   if (!value) return null;
-  const pattern = granularity === "second"
-    ? /^\d{2}:\d{2}:\d{2}$/u
-    : /^\d{2}:\d{2}$/u;
+  const pattern = granularity === "second" ? /^\d{2}:\d{2}:\d{2}$/u : /^\d{2}:\d{2}$/u;
   if (!pattern.test(value)) return null;
   try {
     return parseTime(value);
@@ -215,8 +228,8 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   function hourCycle(): 12 | 24 {
     const explicit = toValue(options.hourCycle);
     if (explicit !== undefined) return explicit;
-    const resolved = new Intl.DateTimeFormat(locale(), { hour: "numeric" })
-      .resolvedOptions().hourCycle;
+    const resolved = new Intl.DateTimeFormat(locale(), { hour: "numeric" }).resolvedOptions()
+      .hourCycle;
     return resolved === "h11" || resolved === "h12" ? 12 : 24;
   }
 
@@ -242,8 +255,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     const localeInfo = new Intl.Locale(locale()) as Intl.Locale & {
       textInfo?: { direction?: "ltr" | "rtl" };
     };
-    return toValue(options.dir)
-      ?? (localeInfo.textInfo?.direction === "rtl" ? "rtl" : "ltr");
+    return toValue(options.dir) ?? (localeInfo.textInfo?.direction === "rtl" ? "rtl" : "ltr");
   }
 
   function readOnly(): boolean {
@@ -305,8 +317,10 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   function outOfRange(value: Time): boolean {
     const minimum = comparable(toValue(options.minValue));
     const maximum = comparable(toValue(options.maxValue));
-    return (minimum !== null && value.compare(minimum) < 0)
-      || (maximum !== null && value.compare(maximum) > 0);
+    return (
+      (minimum !== null && value.compare(minimum) < 0) ||
+      (maximum !== null && value.compare(maximum) > 0)
+    );
   }
 
   function commitParts() {
@@ -334,9 +348,10 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   }
 
   function reconcileGranularity() {
-    const current = parts.hour === undefined || parts.minute === undefined
-      ? null
-      : new Time(parts.hour, parts.minute, parts.second ?? 0);
+    const current =
+      parts.hour === undefined || parts.minute === undefined
+        ? null
+        : new Time(parts.hour, parts.minute, parts.second ?? 0);
     if (current !== null && options.value.value !== null) writeModel(isoValue(current));
   }
 
@@ -350,8 +365,11 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       hourCycle: "h12",
     });
     function name(hour: number): string {
-      return formatter.formatToParts(new Date(Date.UTC(2000, 0, 1, hour)))
-        .find((part) => part.type === "dayPeriod")?.value ?? (hour < 12 ? "AM" : "PM");
+      return (
+        formatter
+          .formatToParts(new Date(Date.UTC(2000, 0, 1, hour)))
+          .find((part) => part.type === "dayPeriod")?.value ?? (hour < 12 ? "AM" : "PM")
+      );
     }
     return [name(1), name(13)];
   }
@@ -391,30 +409,36 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       }
       if (part.type === "dayPeriod") {
         const value = parts.dayPeriod;
-        return [{
-          key: "dayPeriod",
-          type: "dayPeriod",
-          text: value === undefined ? "--" : periodNames()[value],
-          placeholder: "--",
-          ...(value === undefined ? {} : { value }),
-        }];
+        return [
+          {
+            key: "dayPeriod",
+            type: "dayPeriod",
+            text: value === undefined ? "--" : periodNames()[value],
+            placeholder: "--",
+            ...(value === undefined ? {} : { value }),
+          },
+        ];
       }
       if (part.type !== "hour" && part.type !== "minute" && part.type !== "second") return [];
       const value = part.type === "hour" ? displayHour() : parts[part.type];
-      return [{
-        key: part.type,
-        type: part.type,
-        text: value === undefined ? placeholder(part.type) : formatNumber(value),
-        placeholder: placeholder(part.type),
-        ...(value === undefined ? {} : { value }),
-      }];
+      return [
+        {
+          key: part.type,
+          type: part.type,
+          text: value === undefined ? placeholder(part.type) : formatNumber(value),
+          placeholder: placeholder(part.type),
+          ...(value === undefined ? {} : { value }),
+        },
+      ];
     });
   });
 
   function editableSegments(): readonly EditableTimeFieldSegmentType[] {
     return segments.value
-      .filter((segment): segment is TimeFieldSegment & { type: EditableTimeFieldSegmentType } =>
-        segment.type !== "literal")
+      .filter(
+        (segment): segment is TimeFieldSegment & { type: EditableTimeFieldSegmentType } =>
+          segment.type !== "literal",
+      )
       .map((segment) => segment.type);
   }
 
@@ -445,7 +469,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   function setNumeric(type: NumericTimeFieldSegmentType, value: number | undefined) {
     if (type === "hour" && value !== undefined && hourCycle() === 12) {
       const period = parts.dayPeriod ?? 0;
-      parts.hour = value % 12 + period * 12;
+      parts.hour = (value % 12) + period * 12;
       parts.dayPeriod = period;
     } else {
       parts[type] = value;
@@ -468,7 +492,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
 
   function setDayPeriod(period: 0 | 1) {
     parts.dayPeriod = period;
-    if (parts.hour !== undefined) parts.hour = parts.hour % 12 + period * 12;
+    if (parts.hour !== undefined) parts.hour = (parts.hour % 12) + period * 12;
     commitParts();
   }
 
@@ -480,7 +504,7 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
         name: name.toLocaleLowerCase(locale()),
       }))
       .filter((candidate) => candidate.name.startsWith(normalized));
-    return matches.length === 1 ? matches[0]?.index ?? null : null;
+    return matches.length === 1 ? (matches[0]?.index ?? null) : null;
   }
 
   function cycleNumeric(type: NumericTimeFieldSegmentType, amount: -1 | 1) {
@@ -499,13 +523,14 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     const shown = type === "hour" ? displayHour() : parts[type];
     const minimum = numericMinimum(type);
     const maximum = numericMaximum(type);
-    const next = shown === undefined
-      ? minimum
-      : shown + amount > maximum
+    const next =
+      shown === undefined
         ? minimum
-        : shown + amount < minimum
-          ? maximum
-          : shown + amount;
+        : shown + amount > maximum
+          ? minimum
+          : shown + amount < minimum
+            ? maximum
+            : shown + amount;
     setNumeric(type, next);
   }
 
@@ -570,30 +595,53 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     if (toValue(options.invalid) ?? false) return true;
     const current = candidate();
     if (incompleteInvalid.value) return true;
-    if (forcedInvalid.value
-      && current === null
-      && (toValue(options.required) ?? false)
-      && !disabled()
-      && !readOnly()) return true;
+    if (
+      forcedInvalid.value &&
+      current === null &&
+      (toValue(options.required) ?? false) &&
+      !disabled() &&
+      !readOnly()
+    )
+      return true;
     return current !== null && outOfRange(current);
   });
-  const validationMessage = computed(() => isInvalid.value
-    ? toValue(options.validationMessage) ?? "Enter a valid time."
-    : "");
+  const validationMessage = computed(() =>
+    isInvalid.value ? (toValue(options.validationMessage) ?? "Enter a valid time.") : "",
+  );
+  const errorId = `${id}-error`;
+  const errorDescribedBy = computed(
+    () =>
+      [toValue(options.describedBy), isInvalid.value ? errorId : undefined]
+        .filter(Boolean)
+        .join(" ") || undefined,
+  );
 
   const fieldProps: TimeFieldProps = {
     id,
     role: "group",
-    get dir() { return direction(); },
-    get "aria-label"() { return toValue(options.label); },
-    get "aria-disabled"() { return disabled() ? "true" : undefined; },
-    get "aria-readonly"() { return readOnly() ? "true" : undefined; },
-    get "aria-required"() { return (toValue(options.required) ?? false) ? "true" : undefined; },
-    get "aria-invalid"() { return isInvalid.value ? "true" : undefined; },
+    get dir() {
+      return direction();
+    },
+    get "aria-label"() {
+      return toValue(options.label);
+    },
+    get "aria-disabled"() {
+      return disabled() ? "true" : undefined;
+    },
+    get "aria-readonly"() {
+      return readOnly() ? "true" : undefined;
+    },
+    get "aria-required"() {
+      return (toValue(options.required) ?? false) ? "true" : undefined;
+    },
+    get "aria-invalid"() {
+      return isInvalid.value ? "true" : undefined;
+    },
     onFocusout(event) {
       const next = event.relatedTarget as Node | null;
       if (next && (event.currentTarget as HTMLElement).contains(next)) return;
-      const hasAny = parts.hour !== undefined || parts.minute !== undefined || parts.second !== undefined;
+      const hasAny =
+        parts.hour !== undefined || parts.minute !== undefined || parts.second !== undefined;
       incompleteInvalid.value = hasAny && candidate() === null;
       digitBuffer.clear();
     },
@@ -602,18 +650,16 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
   function segmentProps(segment: TimeFieldSegment): TimeFieldSegmentProps {
     if (segment.type === "literal") return { "aria-hidden": "true" };
     const type = segment.type;
-    const value = type === "dayPeriod"
-      ? parts.dayPeriod
-      : type === "hour"
-        ? displayHour()
-        : parts[type];
+    const value =
+      type === "dayPeriod" ? parts.dayPeriod : type === "hour" ? displayHour() : parts[type];
     const minimum = type === "dayPeriod" ? 0 : numericMinimum(type);
     const maximum = type === "dayPeriod" ? 1 : numericMaximum(type);
-    const valueText = type === "dayPeriod" && value !== undefined
-      ? periodNames()[value as 0 | 1] ?? DEFAULT_LABELS.empty
-      : value === undefined
-        ? options.segmentLabels?.empty ?? DEFAULT_LABELS.empty
-        : formatNumber(value);
+    const valueText =
+      type === "dayPeriod" && value !== undefined
+        ? (periodNames()[value as 0 | 1] ?? DEFAULT_LABELS.empty)
+        : value === undefined
+          ? (options.segmentLabels?.empty ?? DEFAULT_LABELS.empty)
+          : formatNumber(value);
     return {
       ref: segmentElements.refFor(type),
       id: segmentId(type),
@@ -692,15 +738,33 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     type: "time",
     tabindex: -1,
     "aria-hidden": "true",
-    get name() { return toValue(options.name); },
-    get form() { return toValue(options.form); },
-    get value() { return options.value.value ?? ""; },
-    get min() { return toValue(options.minValue); },
-    get max() { return toValue(options.maxValue); },
-    get step() { return granularity() === "second" ? 1 : 60; },
-    get disabled() { return disabled(); },
-    get readonly() { return readOnly(); },
-    get required() { return toValue(options.required) ?? false; },
+    get name() {
+      return toValue(options.name);
+    },
+    get form() {
+      return toValue(options.form);
+    },
+    get value() {
+      return options.value.value ?? "";
+    },
+    get min() {
+      return toValue(options.minValue);
+    },
+    get max() {
+      return toValue(options.maxValue);
+    },
+    get step() {
+      return granularity() === "second" ? 1 : 60;
+    },
+    get disabled() {
+      return disabled();
+    },
+    get readonly() {
+      return readOnly();
+    },
+    get required() {
+      return toValue(options.required) ?? false;
+    },
     onInvalid(event) {
       forcedInvalid.value = true;
       event.preventDefault();
@@ -728,6 +792,10 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
     fieldProps,
     segmentProps,
     formValueProps,
+    error: {
+      id: errorId,
+      describedBy: errorDescribedBy,
+    },
     isInvalid,
     validationMessage,
     focusFirst,
@@ -747,7 +815,8 @@ export function useTimeField(
 ): TimeFieldBinding {
   if (value === undefined) return createTimeField(optionsOrProps as UseTimeFieldOptions);
   const props = optionsOrProps as TimeFieldComponentProps;
-  return createTimeField({
+  const formControl = ref<HTMLInputElement | null>(null);
+  const binding = createTimeField({
     value,
     label: () => props.label,
     locale: () => props.locale,
@@ -762,27 +831,28 @@ export function useTimeField(
     required: () => props.required,
     invalid: () => props.invalid,
     validationMessage: () => props.validationMessage,
+    describedBy: () => props.ariaDescribedby,
     name: () => props.name,
     form: () => props.form,
+    formControl,
     segmentLabels: {
-      get hour() { return props.hourLabel; },
-      get minute() { return props.minuteLabel; },
-      get second() { return props.secondLabel; },
-      get dayPeriod() { return props.dayPeriodLabel; },
-      get empty() { return props.emptyLabel; },
+      get hour() {
+        return props.hourLabel;
+      },
+      get minute() {
+        return props.minuteLabel;
+      },
+      get second() {
+        return props.secondLabel;
+      },
+      get dayPeriod() {
+        return props.dayPeriodLabel;
+      },
+      get empty() {
+        return props.emptyLabel;
+      },
     },
   });
-}
-
-/** Keeps package TimeField reset and native constraint validation synchronized. */
-export function useTimeFieldNativeForm(
-  control: Readonly<Ref<HTMLInputElement | null>>,
-  binding: TimeFieldBinding,
-): void {
-  const initialValue = binding.value.value;
-  useNativeFormReset(control, (input) => {
-    binding.reset(initialValue);
-    input.value = initialValue ?? "";
-  });
-  useNativeCustomValidity(control, binding.validationMessage);
+  binding.formValueProps.ref = nativeFormControlRef(formControl);
+  return binding;
 }

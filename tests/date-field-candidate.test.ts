@@ -99,6 +99,7 @@ test("DateField exposes ARIA spinbuttons, min/max validity, and native form/rese
     minValue: "2025-06-01",
     maxValue: "2025-06-30",
     required: true,
+    describedBy: "departure-help",
     name: "departure",
     form: "booking",
     formControl: control,
@@ -116,10 +117,12 @@ test("DateField exposes ARIA spinbuttons, min/max validity, and native form/rese
   assert.equal(field.formValueProps.type, "date");
   assert.equal(field.formValueProps.name, "departure");
   assert.equal(field.formValueProps.form, "booking");
+  assert.equal(field.error.describedBy.value, "departure-help");
 
   value.value = "2025-07-01";
   assert.equal(field.isInvalid.value, true);
   assert.equal(field.fieldProps["aria-invalid"], "true");
+  assert.equal(field.error.describedBy.value, `departure-help ${field.error.id}`);
   await nextTick();
   assert.equal(customValidity, "Enter a valid date.");
 

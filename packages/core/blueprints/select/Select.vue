@@ -7,10 +7,9 @@ export interface NagiSelectOption {
 </script>
 
 <script setup lang="ts">
-import { computed, ref, useAttrs, useId } from "vue";
+import { useAttrs } from "vue";
 
-import { mergeElementProps } from "@nagi-labs/nagi-ui";
-import { useSelect } from "@nagi-labs/nagi-ui/component-controls";
+import { useSelect } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -30,17 +29,6 @@ const {
 
 const attrs = useAttrs();
 const model = defineModel<string | undefined>();
-const generatedId = useId();
-const select = ref<HTMLSelectElement | null>(null);
-const selectBinding = useSelect(select, model);
-const selectProps = computed(() =>
-  mergeElementProps(attrs, {
-    id: id ?? generatedId,
-    disabled,
-    required,
-  }),
-);
-
 const emit = defineEmits<{
   blur: [event: FocusEvent];
   change: [event: Event];
@@ -51,26 +39,26 @@ const emit = defineEmits<{
   keydown: [event: KeyboardEvent];
   keyup: [event: KeyboardEvent];
 }>();
-
-function onChange(event: Event) {
-  selectBinding.onChange(event);
-  emit("change", event);
-}
+const select = useSelect(model, {
+  attrs,
+  id: () => id,
+  disabled: () => disabled,
+  required: () => required,
+  onChange: (event) => emit("change", event),
+});
 </script>
 
 <template>
   <div class="n-select">
     <label
       class="label"
-      :for="id ?? generatedId"
+      v-bind="select.labelProps"
       >{{ label }}</label
     >
     <select
-      ref="select"
       class="select"
-      v-bind="selectProps"
+      v-bind="select.selectProps"
       @blur="emit('blur', $event)"
-      @change="onChange"
       @click="emit('click', $event)"
       @focus="emit('focus', $event)"
       @input="emit('input', $event)"
@@ -83,7 +71,7 @@ function onChange(event: Event) {
         :key="option.value"
         :value="option.value"
         :disabled="option.disabled"
-        v-bind="selectBinding.selectedProps(option.value)"
+        v-bind="select.selectedProps(option.value)"
       >
         {{ option.label }}
       </option>

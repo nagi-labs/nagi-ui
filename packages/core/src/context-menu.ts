@@ -13,11 +13,15 @@ import {
 } from "vue";
 
 import { createAnchorPair } from "./anchor.ts";
+import { linkInteractionProps, type LinkInteractionProps, type LinkNavigationOptions } from "./link.ts";
 import { useMenu, type UseMenuOptions, type UseMenuReturn } from "./menu.ts";
+import { mergeElementProps } from "./merge-props.ts";
 import { requestModelValue, type WritableRef } from "./model-sync.ts";
 
-export interface UseContextMenuOptions<Item, Key extends string = string>
-  extends Omit<UseMenuOptions<Item, Key>, "anchor" | "restoreFocus" | "open"> {
+export interface UseContextMenuOptions<Item, Key extends string = string> extends Omit<
+  UseMenuOptions<Item, Key>,
+  "anchor" | "restoreFocus" | "open"
+> {
   open?: WritableRef<boolean>;
   longPressDelay?: number;
 }
@@ -46,6 +50,11 @@ export interface ContextMenuBinding<Item, Key extends string = string> {
   positionStyle: ComputedRef<CSSProperties>;
   setContextElement: (element: HTMLElement | null) => void;
   setAnchorElement: (element: HTMLElement | null) => void;
+}
+
+export interface ContextMenuComponentBinding<Item, Key extends string = string>
+  extends ContextMenuBinding<Item, Key> {
+  linkItemProps: (item: Item & LinkNavigationOptions) => ReturnType<UseMenuReturn<Item, Key>["itemProps"]> & LinkInteractionProps;
 }
 
 interface ContextMenuComponentItem {
@@ -152,9 +161,11 @@ function createContextMenu<Item, Key extends string>(
       "button, a[href], input, select, textarea, [contenteditable], [tabindex]:not([tabindex='-1'])",
     );
     const active = target?.ownerDocument.activeElement as HTMLElement | null;
-    return focusable
-      ?? (active && active !== target?.ownerDocument.body ? active : null)
-      ?? contextElement;
+    return (
+      focusable ??
+      (active && active !== target?.ownerDocument.body ? active : null) ??
+      contextElement
+    );
   }
 
   function fallbackInvocation(): Invocation {
@@ -261,7 +272,8 @@ function createContextMenu<Item, Key extends string>(
 
   function setContextElement(element: HTMLElement | null) {
     contextElement = element;
-    if (element && menu.open.value && (!session || session.target === null)) commit(fallbackInvocation());
+    if (element && menu.open.value && (!session || session.target === null))
+      commit(fallbackInvocation());
   }
 
   function setAnchorElement(element: HTMLElement | null) {
@@ -276,13 +288,8 @@ function createContextMenu<Item, Key extends string>(
     setAnchorElement,
     anchorStyle: computed(() => ({
       ...anchor.anchorStyle,
-      position: "fixed",
-      inset: "auto",
       left: `${point.value.x}px`,
       top: `${point.value.y}px`,
-      inlineSize: "0",
-      blockSize: "0",
-      pointerEvents: "none",
     })),
     positionStyle: computed(() => anchor.positionedStyle),
     contextTriggerProps: {
@@ -331,22 +338,33 @@ function createContextMenu<Item, Key extends string>(
         };
         pressTimer = setTimeout(() => {
           if (press.kind !== "pressing" || press.pointerId !== event.pointerId) return;
-          const opening = { kind: "opening", pointerId: event.pointerId, intent: press.intent } as const;
+          const opening = {
+            kind: "opening",
+            pointerId: event.pointerId,
+            intent: press.intent,
+          } as const;
           press = opening;
           pressTimer = null;
           void requestOpen(opening.intent).then((accepted) => {
             if (press.kind !== "opening" || press.pointerId !== opening.pointerId) return;
-            if (accepted) press = { kind: "opened", pointerId: opening.pointerId, intent: opening.intent };
+            if (accepted)
+              press = { kind: "opened", pointerId: opening.pointerId, intent: opening.intent };
             else cancelPress();
           });
         }, options.longPressDelay ?? 600);
       },
       onPointermove(event) {
         if (press.kind !== "pressing" || press.pointerId !== event.pointerId) return;
-        if (Math.hypot(event.clientX - press.start.x, event.clientY - press.start.y) > 10) cancelPress();
+        if (Math.hypot(event.clientX - press.start.x, event.clientY - press.start.y) > 10)
+          cancelPress();
       },
       onPointerup(event) {
-        if (event.pointerType !== "touch" || press.kind === "idle" || press.pointerId !== event.pointerId) return;
+        if (
+          event.pointerType !== "touch" ||
+          press.kind === "idle" ||
+          press.pointerId !== event.pointerId
+        )
+          return;
         const recognized = press.kind === "opened" ? press.intent : null;
         cancelPress();
         if (!recognized) return;
@@ -362,7 +380,12 @@ function createContextMenu<Item, Key extends string>(
         }, 0);
       },
       onPointercancel(event) {
-        if (event.pointerType !== "touch" || press.kind === "idle" || press.pointerId !== event.pointerId) return;
+        if (
+          event.pointerType !== "touch" ||
+          press.kind === "idle" ||
+          press.pointerId !== event.pointerId
+        )
+          return;
         const opened = press.kind === "opened" || (press.kind === "opening" && menu.open.value);
         cancelPress();
         if (opened) menu.hide();
@@ -377,14 +400,16 @@ export function useContextMenu<Item, Key extends string = string>(
 export function useContextMenu<Item extends ContextMenuComponentItem>(
   props: ContextMenuComponentProps<Item>,
   model: ContextMenuComponentModel<Item>,
-): ContextMenuBinding<Item, string>;
+): ContextMenuComponentBinding<Item, string>;
 export function useContextMenu<Item, Key extends string = string>(
-  optionsOrProps: UseContextMenuOptions<Item, Key> | ContextMenuComponentProps<Item & ContextMenuComponentItem>,
+  optionsOrProps:
+    | UseContextMenuOptions<Item, Key>
+    | ContextMenuComponentProps<Item & ContextMenuComponentItem>,
   model?: ContextMenuComponentModel<Item>,
-): ContextMenuBinding<Item, Key> {
+): ContextMenuBinding<Item, Key> | ContextMenuComponentBinding<Item, Key> {
   if (!model) return createContextMenu(optionsOrProps as UseContextMenuOptions<Item, Key>);
   const props = optionsOrProps as ContextMenuComponentProps<Item & ContextMenuComponentItem>;
-  return createContextMenu<Item & ContextMenuComponentItem, Key>({
+  const binding = createContextMenu<Item & ContextMenuComponentItem, Key>({
     items: () => props.items,
     getKey: (item) => item.key as Key,
     getTextValue: (item) => item.label,
@@ -395,4 +420,12 @@ export function useContextMenu<Item, Key extends string = string>(
     loop: props.loop,
     longPressDelay: props.longPressDelay,
   }) as unknown as ContextMenuBinding<Item, Key>;
+  return Object.assign(binding, {
+    linkItemProps(item: Item & LinkNavigationOptions) {
+      return mergeElementProps(
+        binding.menu.itemProps(item, { nativeLink: true }),
+        linkInteractionProps(item),
+      );
+    },
+  });
 }

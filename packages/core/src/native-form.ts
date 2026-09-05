@@ -6,7 +6,9 @@ import {
   toValue,
   watch,
   watchEffect,
+  type ComponentPublicInstance,
   type MaybeRefOrGetter,
+  type Ref,
   type WatchCallback,
 } from "vue";
 import { modelValueAccepted } from "./model-sync.ts";
@@ -21,6 +23,15 @@ type ReadonlyControlListRef<Control> = Readonly<{
   value: readonly Control[];
 }>;
 type WritableModel<Value> = { value: Value };
+
+/** Connects a template ref to native-form behavior owned by the main composable. */
+export function nativeFormControlRef<Control extends NativeFormControl>(
+  control: Ref<Control | null>,
+): (element: Element | ComponentPublicInstance | null) => void {
+  return (element) => {
+    control.value = element as Control | null;
+  };
+}
 
 /** Applies a reactive constraint message to the browser-owned validity channel. */
 export function useNativeCustomValidity(

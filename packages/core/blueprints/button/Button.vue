@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useButton } from "@nagi-labs/nagi-ui/component-controls";
-import { mergeElementProps, withoutClassToken } from "@nagi-labs/nagi-ui";
-import { computed, useAttrs } from "vue";
+import { useAttrs } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -19,17 +18,7 @@ const props = withDefaults(
   },
 );
 
-const attrs = useAttrs();
-
-const button = useButton(props);
-
-const buttonProps = computed(() =>
-  mergeElementProps(
-    button.buttonProps,
-    { ...attrs, class: withoutClassToken(attrs.class, "n-button") },
-    { type: props.type },
-  ),
-);
+const button = useButton(props, useAttrs());
 
 const emit = defineEmits<{
   blur: [event: FocusEvent];
@@ -44,7 +33,7 @@ const emit = defineEmits<{
 <template>
   <button
     class="n-button"
-    v-bind="buttonProps"
+    v-bind="button.buttonProps"
     data-scope="button"
     data-part="root"
     @blur="emit('blur', $event)"

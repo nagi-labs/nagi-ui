@@ -7,6 +7,7 @@ export default defineConfig({
       entry: {
         definition: "src/definition.ts",
         "test/index": "src/test/index.ts",
+        "contracts/button": "blueprints/button/button.definition.ts",
         "contracts/carousel": "blueprints/carousel/carousel.definition.ts",
         "contracts/combobox": "blueprints/combobox/combobox.definition.ts",
         "contracts/dialog": "blueprints/dialog/dialog.definition.ts",

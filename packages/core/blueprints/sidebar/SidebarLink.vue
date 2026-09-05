@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { handleLinkClick, mergeElementProps } from "@nagi-labs/nagi-ui";
-import { computed, useAttrs } from "vue";
+import { useSidebarLink } from "@nagi-labs/nagi-ui/component-controls";
+import { useAttrs } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -15,34 +15,13 @@ const props = withDefaults(
   }>(),
   { current: false },
 );
-const attrs = useAttrs();
-const anchorProps = computed(() =>
-  mergeElementProps(attrs, {
-    href: props.href,
-    target: props.target,
-    rel: props.rel,
-    download: props.download,
-    "aria-current": props.current ? "page" : undefined,
-  }),
-);
-
-function onClick(event: MouseEvent) {
-  handleLinkClick(
-    {
-      navigate: props.navigate,
-      target: props.target,
-      download: props.download,
-    },
-    event,
-  );
-}
+const link = useSidebarLink(props, useAttrs());
 </script>
 
 <template>
   <a
     class="n-sidebar-link"
-    v-bind="anchorProps"
-    @click="onClick"
+    v-bind="link.anchorProps"
   >
     <slot />
   </a>

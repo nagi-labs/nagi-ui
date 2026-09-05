@@ -10,10 +10,7 @@ import { createSSRApp, h, type Component } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(
-  repo,
-  "packages/core/blueprints/number-field/NumberField.vue",
-);
+const sourcePath = path.join(repo, "packages/core/blueprints/number-field/NumberField.vue");
 
 function normalizeSsrHtml(html: string) {
   return html.replace(/\sdata-v-[\da-f]+/gu, "").replace(/<!--\[-->|<!--\]-->/gu, "");
@@ -33,30 +30,31 @@ test("NumberField renders one native number input and two explicit step actions"
   });
 
   try {
-    const numberField = (
-      await server.ssrLoadModule(`/@fs${sourcePath}`)
-    ).default as Component;
-    const html = normalizeSsrHtml(await renderToString(
-      createSSRApp({
-        render: () => h(numberField, {
-          label: "Guests",
-          id: "guest-count",
-          modelValue: 4,
-          name: "guests",
-          form: "booking",
-          min: 0,
-          max: 4,
-          step: 2,
-          required: true,
-          decrementLabel: "Remove one guest",
-          incrementLabel: "Add one guest",
-          inputmode: "numeric",
-          autocomplete: "off",
-          ariaDescribedby: "guest-help",
-          class: "consumer-control",
+    const numberField = (await server.ssrLoadModule(`/@fs${sourcePath}`)).default as Component;
+    const html = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(numberField, {
+              label: "Guests",
+              id: "guest-count",
+              modelValue: 4,
+              name: "guests",
+              form: "booking",
+              min: 0,
+              max: 4,
+              step: 2,
+              required: true,
+              decrementLabel: "Remove one guest",
+              incrementLabel: "Add one guest",
+              inputmode: "numeric",
+              autocomplete: "off",
+              ariaDescribedby: "guest-help",
+              class: "consumer-control",
+            }),
         }),
-      }),
-    ));
+      ),
+    );
 
     const root = html.match(/<div class="n-number-field"[^>]*>/u)?.[0] ?? "";
     const control = html.match(/<input[^>]*>/u)?.[0] ?? "";
@@ -106,18 +104,19 @@ test("NumberField disables both step actions when the native input is readonly",
   });
 
   try {
-    const numberField = (
-      await server.ssrLoadModule(`/@fs${sourcePath}`)
-    ).default as Component;
-    const html = normalizeSsrHtml(await renderToString(
-      createSSRApp({
-        render: () => h(numberField, {
-          label: "Seats",
-          modelValue: null,
-          readOnly: true,
+    const numberField = (await server.ssrLoadModule(`/@fs${sourcePath}`)).default as Component;
+    const html = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(numberField, {
+              label: "Seats",
+              modelValue: null,
+              readOnly: true,
+            }),
         }),
-      }),
-    ));
+      ),
+    );
 
     const buttons = [...html.matchAll(/<button[^>]*>/gu)].map((match) => match[0]);
     const control = html.match(/<input[^>]*>/u)?.[0] ?? "";
@@ -137,18 +136,14 @@ test("NumberField keeps browser-owned behavior behind one fixed binding", () => 
   const source = fs.readFileSync(sourcePath, "utf8");
 
   assert.match(source, /defineModel<number \| null>\(\{ default: null \}\)/u);
-  assert.match(source, /useNumberField\(input, model\)/u);
-  assert.match(
-    source,
-    /> \.button\s*\{[^}]*inline-size:\s*var\(--nagi-size-control\)/su,
-  );
+  assert.match(source, /useNumberField\(props, model, useAttrs\(\)\)/u);
+  assert.match(source, /> \.button\s*\{[^}]*inline-size:\s*var\(--nagi-size-control\)/su);
   assert.match(source, /> \.input\s*\{[^}]*min-inline-size:\s*4ch/su);
-  assert.doesNotMatch(source, /v-bind="\$attrs"/u);
-  assert.match(source, /:name="name"[\s\S]*:form="form"/u);
-  assert.match(source, /:min="min"[\s\S]*:max="max"[\s\S]*:step="step"/u);
-  assert.match(source, /:disabled="disabled"[\s\S]*:readonly="readOnly"[\s\S]*:required="required"/u);
-  assert.match(source, /<button[\s\S]*type="button"[\s\S]*@click="decrement"/u);
-  assert.match(source, /<button[\s\S]*type="button"[\s\S]*@click="increment"/u);
+  assert.match(source, /v-bind="numberField\.inputProps"/u);
+  assert.match(source, /v-bind="numberField\.labelProps"/u);
+  assert.doesNotMatch(source, /ref="input"|:name="name"|:min="min"|:disabled="disabled"/u);
+  assert.match(source, /v-bind="numberField\.decrementButtonProps"/u);
+  assert.match(source, /v-bind="numberField\.incrementButtonProps"/u);
   assert.doesNotMatch(source, /<slot\b|Teleport\b|data-state/u);
   assert.doesNotMatch(source, /\.(?:stepUp|stepDown|valueAsNumber)\b/u);
   assert.doesNotMatch(source, /useNativeFormReset|setTimeout|queueMicrotask/u);

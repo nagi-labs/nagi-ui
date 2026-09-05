@@ -142,7 +142,7 @@ const { visibleItems } = combobox;
         class="button"
         type="button"
         :aria-label="clearLabel"
-        @click="combobox.clear"
+        v-bind="combobox.clearButtonProps"
       >
         <span aria-hidden="true">×</span>
       </button>

@@ -45,8 +45,6 @@ const tree = useTree(props, { selected, expanded });
     <TreeBranch
       :nodes="items"
       :tree="tree"
-      :expand-label="expandLabel"
-      :collapse-label="collapseLabel"
     />
   </ul>
 </template>

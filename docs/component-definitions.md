@@ -94,6 +94,37 @@ another implementation can provide the same promise faithfully. Contract
 authoring therefore starts from component identity and replacement
 expectations, not from a mechanical `native` versus `custom` classification.
 
+### Contract ownership under component composition
+
+Implementations should compose existing components when a child can keep its
+own Contract and coordinate with the parent through public props, models,
+events, and slots. Composition deliberately reuses Implementation code; it
+must not duplicate ownership of the child's guarantees in the parent Contract.
+
+For example, DateField owns date-segment editing and Calendar owns grid
+navigation. A DatePicker that composes them owns only the guarantees created by
+their integration: both surfaces share one accepted value, calendar selection
+updates the field, popup dismissal follows the DatePicker policy, and focus is
+restored to the DatePicker invoker. A DatePicker browser test may exercise
+Calendar keyboard behavior on the way to an integration assertion, but the
+DatePicker Contract does not repeat Calendar's keyboard Requirement.
+
+Use this distinction during review:
+
+- **Contract ownership must not overlap.** Give each observable guarantee one
+  component owner and do not copy its Requirement ID or claim into a parent.
+- **Implementation reuse should overlap.** A parent may render a child
+  Implementation and depend on its public Contract instead of rebuilding the
+  same DOM and Behavior.
+- **Integration evidence may cross boundaries.** A parent test can operate a
+  child to prove the connection between them, provided its title and assertion
+  describe the parent-specific outcome.
+
+Do not encode the complete transitive component tree into Contract revision
+identities. An Implementation audit records important component dependencies;
+the parent Contract remains a statement of public compatibility rather than a
+package-manager lockfile.
+
 The Contract API lists consumer-facing members whose meaning, state, or
 operation must survive replacement. Generic Vue/DOM pass-through such as
 `id`, `class`, `style`, `title`, and ordinary forwarded DOM events need not be

@@ -101,4 +101,8 @@ test("Sidebar Blueprints stay thin, native, and token-only", () => {
     assert.doesNotMatch(source, /var\(--nagi-[^,)]+,|#[\da-f]{3,8}\b|\brgba?\(/iu, file);
     assert.doesNotMatch(source, /role="(?:menu|tree)"|aria-expanded|data-state/u, file);
   }
+
+  const linkSource = fs.readFileSync(path.join(blueprintRoot, "SidebarLink.vue"), "utf8");
+  assert.match(linkSource, /useSidebarLink\(props, useAttrs\(\)\)/u);
+  assert.doesNotMatch(linkSource, /mergeElementProps|linkInteractionProps|function\s+/u);
 });

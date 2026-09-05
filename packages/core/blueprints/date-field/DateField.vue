@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, type StyleValue } from "vue";
+import type { StyleValue } from "vue";
 
 import { useDateField } from "@nagi-labs/nagi-ui";
-import { useDateFieldNativeForm } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -45,18 +44,7 @@ const props = withDefaults(
 const emit = defineEmits<{ focusout: [event: FocusEvent] }>();
 
 const model = defineModel<string | null>({ default: null });
-const formControl = ref<HTMLInputElement | null>(null);
 const behavior = useDateField(props, model);
-useDateFieldNativeForm(formControl, behavior);
-const describedBy = computed(
-  () =>
-    [
-      props.ariaDescribedby,
-      behavior.isInvalid.value ? `${behavior.fieldProps.id}-error` : undefined,
-    ]
-      .filter(Boolean)
-      .join(" ") || undefined,
-);
 </script>
 
 <template>
@@ -70,7 +58,7 @@ const describedBy = computed(
       v-bind="behavior.fieldProps"
       @focusout="emit('focusout', $event)"
       class="field"
-      :aria-describedby="describedBy"
+      :aria-describedby="behavior.error.describedBy.value"
     >
       <template
         v-for="segment in behavior.segments.value"
@@ -85,17 +73,16 @@ const describedBy = computed(
         >
       </template>
       <input
-        ref="formControl"
         v-bind="behavior.formValueProps"
         class="input"
       />
     </div>
     <span
       v-if="behavior.isInvalid.value"
-      :id="`${behavior.fieldProps.id}-error`"
+      :id="behavior.error.id"
       class="alert"
       role="alert"
-      >{{ validationMessage }}</span
+      >{{ behavior.validationMessage.value }}</span
     >
   </div>
 </template>

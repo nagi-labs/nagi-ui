@@ -20,7 +20,7 @@ export type ContextMenuItem = ContextMenuCommandItem | ContextMenuLinkItem;
 
 <script setup lang="ts">
 import type { StyleValue } from "vue";
-import { handleLinkClick, prefetchLink, useContextMenu } from "@nagi-labs/nagi-ui";
+import { useContextMenu } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -44,10 +44,6 @@ defineOptions({ inheritAttrs: false });
 const emit = defineEmits<{ select: [item: ContextMenuItem] }>();
 const open = defineModel<boolean>("open", { default: false });
 const context = useContextMenu(props, { open, onSelect: (item) => emit("select", item) });
-
-function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
-  return typeof item.href === "string";
-}
 </script>
 
 <template>
@@ -89,15 +85,13 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
         role="none"
       >
         <a
-          v-if="isLink(item) && !item.disabled"
-          v-bind="context.menu.itemProps(item, { nativeLink: true })"
+          v-if="item.href !== undefined && !item.disabled"
+          v-bind="context.linkItemProps(item)"
           class="link"
           :href="item.href"
           :target="item.target"
           :rel="item.rel"
           :download="item.download"
-          @click="handleLinkClick(item, $event)"
-          @pointerenter="prefetchLink(item)"
           >{{ item.label }}</a
         >
         <button
@@ -125,6 +119,10 @@ function isLink(item: ContextMenuItem): item is ContextMenuLinkItem {
   }
   > .unit.-positioner {
     position: fixed;
+    inset: auto;
+    inline-size: 0;
+    block-size: 0;
+    pointer-events: none;
   }
   > .unit.-target {
     display: block;

@@ -15,7 +15,11 @@ function normalizeSsrHtml(html: string): string {
   return html.replace(/<!--(?:\[-->|\]-->|-->)?/g, "");
 }
 
-async function loadAccordion(): Promise<{ server: ViteDevServer; component: Component; cacheDir: string }> {
+async function loadAccordion(): Promise<{
+  server: ViteDevServer;
+  component: Component;
+  cacheDir: string;
+}> {
   const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "nagi-accordion-vite-"));
   const server = await createServer({
     configFile: false,
@@ -44,9 +48,13 @@ const items = [
 test("SSR emits native exclusive details anatomy and one normalized initial open item", async () => {
   const { server, component, cacheDir } = await loadAccordion();
   try {
-    const html = normalizeSsrHtml(await renderToString(createSSRApp({
-      render: () => h(component, { items, defaultOpenKeys: ["shipping", "returns"] }),
-    })));
+    const html = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () => h(component, { items, defaultOpenKeys: ["shipping", "returns"] }),
+        }),
+      ),
+    );
 
     assert.match(html, /^<div class="n-accordion/);
     assert.equal(html.match(/<details /g)?.length, 3);
@@ -60,7 +68,11 @@ test("SSR emits native exclusive details anatomy and one normalized initial open
       "summary is the first child of each native details element",
     );
     assert.match(html, /<summary[^>]*aria-disabled="true"[^>]*>Legacy policy<\/summary>/);
-    assert.doesNotMatch(html, /role="(?:button|region)"/, "native semantics are not duplicated with ARIA roles");
+    assert.doesNotMatch(
+      html,
+      /role="(?:button|region)"/,
+      "native semantics are not duplicated with ARIA roles",
+    );
   } finally {
     await server.close();
     fs.rmSync(cacheDir, { recursive: true, force: true });
@@ -70,13 +82,18 @@ test("SSR emits native exclusive details anatomy and one normalized initial open
 test("multiple mode omits the native group name and preserves all initial open items", async () => {
   const { server, component, cacheDir } = await loadAccordion();
   try {
-    const html = normalizeSsrHtml(await renderToString(createSSRApp({
-      render: () => h(component, {
-        items,
-        multiple: true,
-        defaultOpenKeys: ["shipping", "returns"],
-      }),
-    })));
+    const html = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(component, {
+              items,
+              multiple: true,
+              defaultOpenKeys: ["shipping", "returns"],
+            }),
+        }),
+      ),
+    );
 
     assert.doesNotMatch(html, /<details[^>]* name=/);
     assert.equal(html.match(/ open(?:="")?/g)?.length, 2);
@@ -89,18 +106,26 @@ test("multiple mode omits the native group name and preserves all initial open i
 test("content-only slots keep the owned summary and panel wrappers", async () => {
   const { server, component, cacheDir } = await loadAccordion();
   try {
-    const html = normalizeSsrHtml(await renderToString(createSSRApp({
-      render: () => h(
-        component,
-        { items: [items[0]] },
-        {
-          summary: ({ summary }: { summary: string }) => h("strong", `${summary} — Express`),
-          panel: () => h("ul", [h("li", "Tracked"), h("li", "Insured")]),
-        },
+    const html = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(
+              component,
+              { items: [items[0]] },
+              {
+                summary: ({ summary }: { summary: string }) => h("strong", `${summary} — Express`),
+                panel: () => h("ul", [h("li", "Tracked"), h("li", "Insured")]),
+              },
+            ),
+        }),
       ),
-    })));
+    );
 
-    assert.match(html, /<summary[^>]*><strong>How does shipping work\? — Express<\/strong><\/summary>/);
+    assert.match(
+      html,
+      /<summary[^>]*><strong>How does shipping work\? — Express<\/strong><\/summary>/,
+    );
     assert.match(html, /<section class="section"[^>]*><ul><li>Tracked<\/li>/);
   } finally {
     await server.close();
@@ -108,16 +133,24 @@ test("content-only slots keep the owned summary and panel wrappers", async () =>
   }
 });
 
-test("Accordion source keeps behavior native and uses token-only themed values", () => {
+test("Accordion source composes Disclosure and keeps group coordination in one behavior", () => {
   const source = fs.readFileSync(
     path.join(repo, "packages/core/blueprints/accordion/Accordion.vue"),
     "utf8",
   );
+  const behaviorSource = fs.readFileSync(path.join(repo, "packages/core/src/accordion.ts"), "utf8");
 
-  assert.match(source, /<details/);
+  assert.match(source, /<NDisclosure/);
+  assert.match(source, /from "\.\.\/disclosure\/Disclosure\.vue"/u);
   assert.match(source, /useAccordion\(props, openKeys\)/);
+  assert.doesNotMatch(source, /<details|<summary/);
+  assert.match(behaviorSource, /groupName[\s\S]*isOpen[\s\S]*setOpen/);
+  assert.doesNotMatch(behaviorSource, /disclosureProps/);
   assert.doesNotMatch(source, /useId|preventDefault|stopPropagation/);
-  assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|onBeforeUnmount|useAttrs|document|window)\b/);
+  assert.doesNotMatch(
+    source,
+    /\b(?:watch|watchEffect|onMounted|onBeforeUnmount|useAttrs|document|window)\b/,
+  );
   assert.doesNotMatch(source, /Teleport|provide\(|inject\(|data-state/);
   assert.doesNotMatch(source, /var\(--nagi-[^,)]+,/, "theme tokens have no literal fallbacks");
 });

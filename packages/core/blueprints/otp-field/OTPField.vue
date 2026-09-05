@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, type StyleValue } from "vue";
+import type { StyleValue } from "vue";
 
 import { useOTPField } from "@nagi-labs/nagi-ui";
-import { useNativeValueReset } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -46,16 +45,7 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<string>({ default: "" });
-const input = ref<HTMLInputElement | null>(null);
 const field = useOTPField(props, model);
-const fieldStyle = computed(() => {
-  const count = field.cells.value.length;
-  return {
-    "--local-otp-max-inline-size": `calc(${count} * var(--nagi-size-control) + ${count - 1} * var(--nagi-space-item-gap))`,
-    "--local-otp-columns": String(count),
-  };
-});
-useNativeValueReset(input, model);
 </script>
 
 <template>
@@ -65,12 +55,8 @@ useNativeValueReset(input, model);
     :style="props.style"
   >
     <span class="value -prompt">{{ label }}</span>
-    <span
-      class="field"
-      :style="fieldStyle"
-    >
+    <span class="field">
       <input
-        ref="input"
         v-bind="field.otpInputProps"
         @input="emit('input', $event)"
         @compositionstart="emit('compositionstart', $event)"
@@ -116,8 +102,8 @@ useNativeValueReset(input, model);
   > .field {
     position: relative;
     display: inline-grid;
-    inline-size: 100%;
-    max-inline-size: var(--local-otp-max-inline-size);
+    justify-self: start;
+    max-inline-size: 100%;
 
     > .input {
       position: absolute;
@@ -137,7 +123,9 @@ useNativeValueReset(input, model);
 
     > .unit.-digits {
       display: grid;
-      grid-template-columns: repeat(var(--local-otp-columns), minmax(0, 1fr));
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, var(--nagi-size-control));
+      max-inline-size: 100%;
       gap: var(--nagi-space-item-gap);
 
       > .value {

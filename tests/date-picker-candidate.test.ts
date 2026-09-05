@@ -32,6 +32,8 @@ test("[DTP-STATE-01][DTP-INT-01] DatePicker shares one ISO model between field a
     });
     const next = flatten(picker.calendar.weeks.value)
       .find((cell) => cell.value === "2026-07-24") as CalendarCell;
+    assert.equal(picker.calendarLabel.value, "Arrival calendar");
+    assert.equal(picker.error.describedBy.value, undefined);
     assert.equal(picker.calendar.select(next), true);
     assert.equal(value.value, "2026-07-24");
     assert.equal(picker.field.formValueProps.value, "2026-07-24");
@@ -108,6 +110,7 @@ test("[DTP-STATE-02] pickers reject controlled unavailable dates and manually en
     });
     assert.equal(datePicker.isInvalid.value, true);
     assert.equal(datePicker.field.fieldProps["aria-invalid"], "true");
+    assert.equal(datePicker.error.describedBy.value, datePicker.error.id);
 
     const rangeValue = ref<{ start: string; end: string } | null>(null);
     const rangePicker = useDateRangePicker({
@@ -124,6 +127,8 @@ test("[DTP-STATE-02] pickers reject controlled unavailable dates and manually en
     assert.equal(rangeValue.value, null);
     assert.equal(rangePicker.isInvalid.value, true);
     assert.equal(rangePicker.startField.validationMessage.value, "Choose an available date range.");
+    assert.equal(rangePicker.calendarLabel.value, "Stay");
+    assert.equal(rangePicker.error.describedBy.value, rangePicker.error.id);
   });
   scope.stop();
 });

@@ -12,10 +12,7 @@ import { renderToString } from "vue/server-renderer";
 import { useRangeSlider } from "../packages/core/src/range-slider.ts";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(
-  repo,
-  "packages/core/blueprints/range-slider/RangeSlider.vue",
-);
+const sourcePath = path.join(repo, "packages/core/blueprints/range-slider/RangeSlider.vue");
 const corePath = path.join(repo, "packages/core/src/range-slider.ts");
 
 interface FakeRangeControl {
@@ -70,11 +67,7 @@ function createRangeControl(options: {
   };
 }
 
-function pointer(
-  rail: object,
-  clientX: number,
-  pointerId = 1,
-): PointerEvent {
+function pointer(rail: object, clientX: number, pointerId = 1): PointerEvent {
   return {
     button: 0,
     clientX,
@@ -94,11 +87,7 @@ test("RangeSlider keeps lower and upper model values ordered", () => {
   const model = ref<readonly [number, number]>([20, 80]);
   const scope = effectScope();
 
-  const binding = scope.run(() => useRangeSlider(
-    ref(lower.control),
-    ref(upper.control),
-    model,
-  ));
+  const binding = scope.run(() => useRangeSlider(ref(lower.control), ref(upper.control), model));
   assert.ok(binding);
 
   lower.setNativeValue(90);
@@ -141,11 +130,7 @@ test("RangeSlider rail pointer policy recovers either thumb from a collision", (
   const upper = createRangeControl({ value: 40 });
   const model = ref<readonly [number, number]>([40, 40]);
   const scope = effectScope();
-  const binding = scope.run(() => useRangeSlider(
-    ref(lower.control),
-    ref(upper.control),
-    model,
-  ));
+  const binding = scope.run(() => useRangeSlider(ref(lower.control), ref(upper.control), model));
   assert.ok(binding);
 
   const captures = new Set<number>();
@@ -179,11 +164,7 @@ test("RangeSlider rail emits native input while moving and change only on commit
   const upper = createRangeControl({ value: 80 });
   const model = ref<readonly [number, number]>([20, 80]);
   const scope = effectScope();
-  const binding = scope.run(() => useRangeSlider(
-    ref(lower.control),
-    ref(upper.control),
-    model,
-  ));
+  const binding = scope.run(() => useRangeSlider(ref(lower.control), ref(upper.control), model));
   assert.ok(binding);
 
   const lowerEvents: string[] = [];
@@ -219,11 +200,7 @@ test("RangeSlider rail emits no extra input after the active thumb reaches its p
   const upper = createRangeControl({ value: 30 });
   const model = ref<readonly [number, number]>([20, 30]);
   const scope = effectScope();
-  const binding = scope.run(() => useRangeSlider(
-    ref(lower.control),
-    ref(upper.control),
-    model,
-  ));
+  const binding = scope.run(() => useRangeSlider(ref(lower.control), ref(upper.control), model));
   assert.ok(binding);
 
   const events: string[] = [];
@@ -272,28 +249,29 @@ test("RangeSlider renders two named native range controls with visible constrain
   });
 
   try {
-    const RangeSlider = (
-      await server.ssrLoadModule(`/@fs${sourcePath}`)
-    ).default as Component;
-    const html = normalizeSsrHtml(await renderToString(
-      createSSRApp({
-        render: () => h(RangeSlider, {
-          label: "Price range",
-          lowerLabel: "Minimum price",
-          upperLabel: "Maximum price",
-          lowerId: "price-min",
-          upperId: "price-max",
-          lowerName: "priceMin",
-          upperName: "priceMax",
-          form: "filters",
-          min: 10,
-          max: 90,
-          step: 5,
-          disabled: true,
-          modelValue: [25, 75],
+    const RangeSlider = (await server.ssrLoadModule(`/@fs${sourcePath}`)).default as Component;
+    const html = normalizeSsrHtml(
+      await renderToString(
+        createSSRApp({
+          render: () =>
+            h(RangeSlider, {
+              label: "Price range",
+              lowerLabel: "Minimum price",
+              upperLabel: "Maximum price",
+              lowerId: "price-min",
+              upperId: "price-max",
+              lowerName: "priceMin",
+              upperName: "priceMax",
+              form: "filters",
+              min: 10,
+              max: 90,
+              step: 5,
+              disabled: true,
+              modelValue: [25, 75],
+            }),
         }),
-      }),
-    ));
+      ),
+    );
     const controls = html.match(/<input[^>]*>/gu) ?? [];
 
     assert.match(html, /^<fieldset class="n-range-slider"[^>]*disabled>/u);
@@ -325,24 +303,45 @@ test("RangeSlider renders two named native range controls with visible constrain
   }
 });
 
-test("RangeSlider leaves native keyboard behavior and constraints visible in the SFC", () => {
+test("RangeSlider leaves native controls visible and delegates complete input bindings", () => {
   const source = fs.readFileSync(sourcePath, "utf8");
+  const controlSource = fs.readFileSync(corePath, "utf8");
 
   assert.match(source, /defineModel<readonly \[number, number\]>/u);
-  assert.match(source, /useRangeSlider\(\s*lowerInput,\s*upperInput,\s*model,?\s*\)/u);
+  assert.match(source, /useRangeSlider\(\s*props,\s*model,?\s*\)/u);
   assert.match(source, /<span[\s\S]*?class="rail"[\s\S]*?v-bind="railProps"/u);
   assert.equal(source.match(/type="range"/gu)?.length, 2);
-  assert.match(source, /<div class="seg -wide"[^>]*>[\s\S]*class="rail"[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u);
-  assert.match(source, /const lowerInputProps = computed\([\s\S]*name: props\.lowerName[\s\S]*form: props\.form[\s\S]*min: props\.min[\s\S]*max: props\.max[\s\S]*step: props\.step[\s\S]*"aria-valuemax": upperValue\.value/u);
-  assert.match(source, /const upperInputProps = computed\([\s\S]*name: props\.upperName[\s\S]*form: props\.form[\s\S]*min: props\.min[\s\S]*max: props\.max[\s\S]*step: props\.step[\s\S]*"aria-valuemin": lowerValue\.value/u);
+  assert.match(
+    source,
+    /<div class="seg -wide"[^>]*>[\s\S]*class="rail"[\s\S]*class="input -lower"[\s\S]*class="input -upper"/u,
+  );
+  assert.doesNotMatch(source, /const (?:lower|upper)InputProps = computed/u);
+  assert.doesNotMatch(source, /aria-valuemax|aria-valuemin/u);
+  assert.match(
+    controlSource,
+    /const lowerInputProps:[\s\S]*get min\(\)[\s\S]*get max\(\)[\s\S]*get step\(\)[\s\S]*get "aria-valuemax"\(\)/u,
+  );
+  assert.match(
+    controlSource,
+    /const upperInputProps:[\s\S]*get min\(\)[\s\S]*get max\(\)[\s\S]*get step\(\)[\s\S]*get "aria-valuemin"\(\)/u,
+  );
   assert.match(source, /<input[\s\S]*?class="input -lower"[\s\S]*?v-bind="lowerInputProps"/u);
   assert.match(source, /<input[\s\S]*?class="input -upper"[\s\S]*?v-bind="upperInputProps"/u);
-  assert.match(source, /const fieldsetProps = computed\([\s\S]*disabled: props\.disabled/u);
-  assert.match(source, /<fieldset[\s\S]*?class="n-range-slider"[\s\S]*?v-bind="fieldsetProps"[\s\S]*?>/u);
+  assert.doesNotMatch(source, /const fieldsetProps = computed/u);
+  assert.match(
+    source,
+    /<fieldset[\s\S]*?class="n-range-slider"[\s\S]*?v-bind="rangeSlider\.fieldsetProps"[\s\S]*?>/u,
+  );
   assert.match(source, /> \.seg\.-wide[\s\S]*> \.rail[\s\S]*touch-action:\s*none/u);
   assert.match(source, /inset-inline:\s*calc\(var\(--nagi-size-control\) \/ 4\)/u);
-  assert.match(source, /::-webkit-slider-thumb[\s\S]*inline-size:\s*calc\(var\(--nagi-size-control\) \/ 2\)/u);
-  assert.match(source, /pointer-events:\s*none[\s\S]*::-webkit-slider-thumb[\s\S]*pointer-events:\s*none/u);
+  assert.match(
+    source,
+    /::-webkit-slider-thumb[\s\S]*inline-size:\s*calc\(var\(--nagi-size-control\) \/ 2\)/u,
+  );
+  assert.match(
+    source,
+    /pointer-events:\s*none[\s\S]*::-webkit-slider-thumb[\s\S]*pointer-events:\s*none/u,
+  );
   assert.match(source, /::-moz-range-thumb[\s\S]*pointer-events:\s*none/u);
   assert.match(source, /@media \(forced-colors: active\)/u);
   assert.doesNotMatch(source, /@key(?:down|up)|role="slider"|aria-valuenow|tabindex/u);

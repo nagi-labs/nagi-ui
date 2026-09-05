@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAvatar } from "@nagi-labs/nagi-ui/component-controls";
-import { mergeElementProps } from "@nagi-labs/nagi-ui";
-import { computed, useAttrs } from "vue";
+import { useAttrs } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -15,21 +14,14 @@ defineSlots<{
   fallback(props: { fallback: string }): unknown;
 }>();
 
-const { fallbackText, hasImage, setImage, onImageError } = useAvatar(props);
-const attrs = useAttrs();
-const spanProps = computed(() =>
-  mergeElementProps(attrs, {
-    role: props.alt ? "img" : undefined,
-    "aria-label": props.alt || undefined,
-    "aria-hidden": props.alt ? undefined : "true",
-  }),
-);
+const avatar = useAvatar(props, useAttrs());
+const { fallbackText, hasImage } = avatar;
 </script>
 
 <template>
   <span
     class="n-avatar"
-    v-bind="spanProps"
+    v-bind="avatar.avatarProps"
   >
     <span class="unit">
       <slot
@@ -41,11 +33,11 @@ const spanProps = computed(() =>
     <img
       v-if="hasImage"
       :key="src"
-      :ref="setImage"
+      :ref="avatar.setImage"
       class="image"
       :src="src"
       alt=""
-      @error="onImageError"
+      @error="avatar.onImageError"
     />
   </span>
 </template>

@@ -29,7 +29,6 @@ const model = defineModel<number>({ default: 50 });
 const resizable = useResizable(props, model);
 const layoutStyle = computed(() => ({
   "--local-first-basis": resizable.firstBasis.value,
-  "--local-second-basis": resizable.secondBasis.value,
 }));
 const attrs = useAttrs();
 const divProps = computed(() =>
@@ -80,7 +79,7 @@ const divProps = computed(() =>
     flex: 0 0 max(0px, calc(var(--local-first-basis) - var(--nagi-space-item-gap) / 2));
   }
   > .section.-second {
-    flex: 0 0 max(0px, calc(var(--local-second-basis) - var(--nagi-space-item-gap) / 2));
+    flex: 1 1 0;
   }
   > .unit.-separator {
     display: grid;

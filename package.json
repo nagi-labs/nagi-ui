@@ -1,6 +1,6 @@
 {
   "name": "nagi-ui-workspace",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Workspace for Nagi UI, an own-first Vue component system with platform-first Blueprints.",
   "license": "MIT",

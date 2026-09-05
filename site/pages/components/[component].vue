@@ -10,6 +10,7 @@ import { componentExampleSource } from "~/data/component-examples";
 import { componentNativeTarget } from "~/data/component-native-targets";
 import { componentDocument, componentDocuments } from "~/data/components";
 import {
+  blueprintComponentDependencies,
   blueprintEvents,
   blueprintModels,
   blueprintProperties,
@@ -29,6 +30,7 @@ const previous = computed(() => componentDocuments[position.value - 1]);
 const next = computed(() => componentDocuments[position.value + 1]);
 const blueprintSources = await loadBlueprintSources(entry.value.name);
 const blueprintSource = blueprintSources[0]?.source ?? "";
+const componentDependencies = blueprintComponentDependencies(blueprintSource);
 const behaviorApis = await loadBlueprintBehaviorApis(blueprintSource);
 const highlightedBlueprintSources = useState<TrustedShikiHtml[]>(
   `blueprint-sources:${entry.value.slug}`,
@@ -101,6 +103,7 @@ useHead({ title: () => entry.value?.name ?? "Component" });
       :basic-guidance="entry.basicGuidance"
       :highlighted-blueprint="highlightedBlueprint"
       :behavior-apis="documentedBehaviorApis"
+      :component-dependencies="componentDependencies"
     />
     <default-component-documentation
       v-else
@@ -115,6 +118,7 @@ useHead({ title: () => entry.value?.name ?? "Component" });
       :usage="usage"
       :native-attribute-target="nativeAttributeTarget"
       :behavior-apis="documentedBehaviorApis"
+      :component-dependencies="componentDependencies"
     />
 
     <component-definition-section

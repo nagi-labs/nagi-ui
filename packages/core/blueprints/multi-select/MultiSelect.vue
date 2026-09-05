@@ -7,7 +7,7 @@ export interface MultiSelectOption {
 </script>
 
 <script setup lang="ts">
-import { computed, type StyleValue } from "vue";
+import type { StyleValue } from "vue";
 import { useMultiSelect } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
@@ -62,9 +62,6 @@ const emit = defineEmits<{
 
 const selected = defineModel<readonly string[]>({ default: () => [] });
 const select = useMultiSelect(props, { selected });
-const selectedItems = computed(() =>
-  selected.value.map((key) => props.items.find((item) => item.key === key) ?? { key, label: key }),
-);
 </script>
 
 <template>
@@ -80,17 +77,16 @@ const selectedItems = computed(() =>
     >
     <div class="field">
       <span
-        v-for="item in selectedItems"
+        v-for="item in select.selectedItems.value"
         :key="item.key"
         class="unit -chip"
       >
         <span class="text">{{ item.label }}</span>
         <button
-          v-if="!disabled && !readOnly"
+          v-if="select.canRemove.value"
+          v-bind="select.removeButtonProps(item)"
           class="button"
           type="button"
-          :aria-label="`${removeLabel} ${item.label}`"
-          @click="select.remove(item.key)"
         >
           ×
         </button>
@@ -126,10 +122,10 @@ const selectedItems = computed(() =>
       class="select"
     >
       <option
-        v-for="item in selectedItems"
+        v-for="item in select.selectedItems.value"
         :key="item.key"
         :value="item.key"
-        :selected="selected.includes(item.key)"
+        selected
       >
         {{ item.label }}
       </option>
@@ -152,13 +148,13 @@ const selectedItems = computed(() =>
           {{ item.label }}
         </li>
       </ul>
-      <p
+      <div
         v-if="select.visibleItems.value.length === 0"
-        class="p"
+        class="status"
         role="status"
       >
         {{ emptyText }}
-      </p>
+      </div>
     </div>
   </div>
 </template>
@@ -264,7 +260,7 @@ const selectedItems = computed(() =>
         }
       }
     }
-    > .p {
+    > .status {
       margin: 0;
       color: var(--nagi-color-text-muted);
     }

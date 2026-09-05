@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, type StyleValue } from "vue";
+import type { StyleValue } from "vue";
 
-import { type ToastItem, type ToastManager } from "@nagi-labs/nagi-ui";
-import { useToastRenderer } from "@nagi-labs/nagi-ui/component-controls";
+import { type ToastManager, useToast } from "@nagi-labs/nagi-ui";
 
 defineOptions({ inheritAttrs: false });
 
@@ -26,16 +25,7 @@ const props = withDefaults(
   },
 );
 
-const notifier = useToastRenderer(props);
-const visibleToasts = computed(() => [...notifier.toasts.value].reverse());
-
-function announcement(item: ToastItem) {
-  return [item.title, item.description].filter(Boolean).join(". ");
-}
-
-function runAction(item: ToastItem) {
-  return item.action?.onClick(item.id);
-}
+const notifier = useToast(props);
 
 defineExpose({
   manager: notifier.manager,
@@ -56,15 +46,14 @@ defineExpose({
     :title="props.title"
   >
     <div class="unit -announcements">
-      <p
+      <span
         v-for="item in notifier.toasts.value"
         :key="`${item.id}-${item.revision}`"
-        class="p"
         :role="item.priority === 'assertive' ? 'alert' : 'status'"
         aria-atomic="true"
       >
-        {{ announcement(item) }}
-      </p>
+        {{ notifier.announcementText(item) }}
+      </span>
     </div>
 
     <div
@@ -73,7 +62,7 @@ defineExpose({
     >
       <ol class="list">
         <li
-          v-for="item in visibleToasts"
+          v-for="item in notifier.visibleToasts.value"
           :key="item.id"
           class="item"
           :data-tone="item.tone"
@@ -81,22 +70,22 @@ defineExpose({
         >
           <span
             v-if="item.title"
-            class="text"
+            class="text -primary"
           >
             {{ item.title }}
           </span>
-          <p
+          <span
             v-if="item.description"
-            class="p"
+            class="text -secondary"
           >
             {{ item.description }}
-          </p>
+          </span>
           <div class="actions">
             <button
               v-if="item.action"
+              v-bind="notifier.actionProps(item)"
               class="button -action"
               type="button"
-              @click="runAction(item)"
             >
               {{ item.action.label }}
             </button>
@@ -126,10 +115,6 @@ defineExpose({
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
-
-    > .p {
-      margin: 0;
-    }
   }
 
   > .unit.-stack {
@@ -160,14 +145,14 @@ defineExpose({
         color: var(--nagi-color-text);
         box-shadow: var(--nagi-shadow-overlay);
 
-        > .text {
+        > .text.-primary {
           grid-column: 1;
           min-inline-size: 0;
           margin: 0 0 var(--n-space-1);
           font-weight: 750;
         }
 
-        > .p {
+        > .text.-secondary {
           grid-column: 1;
           min-inline-size: 0;
           margin: 0;

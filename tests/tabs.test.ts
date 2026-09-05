@@ -4,7 +4,6 @@ import test from "node:test";
 import { customRef, effectScope, nextTick, ref } from "vue";
 
 import { useTabs } from "@nagi-labs/nagi-ui";
-import { useTabsModelBridge } from "@nagi-labs/nagi-ui/component-controls";
 
 interface TabItem {
   key: string;
@@ -19,31 +18,48 @@ const tabs: readonly TabItem[] = [
   { key: "activity", label: "Activity" },
 ];
 
-test("Tabs model bridge synchronizes both channels without exposing watchers", () => {
+test("Tabs component overload synchronizes both model channels without exposing a second composable", () => {
   const model = ref<string | null>("overview");
   const scope = effectScope();
-  const selected = scope.run(() => useTabsModelBridge(model));
-  assert.ok(selected);
+  const binding = scope.run(() =>
+    useTabs(
+      {
+        label: "Account sections",
+        items: tabs,
+        activationMode: "automatic",
+        orientation: "horizontal",
+        dir: "ltr",
+        loop: true,
+      },
+      model,
+    ),
+  );
+  assert.ok(binding);
 
-  selected.value = "security";
+  binding.select(tabs[2] as TabItem);
   assert.equal(model.value, "security");
 
   model.value = "activity";
-  assert.equal(selected.value, "activity");
+  assert.equal(binding.selectedKey.value, "activity");
   scope.stop();
 });
 
 test("shipped Tabs overload maps its schema and named behavior props", () => {
   const model = ref<string | null>("overview");
   const scope = effectScope();
-  const result = scope.run(() => useTabs({
-    label: "Account sections",
-    items: tabs,
-    activationMode: "automatic",
-    orientation: "vertical",
-    dir: "ltr",
-    loop: true,
-  }, model));
+  const result = scope.run(() =>
+    useTabs(
+      {
+        label: "Account sections",
+        items: tabs,
+        activationMode: "automatic",
+        orientation: "vertical",
+        dir: "ltr",
+        loop: true,
+      },
+      model,
+    ),
+  );
   assert.ok(result);
 
   assert.equal(result.tablistProps["aria-label"], "Account sections");
@@ -246,7 +262,10 @@ test("manual activation moves roving focus without selecting until Space or Ente
 
 test("automatic activation selects both keyboard and directly focused tabs", () => {
   const result = createTabs({ activationMode: "automatic" });
-  const dom = fakeTabDom(result.id, tabs.map((item) => item.key));
+  const dom = fakeTabDom(
+    result.id,
+    tabs.map((item) => item.key),
+  );
   registerTabsDom(result, tabs, dom);
   const overview = dom.elements.get("account-tabs-tab-overview") as FakeTabElement;
   const security = dom.elements.get("account-tabs-tab-security") as FakeTabElement;
@@ -256,9 +275,9 @@ test("automatic activation selects both keyboard and directly focused tabs", () 
   assert.equal(result.selectedKey.value, "security");
   assert.equal(dom.document.activeElement, security);
 
-  result.tabProps(tabs[3] as TabItem).onFocus(focusEvent(
-    dom.elements.get("account-tabs-tab-activity") as FakeTabElement,
-  ));
+  result
+    .tabProps(tabs[3] as TabItem)
+    .onFocus(focusEvent(dom.elements.get("account-tabs-tab-activity") as FakeTabElement));
   assert.equal(result.focusedKey.value, "activity");
   assert.equal(result.selectedKey.value, "activity");
 });
@@ -314,7 +333,9 @@ test("disabled tabs are skipped and loop=false clamps focus at both ends", () =>
 
   let prevented = false;
   result.tabProps(tabs[1] as TabItem).onClick({
-    preventDefault: () => { prevented = true; },
+    preventDefault: () => {
+      prevented = true;
+    },
   } as unknown as MouseEvent);
   assert.equal(prevented, true);
   assert.equal(result.selectedKey.value, "overview");
@@ -324,9 +345,7 @@ test("modified arrow keys remain available to the browser", () => {
   const result = createTabs();
   const calls: string[] = [];
 
-  result.tabProps(tabs[0] as TabItem).onKeydown(
-    keydown("ArrowRight", calls, { ctrlKey: true }),
-  );
+  result.tabProps(tabs[0] as TabItem).onKeydown(keydown("ArrowRight", calls, { ctrlKey: true }));
   assert.equal(result.focusedKey.value, "overview");
   assert.deepEqual(calls, []);
 });
@@ -356,7 +375,10 @@ test("controlled selection is canonicalized and remains the source of truth", ()
 test("external selection does not steal manual roving focus while the tablist has focus", () => {
   const selected = ref<string | null>("overview");
   const result = createTabs({ selected });
-  const dom = fakeTabDom(result.id, tabs.map((item) => item.key));
+  const dom = fakeTabDom(
+    result.id,
+    tabs.map((item) => item.key),
+  );
   registerTabsDom(result, tabs, dom);
   const security = dom.elements.get("account-tabs-tab-security") as FakeTabElement;
 
@@ -397,10 +419,7 @@ test("removing or disabling the active selection repairs model and DOM focus", a
   await nextTick();
   assert.equal(dom.document.activeElement, c);
 
-  items.value = [
-    items.value[0] as TabItem,
-    { ...(items.value[1] as TabItem), disabled: true },
-  ];
+  items.value = [items.value[0] as TabItem, { ...(items.value[1] as TabItem), disabled: true }];
   assert.equal(result.selectedKey.value, "a");
   assert.equal(result.focusedKey.value, "a");
   await nextTick();
@@ -445,7 +464,10 @@ test("focus repair uses the calculated fallback while a model proxy still expose
 
 test("focusout keeps in-list focus and resets roving target after leaving", () => {
   const result = createTabs();
-  const dom = fakeTabDom(result.id, tabs.map((item) => item.key));
+  const dom = fakeTabDom(
+    result.id,
+    tabs.map((item) => item.key),
+  );
   registerTabsDom(result, tabs, dom);
   const overview = dom.elements.get("account-tabs-tab-overview") as FakeTabElement;
   const security = dom.elements.get("account-tabs-tab-security") as FakeTabElement;

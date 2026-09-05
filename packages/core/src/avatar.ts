@@ -5,14 +5,32 @@ import {
   ref,
   toValue,
   watch,
+  type ComputedRef,
   type ComponentPublicInstance,
   type MaybeRefOrGetter,
 } from "vue";
+
+import { mergeElementProps, withoutClassToken } from "./merge-props.ts";
 
 export interface UseAvatarOptions {
   src?: MaybeRefOrGetter<string | undefined>;
   alt: MaybeRefOrGetter<string>;
   fallback?: MaybeRefOrGetter<string | undefined>;
+}
+
+export interface AvatarElementProps {
+  readonly role?: "img";
+  readonly "aria-label"?: string;
+  readonly "aria-hidden"?: "true";
+  readonly [key: string]: unknown;
+}
+
+export interface AvatarBinding {
+  readonly fallbackText: ComputedRef<string>;
+  readonly hasImage: ComputedRef<boolean>;
+  readonly avatarProps: AvatarElementProps;
+  readonly setImage: (element: Element | ComponentPublicInstance | null) => void;
+  readonly onImageError: (event: Event) => void;
 }
 
 function initials(value: string): string {
@@ -25,12 +43,13 @@ function initials(value: string): string {
 }
 
 /** Owns image failure races while the renderer retains the editable Avatar markup. */
-export function useAvatar(options: UseAvatarOptions) {
+export function useAvatar(
+  options: UseAvatarOptions,
+  attrs: Readonly<Record<string, unknown>> = {},
+): AvatarBinding {
   const image = ref<HTMLImageElement | null>(null);
   const failed = ref(false);
-  const fallbackText = computed(
-    () => toValue(options.fallback) ?? initials(toValue(options.alt)),
-  );
+  const fallbackText = computed(() => toValue(options.fallback) ?? initials(toValue(options.alt)));
   const hasImage = computed(() => Boolean(toValue(options.src)) && !failed.value);
 
   function detectMissedError() {
@@ -59,5 +78,21 @@ export function useAvatar(options: UseAvatarOptions) {
 
   onMounted(detectMissedError);
 
-  return { fallbackText, hasImage, setImage, onImageError };
+  return {
+    fallbackText,
+    hasImage,
+    get avatarProps() {
+      const alt = toValue(options.alt);
+      return mergeElementProps(
+        { ...attrs, class: withoutClassToken(attrs.class, "n-avatar") },
+        {
+          role: alt ? "img" : undefined,
+          "aria-label": alt || undefined,
+          "aria-hidden": alt ? undefined : "true",
+        },
+      ) as AvatarElementProps;
+    },
+    setImage,
+    onImageError,
+  };
 }

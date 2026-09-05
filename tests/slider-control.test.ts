@@ -29,8 +29,10 @@ test("Slider reset adopts the browser-sanitized range value", async () => {
 test("Slider SFC exposes constraints but not sanitization or reset wiring", () => {
   const source = fs.readFileSync(sourcePath, "utf8");
 
-  assert.match(source, /useSlider\(input, model\)/u);
-  assert.match(source, /mergeElementProps\(attrs, \{[\s\S]*min,\s*max,\s*step/u);
+  assert.match(source, /useSlider\(props, model, useAttrs\(\)\)/u);
+  assert.match(source, /v-bind="slider\.inputProps"/u);
+  assert.match(source, /v-bind="slider\.labelProps"/u);
+  assert.doesNotMatch(source, /mergeElementProps|computed\(|ref="input"|useId\(/u);
   assert.match(source, /<output\s+class="output"[^>]*>\s*\{\{ model \}\}\s*<\/output/u);
   assert.doesNotMatch(source, /useNativeNumberReset|valueAsNumber|watch|onMounted|onUpdated/u);
 });

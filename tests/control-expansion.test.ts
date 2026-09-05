@@ -31,6 +31,8 @@ test("expandable default controls ship one discoverable low-level recipe", () =>
     /useListbox\(props, selected, \{/,
   );
   assert.match(recipe, /no third\s+override argument/);
-  assert.match(recipe, /useNativeCombobox/);
+  assert.doesNotMatch(recipe, /useNativeCombobox|useTabsModelBridge/);
+  assert.match(recipe, /model: selectedModel/);
+  assert.match(recipe, /validationMessage: \(\) => props\.validationMessage/);
   assert.match(recipe, /nagi-ui diff.*not the implementation of imported\s+composables/s);
 });

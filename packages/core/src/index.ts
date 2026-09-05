@@ -24,10 +24,12 @@ export {
   useToast,
   type CreateToastManagerOptions,
   type ToastAction,
+  type ToastActionProps,
   type ToastAddOptions,
   type ToastContentOptions,
   type ToastId,
   type ToastItem,
+  type ToastItemProps,
   type ToastManager,
   type ToastPriority,
   type ToastPromiseOptions,
@@ -38,9 +40,12 @@ export {
   type UseToastOptions,
   type UseToastReturn,
 } from "./toast.ts";
-export { type ToastRendererItemProps, type UseToastRendererReturn } from "./toast-renderer.ts";
-export { useAvatar, type UseAvatarOptions } from "./avatar.ts";
-export { useFocusableDisabled } from "./button.ts";
+export {
+  useAvatar,
+  type AvatarBinding,
+  type AvatarElementProps,
+  type UseAvatarOptions,
+} from "./avatar.ts";
 export {
   useDialog,
   vDialogClose,
@@ -86,6 +91,7 @@ export {
 export {
   useContextMenu,
   type ContextMenuBinding,
+  type ContextMenuComponentBinding,
   type ContextMenuComponentModel,
   type ContextMenuComponentProps,
   type ContextMenuTriggerProps,
@@ -95,6 +101,7 @@ export {
   useMenubar,
   type MenubarActionProps,
   type MenubarBinding,
+  type MenubarComponentBinding,
   type MenubarComponentModel,
   type MenubarComponentProps,
   type MenubarMenuProps,
@@ -105,6 +112,7 @@ export {
 export {
   useNavigationMenu,
   type NavigationMenuBinding,
+  type NavigationMenuComponentBinding,
   type NavigationMenuComponentProps,
   type NavigationMenuTriggerProps,
   type UseNavigationMenuOptions,
@@ -118,6 +126,7 @@ export {
   type TreeGroupProps,
   type TreeItemProps,
   type TreeProps,
+  type TreeToggleControlProps,
   type UseTreeOptions,
 } from "./tree.ts";
 export {
@@ -160,9 +169,24 @@ export {
   type UsePaginationReturn,
 } from "./pagination.ts";
 export { useStepper, type StepperBehaviorItem, type UseStepperReturn } from "./stepper.ts";
-export { handleLinkClick, prefetchLink, type LinkNavigationOptions } from "./link.ts";
+export {
+  useSelect,
+  type SelectBinding,
+  type SelectComponentBinding,
+  type SelectControlProps,
+  type SelectLabelProps,
+  type UseSelectComponentOptions,
+} from "./select.ts";
+export {
+  handleLinkClick,
+  linkInteractionProps,
+  prefetchLink,
+  type LinkInteractionProps,
+  type LinkNavigationOptions,
+} from "./link.ts";
 export {
   useCombobox,
+  type ComboboxClearButtonProps,
   type ComboboxInputProps,
   type ComboboxListboxProps,
   type ComboboxOptionProps,
@@ -184,6 +208,8 @@ export {
   type MultiSelectFormProps,
   type MultiSelectInputProps,
   type MultiSelectOptionProps,
+  type MultiSelectRemoveButtonProps,
+  type MultiSelectSelectedItem,
   type UseMultiSelectOptions,
 } from "./multi-select.ts";
 export {

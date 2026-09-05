@@ -142,11 +142,13 @@ import { NButton } from "@nagi-labs/nagi-ui/components";
 </style>`;
 
 const controlApi = `interface ButtonControlProps {
+  readonly type?: "button" | "submit" | "reset";
   readonly disabled: boolean;
   readonly focusableWhenDisabled: boolean;
 }
 
 interface ButtonBindingProps {
+  readonly type: "button" | "submit" | "reset";
   readonly disabled: boolean;
   readonly "aria-disabled": "true" | undefined;
   readonly onClickCapture: (event: MouseEvent) => void;
@@ -156,7 +158,10 @@ interface ButtonControl {
   readonly buttonProps: ButtonBindingProps;
 }
 
-function useButton(props: ButtonControlProps): ButtonControl;`;
+function useButton(
+  props: ButtonControlProps,
+  attrs?: Readonly<Record<string, unknown>>,
+): ButtonControl;`;
 
 const compiledCss = `/* authored */
 .app-button-example {

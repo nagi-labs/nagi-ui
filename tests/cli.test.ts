@@ -41,10 +41,7 @@ test("markers round-trip for vue and ts files", () => {
   });
 
   const markdown = markerLine("EXTENDING.md", "context-menu", "1.2.3");
-  assert.equal(
-    markdown,
-    "<!-- @nagi-source context-menu/EXTENDING.md@1.2.3 -->\n",
-  );
+  assert.equal(markdown, "<!-- @nagi-source context-menu/EXTENDING.md@1.2.3 -->\n");
 
   assert.equal(parseMarker("<!-- not a marker -->"), null);
 });
@@ -76,7 +73,33 @@ test("every registered component points at a shipped ownership source", () => {
         `${name}/${file} exists in the package`,
       );
     }
+    for (const dependency of spec.componentDependencies ?? []) {
+      assert.notEqual(dependency, name, `${name} cannot depend on itself`);
+      assert.ok(components[dependency], `${name} depends on registered component ${dependency}`);
+    }
   }
+});
+
+test("Accordion ownership recursively owns its Disclosure dependency", () => {
+  const targetRoot = tempDir();
+  const result = ownComponent("accordion", { packageRoot, targetRoot });
+  assert.deepEqual(result.componentDependencies, ["disclosure"]);
+  assert.deepEqual(
+    result.ownedComponents.map(({ component, status }) => ({ component, status })),
+    [
+      { component: "disclosure", status: "owned" },
+      { component: "accordion", status: "owned" },
+    ],
+  );
+  assert.ok(fs.existsSync(path.join(targetRoot, "disclosure/Disclosure.vue")));
+  assert.match(
+    fs.readFileSync(path.join(targetRoot, "accordion/Accordion.vue"), "utf8"),
+    /from "\.\.\/disclosure\/Disclosure\.vue"/u,
+  );
+  assert.deepEqual(
+    diffOwned(targetRoot, { packageRoot }).map(({ status }) => status),
+    ["clean", "clean"],
+  );
 });
 
 test("ownership includes every Blueprint-local relative dependency", () => {
@@ -84,15 +107,69 @@ test("ownership includes every Blueprint-local relative dependency", () => {
     for (const file of spec.files) {
       const source = fs.readFileSync(path.join(packageRoot, spec.dir, file), "utf8");
       for (const match of source.matchAll(/(?:from\s+|import\s+)["'](\.\.?\/[^"']+)["']/g)) {
-        const dependency = path.posix.normalize(
-          path.posix.join(path.posix.dirname(file), match[1] as string),
+        const dependencyPath = path.resolve(
+          packageRoot,
+          spec.dir,
+          path.dirname(file),
+          match[1] as string,
         );
+        const localFile = path.relative(path.join(packageRoot, spec.dir), dependencyPath);
+        if (!localFile.startsWith("..")) {
+          assert.ok(
+            spec.files.includes(localFile),
+            `${name}/${file} depends on ${localFile}, which own must copy`,
+          );
+          continue;
+        }
+
+        const owner = Object.entries(components).find(([, candidate]) =>
+          candidate.files.some(
+            (candidateFile) =>
+              path.resolve(packageRoot, candidate.dir, candidateFile) === dependencyPath,
+          ),
+        )?.[0];
+        assert.ok(owner, `${name}/${file} cross-component dependency is registered`);
         assert.ok(
-          spec.files.includes(dependency),
-          `${name}/${file} depends on ${dependency}, which own must copy`,
+          spec.componentDependencies?.includes(owner!),
+          `${name}/${file} declares its ${owner} component dependency`,
         );
       }
     }
+  }
+});
+
+test("ownership metadata exactly declares every cross-component dependency", () => {
+  for (const [name, spec] of Object.entries(components)) {
+    const dependencies = new Set<string>();
+    for (const file of spec.files) {
+      const source = fs.readFileSync(path.join(packageRoot, spec.dir, file), "utf8");
+      for (const match of source.matchAll(/@nagi-labs\/nagi-ui\/blueprints\/([^/"']+)\/[^"']+/gu)) {
+        dependencies.add(match[1] as string);
+      }
+      for (const match of source.matchAll(/(?:from\s+|import\s+)["'](\.\.?\/[^"']+)["']/g)) {
+        const dependencyPath = path.resolve(
+          packageRoot,
+          spec.dir,
+          path.dirname(file),
+          match[1] as string,
+        );
+        if (!path.relative(path.join(packageRoot, spec.dir), dependencyPath).startsWith("..")) {
+          continue;
+        }
+        const owner = Object.entries(components).find(([, candidate]) =>
+          candidate.files.some(
+            (candidateFile) =>
+              path.resolve(packageRoot, candidate.dir, candidateFile) === dependencyPath,
+          ),
+        )?.[0];
+        if (owner) dependencies.add(owner);
+      }
+    }
+    assert.deepEqual(
+      [...dependencies].sort(),
+      [...(spec.componentDependencies ?? [])].sort(),
+      `${name} component dependencies stay explicit`,
+    );
   }
 });
 
@@ -110,36 +187,53 @@ test("every public package component has an ownership registry entry", () => {
   const source = fs.readFileSync(path.join(packageRoot, "components.ts"), "utf8");
   const publicComponents = Array.from(
     source.matchAll(/export \{ default as ([A-Za-z0-9]+) \}/g),
-    (match) => (match[1] as string)
-      .replace(/^N(?=[A-Z])/u, "")
-      .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
-      .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
-      .toLowerCase(),
+    (match) =>
+      (match[1] as string)
+        .replace(/^N(?=[A-Z])/u, "")
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
+        .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+        .toLowerCase(),
   ).sort();
   assert.deepEqual(Object.keys(components).sort(), publicComponents);
 });
 
-test("DropdownMenu renderers remain owned internals rather than package components", () => {
+test("private renderers remain owned internals rather than package components", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")) as {
     exports: Record<string, unknown>;
   };
   const componentEntry = fs.readFileSync(path.join(packageRoot, "components.ts"), "utf8");
 
-  assert.equal(manifest.exports["./blueprints/menu/internal/*"], null);
-  assert.doesNotMatch(
-    componentEntry,
-    /export\s+\{\s*default\s+as\s+NDropdownMenu(?:Item|Group|Submenu)\b/u,
-  );
+  const privateSurfaces = [
+    {
+      path: "./blueprints/menu/internal/*",
+      component: /export\s+\{\s*default\s+as\s+NDropdownMenu(?:Item|Group|Submenu)\b/u,
+    },
+    {
+      path: "./blueprints/date-picker/internal/*",
+      component: /export\s+\{\s*default\s+as\s+NDatePickerPopup\b/u,
+    },
+    {
+      path: "./blueprints/date-range-picker/internal/*",
+      component: /export\s+\{\s*default\s+as\s+NDateRangePickerPopup\b/u,
+    },
+  ];
+  for (const surface of privateSurfaces) {
+    assert.equal(manifest.exports[surface.path], null);
+    assert.doesNotMatch(componentEntry, surface.component);
+  }
 });
 
 test("theme check reports missing and unknown replacement-theme tokens", async () => {
   const root = tempDir();
   const incomplete = path.join(root, "theme.css");
-  fs.writeFileSync(incomplete, `:root {
+  fs.writeFileSync(
+    incomplete,
+    `:root {
   /* --nagi-color-focus-ring: this-comment-must-not-count; */
   --nagi-color-accent: hotpink;
   --nagi-color-foucs-ring: red;
-}\n`);
+}\n`,
+  );
 
   const result = checkThemeFiles([incomplete]);
   assert.ok(result.missing.includes("--nagi-color-focus-ring"));
@@ -164,10 +258,7 @@ test("status reports package, default theme, and locally modified ownership inde
     JSON.stringify({ dependencies: { "@nagi-labs/nagi-ui": "^0.4.0" } }),
   );
   fs.mkdirSync(path.join(cwd, "src"), { recursive: true });
-  fs.writeFileSync(
-    path.join(cwd, "src/main.ts"),
-    'import "@nagi-labs/nagi-ui/styles.css";\n',
-  );
+  fs.writeFileSync(path.join(cwd, "src/main.ts"), 'import "@nagi-labs/nagi-ui/styles.css";\n');
   fs.writeFileSync(
     path.join(cwd, "src/commented.ts"),
     '/* import "@nagi-labs/nagi-ui/default-theme.css"; */\n',
@@ -225,10 +316,7 @@ test("the shipped default theme passes the replacement-theme CI gate", async () 
   const theme = path.join(packageRoot, "theme/default-theme.css");
   assert.deepEqual(checkThemeFiles([theme]).missing, []);
   assert.deepEqual(checkThemeFiles([theme]).unknown, []);
-  assert.equal(
-    await main(["theme", "check", theme], path.join(import.meta.dirname, "..")),
-    0,
-  );
+  assert.equal(await main(["theme", "check", theme], path.join(import.meta.dirname, "..")), 0);
 });
 
 test("Tabs ownership stamps the package source and starts clean", () => {
@@ -269,10 +357,7 @@ test("diff reports clean, modified, and drifted owned sources", () => {
   ownComponent("combobox", { packageRoot, targetRoot });
 
   let entries = diffOwned(targetRoot, { packageRoot });
-  assert.equal(
-    entries.length,
-    components.listbox.files.length + components.combobox.files.length,
-  );
+  assert.equal(entries.length, components.listbox.files.length + components.combobox.files.length);
   assert.ok(entries.every((entry) => entry.status === "clean"));
 
   const owned = path.join(targetRoot, "listbox/Listbox.vue");
@@ -297,10 +382,7 @@ test("diff checks every registered owned file, including Markdown guidance", () 
   ownComponent("context-menu", { packageRoot, targetRoot });
   const entries = diffOwned(targetRoot, { packageRoot });
   assert.equal(entries.length, components["context-menu"].files.length);
-  assert.equal(
-    entries.find((entry) => entry.marker.file === "EXTENDING.md")?.status,
-    "clean",
-  );
+  assert.equal(entries.find((entry) => entry.marker.file === "EXTENDING.md")?.status, "clean");
 });
 
 test("diff gates only on drifted and unknown-source, not on local modification", async () => {
@@ -442,17 +524,7 @@ test("setup accepts complete flags for non-interactive agents and CI", async () 
   const cwd = tempDir();
   assert.equal(
     await main(
-      [
-        "setup",
-        "--framework",
-        "vue",
-        "--link",
-        "native",
-        "--image",
-        "native",
-        "--dir",
-        "app/nagi",
-      ],
+      ["setup", "--framework", "vue", "--link", "native", "--image", "native", "--dir", "app/nagi"],
       cwd,
     ),
     0,
@@ -470,10 +542,7 @@ test("citty command routing preserves multi-component ownership and enum validat
     },
     warn() {},
   };
-  assert.equal(
-    await main(["own", "listbox", "combobox", "--dir", targetRoot], repo, io),
-    0,
-  );
+  assert.equal(await main(["own", "listbox", "combobox", "--dir", targetRoot], repo, io), 0);
   assert.ok(fs.existsSync(path.join(targetRoot, "listbox/Listbox.vue")));
   assert.ok(fs.existsSync(path.join(targetRoot, "combobox/Combobox.vue")));
   const output = logs.join("\n");
@@ -483,11 +552,53 @@ test("citty command routing preserves multi-component ownership and enum validat
   assert.ok(output.includes(`nagi-ui diff --dir ${targetRoot}`));
 
   await assert.rejects(
-    main(
-      ["setup", "--framework", "react", "--link", "native", "--image", "native"],
-      repo,
-      io,
-    ),
+    main(["setup", "--framework", "react", "--link", "native", "--image", "native"], repo, io),
     /Invalid value for argument:.*--framework/,
   );
+});
+
+test("CLI list and own recursively include component dependencies", async () => {
+  const targetRoot = tempDir();
+  const repo = path.join(import.meta.dirname, "..");
+  const logs: string[] = [];
+  const io = {
+    log(value: unknown) {
+      logs.push(String(value));
+    },
+    warn() {},
+  };
+
+  assert.equal(await main(["list"], repo, io), 0);
+  assert.match(logs.join("\n"), /accordion.*owns with: disclosure/);
+
+  logs.length = 0;
+  assert.equal(await main(["own", "accordion", "--dir", targetRoot], repo, io), 0);
+  assert.match(logs.join("\n"), /owned dependency disclosure@/);
+  assert.ok(fs.existsSync(path.join(targetRoot, "disclosure/Disclosure.vue")));
+});
+
+test("recursive ownership reuses an existing modified owned dependency", () => {
+  const targetRoot = tempDir();
+  ownComponent("disclosure", { packageRoot, targetRoot });
+  const disclosure = path.join(targetRoot, "disclosure/Disclosure.vue");
+  fs.appendFileSync(disclosure, "\n<!-- consumer change -->\n");
+
+  const result = ownComponent("accordion", { packageRoot, targetRoot });
+  assert.equal(
+    result.ownedComponents.find(({ component }) => component === "disclosure")?.status,
+    "reused",
+  );
+  assert.match(fs.readFileSync(disclosure, "utf8"), /consumer change/u);
+});
+
+test("recursive ownership rejects an unowned dependency directory without partial copies", () => {
+  const targetRoot = tempDir();
+  fs.mkdirSync(path.join(targetRoot, "disclosure"), { recursive: true });
+  fs.writeFileSync(path.join(targetRoot, "disclosure/Disclosure.vue"), "<template />\n");
+
+  assert.throws(
+    () => ownComponent("accordion", { packageRoot, targetRoot }),
+    /blocks the accordion dependency/u,
+  );
+  assert.equal(fs.existsSync(path.join(targetRoot, "accordion")), false);
 });

@@ -8,8 +8,8 @@ full product concept.
 Install and use the canonical components directly:
 
 ```ts
-import { NDropdownMenu } from "@nagi-labs/nagi-ui/components"
-import "@nagi-labs/nagi-ui/styles.css"
+import { NDropdownMenu } from "@nagi-labs/nagi-ui/components";
+import "@nagi-labs/nagi-ui/styles.css";
 ```
 
 The package is a convenience for evaluation and for products that do not need
@@ -67,6 +67,15 @@ Blueprints. Every dependency referenced by an ownable Blueprint must be either
 a stable public export or part of the ownership bundle. A behavior dependency
 can change through a package upgrade even when the owned SFC is textually
 unchanged — that is exactly what the conformance contracts are for.
+
+The same rule applies to component composition. When an owned parent imports a
+public child Blueprint, the CLI recursively owns the child and preserves a
+relative import between their owned directories. Existing owned dependencies
+are reused without overwriting local changes. This makes the complete visible
+implementation editable while each child keeps its own Contract,
+Implementation tests, and internal styling. A parent Contract records the
+guarantees created by the connection, not a duplicate copy of every child
+Requirement.
 
 Attribute destinations in owned Blueprints follow the
 [attribute forwarding policy](attribute-forwarding.md).

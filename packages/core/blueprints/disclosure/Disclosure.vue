@@ -11,8 +11,8 @@ const props = defineProps<{
   class?: string;
   style?: StyleValue;
   title?: string;
-  name?: string;
-  disabled?: boolean;
+  name?: string | undefined;
+  disabled?: boolean | undefined;
 }>();
 
 const open = defineModel<boolean>("open", { default: false });

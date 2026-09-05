@@ -16,7 +16,9 @@ import {
 
 import { createAnchorPair, type AnchorPair } from "./anchor.ts";
 import { createElementRegistry } from "./element-registry.ts";
+import { linkInteractionProps, type LinkInteractionProps, type LinkNavigationOptions } from "./link.ts";
 import { useMenu, type MenuItemProps, type MenuProps } from "./menu.ts";
+import { mergeElementProps } from "./merge-props.ts";
 import { modelValueAccepted, requestModelValue, type WritableRef } from "./model-sync.ts";
 
 export interface UseMenubarOptions<Menu, Action, Key extends string = string, ActionKey extends string = string> {
@@ -75,6 +77,15 @@ export interface MenubarBinding<Menu, Action, Key extends string = string, Actio
   positionStyle: ComputedRef<CSSProperties>;
   actionProps: (item: Action) => MenubarActionProps;
   close: (restoreFocus?: boolean) => void;
+}
+
+export interface MenubarComponentBinding<
+  Menu,
+  Action,
+  Key extends string = string,
+  ActionKey extends string = string,
+> extends MenubarBinding<Menu, Action, Key, ActionKey> {
+  linkActionProps: (item: Action & LinkNavigationOptions) => MenubarActionProps & LinkInteractionProps;
 }
 
 interface MenubarComponentAction {
@@ -438,20 +449,17 @@ function createMenubar<Menu, Action, Key extends string, ActionKey extends strin
 export function useMenubar<Menu, Action, Key extends string = string, ActionKey extends string = string>(
   options: UseMenubarOptions<Menu, Action, Key, ActionKey>,
 ): MenubarBinding<Menu, Action, Key, ActionKey>;
-export function useMenubar<
-  Action extends MenubarComponentAction,
-  Menu extends MenubarComponentMenu<Action>,
->(
+export function useMenubar<Menu extends MenubarComponentMenu>(
   props: MenubarComponentProps<Menu>,
-  model: MenubarComponentModel<Action>,
-): MenubarBinding<Menu, Action>;
+  model: MenubarComponentModel<Menu["items"][number]>,
+): MenubarComponentBinding<Menu, Menu["items"][number]>;
 export function useMenubar(
   optionsOrProps: unknown,
   model?: MenubarComponentModel<MenubarComponentAction>,
 ): unknown {
   if (!model) return createMenubar(optionsOrProps as UseMenubarOptions<unknown, unknown>);
   const props = optionsOrProps as MenubarComponentProps<MenubarComponentMenu>;
-  return createMenubar({
+  const binding = createMenubar({
     menus: () => props.items,
     getKey: (menu) => menu.key,
     getTextValue: (menu) => menu.label,
@@ -465,5 +473,10 @@ export function useMenubar(
     dir: () => props.dir,
     open: model.open,
     ...(model.onSelect ? { onSelect: model.onSelect } : {}),
-  }) as unknown as MenubarBinding<unknown, unknown>;
+  }) as unknown as MenubarBinding<MenubarComponentMenu, MenubarComponentAction>;
+  return Object.assign(binding, {
+    linkActionProps(item: MenubarComponentAction & LinkNavigationOptions) {
+      return mergeElementProps(binding.actionProps(item), linkInteractionProps(item));
+    },
+  });
 }

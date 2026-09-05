@@ -4,10 +4,10 @@ Nagi's public `useX` composables have two explicit forms:
 
 ```ts
 // Package component defaults.
-useTooltip(props, open)
+useTooltip(props, open);
 
 // Own the complete mapping.
-useTooltip({ open, openDelay: 0, /* ... */ })
+useTooltip({ open, openDelay: 0 /* ... */ });
 ```
 
 Common, stable changes belong on named component props. The component overload
@@ -47,7 +47,7 @@ const listbox = useListbox<ListboxOption>({
   dir: props.dir,
   loop: props.loop,
   selected,
-})
+});
 ```
 
 The component overload intentionally has no third argument. The full form is
@@ -58,23 +58,20 @@ itself changes.
 
 `activationMode`, `orientation`, `dir`, and `loop` are named component props.
 
-Complete ownership keeps the fixed Vue model bridge:
+Complete ownership passes the Vue model through the same Behavior call:
 
 ```ts
-import { useTabsModelBridge } from "@nagi-labs/nagi-ui/component-controls"
-
-const selected = useTabsModelBridge(selectedModel)
 const tabs = useTabs<TabsItem>({
   items: () => props.items,
   getKey: (item) => item.key,
   isDisabled: (item) => item.disabled ?? false,
-  selected,
+  model: selectedModel,
   label: props.label,
   activationMode: props.activationMode,
   orientation: props.orientation,
   dir: props.dir,
   loop: props.loop,
-})
+});
 ```
 
 ### Combobox
@@ -83,11 +80,10 @@ The package component fixes its flat item schema and filtering contract. Own
 the complete mapping for a custom filter, remote-result policy, or navigation
 algorithm.
 
-Complete ownership keeps native form/reset/validity/focus mechanics:
+Complete ownership keeps native form/reset/validity/focus mechanics in the
+same Behavior call:
 
 ```ts
-import { useNativeCombobox } from "@nagi-labs/nagi-ui/component-controls"
-
 const combobox = useCombobox<ComboboxOption>({
   items: () => (props.loading ? [] : props.items),
   getKey: (item) => item.key,
@@ -98,25 +94,25 @@ const combobox = useCombobox<ComboboxOption>({
   disabled: () => props.disabled,
   readOnly: () => props.readOnly,
   required: () => props.required,
+  validationMessage: () => props.validationMessage,
   openWhenEmpty: true,
-})
-const nativeCombobox = useNativeCombobox(props, inputElement, combobox)
+});
 ```
 
-After complete expansion, change the clear button from
-`@click="combobox.clear"` to `@click="nativeCombobox.clear"`.
+The clear button consumes `v-bind="combobox.clearButtonProps"`; programmatic
+clearing remains available as `combobox.clear()` without moving focus.
 
 ## Thin components
 
 The same function name covers package defaults and complete ownership:
 
-| Component | Package mapping | Complete form |
-|---|---|---|
-| Popover | `usePopover(props, open)` | `usePopover({ open, anchor: { area: "block-end" } })` |
-| Tooltip | `useTooltip(props, open)` | `useTooltip({ open, openDelay: 0 })` |
-| Dialog | `useDialog(props, open)` | `useDialog({ open, modal: true, closedby: "closerequest" })` |
-| Disclosure | `useDisclosure(props, open)` | `useDisclosure({ open, name: "faq" })` |
-| Toggle | `useToggle(props, pressed)` | `useToggle({ pressed, disabled: false })` |
+| Component  | Package mapping              | Complete form                                                |
+| ---------- | ---------------------------- | ------------------------------------------------------------ |
+| Popover    | `usePopover(props, open)`    | `usePopover({ open, anchor: { area: "block-end" } })`        |
+| Tooltip    | `useTooltip(props, open)`    | `useTooltip({ open, openDelay: 0 })`                         |
+| Dialog     | `useDialog(props, open)`     | `useDialog({ open, modal: true, closedby: "closerequest" })` |
+| Disclosure | `useDisclosure(props, open)` | `useDisclosure({ open, name: "faq" })`                       |
+| Toggle     | `useToggle(props, pressed)`  | `useToggle({ pressed, disabled: false })`                    |
 
 Prefer the component's named props before replacing its mapping.
 Fixed mechanisms such as AlertDialog identity, native form reset, focus repair,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId, type StyleValue } from "vue";
+import { useAttrs, type StyleValue } from "vue";
 
 import { useNumberField } from "@nagi-labs/nagi-ui/component-controls";
 
@@ -50,9 +50,8 @@ const props = withDefaults(
 );
 
 const model = defineModel<number | null>({ default: null });
-const input = ref<HTMLInputElement | null>(null);
-const generatedId = useId();
-const { value: inputValue, decrement, increment } = useNumberField(input, model);
+const numberField = useNumberField(props, model, useAttrs());
+const { value: inputValue } = numberField;
 
 const emit = defineEmits<{
   beforeinput: [event: InputEvent];
@@ -73,71 +72,27 @@ const emit = defineEmits<{
   paste: [event: ClipboardEvent];
   select: [event: Event];
 }>();
-
-const decrementDisabled = computed(
-  () =>
-    props.disabled ||
-    props.readOnly ||
-    (model.value !== null && props.min !== undefined && model.value <= props.min),
-);
-const incrementDisabled = computed(
-  () =>
-    props.disabled ||
-    props.readOnly ||
-    (model.value !== null && props.max !== undefined && model.value >= props.max),
-);
 </script>
 
 <template>
   <div class="n-number-field">
     <label
       class="label"
-      :for="id ?? generatedId"
+      v-bind="numberField.labelProps"
       >{{ label }}</label
     >
     <div class="unit">
       <button
+        v-bind="numberField.decrementButtonProps"
         class="button -decrement"
         type="button"
-        :aria-label="decrementLabel"
-        :disabled="decrementDisabled"
-        @click="decrement"
       >
         −
       </button>
       <input
-        ref="input"
         v-model="inputValue"
         class="input"
-        :class="props.class"
-        :style="props.style"
-        type="number"
-        :id="id ?? generatedId"
-        :title="title"
-        :tabindex="tabindex"
-        :name="name"
-        :form="form"
-        :autocomplete="autocomplete"
-        :autofocus="autofocus"
-        :enterkeyhint="enterkeyhint"
-        :inputmode="inputmode"
-        :list="list"
-        :maxlength="maxlength"
-        :minlength="minlength"
-        :min="min"
-        :max="max"
-        :pattern="pattern"
-        :placeholder="placeholder"
-        :step="step"
-        :disabled="disabled"
-        :readonly="readOnly"
-        :required="required"
-        :aria-label="ariaLabel"
-        :aria-labelledby="ariaLabelledby"
-        :aria-describedby="ariaDescribedby"
-        :aria-details="ariaDetails"
-        :aria-errormessage="ariaErrormessage"
-        :aria-invalid="ariaInvalid"
+        v-bind="numberField.inputProps"
         @beforeinput="emit('beforeinput', $event)"
         @blur="emit('blur', $event)"
         @change="emit('change', $event)"
@@ -157,11 +112,9 @@ const incrementDisabled = computed(
         @select="emit('select', $event)"
       />
       <button
+        v-bind="numberField.incrementButtonProps"
         class="button -increment"
         type="button"
-        :aria-label="incrementLabel"
-        :disabled="incrementDisabled"
-        @click="increment"
       >
         +
       </button>

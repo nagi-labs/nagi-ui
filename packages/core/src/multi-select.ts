@@ -34,6 +34,7 @@ export interface UseMultiSelectOptions<Item, Key extends string = string> {
   disabled?: MaybeRefOrGetter<boolean | undefined>;
   readOnly?: MaybeRefOrGetter<boolean | undefined>;
   required?: MaybeRefOrGetter<boolean | undefined>;
+  removeLabel?: MaybeRefOrGetter<string | undefined>;
   open?: WritableRef<boolean>;
   formControl?: Readonly<Ref<HTMLSelectElement | null>>;
   inputControl?: Readonly<Ref<HTMLInputElement | null>>;
@@ -85,6 +86,17 @@ export interface MultiSelectFormProps {
   onInvalid: (event: Event) => void;
 }
 
+export interface MultiSelectSelectedItem<Item, Key extends string = string> {
+  key: Key;
+  item: Item | undefined;
+  label: string;
+}
+
+export interface MultiSelectRemoveButtonProps {
+  "aria-label": string;
+  onClick: () => void;
+}
+
 export interface MultiSelectBinding<Item, Key extends string = string> {
   selected: Ref<readonly Key[]>;
   inputValue: Ref<string>;
@@ -92,10 +104,15 @@ export interface MultiSelectBinding<Item, Key extends string = string> {
   inputElement: Readonly<Ref<HTMLInputElement | null>>;
   formElement: Readonly<Ref<HTMLSelectElement | null>>;
   visibleItems: ComputedRef<readonly Item[]>;
+  selectedItems: ComputedRef<readonly MultiSelectSelectedItem<Item, Key>[]>;
+  canRemove: ComputedRef<boolean>;
   popupProps: PopoverProps & { style?: CSSProperties };
   listboxProps: { id: string; role: "listbox"; "aria-multiselectable": "true" };
   inputProps: MultiSelectInputProps;
   optionProps: (item: Item) => MultiSelectOptionProps;
+  removeButtonProps: (
+    item: MultiSelectSelectedItem<Item, Key>,
+  ) => MultiSelectRemoveButtonProps;
   formProps: MultiSelectFormProps;
   isSelected: (item: Item) => boolean;
   toggle: (item: Item) => void;
@@ -119,6 +136,7 @@ export interface MultiSelectComponentProps<Item extends MultiSelectComponentItem
   readonly disabled: boolean;
   readonly readOnly: boolean;
   readonly required: boolean;
+  readonly removeLabel?: string | undefined;
 }
 
 export interface MultiSelectComponentModel {
@@ -156,6 +174,16 @@ function createMultiSelect<Item, Key extends string>(
     return query === "" ? items() : items().filter((item) =>
       options.getTextValue(item).toLocaleLowerCase().includes(query));
   });
+  const selectedItems = computed<readonly MultiSelectSelectedItem<Item, Key>[]>(() =>
+    options.selected.value.map((key) => {
+      const item = items().find((candidate) => keyOf(candidate) === key);
+      return {
+        key,
+        item,
+        label: item === undefined ? key : options.getTextValue(item),
+      };
+    }));
+  const canRemove = computed(() => !disabled() && !readOnly());
   const enabled = () => visibleItems.value.filter((item) => !itemDisabled(item));
   const optionId = (key: Key) => `${id}-option-${encodeURIComponent(key)}`;
 
@@ -397,6 +425,8 @@ function createMultiSelect<Item, Key extends string>(
     inputElement,
     formElement,
     visibleItems,
+    selectedItems,
+    canRemove,
     popupProps,
     listboxProps: { id: `${id}-listbox`, role: "listbox", "aria-multiselectable": "true" },
     inputProps,
@@ -414,6 +444,12 @@ function createMultiSelect<Item, Key extends string>(
           if (itemDisabled(item)) { event.preventDefault(); return; }
           toggle(item);
         },
+      };
+    },
+    removeButtonProps(item) {
+      return {
+        "aria-label": `${toValue(options.removeLabel) ?? "Remove"} ${item.label}`,
+        onClick: () => remove(item.key),
       };
     },
     formProps,
@@ -451,6 +487,7 @@ export function useMultiSelect(
     disabled: () => props.disabled,
     readOnly: () => props.readOnly,
     required: () => props.required,
+    removeLabel: () => props.removeLabel,
     ...(model.formControl ? { formControl: model.formControl } : {}),
     ...(model.inputControl ? { inputControl: model.inputControl } : {}),
   }) as unknown as MultiSelectBinding<unknown>;

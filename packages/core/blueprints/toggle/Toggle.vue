@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { mergeElementProps, useToggle } from "@nagi-labs/nagi-ui";
-import { computed, useAttrs } from "vue";
+import { useToggle } from "@nagi-labs/nagi-ui";
+import { useAttrs } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -8,7 +8,6 @@ const { disabled = false } = defineProps<{
   disabled?: boolean;
 }>();
 
-const attrs = useAttrs();
 const pressed = defineModel<boolean>({ default: false });
 const toggle = useToggle(
   {
@@ -17,10 +16,7 @@ const toggle = useToggle(
     },
   },
   pressed,
-);
-
-const buttonProps = computed(() =>
-  mergeElementProps(toggle.buttonProps, attrs, { type: "button" }),
+  useAttrs(),
 );
 
 const emit = defineEmits<{
@@ -35,7 +31,7 @@ const emit = defineEmits<{
 
 <template>
   <button
-    v-bind="buttonProps"
+    v-bind="toggle.buttonProps"
     class="n-toggle"
     @blur="emit('blur', $event)"
     @click="emit('click', $event)"
@@ -99,4 +95,3 @@ const emit = defineEmits<{
   }
 }
 </style>
-@click="onClick"

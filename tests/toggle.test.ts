@@ -63,3 +63,15 @@ test("programmatic changes remain available while the control is disabled", () =
   toggle();
   assert.equal(pressed.value, true);
 });
+
+test("component binding merges native attrs without duplicating the surface class", () => {
+  const pressed = ref(false);
+  const toggle = useToggle({ disabled: false }, pressed, {
+    class: "n-toggle -quiet",
+    "data-testid": "pin",
+  });
+
+  assert.equal(toggle.buttonProps.class, "-quiet");
+  assert.equal(toggle.buttonProps["data-testid"], "pin");
+  assert.equal(toggle.buttonProps.type, "button");
+});

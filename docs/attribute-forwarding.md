@@ -43,18 +43,14 @@ const props = withDefaults(defineProps<ButtonProps>(), {
   focusableWhenDisabled: false,
 })
 
-const attrs = useAttrs()
-const button = useButton(props)
-const buttonProps = computed(() =>
-  mergeElementProps(button.buttonProps, attrs, { type: props.type }),
-)
+const button = useButton(props, useAttrs())
 ```
 
 The template then has one native destination:
 
 ```vue
 <button
-  v-bind="buttonProps"
+  v-bind="button.buttonProps"
   data-scope="button"
   data-part="root"
   class="n-button"
@@ -67,11 +63,13 @@ The helper's public contract is:
 
 ```ts
 interface ButtonControlProps {
+  readonly type?: "button" | "submit" | "reset"
   readonly disabled: boolean
   readonly focusableWhenDisabled: boolean
 }
 
 interface ButtonBindingProps {
+  readonly type: "button" | "submit" | "reset"
   readonly disabled: boolean
   readonly "aria-disabled": "true" | undefined
   readonly onClickCapture: (event: MouseEvent) => void
@@ -81,11 +79,17 @@ interface ButtonControl {
   readonly buttonProps: ButtonBindingProps
 }
 
-function useButton(props: ButtonControlProps): ButtonControl
+function useButton(
+  props: ButtonControlProps,
+  attrs?: Readonly<Record<string, unknown>>,
+): ButtonControl
 ```
 
-The returned `buttonProps` getters remain live as `props` changes. Bind that
-object to the native button; visual ownership changes can then alter the slot,
+Reading the returned `button.buttonProps` yields the current `props` and `attrs`
+as one complete native-root binding. `useButton` also removes a repeated `n-button`
+token from consumer classes because the Blueprint declares that static root
+identity itself; consumer variants and unrelated classes remain intact. Bind
+the object to the native button. Visual ownership can still alter the slot,
 CSS style axes, surrounding markup, and scoped CSS independently. Visual axes
 are ordinary consumer CSS and do not pass through Vue props or DOM data
 attributes.

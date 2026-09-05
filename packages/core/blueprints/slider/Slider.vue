@@ -1,41 +1,29 @@
 <script setup lang="ts">
-import { computed, ref, useAttrs, useId } from "vue";
+import { useAttrs } from "vue";
 
-import { mergeElementProps } from "@nagi-labs/nagi-ui";
 import { useSlider } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
-const {
-  label,
-  id,
-  min = 0,
-  max = 100,
-  step = 1,
-  disabled = false,
-} = defineProps<{
-  label: string;
-  id?: string;
-  min?: number;
-  max?: number;
-  step?: number | "any";
-  disabled?: boolean;
-}>();
-
-const attrs = useAttrs();
-const model = defineModel<number>({ default: 0 });
-const input = ref<HTMLInputElement | null>(null);
-const generatedId = useId();
-const inputProps = computed(() =>
-  mergeElementProps(attrs, {
-    type: "range",
-    id: id ?? generatedId,
-    min,
-    max,
-    step,
-    disabled,
-  }),
+const props = withDefaults(
+  defineProps<{
+    label: string;
+    id?: string;
+    min?: number;
+    max?: number;
+    step?: number | "any";
+    disabled?: boolean;
+  }>(),
+  {
+    min: 0,
+    max: 100,
+    step: 1,
+    disabled: false,
+  },
 );
+
+const model = defineModel<number>({ default: 0 });
+const slider = useSlider(props, model, useAttrs());
 
 const emit = defineEmits<{
   blur: [event: FocusEvent];
@@ -47,22 +35,19 @@ const emit = defineEmits<{
   keydown: [event: KeyboardEvent];
   keyup: [event: KeyboardEvent];
 }>();
-
-useSlider(input, model);
 </script>
 
 <template>
   <div class="n-slider">
     <label
       class="label"
-      :for="id ?? generatedId"
-      >{{ label }}</label
+      v-bind="slider.labelProps"
+      >{{ props.label }}</label
     >
     <input
-      ref="input"
       v-model.number="model"
       class="input"
-      v-bind="inputProps"
+      v-bind="slider.inputProps"
       @blur="emit('blur', $event)"
       @change="emit('change', $event)"
       @click="emit('click', $event)"
@@ -74,7 +59,7 @@ useSlider(input, model);
     />
     <output
       class="output"
-      :for="id ?? generatedId"
+      v-bind="slider.outputProps"
       >{{ model }}</output
     >
   </div>

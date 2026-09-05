@@ -9,7 +9,6 @@ export interface AutocompleteOption {
 <script setup lang="ts">
 import type { StyleValue } from "vue";
 import { useAutocomplete } from "@nagi-labs/nagi-ui";
-import { useNativeValueReset } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 const props = withDefaults(
@@ -67,7 +66,6 @@ const emit = defineEmits<{
 
 const model = defineModel<string>({ default: "" });
 const behavior = useAutocomplete(props, model);
-useNativeValueReset(behavior.inputElement, model);
 </script>
 
 <template>
@@ -135,13 +133,13 @@ useNativeValueReset(behavior.inputElement, model);
           {{ item.label }}
         </li>
       </ul>
-      <p
+      <div
         v-if="behavior.visibleItems.value.length === 0"
-        class="p"
+        class="status"
         role="status"
       >
         {{ emptyText }}
-      </p>
+      </div>
     </div>
   </div>
 </template>
@@ -213,7 +211,7 @@ useNativeValueReset(behavior.inputElement, model);
         }
       }
     }
-    > .p {
+    > .status {
       margin: 0;
       padding: var(--nagi-space-item);
       color: var(--nagi-color-text-muted);

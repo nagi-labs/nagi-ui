@@ -75,12 +75,22 @@ test("thin behavior SFCs use only the public component overload", () => {
     const source = fs.readFileSync(path.join(repo, "packages/core/blueprints", file), "utf8");
     assert.match(
       source,
-      new RegExp(`const ${variable} = ${composable}\\([\\s\\S]*?${model},?\\s*\\);`),
+      new RegExp(
+        `const ${variable} = ${composable}\\([\\s\\S]*?${model},?\\s*(?:useAttrs\\(\\),?\\s*)?\\);`,
+      ),
     );
     assert.doesNotMatch(source, new RegExp(`${composable}\\([\\s\\S]*?${model},\\s*\\{`));
     assert.doesNotMatch(source, new RegExp(`${composable}Control`));
     assert.doesNotMatch(source, /component-controls/);
   }
+
+  const toggleSource = fs.readFileSync(
+    path.join(repo, "packages/core/blueprints/toggle/Toggle.vue"),
+    "utf8",
+  );
+  assert.match(toggleSource, /useAttrs\(\)/u);
+  assert.match(toggleSource, /v-bind="toggle\.buttonProps"/u);
+  assert.doesNotMatch(toggleSource, /mergeElementProps|const buttonProps = computed/u);
 
   const dialogSource = fs.readFileSync(
     path.join(repo, "packages/core/blueprints/dialog/Dialog.vue"),

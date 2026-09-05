@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId } from "vue";
+import { computed } from "vue";
 import type { StyleValue } from "vue";
 
 import { useRangeSlider } from "@nagi-labs/nagi-ui/component-controls";
@@ -41,39 +41,8 @@ const props = withDefaults(
 const model = defineModel<readonly [number, number]>({
   default: () => [0, 100],
 });
-const lowerInput = ref<HTMLInputElement | null>(null);
-const upperInput = ref<HTMLInputElement | null>(null);
-const generatedLowerId = useId();
-const generatedUpperId = useId();
-const fieldsetProps = computed(() => ({
-  class: props.class,
-  style: props.style,
-  id: props.id,
-  title: props.title,
-  "aria-label": props.ariaLabel,
-  "aria-labelledby": props.ariaLabelledby,
-  "aria-describedby": props.ariaDescribedby,
-  disabled: props.disabled,
-}));
-const { lowerValue, upperValue, railProps } = useRangeSlider(lowerInput, upperInput, model);
-const lowerInputProps = computed(() => ({
-  id: props.lowerId ?? generatedLowerId,
-  name: props.lowerName,
-  form: props.form,
-  min: props.min,
-  max: props.max,
-  step: props.step,
-  "aria-valuemax": upperValue.value,
-}));
-const upperInputProps = computed(() => ({
-  id: props.upperId ?? generatedUpperId,
-  name: props.upperName,
-  form: props.form,
-  min: props.min,
-  max: props.max,
-  step: props.step,
-  "aria-valuemin": lowerValue.value,
-}));
+const rangeSlider = useRangeSlider(props, model);
+const { lowerValue, upperValue, railProps, lowerInputProps, upperInputProps } = rangeSlider;
 const trackStyle = computed(() => {
   const span = props.max - props.min;
   const position = (value: number) => {
@@ -90,31 +59,31 @@ const trackStyle = computed(() => {
 <template>
   <fieldset
     class="n-range-slider"
-    v-bind="fieldsetProps"
+    v-bind="rangeSlider.fieldsetProps"
   >
     <legend class="legend">{{ label }}</legend>
     <div class="unit">
       <div class="seg -lower">
         <label
           class="label"
-          :for="lowerId ?? generatedLowerId"
+          :for="lowerInputProps.id"
           >{{ lowerLabel }}</label
         >
         <output
           class="output"
-          :for="lowerId ?? generatedLowerId"
+          :for="lowerInputProps.id"
           >{{ lowerValue }}</output
         >
       </div>
       <div class="seg -upper">
         <label
           class="label"
-          :for="upperId ?? generatedUpperId"
+          :for="upperInputProps.id"
           >{{ upperLabel }}</label
         >
         <output
           class="output"
-          :for="upperId ?? generatedUpperId"
+          :for="upperInputProps.id"
           >{{ upperValue }}</output
         >
       </div>
@@ -126,14 +95,12 @@ const trackStyle = computed(() => {
           v-bind="railProps"
         ></span>
         <input
-          ref="lowerInput"
           v-model.number="lowerValue"
           class="input -lower"
           type="range"
           v-bind="lowerInputProps"
         />
         <input
-          ref="upperInput"
           v-model.number="upperValue"
           class="input -upper"
           type="range"

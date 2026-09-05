@@ -16,6 +16,7 @@ import {
 
 import { createAnchorPair, type AnchorPair } from "./anchor.ts";
 import { createElementRegistry } from "./element-registry.ts";
+import { linkInteractionProps, type LinkInteractionProps, type LinkNavigationOptions } from "./link.ts";
 import { modelValueAccepted, requestModelValue, type WritableRef } from "./model-sync.ts";
 import { usePopover, type PopoverProps } from "./popover.ts";
 
@@ -61,6 +62,12 @@ export interface NavigationMenuBinding<Item, Key extends string = string> {
   };
   positionStyle: ComputedRef<CSSProperties>;
   close: (restoreFocus?: boolean) => void;
+}
+
+export interface NavigationMenuComponentBinding<Item, Key extends string = string>
+  extends NavigationMenuBinding<Item, Key> {
+  directLinkProps: (item: LinkNavigationOptions) => LinkInteractionProps;
+  panelLinkProps: (item: LinkNavigationOptions) => LinkInteractionProps;
 }
 
 interface NavigationMenuComponentItem { readonly key: string; readonly children?: readonly unknown[] }
@@ -383,14 +390,14 @@ export function useNavigationMenu<Item, Key extends string = string>(
 export function useNavigationMenu<Item extends NavigationMenuComponentItem>(
   props: NavigationMenuComponentProps<Item>,
   open: Ref<boolean>,
-): NavigationMenuBinding<Item, string>;
+): NavigationMenuComponentBinding<Item, string>;
 export function useNavigationMenu<Item, Key extends string = string>(
   optionsOrProps: UseNavigationMenuOptions<Item, Key> | NavigationMenuComponentProps<Item & NavigationMenuComponentItem>,
   open?: Ref<boolean>,
-): NavigationMenuBinding<Item, Key> {
+): NavigationMenuBinding<Item, Key> | NavigationMenuComponentBinding<Item, Key> {
   if (!open) return createNavigationMenu(optionsOrProps as UseNavigationMenuOptions<Item, Key>);
   const props = optionsOrProps as NavigationMenuComponentProps<Item & NavigationMenuComponentItem>;
-  return createNavigationMenu({
+  const binding = createNavigationMenu({
     items: () => props.items,
     getKey: (item) => item.key as Key,
     hasPanel: (item) => (item.children?.length ?? 0) > 0,
@@ -398,4 +405,12 @@ export function useNavigationMenu<Item, Key extends string = string>(
     open,
     closeDelay: props.closeDelay,
   }) as unknown as NavigationMenuBinding<Item, Key>;
+  return Object.assign(binding, {
+    directLinkProps(item: LinkNavigationOptions): LinkInteractionProps {
+      return linkInteractionProps(item);
+    },
+    panelLinkProps(item: LinkNavigationOptions): LinkInteractionProps {
+      return linkInteractionProps(item, () => binding.close(true));
+    },
+  });
 }

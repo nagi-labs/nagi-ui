@@ -27,6 +27,7 @@ paths in the compatibility manifest establish traceability only.
 | Component identity sufficiency             | The Contract still defines the component's public API meaning, conceptual parts, user-observable state, operations, and focus outcomes before any Implementation is considered.                       | The Contract is only the smallest intersection of current Implementations, or could describe several materially different widgets. |
 | Component Contract/Implementation boundary | Portable guarantees do not silently fix a native element, layout, or presence owner; the concrete Blueprint records those choices separately.                                                         | A Motion or custom implementation must inherit native-only constraints to claim the shared contract.                               |
 | Replacement compatibility                  | Swapping package, owned, or Motion Implementations preserves consumer integration and the user-observable promises of the same Contract revision.                                                     | A replacement requires application code or expected behavior to change while still claiming the same Contract.                     |
+| Composed Contract ownership                | A parent Contract owns only guarantees created by integrating its children; each child Requirement has one owner even when parent evidence exercises it.                                              | The parent copies a child Requirement, or hides a parent-specific connection behind the claim that the child already tests it.     |
 | Structural execution                       | Each concrete Implementation executes its own Definition anatomy algorithm; Contract tests do not impose the package Blueprint's `data-part` structure on replacements.                               | Owned or Motion source claims the package Implementation identity without running its complete structural suite.                   |
 | Behavioral evidence                        | Each generated row comes from a registered test with an observable assertion.                                                                                                                         | Merely putting an ID or evidence path in a manifest is treated as proof.                                                           |
 | Mutation sensitivity                       | Representative semantic, state, interaction, anatomy, and style breaks fail at the intended assertion.                                                                                                | A mutation passes, or fails earlier for an unrelated reason.                                                                       |
@@ -56,6 +57,10 @@ following boundary audit before accepting its Implementations:
 5. Reject lowest-common-denominator revisions. An Implementation that cannot
    satisfy an existing Contract is fixed or assigned another Contract; the
    published Contract is not weakened to admit it.
+6. For every composed child, separate its existing guarantee from the outcome
+   created by the connection. Keep the former in the child Contract and the
+   latter in the parent Contract. Parent evidence may operate the child but
+   must assert and name the integration outcome.
 
 The audit records both failure directions: implementation leakage makes the
 Contract unnecessarily restrictive, while identity loss makes it too weak to
@@ -192,7 +197,7 @@ routing, timer pausing, live-item limits, promise replacement, and focus
 continuity. Deep Sea separately verifies its native manual-popover layer,
 retained Motion exit DOM, compact/expanded stack layout, and non-zero presence
 transitions. This exposed and corrected an immediate-removal assumption in
-`useToastRenderer`: item identity is now bound into renderer props, so focus is
+`useToast`: item identity is now bound into component props, so focus is
 handed to a live item or the external origin even while `AnimatePresence` keeps
 the removed DOM for visual exit.
 

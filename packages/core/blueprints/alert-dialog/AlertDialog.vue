@@ -75,18 +75,18 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
             >{{ title }}</slot
           >
         </h2>
-        <p
+        <div
           data-scope="alert-dialog"
           data-part="description"
           :id="descriptionId"
-          class="p"
+          class="unit"
         >
           <slot
             name="description"
             :description="description"
-            >{{ description }}</slot
+            ><span class="text">{{ description }}</span></slot
           >
-        </p>
+        </div>
       </header>
       <footer class="footer">
         <button
@@ -163,7 +163,7 @@ defineExpose({ show: dialog.show, close: dialog.close, toggle: dialog.toggle });
         font-size: var(--n-font-size-5);
       }
 
-      > .p {
+      > .unit {
         margin-block: var(--n-space-3) 0;
         color: var(--nagi-color-text-muted);
         font-size: var(--n-font-size-3);

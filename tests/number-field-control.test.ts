@@ -67,3 +67,29 @@ test("NumberField control restores its initial nullable model after native reset
   assert.equal(control.value, "");
   scope.stop();
 });
+
+test("NumberField step button bindings own labels and reactive boundaries", () => {
+  const input = ref<HTMLInputElement | null>(null);
+  const model = ref<number | null>(2);
+  const max = ref(3);
+  const readOnly = ref(false);
+  const scope = effectScope();
+  const numberField = scope.run(() => useNumberField(input, model, {
+    min: 0,
+    max,
+    readOnly,
+    decrementLabel: "Remove one guest",
+    incrementLabel: "Add one guest",
+  }));
+
+  assert.ok(numberField);
+  assert.equal(numberField.decrementButtonProps["aria-label"], "Remove one guest");
+  assert.equal(numberField.incrementButtonProps["aria-label"], "Add one guest");
+  assert.equal(numberField.decrementButtonProps.disabled, false);
+  assert.equal(numberField.incrementButtonProps.disabled, false);
+  model.value = 3;
+  assert.equal(numberField.incrementButtonProps.disabled, true);
+  readOnly.value = true;
+  assert.equal(numberField.decrementButtonProps.disabled, true);
+  scope.stop();
+});

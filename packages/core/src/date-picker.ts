@@ -17,17 +17,14 @@ import {
   type RangeCalendarBinding,
   type RangeCalendarValue,
 } from "./calendar.ts";
-import {
-  useDateField,
-  type DateFieldBinding,
-  type DateFieldSegmentLabels,
-} from "./date-field.ts";
-import {
-  usePopover,
-  type UsePopoverReturn,
-} from "./popover.ts";
+import { useDateField, type DateFieldBinding, type DateFieldSegmentLabels } from "./date-field.ts";
+import { usePopover, type UsePopoverReturn } from "./popover.ts";
 import type { AnchorArea } from "./anchor.ts";
-import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
+import {
+  nativeFormControlRef,
+  useNativeCustomValidity,
+  useNativeFormReset,
+} from "./native-form.ts";
 
 interface DatePickerBaseOptions {
   locale?: MaybeRefOrGetter<string | undefined>;
@@ -95,6 +92,11 @@ export interface DatePickerBinding {
   field: DateFieldBinding;
   calendar: CalendarBinding;
   popover: UsePopoverReturn;
+  calendarLabel: ComputedRef<string>;
+  error: {
+    id: string;
+    describedBy: ComputedRef<string | undefined>;
+  };
   isInvalid: ComputedRef<boolean>;
 }
 
@@ -122,6 +124,11 @@ export interface DateRangePickerBinding {
   endField: DateFieldBinding;
   calendar: RangeCalendarBinding;
   popover: UsePopoverReturn;
+  calendarLabel: ComputedRef<string>;
+  error: {
+    id: string;
+    describedBy: ComputedRef<string | undefined>;
+  };
   isInvalid: ComputedRef<boolean>;
 }
 
@@ -163,9 +170,11 @@ function dateUnavailable(options: DatePickerBaseOptions, value: string): boolean
   const maximumValue = toValue(options.maxValue);
   const minimum = minimumValue && validIso(minimumValue) ? parseDate(minimumValue) : null;
   const maximum = maximumValue && validIso(maximumValue) ? parseDate(maximumValue) : null;
-  return (minimum !== null && date.compare(minimum) < 0)
-    || (maximum !== null && date.compare(maximum) > 0)
-    || (toValue(options.unavailableDates)?.includes(value) ?? false);
+  return (
+    (minimum !== null && date.compare(minimum) < 0) ||
+    (maximum !== null && date.compare(maximum) > 0) ||
+    (toValue(options.unavailableDates)?.includes(value) ?? false)
+  );
 }
 
 function invalidRange(
@@ -192,9 +201,12 @@ function repairFocusAfterClose(popover: UsePopoverReturn) {
 function createDatePicker(options: UseDatePickerOptions): DatePickerBinding {
   const open = options.open ?? ref(false);
   const popover = usePopover(popoverOptions(options, open));
-  const forcedInvalid = computed(() =>
-    (toValue(options.invalid) ?? false)
-    || (options.value.value !== null && dateUnavailable(options, options.value.value)));
+  const calendarLabel = computed(() => toValue(options.calendarLabel) ?? toValue(options.label));
+  const forcedInvalid = computed(
+    () =>
+      (toValue(options.invalid) ?? false) ||
+      (options.value.value !== null && dateUnavailable(options, options.value.value)),
+  );
   const field = useDateField({
     value: options.value,
     label: options.label,
@@ -212,7 +224,7 @@ function createDatePicker(options: UseDatePickerOptions): DatePickerBinding {
   });
   const calendar = useCalendar({
     value: options.value,
-    label: () => toValue(options.calendarLabel) ?? toValue(options.label),
+    label: calendarLabel,
     locale: options.locale,
     timeZone: options.timeZone,
     minValue: options.minValue,
@@ -233,10 +245,11 @@ function createDatePicker(options: UseDatePickerOptions): DatePickerBinding {
   });
 
   function reconcileOpenState(next: boolean, previous: boolean | undefined) {
-    if (next) calendar.focusDate(
-      options.value.value ?? calendar.focusedDate.value,
-      popover.getTriggerRoot() ?? undefined,
-    );
+    if (next)
+      calendar.focusDate(
+        options.value.value ?? calendar.focusedDate.value,
+        popover.getTriggerRoot() ?? undefined,
+      );
     else if (previous) repairFocusAfterClose(popover);
   }
 
@@ -253,19 +266,28 @@ function createDatePicker(options: UseDatePickerOptions): DatePickerBinding {
     useNativeCustomValidity(options.formControl, field.validationMessage);
   }
 
+  const isInvalid = computed(() => field.isInvalid.value || calendar.isInvalid.value);
+  const errorId = `${field.fieldProps.id}-error`;
+
   return {
     value: options.value,
     open,
     field,
     calendar,
     popover,
-    isInvalid: computed(() => field.isInvalid.value || calendar.isInvalid.value),
+    calendarLabel,
+    error: {
+      id: errorId,
+      describedBy: computed(() => (isInvalid.value ? errorId : undefined)),
+    },
+    isInvalid,
   };
 }
 
 function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePickerBinding {
   const open = options.open ?? ref(false);
   const popover = usePopover(popoverOptions(options, open));
+  const calendarLabel = computed(() => toValue(options.calendarLabel) ?? toValue(options.label));
   const startValue = ref<string | null>(options.value.value?.start ?? null);
   const endValue = ref<string | null>(options.value.value?.end ?? null);
   let modelWrite = false;
@@ -274,17 +296,14 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
   let syncingExternal = false;
   let writeRevision = 0;
 
-  function sameRange(
-    left: RangeCalendarValue | null,
-    right: RangeCalendarValue | null,
-  ): boolean {
+  function sameRange(left: RangeCalendarValue | null, right: RangeCalendarValue | null): boolean {
     return left?.start === right?.start && left?.end === right?.end;
   }
 
-  const invalidSelection = computed(() =>
-    invalidRange(options, startValue.value, endValue.value));
-  const incompleteSelection = computed(() =>
-    (startValue.value === null) !== (endValue.value === null));
+  const invalidSelection = computed(() => invalidRange(options, startValue.value, endValue.value));
+  const incompleteSelection = computed(
+    () => (startValue.value === null) !== (endValue.value === null),
+  );
 
   function syncDraft(value: RangeCalendarValue | null) {
     syncingExternal = true;
@@ -310,13 +329,14 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
 
   function reconcileDraftRange([start, end]: readonly [string | null, string | null]) {
     if (syncingExternal) return;
-    const next = start !== null
-      && end !== null
-      && validIso(start)
-      && validIso(end)
-      && !invalidRange(options, start, end)
-      ? { start, end }
-      : null;
+    const next =
+      start !== null &&
+      end !== null &&
+      validIso(start) &&
+      validIso(end) &&
+      !invalidRange(options, start, end)
+        ? { start, end }
+        : null;
     if (sameRange(options.value.value, next)) return;
     const revision = ++writeRevision;
     pendingModelWrite = true;
@@ -338,10 +358,10 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
   );
   watch([startValue, endValue], reconcileDraftRange, { flush: "sync" });
 
-  const forcedInvalid = computed(() =>
-    (toValue(options.invalid) ?? false)
-    || incompleteSelection.value
-    || invalidSelection.value);
+  const forcedInvalid = computed(
+    () =>
+      (toValue(options.invalid) ?? false) || incompleteSelection.value || invalidSelection.value,
+  );
   const sharedField = {
     locale: options.locale,
     minValue: options.minValue,
@@ -350,7 +370,8 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
     readOnly: options.readOnly,
     required: options.required,
     invalid: forcedInvalid,
-    validationMessage: () => toValue(options.validationMessage) ?? "Choose an available date range.",
+    validationMessage: () =>
+      toValue(options.validationMessage) ?? "Choose an available date range.",
     form: options.form,
     ...(options.segmentLabels ? { segmentLabels: options.segmentLabels } : {}),
   };
@@ -368,7 +389,7 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
   });
   const calendar = useRangeCalendar({
     value: options.value,
-    label: () => toValue(options.calendarLabel) ?? toValue(options.label),
+    label: calendarLabel,
     locale: options.locale,
     timeZone: options.timeZone,
     minValue: options.minValue,
@@ -378,7 +399,8 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
     readOnly: options.readOnly,
     required: options.required,
     invalid: forcedInvalid,
-    validationMessage: () => toValue(options.validationMessage) ?? "Choose an available date range.",
+    validationMessage: () =>
+      toValue(options.validationMessage) ?? "Choose an available date range.",
     previousLabel: options.previousLabel,
     nextLabel: options.nextLabel,
     defaultVisibleMonth: options.defaultVisibleMonth,
@@ -391,10 +413,11 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
   });
 
   function reconcileOpenState(next: boolean, previous: boolean | undefined) {
-    if (next) calendar.focusDate(
-      startValue.value ?? calendar.focusedDate.value,
-      popover.getTriggerRoot() ?? undefined,
-    );
+    if (next)
+      calendar.focusDate(
+        startValue.value ?? calendar.focusedDate.value,
+        popover.getTriggerRoot() ?? undefined,
+      );
     else if (previous) repairFocusAfterClose(popover);
   }
 
@@ -418,6 +441,15 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
     useNativeCustomValidity(options.endFormControl, endField.validationMessage);
   }
 
+  const isInvalid = computed(
+    () =>
+      forcedInvalid.value ||
+      startField.isInvalid.value ||
+      endField.isInvalid.value ||
+      calendar.isInvalid.value,
+  );
+  const errorId = `${startField.fieldProps.id}-error`;
+
   return {
     value: options.value,
     open,
@@ -427,11 +459,12 @@ function createDateRangePicker(options: UseDateRangePickerOptions): DateRangePic
     endField,
     calendar,
     popover,
-    isInvalid: computed(() =>
-      forcedInvalid.value
-      || startField.isInvalid.value
-      || endField.isInvalid.value
-      || calendar.isInvalid.value),
+    calendarLabel,
+    error: {
+      id: errorId,
+      describedBy: computed(() => (isInvalid.value ? errorId : undefined)),
+    },
+    isInvalid,
   };
 }
 
@@ -448,7 +481,8 @@ export function useDatePicker(
     return createDatePicker(optionsOrProps as UseDatePickerOptions);
   }
   const props = optionsOrProps as DatePickerComponentProps;
-  return createDatePicker({
+  const formControl = ref<HTMLInputElement | null>(null);
+  const binding = createDatePicker({
     value: model.value,
     open: model.open,
     label: () => props.label,
@@ -468,9 +502,12 @@ export function useDatePicker(
     defaultVisibleMonth: () => props.defaultVisibleMonth,
     name: () => props.name,
     form: () => props.form,
+    formControl,
     area: props.area,
     offset: props.offset,
   });
+  binding.field.formValueProps.ref = nativeFormControlRef(formControl);
+  return binding;
 }
 
 export function useDateRangePicker(options: UseDateRangePickerOptions): DateRangePickerBinding;
@@ -486,7 +523,9 @@ export function useDateRangePicker(
     return createDateRangePicker(optionsOrProps as UseDateRangePickerOptions);
   }
   const props = optionsOrProps as DateRangePickerComponentProps;
-  return createDateRangePicker({
+  const startFormControl = ref<HTMLInputElement | null>(null);
+  const endFormControl = ref<HTMLInputElement | null>(null);
+  const binding = createDateRangePicker({
     value: model.value,
     open: model.open,
     label: () => props.label,
@@ -509,41 +548,12 @@ export function useDateRangePicker(
     startName: () => props.startName,
     endName: () => props.endName,
     form: () => props.form,
+    startFormControl,
+    endFormControl,
     area: props.area,
     offset: props.offset,
   });
-}
-
-export function useDatePickerNativeForm(
-  control: Readonly<Ref<HTMLInputElement | null>>,
-  binding: DatePickerBinding,
-): void {
-  const initial = binding.value.value;
-  useNativeFormReset(control, (input) => {
-    binding.field.reset(initial);
-    binding.calendar.reset(initial);
-    binding.open.value = false;
-    input.value = initial ?? "";
-  });
-  useNativeCustomValidity(control, binding.field.validationMessage);
-}
-
-export function useDateRangePickerNativeForm(
-  controls: Readonly<{
-    start: Readonly<Ref<HTMLInputElement | null>>;
-    end: Readonly<Ref<HTMLInputElement | null>>;
-  }>,
-  binding: DateRangePickerBinding,
-): void {
-  const initial = binding.value.value ? { ...binding.value.value } : null;
-  useNativeFormReset(controls.start, (input) => {
-    binding.calendar.reset(initial);
-    binding.startField.reset(initial?.start ?? null);
-    binding.endField.reset(initial?.end ?? null);
-    binding.open.value = false;
-    input.value = initial?.start ?? "";
-    if (controls.end.value) controls.end.value.value = initial?.end ?? "";
-  });
-  useNativeCustomValidity(controls.start, binding.startField.validationMessage);
-  useNativeCustomValidity(controls.end, binding.endField.validationMessage);
+  binding.startField.formValueProps.ref = nativeFormControlRef(startFormControl);
+  binding.endField.formValueProps.ref = nativeFormControlRef(endFormControl);
+  return binding;
 }

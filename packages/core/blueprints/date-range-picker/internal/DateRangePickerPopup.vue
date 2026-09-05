@@ -1,61 +1,22 @@
 <script setup lang="ts">
-import type { StyleValue } from "vue";
-
-import { useCalendar } from "@nagi-labs/nagi-ui";
+import { useDateRangePickerContext } from "./date-range-picker-context.ts";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    id?: string;
-    class?: string;
-    style?: StyleValue;
-    title?: string;
-    name?: string;
-    form?: string;
-    locale?: string;
-    timeZone?: string;
-    min?: string;
-    max?: string;
-    unavailableDates?: readonly string[];
-    disabled?: boolean;
-    readOnly?: boolean;
-    required?: boolean;
-    invalid?: boolean;
-    validationMessage?: string;
-    previousLabel?: string;
-    nextLabel?: string;
-    defaultVisibleMonth?: string;
-  }>(),
-  {
-    locale: "en-US",
-    timeZone: "UTC",
-    unavailableDates: () => [],
-    disabled: false,
-    readOnly: false,
-    required: false,
-    invalid: false,
-    validationMessage: "Choose an available date.",
-    previousLabel: "Previous month",
-    nextLabel: "Next month",
-  },
-);
-
-const model = defineModel<string | null>({ default: null });
-const calendar = useCalendar(props, model);
+const picker = useDateRangePickerContext();
 </script>
 
 <template>
   <div
-    class="n-calendar"
-    :class="props.class"
-    :style="props.style"
-    :title="props.title"
+    v-bind="picker.popover.popoverProps"
+    class="n-date-range-picker-popup"
+    role="dialog"
+    popover
+    :aria-label="picker.calendarLabel.value"
   >
     <header class="header">
       <button
-        v-bind="calendar.previousButtonProps"
+        v-bind="picker.calendar.previousButtonProps"
         class="button -previous"
       >
         ‹
@@ -64,24 +25,24 @@ const calendar = useCalendar(props, model);
         class="title"
         aria-live="polite"
       >
-        {{ calendar.monthLabel.value }}
+        {{ picker.calendar.monthLabel.value }}
       </h2>
       <button
-        v-bind="calendar.nextButtonProps"
+        v-bind="picker.calendar.nextButtonProps"
         class="button -next"
       >
         ›
       </button>
     </header>
     <table
-      v-bind="calendar.gridProps"
+      v-bind="picker.calendar.gridProps"
       class="table"
-      :aria-describedby="calendar.error.describedBy.value"
+      :aria-describedby="picker.error.describedBy.value"
     >
       <thead class="thead">
         <tr class="row">
           <th
-            v-for="weekday in calendar.weekdayLabels.value"
+            v-for="weekday in picker.calendar.weekdayLabels.value"
             :key="weekday"
             class="cell"
             scope="col"
@@ -92,19 +53,22 @@ const calendar = useCalendar(props, model);
       </thead>
       <tbody class="tbody">
         <tr
-          v-for="(week, index) in calendar.weeks.value"
+          v-for="(week, index) in picker.calendar.weeks.value"
           :key="index"
           class="row"
         >
           <td
             v-for="cell in week"
             :key="cell.key"
-            v-bind="calendar.gridCellProps(cell)"
+            v-bind="picker.calendar.gridCellProps(cell)"
             class="cell"
             :data-outside-month="cell.outsideMonth || undefined"
+            :data-preview="cell.preview || undefined"
+            :data-range-start="cell.rangeStart || undefined"
+            :data-range-end="cell.rangeEnd || undefined"
           >
             <button
-              v-bind="calendar.cellButtonProps(cell)"
+              v-bind="picker.calendar.cellButtonProps(cell)"
               class="button -day"
             >
               {{ cell.day }}
@@ -114,29 +78,33 @@ const calendar = useCalendar(props, model);
       </tbody>
     </table>
     <span
-      v-if="calendar.isInvalid.value"
-      :id="calendar.error.id"
-      class="alert"
-      role="alert"
-      >{{ calendar.validationMessage.value }}</span
+      class="status"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
-    <input
-      v-bind="calendar.formValueProps"
-      class="input"
-    />
+      {{ picker.calendar.announcement.value }}
+    </span>
   </div>
 </template>
 
 <style scoped>
-.n-calendar {
-  display: grid;
-  gap: var(--nagi-space-item-gap);
-  inline-size: fit-content;
+.n-date-range-picker-popup {
+  margin: 0;
+  padding: var(--nagi-space-control);
+  border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+  border-radius: var(--nagi-radius-overlay);
+  background: var(--nagi-color-surface);
   color: var(--nagi-color-text);
+  box-shadow: var(--nagi-shadow-overlay);
 
-  > .alert {
-    color: var(--nagi-color-danger);
-    font-size: var(--nagi-font-size-label);
+  > .status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   > .header {
@@ -144,13 +112,11 @@ const calendar = useCalendar(props, model);
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--nagi-space-item-gap);
-
     > .title {
       margin: 0;
       text-align: center;
       font-size: var(--nagi-font-size-label);
     }
-
     > .button {
       inline-size: var(--nagi-size-control);
       min-block-size: var(--nagi-size-control);
@@ -161,17 +127,14 @@ const calendar = useCalendar(props, model);
       color: inherit;
       font: inherit;
       cursor: pointer;
-
       &:hover:not(:disabled) {
         background: var(--nagi-color-surface-active);
       }
-
       &:focus-visible {
         outline: none;
         border-color: var(--nagi-color-focus-ring);
         box-shadow: var(--nagi-shadow-focus);
       }
-
       &:disabled {
         color: var(--nagi-color-text-disabled);
         cursor: not-allowed;
@@ -181,7 +144,6 @@ const calendar = useCalendar(props, model);
 
   > .table {
     border-collapse: collapse;
-
     > .thead {
       > .row {
         > .cell {
@@ -193,12 +155,10 @@ const calendar = useCalendar(props, model);
         }
       }
     }
-
     > .tbody {
       > .row {
         > .cell {
           padding: 0;
-
           > .button.-day {
             inline-size: var(--nagi-size-control);
             min-block-size: var(--nagi-size-control);
@@ -208,57 +168,58 @@ const calendar = useCalendar(props, model);
             background: transparent;
             color: inherit;
             font: inherit;
-            font-variant-numeric: tabular-nums;
             cursor: pointer;
-
             &:hover:not(:disabled) {
               background: var(--nagi-color-surface-active);
             }
-
             &:focus-visible {
               outline: none;
               border-color: var(--nagi-color-focus-ring);
               box-shadow: var(--nagi-shadow-focus);
             }
-
             &:disabled {
               color: var(--nagi-color-text-disabled);
               cursor: not-allowed;
             }
           }
-
           &[data-outside-month] {
             > .button.-day {
               color: var(--nagi-color-text-muted);
             }
           }
-
+          &[data-preview] {
+            > .button.-day {
+              background: var(--nagi-color-surface-active);
+            }
+          }
           &[aria-selected="true"] {
             > .button.-day {
+              border-radius: 0;
               background: var(--nagi-color-surface-accent);
               color: var(--nagi-color-text);
               box-shadow: inset 0 0 0 var(--n-border-width-1) var(--nagi-color-accent);
+            }
+          }
+          &[data-range-start] {
+            > .button.-day {
+              border-start-start-radius: var(--nagi-radius-control);
+              border-end-start-radius: var(--nagi-radius-control);
+            }
+          }
+          &[data-range-end] {
+            > .button.-day {
+              border-start-end-radius: var(--nagi-radius-control);
+              border-end-end-radius: var(--nagi-radius-control);
             }
           }
         }
       }
     }
   }
-
-  > .input {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    padding: 0;
-    border: 0;
-    clip-path: inset(50%);
-    overflow: hidden;
-    white-space: nowrap;
-  }
 }
 
 @media (forced-colors: active) {
-  .n-calendar {
+  .n-date-range-picker-popup {
     > .header {
       > .button:focus-visible {
         outline: 2px solid Highlight;

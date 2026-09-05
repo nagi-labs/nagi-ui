@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   handleLinkClick,
+  linkInteractionProps,
   prefetchLink,
   usePagination,
   useStepper,
@@ -74,5 +75,13 @@ test("link adapter preserves modified navigation and adapts plain self-navigatio
   assert.equal(handleLinkClick(link, event({ metaKey: true })), false);
   prefetchLink(link);
   prefetchLink({ ...link, disabled: true });
-  assert.deepEqual({ navigated, prefetched, prevented }, { navigated: 1, prefetched: 1, prevented: 1 });
+  let activated = 0;
+  const interaction = linkInteractionProps(link, () => { activated += 1; });
+  interaction.onPointerenter({} as PointerEvent);
+  interaction.onClick(event());
+  interaction.onClick(event({ metaKey: true }));
+  assert.deepEqual(
+    { navigated, prefetched, prevented, activated },
+    { navigated: 2, prefetched: 2, prevented: 2, activated: 1 },
+  );
 });

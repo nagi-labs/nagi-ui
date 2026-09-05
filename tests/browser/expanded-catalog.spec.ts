@@ -130,6 +130,28 @@ test("OTP exact-length validation preserves valid characters after invalid raw i
   expect(await otp.evaluate((control: HTMLInputElement) => control.checkValidity())).toBe(true);
 });
 
+test("OTP cell layout follows rendered children without script-authored column styles", async ({ page }) => {
+  const otp = page.getByRole("textbox", { name: "Verification code", exact: true });
+  const result = await otp.evaluate((control) => {
+    const field = control.parentElement;
+    const root = field?.parentElement;
+    const digits = field?.querySelector<HTMLElement>(".unit.-digits");
+    if (!(root instanceof HTMLElement) || !(field instanceof HTMLElement) || !digits) return null;
+    root.style.inlineSize = "80px";
+    return {
+      fieldWidth: field.getBoundingClientRect().width,
+      scrollWidth: field.scrollWidth,
+      cellWidths: [...digits.children].map((cell) => cell.getBoundingClientRect().width),
+      scriptStyle: field.getAttribute("style"),
+    };
+  });
+  expect(result).not.toBeNull();
+  expect(result?.fieldWidth).toBe(80);
+  expect(result?.scrollWidth).toBe(80);
+  expect(new Set(result?.cellWidths.map((width) => Math.round(width * 100) / 100)).size).toBe(1);
+  expect(result?.scriptStyle).toBeNull();
+});
+
 test("controlled text and collection fields retain source values and drafts after rejected writes", async ({ page }) => {
   const autocomplete = page.getByRole("combobox", { name: "Locked destination" });
   await autocomplete.fill("Rejected");
@@ -300,7 +322,14 @@ test("[CAR-STATE-03] dynamic toolbar focus repair, disabled carousel rollback, a
 
   await page.setViewportSize({ width: 320, height: 900 });
   for (const splitter of await page.locator(".n-resizable").all()) {
-    expect(await splitter.evaluate((element: HTMLElement) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+    const layout = await splitter.evaluate((element: HTMLElement) => ({
+      fits: element.scrollWidth <= element.clientWidth + 1,
+      panelSizes: [...element.querySelectorAll<HTMLElement>(":scope > .section")].map((panel) =>
+        element.dataset.orientation === "vertical" ? panel.offsetHeight : panel.offsetWidth,
+      ),
+    }));
+    expect(layout.fits).toBe(true);
+    expect(layout.panelSizes.every((size) => size > 0)).toBe(true);
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
@@ -318,6 +347,9 @@ test("Resizable stops pointer updates after capture loss", async ({ page }) => {
 
 test("context menu uses pointer coordinates, selects, light-dismisses, and cancels moved long presses", async ({ page }) => {
   const target = page.getByText("Open the project context menu here");
+  const positioner = page.locator(".n-context-menu > .unit.-positioner").first();
+  await expect(positioner).toHaveCSS("position", "fixed");
+  await expect(positioner).toHaveCSS("pointer-events", "none");
   await target.click({ button: "right", position: { x: 24, y: 30 } });
   const menu = page.getByRole("menu", { name: "Context menu" });
   await expect(menu).toBeVisible();

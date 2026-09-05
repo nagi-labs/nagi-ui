@@ -29,16 +29,16 @@ const attrs = useAttrs();
           >{{ title }}</slot
         >
       </span>
-      <p
+      <div
         v-if="description || $slots.description"
-        class="p"
+        class="unit"
       >
         <slot
           name="description"
           :description="description"
-          >{{ description }}</slot
+          ><span class="text">{{ description }}</span></slot
         >
-      </p>
+      </div>
     </header>
     <div class="unit">
       <slot />
@@ -70,7 +70,7 @@ const attrs = useAttrs();
       font-weight: 700;
     }
 
-    > .p {
+    > .unit {
       margin-block: var(--n-space-3) 0;
       color: var(--nagi-color-text-muted);
       font-size: var(--n-font-size-3);

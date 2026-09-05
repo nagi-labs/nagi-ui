@@ -1,8 +1,8 @@
-import path from "node:path"
+import path from "node:path";
 
-import { defineCommand } from "citty"
+import { defineCommand } from "citty";
 
-import { ownComponent, resolvePackageRoot } from "../ownership.mjs"
+import { ownComponent, resolvePackageRoot } from "../ownership.mjs";
 
 export function createOwnCommand({ cwd, log, onExit }) {
   return defineCommand({
@@ -26,16 +26,28 @@ export function createOwnCommand({ cwd, log, onExit }) {
       },
     },
     run({ args }) {
-      const packageRoot = resolvePackageRoot(cwd)
-      const targetRoot = path.resolve(cwd, args.dir)
+      const packageRoot = resolvePackageRoot(cwd);
+      const targetRoot = path.resolve(cwd, args.dir);
+      const completed = new Set();
       for (const name of args._) {
+        if (completed.has(name)) continue;
         const result = ownComponent(name, {
           packageRoot,
           targetRoot,
           force: args.force,
-        })
-        log(`owned ${name}@${result.version} → ${path.join(args.dir, name)}`)
-        for (const file of result.files) log(`  ${path.relative(cwd, file)}`)
+        });
+        log(`owned ${name}@${result.version} → ${path.join(args.dir, name)}`);
+        for (const file of result.files) log(`  ${path.relative(cwd, file)}`);
+        for (const dependency of result.ownedComponents.filter(
+          (entry) => entry.component !== name,
+        )) {
+          completed.add(dependency.component);
+          log(
+            `  ${dependency.status} dependency ${dependency.component}@${result.version} → ${path.join(args.dir, dependency.component)}`,
+          );
+          for (const file of dependency.files) log(`    ${path.relative(cwd, file)}`);
+        }
+        completed.add(name);
       }
       log(
         [
@@ -46,9 +58,9 @@ export function createOwnCommand({ cwd, log, onExit }) {
           `  4. Apply ${path.relative(cwd, path.join(packageRoot, "recipes/testing/README.md"))} to the consumer contract.`,
           `  5. Gate upgrades with nagi-ui diff --dir ${args.dir}.`,
         ].join("\n"),
-      )
-      onExit(0)
-      return 0
+      );
+      onExit(0);
+      return 0;
     },
-  })
+  });
 }

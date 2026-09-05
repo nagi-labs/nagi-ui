@@ -174,3 +174,28 @@ test("initially controlled-open picker focuses its date, light dismisses, and re
     "Choose an available date range.",
   );
 });
+
+test("multiple DatePicker providers keep popup bindings instance-local", async ({ page }) => {
+  await page.goto("/date-time.html?qa=1");
+
+  const pickers = page.locator(".n-date-picker");
+  await expect(pickers).toHaveCount(2);
+  await expect(
+    pickers.nth(0).locator('[role="dialog"][aria-label="Picked date calendar"]'),
+  ).toHaveCount(1);
+  await expect(
+    pickers.nth(1).locator('[role="dialog"][aria-label="Initially open date calendar"]'),
+  ).toHaveCount(1);
+  await expect(
+    pickers.nth(0).locator('[role="dialog"][aria-label="Initially open date calendar"]'),
+  ).toHaveCount(0);
+  await expect(
+    pickers.nth(1).locator('[role="dialog"][aria-label="Picked date calendar"]'),
+  ).toHaveCount(0);
+
+  await pickers.nth(0).getByRole("button", { name: "Choose picked date" }).click();
+  await expect(pickers.nth(0).getByRole("dialog", { name: "Picked date calendar" })).toBeVisible();
+  await expect(
+    pickers.nth(1).getByRole("dialog", { name: "Initially open date calendar" }),
+  ).toBeHidden();
+});

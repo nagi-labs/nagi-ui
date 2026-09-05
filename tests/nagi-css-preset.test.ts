@@ -20,6 +20,23 @@ import { actionsFormsExamples } from "../site/data/examples/actions-forms.ts";
 import { displayOverlayExamples } from "../site/data/examples/display-overlay.ts";
 
 const repo = path.join(import.meta.dirname, "..");
+const blueprintRoot = path.join(repo, "packages/core/blueprints");
+
+const blueprintParagraphExceptions = new Map<
+  string,
+  { count: number; reason: string }
+>();
+
+function vueFiles(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const target = path.join(directory, entry.name);
+    return entry.isDirectory()
+      ? vueFiles(target)
+      : entry.isFile() && entry.name.endsWith(".vue")
+        ? [target]
+        : [];
+  });
+}
 
 function verifyConsumer(source: string, filename = "ButtonExample.vue") {
   const linter = new Linter();
@@ -80,6 +97,27 @@ test("declared slot surfaces stay inside their component boundary prefix", () =>
     for (const surface of Object.values(slots)) {
       assert.ok(surface.startsWith(`${owner}-`), `${surface} starts with ${owner}-`);
     }
+  }
+});
+
+test("Blueprint paragraphs remain explicit, reviewed exceptions", () => {
+  const actual = new Map<string, number>();
+  for (const filename of vueFiles(blueprintRoot)) {
+    const source = fs.readFileSync(filename, "utf8");
+    const count = source.match(/<p(?:\s|>)/gu)?.length ?? 0;
+    if (count > 0) actual.set(path.relative(blueprintRoot, filename), count);
+  }
+
+  assert.deepEqual(
+    [...actual].sort(([left], [right]) => left.localeCompare(right)),
+    [...blueprintParagraphExceptions].map(([filename, exception]) => [
+      filename,
+      exception.count,
+    ] as const).sort(([left], [right]) => left.localeCompare(right)),
+    "A Blueprint <p> must be an intentional prose paragraph with a documented exception",
+  );
+  for (const { reason } of blueprintParagraphExceptions.values()) {
+    assert.ok(reason.trim().length > 0, "Every Blueprint paragraph exception explains its prose role");
   }
 });
 

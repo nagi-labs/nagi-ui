@@ -51,7 +51,9 @@ for (const source of sources) {
   await access(path.join(repositoryRoot, "packages/core/src", source));
   const rows = review.split("\n").filter((line) => line.startsWith(`| [\`${source}\`](`));
   if (rows.length !== 1) {
-    issues.push(`${source} must appear exactly once in the final review table; found ${rows.length}.`);
+    issues.push(
+      `${source} must appear exactly once in the final review table; found ${rows.length}.`,
+    );
     continue;
   }
   if (!/\| Publishable \|/u.test(rows[0])) {
@@ -59,7 +61,7 @@ for (const source of sources) {
   }
 }
 
-const reviewedRows = review.match(/^\| \[`[^`]+\.ts`\]\([^)]*\) \|.*\|$/gmu) ?? [];
+const reviewedRows = review.match(/^\| \[`[^`]+\.ts`\]\([^)]*\)\s+\|.*\|$/gmu) ?? [];
 if (reviewedRows.length !== sources.length) {
   issues.push(`Expected ${sources.length} reviewed source rows; found ${reviewedRows.length}.`);
 }
@@ -68,4 +70,6 @@ if (issues.length > 0) {
   throw new Error(`Behavior source review audit failed:\n${issues.join("\n")}`);
 }
 
-console.log(`Behavior source review: ${sources.length}/${sources.length} files are recorded as Publishable.`);
+console.log(
+  `Behavior source review: ${sources.length}/${sources.length} files are recorded as Publishable.`,
+);

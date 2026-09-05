@@ -51,10 +51,19 @@ test("MultiSelect toggles keys, filters options, removes from an empty input, an
     getTextValue: (item) => item.label,
     isDisabled: (item) => item.disabled ?? false,
     label: "Letters",
+    removeLabel: "Delete",
     required: true,
     formControl: control,
   }));
   assert.ok(select);
+  assert.deepEqual(select.selectedItems.value.map(({ key, label }) => ({ key, label })), [
+    { key: "a", label: "Alpha" },
+  ]);
+  assert.equal(select.canRemove.value, true);
+  assert.equal(
+    select.removeButtonProps(select.selectedItems.value[0]!)["aria-label"],
+    "Delete Alpha",
+  );
   select.toggle(items[1]);
   assert.deepEqual(selected.value, ["a", "b"]);
   select.toggle(items[2]);
@@ -72,6 +81,8 @@ test("MultiSelect toggles keys, filters options, removes from an empty input, an
   form.dispatchEvent(new Event("reset"));
   await new Promise((resolve) => setTimeout(resolve, 5));
   assert.deepEqual(selected.value, ["a"]);
+  selected.value = ["missing"];
+  assert.equal(select.selectedItems.value[0]?.label, "missing");
   assert.equal(select.formProps.required, true);
   selected.value = [];
   select.formProps.onInvalid({ preventDefault() {} } as unknown as Event);

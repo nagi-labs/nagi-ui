@@ -1,6 +1,6 @@
 {
   "name": "@nagi-labs/nagi-ui",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Accessible Vue component contracts with ownable, platform-first source Blueprints.",
   "keywords": [
     "accessibility",
@@ -46,6 +46,10 @@
       "types": "./src/definition.ts",
       "default": "./dist/definition.js"
     },
+    "./contracts/button": {
+      "types": "./blueprints/button/button.definition.ts",
+      "default": "./dist/contracts/button.js"
+    },
     "./contracts/carousel": {
       "types": "./blueprints/carousel/carousel.definition.ts",
       "default": "./dist/contracts/carousel.js"
@@ -73,6 +77,8 @@
     "./default-theme.css": "./theme/default-theme.css",
     "./styles.css": "./theme/styles.css",
     "./theme.css": "./theme/default-theme.css",
+    "./blueprints/date-picker/internal/*": null,
+    "./blueprints/date-range-picker/internal/*": null,
     "./blueprints/menu/internal/*": null,
     "./blueprints/*": "./blueprints/*",
     "./recipes/control-expansion.md": "./recipes/control-expansion.md",

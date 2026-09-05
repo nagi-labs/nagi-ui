@@ -48,7 +48,6 @@ export interface ResizableBinding {
   value: Ref<number>;
   currentValue: ComputedRef<number>;
   firstBasis: ComputedRef<string>;
-  secondBasis: ComputedRef<string>;
   primaryPanelProps: { id: string };
   separatorProps: ResizableSeparatorProps;
 }
@@ -77,14 +76,11 @@ function createResizable(options: UseResizableOptions): ResizableBinding {
   const maximum = () => Math.max(minimum(), Math.min(100, finiteOr(toValue(options.max), 90)));
   const disabled = () => toValue(options.disabled) ?? false;
   const orientation = () => toValue(options.orientation) ?? "horizontal";
-  const clamp = (value: number) => Math.max(
-    minimum(),
-    Math.min(maximum(), Number.isFinite(value) ? value : minimum()),
-  );
+  const clamp = (value: number) =>
+    Math.max(minimum(), Math.min(maximum(), Number.isFinite(value) ? value : minimum()));
   const currentValue = computed(() => clamp(options.value.value));
-  let restoreValue = clamp(options.value.value) > minimum()
-    ? clamp(options.value.value)
-    : maximum();
+  let restoreValue =
+    clamp(options.value.value) > minimum() ? clamp(options.value.value) : maximum();
 
   function write(value: number) {
     if (disabled() || !Number.isFinite(value)) return;
@@ -95,11 +91,13 @@ function createResizable(options: UseResizableOptions): ResizableBinding {
     if (!root) return;
     const rect = root.getBoundingClientRect();
     if (orientation() === "horizontal") {
-      if (!Number.isFinite(rect.width) || rect.width <= 0 || !Number.isFinite(event.clientX)) return;
+      if (!Number.isFinite(rect.width) || rect.width <= 0 || !Number.isFinite(event.clientX))
+        return;
       const raw = ((event.clientX - rect.left) / rect.width) * 100;
       write((toValue(options.dir) ?? "ltr") === "rtl" ? 100 - raw : raw);
     } else {
-      if (!Number.isFinite(rect.height) || rect.height <= 0 || !Number.isFinite(event.clientY)) return;
+      if (!Number.isFinite(rect.height) || rect.height <= 0 || !Number.isFinite(event.clientY))
+        return;
       write(((event.clientY - rect.top) / rect.height) * 100);
     }
   }
@@ -109,30 +107,45 @@ function createResizable(options: UseResizableOptions): ResizableBinding {
     if (!Object.is(options.value.value, next)) void requestModelValue(options.value, next);
   }
 
-  watch(
-    [() => options.value.value, minimum, maximum],
-    reconcileBounds,
-    { flush: "sync", immediate: true },
-  );
+  watch([() => options.value.value, minimum, maximum], reconcileBounds, {
+    flush: "sync",
+    immediate: true,
+  });
 
   const separatorProps: ResizableSeparatorProps = {
     id,
     role: "separator",
-    get tabindex() { return disabled() ? -1 : 0; },
-    get "aria-label"() { return toValue(options.label); },
+    get tabindex() {
+      return disabled() ? -1 : 0;
+    },
+    get "aria-label"() {
+      return toValue(options.label);
+    },
     "aria-controls": `${id}-primary`,
-    get "aria-orientation"() { return orientation() === "horizontal" ? "vertical" : "horizontal"; },
-    get "aria-valuemin"() { return minimum(); },
-    get "aria-valuemax"() { return maximum(); },
-    get "aria-valuenow"() { return clamp(options.value.value); },
-    get "aria-disabled"() { return disabled() ? "true" : undefined; },
+    get "aria-orientation"() {
+      return orientation() === "horizontal" ? "vertical" : "horizontal";
+    },
+    get "aria-valuemin"() {
+      return minimum();
+    },
+    get "aria-valuemax"() {
+      return maximum();
+    },
+    get "aria-valuenow"() {
+      return clamp(options.value.value);
+    },
+    get "aria-disabled"() {
+      return disabled() ? "true" : undefined;
+    },
     onKeydown(event) {
       if (disabled()) return;
       const amount = Math.max(0.1, toValue(options.step) ?? 1);
       let delta = 0;
       if (orientation() === "horizontal") {
-        if (event.key === "ArrowLeft") delta = (toValue(options.dir) ?? "ltr") === "rtl" ? amount : -amount;
-        if (event.key === "ArrowRight") delta = (toValue(options.dir) ?? "ltr") === "rtl" ? -amount : amount;
+        if (event.key === "ArrowLeft")
+          delta = (toValue(options.dir) ?? "ltr") === "rtl" ? amount : -amount;
+        if (event.key === "ArrowRight")
+          delta = (toValue(options.dir) ?? "ltr") === "rtl" ? -amount : amount;
       } else {
         if (event.key === "ArrowUp") delta = -amount;
         if (event.key === "ArrowDown") delta = amount;
@@ -175,7 +188,10 @@ function createResizable(options: UseResizableOptions): ResizableBinding {
     onPointerup(event) {
       if (activePointer !== event.pointerId) return;
       const target = event.currentTarget as HTMLElement;
-      if (typeof target.hasPointerCapture === "function" && target.hasPointerCapture(event.pointerId)) {
+      if (
+        typeof target.hasPointerCapture === "function" &&
+        target.hasPointerCapture(event.pointerId)
+      ) {
         target.releasePointerCapture(event.pointerId);
       }
       activePointer = null;
@@ -199,7 +215,6 @@ function createResizable(options: UseResizableOptions): ResizableBinding {
     value: options.value,
     currentValue,
     firstBasis: computed(() => `${currentValue.value}%`),
-    secondBasis: computed(() => `${100 - currentValue.value}%`),
     primaryPanelProps: { id: `${id}-primary` },
     separatorProps,
   };

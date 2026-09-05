@@ -56,6 +56,17 @@ function relativeImports(source: string) {
   );
 }
 
+export function blueprintComponentDependencies(source: string): readonly string[] {
+  return [
+    ...new Set(
+      [
+        ...source.matchAll(/@nagi-labs\/nagi-ui\/blueprints\/([^/"']+)\/[^"']+/gu),
+        ...source.matchAll(/["']\.\.\/([^/"']+)\/[^"']+["']/gu),
+      ].map((match) => match[1] ?? ""),
+    ),
+  ].filter(Boolean);
+}
+
 export async function loadBlueprintSources(name: string): Promise<BlueprintSourceFile[]> {
   const suffix = `/${componentFileName(name)}`;
   const main = Object.entries(blueprintModules).find(([path]) => path.endsWith(suffix));
@@ -88,7 +99,13 @@ export async function loadBlueprintSources(name: string): Promise<BlueprintSourc
 
     for (const specifier of relativeImports(source)) {
       const dependency = resolveRelativeModule(path, specifier);
-      if (blueprintModules[dependency] && !visited.has(dependency)) pending.push(dependency);
+      if (
+        dependency.startsWith(`${root}/`) &&
+        blueprintModules[dependency] &&
+        !visited.has(dependency)
+      ) {
+        pending.push(dependency);
+      }
     }
   }
 

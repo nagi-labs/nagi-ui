@@ -101,6 +101,7 @@ test("TimeField exposes native min/max/reset and keyboard cycle semantics", asyn
     name: "office-time",
     form: "settings",
     required: true,
+    describedBy: "office-hours-help",
     formControl: control,
   }));
   assert.ok(field);
@@ -113,10 +114,12 @@ test("TimeField exposes native min/max/reset and keyboard cycle semantics", asyn
   assert.equal(field.formValueProps.step, 60);
   assert.equal(field.formValueProps.name, "office-time");
   assert.equal(field.fieldProps["aria-required"], "true");
+  assert.equal(field.error.describedBy.value, "office-hours-help");
 
   value.value = "18:00";
   assert.equal(field.isInvalid.value, true);
   assert.equal(field.fieldProps["aria-invalid"], "true");
+  assert.equal(field.error.describedBy.value, `office-hours-help ${field.error.id}`);
   await nextTick();
   assert.equal(customValidity, "Enter a valid time.");
 

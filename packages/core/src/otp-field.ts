@@ -5,11 +5,13 @@ import {
   toValue,
   useId,
   watch,
+  type ComponentPublicInstance,
   type ComputedRef,
   type MaybeRefOrGetter,
   type Ref,
 } from "vue";
 import { modelValueAccepted, requestModelValue, type WritableRef } from "./model-sync.ts";
+import { nativeFormControlRef, useNativeValueReset } from "./native-form.ts";
 
 export type OTPFieldKind = "numeric" | "alphanumeric";
 
@@ -29,6 +31,7 @@ export interface UseOTPFieldOptions {
 }
 
 export interface OTPFieldInputProps {
+  ref?: (element: Element | ComponentPublicInstance | null) => void;
   id: string;
   type: "text";
   value: string;
@@ -86,12 +89,15 @@ function createOTPField(options: UseOTPFieldOptions): OTPFieldBinding {
 
   const length = () => normalizeLength(toValue(options.length));
   const kind = () => toValue(options.kind) ?? "numeric";
-  const normalize = (value: string) => Array.from(value.normalize("NFKC"))
-    .filter((character) => kind() === "numeric"
-      ? /\p{Decimal_Number}/u.test(character)
-      : /[\p{Letter}\p{Decimal_Number}]/u.test(character))
-    .join("")
-    .slice(0, length());
+  const normalize = (value: string) =>
+    Array.from(value.normalize("NFKC"))
+      .filter((character) =>
+        kind() === "numeric"
+          ? /\p{Decimal_Number}/u.test(character)
+          : /[\p{Letter}\p{Decimal_Number}]/u.test(character),
+      )
+      .join("")
+      .slice(0, length());
 
   function write(next: string, input: HTMLInputElement) {
     const normalized = normalize(next);
@@ -104,13 +110,17 @@ function createOTPField(options: UseOTPFieldOptions): OTPFieldBinding {
     });
   }
 
-  const cells = computed(() => Array.from(
-    { length: length() },
-    (_value, index) => Array.from(options.value.value)[index] ?? "",
-  ));
-  const isComplete = computed(() =>
-    options.value.value === normalize(options.value.value)
-    && Array.from(options.value.value).length === length());
+  const cells = computed(() =>
+    Array.from(
+      { length: length() },
+      (_value, index) => Array.from(options.value.value)[index] ?? "",
+    ),
+  );
+  const isComplete = computed(
+    () =>
+      options.value.value === normalize(options.value.value) &&
+      Array.from(options.value.value).length === length(),
+  );
 
   function reconcileNormalizedValue([value]: readonly [string, number, OTPFieldKind]) {
     const normalized = normalize(value);
@@ -119,36 +129,60 @@ function createOTPField(options: UseOTPFieldOptions): OTPFieldBinding {
     void requestModelValue(options.value, normalized);
   }
 
-  watch(
-    [() => options.value.value, length, kind],
-    reconcileNormalizedValue,
-    { flush: "sync", immediate: true },
-  );
+  watch([() => options.value.value, length, kind], reconcileNormalizedValue, {
+    flush: "sync",
+    immediate: true,
+  });
 
   const otpInputProps: OTPFieldInputProps = {
     id,
     type: "text",
-    get value() { return options.value.value; },
-    get name() { return toValue(options.name); },
-    get form() { return toValue(options.form); },
-    get inputmode() { return kind() === "numeric" ? "numeric" : "text"; },
+    get value() {
+      return options.value.value;
+    },
+    get name() {
+      return toValue(options.name);
+    },
+    get form() {
+      return toValue(options.form);
+    },
+    get inputmode() {
+      return kind() === "numeric" ? "numeric" : "text";
+    },
     autocomplete: "one-time-code",
-    get minlength() { return length(); },
+    get minlength() {
+      return length();
+    },
     get pattern() {
       return kind() === "numeric"
         ? `\\p{Decimal_Number}{${length()}}`
         : `[\\p{Letter}\\p{Decimal_Number}]{${length()}}`;
     },
-    get "aria-label"() { return toValue(options.label); },
-    get "aria-invalid"() { return (toValue(options.invalid) ?? false) ? "true" : undefined; },
-    get disabled() { return toValue(options.disabled) ?? false; },
-    get readonly() { return toValue(options.readOnly) ?? false; },
-    get required() { return toValue(options.required) ?? false; },
+    get "aria-label"() {
+      return toValue(options.label);
+    },
+    get "aria-invalid"() {
+      return (toValue(options.invalid) ?? false) ? "true" : undefined;
+    },
+    get disabled() {
+      return toValue(options.disabled) ?? false;
+    },
+    get readonly() {
+      return toValue(options.readOnly) ?? false;
+    },
+    get required() {
+      return toValue(options.required) ?? false;
+    },
     onInput(event) {
       if (composing.value) return;
-      write((event.currentTarget as HTMLInputElement).value, event.currentTarget as HTMLInputElement);
+      write(
+        (event.currentTarget as HTMLInputElement).value,
+        event.currentTarget as HTMLInputElement,
+      );
     },
-    onCompositionstart() { composing.value = true; },
+    onCompositionstart() {
+      composing.value = true;
+    },
     onCompositionend(event) {
       composing.value = false;
       const input = event.currentTarget as HTMLInputElement;
@@ -160,17 +194,15 @@ function createOTPField(options: UseOTPFieldOptions): OTPFieldBinding {
 }
 
 export function useOTPField(options: UseOTPFieldOptions): OTPFieldBinding;
-export function useOTPField(
-  props: OTPFieldComponentProps,
-  value: Ref<string>,
-): OTPFieldBinding;
+export function useOTPField(props: OTPFieldComponentProps, value: Ref<string>): OTPFieldBinding;
 export function useOTPField(
   optionsOrProps: UseOTPFieldOptions | OTPFieldComponentProps,
   value?: Ref<string>,
 ): OTPFieldBinding {
   if (value === undefined) return createOTPField(optionsOrProps as UseOTPFieldOptions);
   const props = optionsOrProps as OTPFieldComponentProps;
-  return createOTPField({
+  const input = ref<HTMLInputElement | null>(null);
+  const binding = createOTPField({
     value,
     ...(props.id === undefined ? {} : { id: props.id }),
     label: () => props.label,
@@ -183,4 +215,7 @@ export function useOTPField(
     required: () => props.required,
     invalid: () => props.invalid,
   });
+  useNativeValueReset(input, value);
+  binding.otpInputProps.ref = nativeFormControlRef(input);
+  return binding;
 }

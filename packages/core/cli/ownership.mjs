@@ -1,9 +1,13 @@
-import fs from "node:fs"
-import { createRequire } from "node:module"
-import path from "node:path"
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
 
 export const components = {
-  accordion: { dir: "blueprints/accordion", files: ["Accordion.vue"] },
+  accordion: {
+    dir: "blueprints/accordion",
+    files: ["Accordion.vue"],
+    componentDependencies: ["disclosure"],
+  },
   autocomplete: { dir: "blueprints/autocomplete", files: ["Autocomplete.vue"] },
   alert: { dir: "blueprints/alert", files: ["Alert.vue"] },
   "alert-dialog": {
@@ -27,11 +31,20 @@ export const components = {
   "date-field": { dir: "blueprints/date-field", files: ["DateField.vue"] },
   "date-picker": {
     dir: "blueprints/date-picker",
-    files: ["DatePicker.vue", "date-picker.definition.ts"],
+    files: [
+      "DatePicker.vue",
+      "internal/DatePickerPopup.vue",
+      "internal/date-picker-context.ts",
+      "date-picker.definition.ts",
+    ],
   },
   "date-range-picker": {
     dir: "blueprints/date-range-picker",
-    files: ["DateRangePicker.vue"],
+    files: [
+      "DateRangePicker.vue",
+      "internal/DateRangePickerPopup.vue",
+      "internal/date-range-picker-context.ts",
+    ],
   },
   dialog: { dir: "blueprints/dialog", files: ["Dialog.vue", "dialog.definition.ts"] },
   disclosure: { dir: "blueprints/disclosure", files: ["Disclosure.vue"] },
@@ -90,54 +103,116 @@ export const components = {
   "toggle-group": { dir: "blueprints/toggle-group", files: ["ToggleGroup.vue"] },
   tree: { dir: "blueprints/tree", files: ["Tree.vue", "TreeBranch.vue"] },
   tooltip: { dir: "blueprints/tooltip", files: ["Tooltip.vue"] },
-}
+};
 
-const MARKER_RE = /^(?:<!--|\/\/) @nagi-source ([a-z0-9-]+)\/([^@\s]+)@(\S+?)(?: -->)?$/
+const MARKER_RE = /^(?:<!--|\/\/) @nagi-source ([a-z0-9-]+)\/([^@\s]+)@(\S+?)(?: -->)?$/;
 
 export function markerLine(file, component, version) {
-  const marker = `@nagi-source ${component}/${file}@${version}`
-  return file.endsWith(".vue") || file.endsWith(".md")
-    ? `<!-- ${marker} -->\n`
-    : `// ${marker}\n`
+  const marker = `@nagi-source ${component}/${file}@${version}`;
+  return file.endsWith(".vue") || file.endsWith(".md") ? `<!-- ${marker} -->\n` : `// ${marker}\n`;
 }
 
 export function parseMarker(line) {
-  const match = MARKER_RE.exec(line.trim())
-  if (!match) return null
-  return { component: match[1], file: match[2], version: match[3] }
+  const match = MARKER_RE.exec(line.trim());
+  if (!match) return null;
+  return { component: match[1], file: match[2], version: match[3] };
 }
 
 export function resolvePackageRoot(from = process.cwd()) {
-  const require = createRequire(path.join(from, "__nagi_resolve__.js"))
-  return path.dirname(require.resolve("@nagi-labs/nagi-ui/package.json"))
+  const require = createRequire(path.join(from, "__nagi_resolve__.js"));
+  return path.dirname(require.resolve("@nagi-labs/nagi-ui/package.json"));
 }
 
 export function packageVersion(packageRoot) {
-  return JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")).version
+  return JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")).version;
 }
 
-export function ownComponent(name, { packageRoot, targetRoot, force = false }) {
-  const spec = components[name]
+function dependencyOrder(name, visiting = new Set(), visited = new Set(), order = []) {
+  if (visiting.has(name)) {
+    throw new Error(`Circular component dependency involving "${name}".`);
+  }
+  if (visited.has(name)) return order;
+
+  const spec = components[name];
   if (!spec) {
     throw new Error(
       `Unknown component "${name}". Available: ${Object.keys(components).join(", ")}`,
-    )
+    );
   }
-  const version = packageVersion(packageRoot)
-  const destDir = path.join(targetRoot, name)
-  if (!force && fs.existsSync(destDir) && fs.readdirSync(destDir).length > 0) {
-    throw new Error(`${destDir} is not empty. Pass --force to overwrite.`)
+
+  visiting.add(name);
+  for (const dependency of spec.componentDependencies ?? []) {
+    dependencyOrder(dependency, visiting, visited, order);
   }
-  fs.mkdirSync(destDir, { recursive: true })
-  const files = []
-  for (const file of spec.files) {
-    const source = fs.readFileSync(path.join(packageRoot, spec.dir, file), "utf8")
-    const dest = path.join(destDir, file)
-    fs.mkdirSync(path.dirname(dest), { recursive: true })
-    fs.writeFileSync(dest, markerLine(file, name, version) + source)
-    files.push(dest)
+  visiting.delete(name);
+  visited.add(name);
+  order.push(name);
+  return order;
+}
+
+function isOwnedComponentDirectory(name, directory) {
+  const spec = components[name];
+  return spec.files.every((file) => {
+    const ownedFile = path.join(directory, file);
+    if (!fs.existsSync(ownedFile)) return false;
+    const firstLine = fs.readFileSync(ownedFile, "utf8").split("\n", 1)[0];
+    const marker = parseMarker(firstLine);
+    return marker?.component === name && marker.file === file;
+  });
+}
+
+export function ownComponent(name, { packageRoot, targetRoot, force = false }) {
+  const order = dependencyOrder(name);
+  const version = packageVersion(packageRoot);
+
+  for (const component of order) {
+    const destDir = path.join(targetRoot, component);
+    if (!fs.existsSync(destDir) || fs.readdirSync(destDir).length === 0) continue;
+    if (component === name && force) continue;
+    if (component !== name && isOwnedComponentDirectory(component, destDir)) continue;
+    if (component === name) {
+      throw new Error(`${destDir} is not empty. Pass --force to overwrite.`);
+    }
+    throw new Error(
+      `${destDir} blocks the ${name} dependency. Move it or own ${component} explicitly first.`,
+    );
   }
-  return { component: name, version, files }
+
+  const ownedComponents = [];
+  for (const component of order) {
+    const spec = components[component];
+    const destDir = path.join(targetRoot, component);
+    const isDependency = component !== name;
+    if (
+      isDependency &&
+      fs.existsSync(destDir) &&
+      fs.readdirSync(destDir).length > 0 &&
+      isOwnedComponentDirectory(component, destDir)
+    ) {
+      ownedComponents.push({ component, files: [], status: "reused" });
+      continue;
+    }
+
+    fs.mkdirSync(destDir, { recursive: true });
+    const files = [];
+    for (const file of spec.files) {
+      const source = fs.readFileSync(path.join(packageRoot, spec.dir, file), "utf8");
+      const dest = path.join(destDir, file);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.writeFileSync(dest, markerLine(file, component, version) + source);
+      files.push(dest);
+    }
+    ownedComponents.push({ component, files, status: "owned" });
+  }
+
+  const root = ownedComponents.find((entry) => entry.component === name);
+  return {
+    component: name,
+    version,
+    files: root?.files ?? [],
+    componentDependencies: components[name].componentDependencies ?? [],
+    ownedComponents,
+  };
 }
 
 function walk(root) {
@@ -145,7 +220,7 @@ function walk(root) {
     .readdirSync(root, { recursive: true })
     .map(String)
     .filter((file) => file.endsWith(".vue") || file.endsWith(".ts") || file.endsWith(".md"))
-    .map((file) => path.join(root, file))
+    .map((file) => path.join(root, file));
 }
 
 /**
@@ -156,25 +231,25 @@ function walk(root) {
  * - unknown-source: the marker no longer identifies a shipped source
  */
 export function diffOwned(root, { packageRoot }) {
-  const version = packageVersion(packageRoot)
-  const entries = []
-  if (!fs.existsSync(root)) return entries
+  const version = packageVersion(packageRoot);
+  const entries = [];
+  if (!fs.existsSync(root)) return entries;
   for (const file of walk(root)) {
-    const content = fs.readFileSync(file, "utf8")
-    const newline = content.indexOf("\n")
-    const marker = parseMarker(newline === -1 ? content : content.slice(0, newline))
-    if (!marker) continue
-    const spec = components[marker.component]
-    const upstreamPath = spec ? path.join(packageRoot, spec.dir, marker.file) : null
+    const content = fs.readFileSync(file, "utf8");
+    const newline = content.indexOf("\n");
+    const marker = parseMarker(newline === -1 ? content : content.slice(0, newline));
+    if (!marker) continue;
+    const spec = components[marker.component];
+    const upstreamPath = spec ? path.join(packageRoot, spec.dir, marker.file) : null;
     if (!upstreamPath || !spec.files.includes(marker.file) || !fs.existsSync(upstreamPath)) {
-      entries.push({ file, marker, status: "unknown-source", upstream: null })
-      continue
+      entries.push({ file, marker, status: "unknown-source", upstream: null });
+      continue;
     }
-    const body = content.slice(newline + 1)
-    const upstream = fs.readFileSync(upstreamPath, "utf8")
+    const body = content.slice(newline + 1);
+    const upstream = fs.readFileSync(upstreamPath, "utf8");
     const status =
-      body === upstream ? "clean" : marker.version === version ? "modified" : "drifted"
-    entries.push({ file, marker, status, upstream: upstreamPath, installedVersion: version })
+      body === upstream ? "clean" : marker.version === version ? "modified" : "drifted";
+    entries.push({ file, marker, status, upstream: upstreamPath, installedVersion: version });
   }
-  return entries
+  return entries;
 }

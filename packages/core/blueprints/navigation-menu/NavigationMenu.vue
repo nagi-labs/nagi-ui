@@ -26,7 +26,7 @@ export type NavigationMenuItem = NavigationMenuDirectLink | NavigationMenuPanel;
 
 <script setup lang="ts">
 import type { StyleValue } from "vue";
-import { handleLinkClick, prefetchLink, useNavigationMenu } from "@nagi-labs/nagi-ui";
+import { useNavigationMenu } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -41,18 +41,6 @@ const props = withDefaults(
 defineOptions({ inheritAttrs: false });
 const open = defineModel<boolean>("open", { default: false });
 const navigation = useNavigationMenu(props, open);
-
-function isPanel(item: NavigationMenuItem): item is NavigationMenuPanel {
-  return Array.isArray(item.children);
-}
-
-function isDirectLink(item: NavigationMenuItem): item is NavigationMenuDirectLink {
-  return typeof item.href === "string";
-}
-
-function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePanel: boolean) {
-  if (handleLinkClick(item, event) && closePanel) navigation.close(true);
-}
 </script>
 
 <template>
@@ -69,21 +57,20 @@ function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePane
         class="item"
       >
         <button
-          v-if="isPanel(item)"
+          v-if="item.children !== undefined"
           v-bind="navigation.navigationTriggerProps(item)"
           class="button"
         >
           {{ item.label }}
         </button>
         <a
-          v-else-if="isDirectLink(item)"
+          v-else-if="item.href !== undefined"
+          v-bind="navigation.directLinkProps(item)"
           class="link"
           :href="item.href"
           :target="item.target"
           :rel="item.rel"
           :download="item.download"
-          @click="activateLink(item, $event, false)"
-          @pointerenter="prefetchLink(item)"
           >{{ item.label }}</a
         >
       </li>
@@ -104,13 +91,12 @@ function activateLink(item: NavigationMenuLinkBase, event: MouseEvent, closePane
           class="item"
         >
           <a
+            v-bind="navigation.panelLinkProps(child)"
             class="link"
             :href="child.href"
             :target="child.target"
             :rel="child.rel"
             :download="child.download"
-            @click="activateLink(child, $event, true)"
-            @pointerenter="prefetchLink(child)"
           >
             <span class="text">{{ child.label }}</span>
             <span

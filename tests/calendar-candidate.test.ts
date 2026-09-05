@@ -293,9 +293,11 @@ test("Calendar and RangeCalendar clear dynamic invalidity and expose read-only n
       required: true,
     });
     assert.equal(calendar.isInvalid.value, true);
+    assert.equal(calendar.error.describedBy.value, calendar.error.id);
     calendar.formValueProps.onInvalid(new Event("invalid", { cancelable: true }));
     unavailableDates.value = [];
     assert.equal(calendar.isInvalid.value, false);
+    assert.equal(calendar.error.describedBy.value, undefined);
     assert.equal(calendar.validationMessage.value, "");
     assert.equal(calendar.formValueProps.readonly, true);
     assert.equal(calendar.formValueProps.required, true);
@@ -309,9 +311,11 @@ test("Calendar and RangeCalendar clear dynamic invalidity and expose read-only n
       required: true,
     });
     assert.equal(range.isInvalid.value, true);
+    assert.equal(range.error.describedBy.value, range.error.id);
     range.startFormValueProps.onInvalid(new Event("invalid", { cancelable: true }));
     unavailableDates.value = [];
     assert.equal(range.isInvalid.value, false);
+    assert.equal(range.error.describedBy.value, undefined);
     assert.equal(range.validationMessage.value, "");
     assert.equal(range.startFormValueProps.readonly, true);
     assert.equal(range.endFormValueProps.readonly, true);

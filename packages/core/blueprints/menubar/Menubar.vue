@@ -26,7 +26,7 @@ export interface MenubarMenu {
 
 <script setup lang="ts">
 import type { StyleValue } from "vue";
-import { handleLinkClick, prefetchLink, useMenubar } from "@nagi-labs/nagi-ui";
+import { useMenubar } from "@nagi-labs/nagi-ui";
 
 const props = withDefaults(
   defineProps<{
@@ -43,10 +43,6 @@ defineOptions({ inheritAttrs: false });
 const emit = defineEmits<{ select: [item: MenubarAction] }>();
 const open = defineModel<boolean>("open", { default: false });
 const menubar = useMenubar(props, { open, onSelect: (item) => emit("select", item) });
-
-function isLink(item: MenubarAction): item is MenubarLinkAction {
-  return typeof item.href === "string";
-}
 </script>
 
 <template>
@@ -84,15 +80,13 @@ function isLink(item: MenubarAction): item is MenubarLinkAction {
         role="none"
       >
         <a
-          v-if="isLink(item) && !item.disabled"
-          v-bind="menubar.actionProps(item)"
+          v-if="item.href !== undefined && !item.disabled"
+          v-bind="menubar.linkActionProps(item)"
           class="link"
           :href="item.href"
           :target="item.target"
           :rel="item.rel"
           :download="item.download"
-          @click="handleLinkClick(item, $event)"
-          @pointerenter="prefetchLink(item)"
           >{{ item.label }}</a
         >
         <button

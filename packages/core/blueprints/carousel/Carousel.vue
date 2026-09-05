@@ -109,12 +109,12 @@ const carousel = useCarousel(props, index);
           {{ item.label }}
           <span class="text">, {{ carousel.slidePosition(item, itemIndex) }}</span>
         </h2>
-        <p
+        <span
           v-if="item.description"
-          class="p"
+          class="text"
         >
           {{ item.description }}
-        </p>
+        </span>
       </article>
     </div>
   </section>
@@ -199,7 +199,8 @@ const carousel = useCarousel(props, index);
           white-space: nowrap;
         }
       }
-      > .p {
+      > .text {
+        display: block;
         margin-block: var(--nagi-space-item-gap) 0;
         color: var(--nagi-color-text-muted);
       }

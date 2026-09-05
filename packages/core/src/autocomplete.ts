@@ -8,14 +8,19 @@ import {
 } from "./combobox.ts";
 import { modelValueAccepted } from "./model-sync.ts";
 import type { WritableRef } from "./model-sync.ts";
+import { useNativeValueReset } from "./native-form.ts";
 
-export interface UseAutocompleteOptions<Item, Key extends string = string>
-  extends Omit<UseComboboxOptions<Item, Key>, "inputValue" | "selected" | "defaultSelected"> {
+export interface UseAutocompleteOptions<Item, Key extends string = string> extends Omit<
+  UseComboboxOptions<Item, Key>,
+  "inputValue" | "selected" | "defaultSelected"
+> {
   value: WritableRef<string>;
 }
 
-export interface AutocompleteBinding<Item, Key extends string = string>
-  extends Omit<UseComboboxReturn<Item, Key>, "inputProps"> {
+export interface AutocompleteBinding<Item, Key extends string = string> extends Omit<
+  UseComboboxReturn<Item, Key>,
+  "inputProps"
+> {
   inputProps: ComboboxInputProps;
 }
 
@@ -85,8 +90,9 @@ function createAutocomplete<Item, Key extends string>(
 
   function reconcileSelectionFromInput(value: string) {
     if (selected.value === null) return;
-    const item = toValue(options.items)
-      .find((candidate) => options.getKey(candidate) === selected.value);
+    const item = toValue(options.items).find(
+      (candidate) => options.getKey(candidate) === selected.value,
+    );
     if (!item || options.getTextValue(item) !== value) selected.value = null;
   }
 
@@ -103,12 +109,15 @@ export function useAutocomplete<Item extends AutocompleteComponentItem>(
   value: Ref<string>,
 ): AutocompleteBinding<Item, string>;
 export function useAutocomplete<Item, Key extends string = string>(
-  optionsOrProps: UseAutocompleteOptions<Item, Key> | AutocompleteComponentProps<Item & AutocompleteComponentItem>,
+  optionsOrProps:
+    | UseAutocompleteOptions<Item, Key>
+    | AutocompleteComponentProps<Item & AutocompleteComponentItem>,
   value?: Ref<string>,
 ): AutocompleteBinding<Item, Key> {
-  if (value === undefined) return createAutocomplete(optionsOrProps as UseAutocompleteOptions<Item, Key>);
+  if (value === undefined)
+    return createAutocomplete(optionsOrProps as UseAutocompleteOptions<Item, Key>);
   const props = optionsOrProps as AutocompleteComponentProps<Item & AutocompleteComponentItem>;
-  return createAutocomplete({
+  const binding = createAutocomplete({
     value,
     ...(props.id === undefined ? {} : { id: props.id }),
     items: () => props.items,
@@ -120,4 +129,6 @@ export function useAutocomplete<Item, Key extends string = string>(
     required: () => props.required,
     openWhenEmpty: true,
   }) as unknown as AutocompleteBinding<Item, Key>;
+  useNativeValueReset(binding.inputElement, value);
+  return binding;
 }

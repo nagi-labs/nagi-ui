@@ -6,23 +6,27 @@ import CodeDisclosure from "./CodeDisclosure.vue";
 import ComponentDocumentation from "./ComponentDocumentation.vue";
 import InlineCode from "./InlineCode.vue";
 
-const props = defineProps<{
-  name: string;
-  slug: string;
-  basicGuidance: string;
-  properties: BlueprintProperty[];
-  models: BlueprintChannel[];
-  events: BlueprintChannel[];
-  documentedSlots: BlueprintChannel[];
-  blueprintSources: readonly {
-    path: string;
-    kind: "public-component" | "internal-component" | "owned-helper";
-    html: TrustedShikiHtml | "";
-  }[];
-  usage: string;
-  nativeAttributeTarget?: string;
-  behaviorApis: readonly { names: readonly string[]; html: TrustedShikiHtml | "" }[];
-}>();
+const props = withDefaults(
+  defineProps<{
+    name: string;
+    slug: string;
+    basicGuidance: string;
+    properties: BlueprintProperty[];
+    models: BlueprintChannel[];
+    events: BlueprintChannel[];
+    documentedSlots: BlueprintChannel[];
+    blueprintSources: readonly {
+      path: string;
+      kind: "public-component" | "internal-component" | "owned-helper";
+      html: TrustedShikiHtml | "";
+    }[];
+    usage: string;
+    nativeAttributeTarget?: string;
+    behaviorApis: readonly { names: readonly string[]; html: TrustedShikiHtml | "" }[];
+    componentDependencies?: readonly string[];
+  }>(),
+  { nativeAttributeTarget: undefined, componentDependencies: () => [] },
+);
 
 const staticComponents = new Set([
   "Avatar",
@@ -197,6 +201,23 @@ if (import.meta.server && !highlightedUsage.value) {
         Only files marked <strong>Public component</strong> are package component exports; internal
         components and helpers are owned implementation details.
       </p>
+      <span
+        v-if="componentDependencies.length"
+        class="text"
+      >
+        Component dependency owned with this Blueprint:
+        <template
+          v-for="dependency in componentDependencies"
+          :key="dependency"
+        >
+          <a
+            class="link"
+            :href="useSitePath(`/components/${dependency}/`)"
+            >{{ dependency }}</a
+          >
+        </template>
+        . The CLI copies it recursively and keeps this relative import connected to the owned file.
+      </span>
       <code-disclosure
         v-for="source in blueprintSources"
         :key="source.path"

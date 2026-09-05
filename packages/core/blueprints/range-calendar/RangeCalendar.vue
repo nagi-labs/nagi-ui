@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, type StyleValue } from "vue";
+import type { StyleValue } from "vue";
 
 import { useRangeCalendar, type RangeCalendarValue } from "@nagi-labs/nagi-ui";
-import { useRangeCalendarNativeForm } from "@nagi-labs/nagi-ui/component-controls";
 
 defineOptions({ inheritAttrs: false });
 
@@ -45,10 +44,7 @@ const props = withDefaults(
 );
 
 const model = defineModel<RangeCalendarValue | null>({ default: null });
-const startFormControl = ref<HTMLInputElement | null>(null);
-const endFormControl = ref<HTMLInputElement | null>(null);
 const range = useRangeCalendar(props, model);
-useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, range);
 </script>
 
 <template>
@@ -81,7 +77,7 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
     <table
       v-bind="range.gridProps"
       class="table"
-      :aria-describedby="range.isInvalid.value ? `${range.gridProps.id}-error` : undefined"
+      :aria-describedby="range.error.describedBy.value"
     >
       <thead class="thead">
         <tr class="row">
@@ -131,18 +127,16 @@ useRangeCalendarNativeForm({ start: startFormControl, end: endFormControl }, ran
     </span>
     <span
       v-if="range.isInvalid.value"
-      :id="`${range.gridProps.id}-error`"
+      :id="range.error.id"
       class="alert"
       role="alert"
-      >{{ validationMessage }}</span
+      >{{ range.validationMessage.value }}</span
     >
     <input
-      ref="startFormControl"
       v-bind="range.startFormValueProps"
       class="input -form-value"
     />
     <input
-      ref="endFormControl"
       v-bind="range.endFormValueProps"
       class="input -form-value"
     />

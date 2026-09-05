@@ -26,7 +26,11 @@ import {
 } from "vue";
 
 import { createElementRegistry } from "./element-registry.ts";
-import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
+import {
+  nativeFormControlRef,
+  useNativeCustomValidity,
+  useNativeFormReset,
+} from "./native-form.ts";
 
 export interface CalendarCell {
   readonly key: string;
@@ -90,6 +94,7 @@ export interface CalendarNavigationButtonProps {
 }
 
 export interface CalendarFormValueProps {
+  ref?: (element: Element | ComponentPublicInstance | null) => void;
   type: "date";
   tabindex: -1;
   "aria-hidden": "true";
@@ -179,6 +184,10 @@ export interface CalendarBinding {
   previousButtonProps: CalendarNavigationButtonProps;
   nextButtonProps: CalendarNavigationButtonProps;
   formValueProps: CalendarFormValueProps;
+  error: {
+    id: string;
+    describedBy: ComputedRef<string | undefined>;
+  };
   isInvalid: ComputedRef<boolean>;
   validationMessage: ComputedRef<string>;
   select: (cell: CalendarCell) => boolean;
@@ -200,6 +209,10 @@ export interface RangeCalendarBinding {
   nextButtonProps: CalendarNavigationButtonProps;
   startFormValueProps: CalendarFormValueProps;
   endFormValueProps: CalendarFormValueProps;
+  error: {
+    id: string;
+    describedBy: ComputedRef<string | undefined>;
+  };
   isInvalid: ComputedRef<boolean>;
   validationMessage: ComputedRef<string>;
   anchor: Readonly<Ref<string | null>>;
@@ -265,9 +278,10 @@ function unavailable(options: CalendarBaseOptions, date: CalendarDate): boolean 
 }
 
 function initialDate(options: CalendarBaseOptions, selected?: string | null): CalendarDate {
-  const initial = parseIso(selected)
-    ?? parseIso(toValue(options.defaultVisibleMonth))
-    ?? today(timeZoneOf(options));
+  const initial =
+    parseIso(selected) ??
+    parseIso(toValue(options.defaultVisibleMonth)) ??
+    today(timeZoneOf(options));
   const minimum = parseIso(toValue(options.minValue));
   const maximum = parseIso(toValue(options.maxValue));
   if (minimum && initial.compare(minimum) < 0) return minimum;
@@ -297,7 +311,11 @@ function focusableDateInMonth(
   const month = startOfMonth(visible);
   if (isSameMonth(preferred, month) && !unavailable(options, preferred)) return preferred;
   const last = endOfMonth(month);
-  for (let candidate = month; candidate.compare(last) <= 0; candidate = candidate.add({ days: 1 })) {
+  for (
+    let candidate = month;
+    candidate.compare(last) <= 0;
+    candidate = candidate.add({ days: 1 })
+  ) {
     if (!unavailable(options, candidate)) return candidate;
   }
   return isSameMonth(preferred, month) ? preferred : month;
@@ -324,17 +342,24 @@ function createNavigation(
     }).format(date.toDate(timeZoneOf(options)));
   }
 
-  const monthLabel = computed(() => formatter(visible.value, {
-    month: "long",
-    year: "numeric",
-  }));
+  const monthLabel = computed(() =>
+    formatter(visible.value, {
+      month: "long",
+      year: "numeric",
+    }),
+  );
 
   const firstGridDate = computed(() => startOfWeek(visible.value, localeOf(options)));
-  const weekdayLabels = computed(() => Array.from({ length: 7 }, (_, index) =>
-    formatter(firstGridDate.value.add({ days: index }), { weekday: "short" })));
-  const dates = computed(() => Array.from({ length: 6 }, (_, week) =>
-    Array.from({ length: 7 }, (_value, day) =>
-      firstGridDate.value.add({ days: week * 7 + day }))));
+  const weekdayLabels = computed(() =>
+    Array.from({ length: 7 }, (_, index) =>
+      formatter(firstGridDate.value.add({ days: index }), { weekday: "short" }),
+    ),
+  );
+  const dates = computed(() =>
+    Array.from({ length: 6 }, (_, week) =>
+      Array.from({ length: 7 }, (_value, day) => firstGridDate.value.add({ days: week * 7 + day })),
+    ),
+  );
 
   function cellId(date: CalendarDate): string {
     return `${id}-cell-${date.toString()}`;
@@ -343,9 +368,7 @@ function createNavigation(
   function focusElement(date: CalendarDate) {
     void nextTick(() => {
       const id = cellId(date);
-      const target = cellElements.get(date.toString())
-        ?? ownerRoot?.getElementById(id)
-        ?? null;
+      const target = cellElements.get(date.toString()) ?? ownerRoot?.getElementById(id) ?? null;
       target?.focus({ preventScroll: true });
     });
   }
@@ -397,14 +420,17 @@ function createNavigation(
         break;
       case "End":
         next = endOfWeek(date, localeOf(options));
-        while (unavailable(options, next) && next.compare(startOfWeek(date, localeOf(options))) > 0) {
+        while (
+          unavailable(options, next) &&
+          next.compare(startOfWeek(date, localeOf(options))) > 0
+        ) {
           next = next.subtract({ days: 1 });
         }
         break;
       case "PageUp":
-        pageVisible = startOfMonth(visible.value.subtract(
-          event.shiftKey ? { years: 1 } : { months: 1 },
-        ));
+        pageVisible = startOfMonth(
+          visible.value.subtract(event.shiftKey ? { years: 1 } : { months: 1 }),
+        );
         if (!canDisplayMonth(pageVisible)) {
           event.preventDefault();
           return;
@@ -416,9 +442,9 @@ function createNavigation(
         }
         break;
       case "PageDown":
-        pageVisible = startOfMonth(visible.value.add(
-          event.shiftKey ? { years: 1 } : { months: 1 },
-        ));
+        pageVisible = startOfMonth(
+          visible.value.add(event.shiftKey ? { years: 1 } : { months: 1 }),
+        );
         if (!canDisplayMonth(pageVisible)) {
           event.preventDefault();
           return;
@@ -467,8 +493,10 @@ function createNavigation(
     return {
       type: "button",
       get "aria-label"() {
-        return toValue(amount < 0 ? options.previousLabel : options.nextLabel)
-          ?? (amount < 0 ? "Previous month" : "Next month");
+        return (
+          toValue(amount < 0 ? options.previousLabel : options.nextLabel) ??
+          (amount < 0 ? "Previous month" : "Next month")
+        );
       },
       get disabled() {
         return isDisabled(options) || !canMoveMonth(amount);
@@ -570,14 +598,30 @@ function formValueProps(
     type: "date",
     tabindex: -1,
     "aria-hidden": "true",
-    get name() { return name === undefined ? undefined : toValue(name); },
-    get form() { return form === undefined ? undefined : toValue(form); },
-    get value() { return value(); },
-    get min() { return toValue(options.minValue); },
-    get max() { return toValue(options.maxValue); },
-    get disabled() { return isDisabled(options); },
-    get readonly() { return isReadOnly(options); },
-    get required() { return toValue(options.required) ?? false; },
+    get name() {
+      return name === undefined ? undefined : toValue(name);
+    },
+    get form() {
+      return form === undefined ? undefined : toValue(form);
+    },
+    get value() {
+      return value();
+    },
+    get min() {
+      return toValue(options.minValue);
+    },
+    get max() {
+      return toValue(options.maxValue);
+    },
+    get disabled() {
+      return isDisabled(options);
+    },
+    get readonly() {
+      return isReadOnly(options);
+    },
+    get required() {
+      return toValue(options.required) ?? false;
+    },
     onInvalid,
   };
 }
@@ -588,17 +632,20 @@ function createCalendar(options: UseCalendarOptions): CalendarBinding {
   const parsedValue = computed(() => parseIso(options.value.value));
   const isInvalid = computed(() => {
     if (toValue(options.invalid) ?? false) return true;
-    if (forcedInvalid.value
-      && parsedValue.value === null
-      && (toValue(options.required) ?? false)
-      && !isDisabled(options)
-      && !isReadOnly(options)) return true;
+    if (
+      forcedInvalid.value &&
+      parsedValue.value === null &&
+      (toValue(options.required) ?? false) &&
+      !isDisabled(options) &&
+      !isReadOnly(options)
+    )
+      return true;
     if (options.value.value !== null && parsedValue.value === null) return true;
     return parsedValue.value ? unavailable(options, parsedValue.value) : false;
   });
-  const validationMessage = computed(() => isInvalid.value
-    ? toValue(options.validationMessage) ?? "Choose an available date."
-    : "");
+  const validationMessage = computed(() =>
+    isInvalid.value ? (toValue(options.validationMessage) ?? "Choose an available date.") : "",
+  );
 
   function syncCalendarFromValue(value: string | null) {
     const date = parseIso(value);
@@ -634,19 +681,25 @@ function createCalendar(options: UseCalendarOptions): CalendarBinding {
 
   function select(target: CalendarCell): boolean {
     const date = parseIso(target.value);
-    if (!date || isDisabled(options) || isReadOnly(options) || unavailable(options, date)) return false;
+    if (!date || isDisabled(options) || isReadOnly(options) || unavailable(options, date))
+      return false;
     options.value.value = target.value;
     options.onSelect?.(target.value);
     forcedInvalid.value = false;
     return true;
   }
 
-  const hidden = formValueProps(options, () => options.value.value ?? "", options.name, options.form,
+  const hidden = formValueProps(
+    options,
+    () => options.value.value ?? "",
+    options.name,
+    options.form,
     (event) => {
       forcedInvalid.value = true;
       event.preventDefault();
       navigation.focusDate(options.value.value ?? navigation.focused.value.toString());
-    });
+    },
+  );
 
   if (options.formControl) {
     const initial = options.value.value;
@@ -667,6 +720,8 @@ function createCalendar(options: UseCalendarOptions): CalendarBinding {
     forcedInvalid.value = false;
   }
 
+  const errorId = `${navigation.id}-error`;
+
   return {
     value: options.value,
     visibleMonth: computed(() => navigation.visible.value.toString()),
@@ -682,11 +737,17 @@ function createCalendar(options: UseCalendarOptions): CalendarBinding {
     }),
     cellButtonProps: (target) => {
       const date = parseIso(target.value) as CalendarDate;
-      return navigation.buttonProps(date, target.unavailable, () => { select(target); });
+      return navigation.buttonProps(date, target.unavailable, () => {
+        select(target);
+      });
     },
     previousButtonProps: navigation.previousButtonProps,
     nextButtonProps: navigation.nextButtonProps,
     formValueProps: hidden,
+    error: {
+      id: errorId,
+      describedBy: computed(() => (isInvalid.value ? errorId : undefined)),
+    },
     isInvalid,
     validationMessage,
     select,
@@ -724,17 +785,22 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
   const isInvalid = computed(() => {
     if (toValue(options.invalid) ?? false) return true;
     if (anchorDate.value !== null) return true;
-    if (forcedInvalid.value
-      && parsedRange.value === null
-      && (toValue(options.required) ?? false)
-      && !isDisabled(options)
-      && !isReadOnly(options)) return true;
+    if (
+      forcedInvalid.value &&
+      parsedRange.value === null &&
+      (toValue(options.required) ?? false) &&
+      !isDisabled(options) &&
+      !isReadOnly(options)
+    )
+      return true;
     if (options.value.value !== null && parsedRange.value === null) return true;
     return parsedRange.value ? spanUnavailable(...parsedRange.value) : false;
   });
-  const validationMessage = computed(() => isInvalid.value
-    ? toValue(options.validationMessage) ?? "Choose an available date range."
-    : "");
+  const validationMessage = computed(() =>
+    isInvalid.value
+      ? (toValue(options.validationMessage) ?? "Choose an available date range.")
+      : "",
+  );
 
   function syncRangeCalendarFromValue() {
     const range = orderedRange(options.value.value);
@@ -804,15 +870,15 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
 
   function select(target: RangeCalendarCell): boolean {
     const date = parseIso(target.value);
-    if (!date || isDisabled(options) || isReadOnly(options) || unavailable(options, date)) return false;
+    if (!date || isDisabled(options) || isReadOnly(options) || unavailable(options, date))
+      return false;
     if (!anchorDate.value) {
       anchorDate.value = date;
       previewDate.value = date;
       return false;
     }
-    const [start, end] = anchorDate.value.compare(date) <= 0
-      ? [anchorDate.value, date]
-      : [date, anchorDate.value];
+    const [start, end] =
+      anchorDate.value.compare(date) <= 0 ? [anchorDate.value, date] : [date, anchorDate.value];
     if (spanUnavailable(start, end)) {
       forcedInvalid.value = true;
       // Keep range construction recoverable: the rejected endpoint becomes a
@@ -865,6 +931,8 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
     previewDate.value = null;
   }
 
+  const errorId = `${navigation.id}-error`;
+
   return {
     value: options.value,
     visibleMonth: computed(() => navigation.visible.value.toString()),
@@ -883,7 +951,9 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
       return navigation.buttonProps(
         date,
         target.unavailable,
-        () => { select(target); },
+        () => {
+          select(target);
+        },
         () => {
           if (anchorDate.value) previewDate.value = date;
         },
@@ -905,6 +975,10 @@ function createRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBin
       options.form,
       onInvalid,
     ),
+    error: {
+      id: errorId,
+      describedBy: computed(() => (isInvalid.value ? errorId : undefined)),
+    },
     isInvalid,
     validationMessage,
     anchor: computed(() => anchorDate.value?.toString() ?? null),
@@ -926,7 +1000,8 @@ export function useCalendar(
 ): CalendarBinding {
   if (value === undefined) return createCalendar(optionsOrProps as UseCalendarOptions);
   const props = optionsOrProps as CalendarComponentProps;
-  return createCalendar({
+  const formControl = shallowRef<HTMLInputElement | null>(null);
+  const binding = createCalendar({
     value,
     label: () => props.label,
     ...(props.id ? { id: props.id } : {}),
@@ -945,7 +1020,10 @@ export function useCalendar(
     defaultVisibleMonth: () => props.defaultVisibleMonth,
     name: () => props.name,
     form: () => props.form,
+    formControl,
   });
+  binding.formValueProps.ref = nativeFormControlRef(formControl);
+  return binding;
 }
 
 export function useRangeCalendar(options: UseRangeCalendarOptions): RangeCalendarBinding;
@@ -959,7 +1037,9 @@ export function useRangeCalendar(
 ): RangeCalendarBinding {
   if (value === undefined) return createRangeCalendar(optionsOrProps as UseRangeCalendarOptions);
   const props = optionsOrProps as RangeCalendarComponentProps;
-  return createRangeCalendar({
+  const startFormControl = shallowRef<HTMLInputElement | null>(null);
+  const endFormControl = shallowRef<HTMLInputElement | null>(null);
+  const binding = createRangeCalendar({
     value,
     label: () => props.label,
     ...(props.id ? { id: props.id } : {}),
@@ -979,34 +1059,10 @@ export function useRangeCalendar(
     startName: () => props.startName,
     endName: () => props.endName,
     form: () => props.form,
+    startFormControl,
+    endFormControl,
   });
-}
-
-export function useCalendarNativeForm(
-  control: Readonly<Ref<HTMLInputElement | null>>,
-  binding: CalendarBinding,
-): void {
-  const initial = binding.value.value;
-  useNativeFormReset(control, (input) => {
-    binding.reset(initial);
-    input.value = initial ?? "";
-  });
-  useNativeCustomValidity(control, binding.validationMessage);
-}
-
-export function useRangeCalendarNativeForm(
-  controls: Readonly<{
-    start: Readonly<Ref<HTMLInputElement | null>>;
-    end: Readonly<Ref<HTMLInputElement | null>>;
-  }>,
-  binding: RangeCalendarBinding,
-): void {
-  const initial = binding.value.value ? { ...binding.value.value } : null;
-  useNativeFormReset(controls.start, (input) => {
-    binding.reset(initial);
-    input.value = initial?.start ?? "";
-    if (controls.end.value) controls.end.value.value = initial?.end ?? "";
-  });
-  useNativeCustomValidity(controls.start, binding.validationMessage);
-  useNativeCustomValidity(controls.end, binding.validationMessage);
+  binding.startFormValueProps.ref = nativeFormControlRef(startFormControl);
+  binding.endFormValueProps.ref = nativeFormControlRef(endFormControl);
+  return binding;
 }

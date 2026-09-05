@@ -27,6 +27,8 @@ export type UseTabsOptions<Item, Key extends string = string> = TabsAccessibleNa
   isDisabled?: (item: Item) => boolean;
   /** Controlled selection. Invalid values are canonicalized to an enabled tab. */
   selected?: Ref<Key | null>;
+  /** Vue component model whose emitted write may precede the parent prop update. */
+  model?: Ref<Key | null>;
   /** Initial uncontrolled selection. Defaults to the first enabled tab. */
   defaultSelected?: Key;
   onSelectionChange?: (key: Key | null) => void;
@@ -106,9 +108,7 @@ interface TabsComponentProps<Item extends TabsComponentItem> {
  * Buffers a Vue component model so behavior code can write synchronously even
  * while a controlled parent still exposes the previous prop snapshot.
  */
-export function useTabsModelBridge<Key extends string>(
-  model: Ref<Key | null>,
-): Ref<Key | null> {
+function createTabsModelBridge<Key extends string>(model: Ref<Key | null>): Ref<Key | null> {
   const selected = ref<Key | null>(model.value) as Ref<Key | null>;
 
   function syncSelectedFromModel(value: Key | null) {
@@ -189,11 +189,13 @@ function createTabs<Item, Key extends string = string>(
   }
 
   const internalSelection = ref<Key | null>(initialSelection()) as Ref<Key | null>;
-  const selectedKey = options.selected ?? internalSelection;
+  const selectedKey = options.model
+    ? createTabsModelBridge(options.model)
+    : (options.selected ?? internalSelection);
   const focusedKey = ref<Key | null>(
     selectedKey.value !== null && enabledKeys().includes(selectedKey.value)
       ? selectedKey.value
-      : enabledKeys()[0] ?? null,
+      : (enabledKeys()[0] ?? null),
   ) as Ref<Key | null>;
 
   function writeSelection(next: Key | null) {
@@ -214,9 +216,7 @@ function createTabs<Item, Key extends string = string>(
   function tablistHasFocus(): boolean {
     if (!tablistElement) return false;
     const root = tablistElement.getRootNode();
-    const active = "activeElement" in root
-      ? (root as Document | ShadowRoot).activeElement
-      : null;
+    const active = "activeElement" in root ? (root as Document | ShadowRoot).activeElement : null;
     return active !== null && tablistElement.contains(active);
   }
 
@@ -237,9 +237,10 @@ function createTabs<Item, Key extends string = string>(
     const current = enabled.findIndex((candidate) => keyOf(candidate) === keyOf(item));
     if (current === -1) return enabled[0];
     const candidate = current + delta;
-    const index = options.loop === false
-      ? Math.max(0, Math.min(candidate, enabled.length - 1))
-      : (candidate + enabled.length) % enabled.length;
+    const index =
+      options.loop === false
+        ? Math.max(0, Math.min(candidate, enabled.length - 1))
+        : (candidate + enabled.length) % enabled.length;
     return enabled[index];
   }
 
@@ -264,7 +265,12 @@ function createTabs<Item, Key extends string = string>(
 
     const after = current.slice(index).find((entry) => !entry.disabled);
     if (after) return after.key;
-    return current.slice(0, index).reverse().find((entry) => !entry.disabled)?.key ?? null;
+    return (
+      current
+        .slice(0, index)
+        .reverse()
+        .find((entry) => !entry.disabled)?.key ?? null
+    );
   }
 
   function reconcileCollection(
@@ -276,8 +282,7 @@ function createTabs<Item, Key extends string = string>(
     const selectedIsValid = selected !== null && enabled.includes(selected);
     const focused = focusedKey.value;
     const focusedIsValid = focused !== null && enabled.includes(focused);
-    const repairDomFocus =
-      focused !== null && tabElements.get(focused)?.matches(":focus") === true;
+    const repairDomFocus = focused !== null && tabElements.get(focused)?.matches(":focus") === true;
 
     // Vue defineModel refs emit to the parent synchronously but may keep
     // exposing the old prop until the parent render returns. Keep using the
@@ -290,7 +295,7 @@ function createTabs<Item, Key extends string = string>(
     const nextFocus =
       canonicalSelection !== null && enabled.includes(canonicalSelection)
         ? canonicalSelection
-        : enabled[0] ?? null;
+        : (enabled[0] ?? null);
     if (!focusedIsValid) focusedKey.value = nextFocus;
     tabElements.prune(current.map((entry) => entry.key));
 
@@ -320,9 +325,7 @@ function createTabs<Item, Key extends string = string>(
     id,
     dir: direction,
     ...(options.label === undefined ? {} : { "aria-label": options.label }),
-    ...(options.labelledBy === undefined
-      ? {}
-      : { "aria-labelledby": options.labelledBy }),
+    ...(options.labelledBy === undefined ? {} : { "aria-labelledby": options.labelledBy }),
     ...(orientation === "vertical" ? { "aria-orientation": "vertical" as const } : {}),
     onFocusout(event) {
       const list = event.currentTarget as HTMLElement | null;
@@ -330,7 +333,9 @@ function createTabs<Item, Key extends string = string>(
       if (event.relatedTarget && list.contains(event.relatedTarget as Node)) return;
       const selected = selectedKey.value;
       focusedKey.value =
-        selected !== null && enabledKeys().includes(selected) ? selected : enabledKeys()[0] ?? null;
+        selected !== null && enabledKeys().includes(selected)
+          ? selected
+          : (enabledKeys()[0] ?? null);
     },
   };
 
@@ -362,16 +367,14 @@ function createTabs<Item, Key extends string = string>(
       onKeydown(event) {
         if (disabled || event.altKey || event.ctrlKey || event.metaKey) return;
 
-        const nextKey = orientation === "vertical"
-          ? "ArrowDown"
-          : direction === "rtl"
-            ? "ArrowLeft"
-            : "ArrowRight";
-        const previousKey = orientation === "vertical"
-          ? "ArrowUp"
-          : direction === "rtl"
-            ? "ArrowRight"
-            : "ArrowLeft";
+        const nextKey =
+          orientation === "vertical"
+            ? "ArrowDown"
+            : direction === "rtl"
+              ? "ArrowLeft"
+              : "ArrowRight";
+        const previousKey =
+          orientation === "vertical" ? "ArrowUp" : direction === "rtl" ? "ArrowRight" : "ArrowLeft";
 
         if (event.key === nextKey || event.key === previousKey) {
           handled(event);
@@ -434,7 +437,6 @@ export function useTabs(
   }
 
   const props = optionsOrProps as TabsComponentProps<TabsComponentItem>;
-  const selected = useTabsModelBridge(model);
   return createTabs<TabsComponentItem>({
     getKey: (item) => item.key,
     isDisabled: (item) => item.disabled ?? false,
@@ -443,7 +445,7 @@ export function useTabs(
     dir: props.dir,
     loop: props.loop,
     items: () => props.items,
-    selected,
+    model,
     label: props.label,
     ...(props.id ? { id: props.id } : {}),
   });

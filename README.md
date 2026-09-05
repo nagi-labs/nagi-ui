@@ -140,6 +140,13 @@ together, so structural customization can remain ordinary source editing:
 vp exec nagi-ui own dropdown-menu
 ```
 
+When a Blueprint composes another public component, `nagi-ui own` recursively
+owns that dependency too. Blueprint source uses the same relative import in the
+package and owned directory trees, so the copied parent immediately resolves to
+the copied child without source rewriting. Existing owned dependencies are
+reused without overwriting consumer changes. `nagi-ui list`, command output,
+and the component site's Source section expose the dependency graph.
+
 Owned files carry `@nagi-source` provenance metadata. After ownership the local
 repository is the source of truth: divergence is managed through provenance,
 git history, and executable verification rather than central drift tracking.

@@ -3,6 +3,10 @@ import {
   getCurrentInstance,
   onMounted,
   onUpdated,
+  ref,
+  useId,
+  type ComponentPublicInstance,
+  type StyleValue,
   type WritableComputedRef,
 } from "vue";
 
@@ -22,6 +26,43 @@ export interface RangeSliderBinding {
   lowerValue: WritableComputedRef<number>;
   upperValue: WritableComputedRef<number>;
   railProps: RangeSliderRailProps;
+}
+
+interface RangeSliderComponentProps {
+  readonly id?: string | undefined;
+  readonly class?: unknown;
+  readonly style?: StyleValue | undefined;
+  readonly title?: string | undefined;
+  readonly ariaLabel?: string | undefined;
+  readonly ariaLabelledby?: string | undefined;
+  readonly ariaDescribedby?: string | undefined;
+  readonly disabled?: boolean | undefined;
+  readonly lowerId?: string | undefined;
+  readonly upperId?: string | undefined;
+  readonly lowerName?: string | undefined;
+  readonly upperName?: string | undefined;
+  readonly form?: string | undefined;
+  readonly min?: number | undefined;
+  readonly max?: number | undefined;
+  readonly step?: number | "any" | undefined;
+}
+
+export interface RangeSliderInputProps {
+  ref: (element: Element | ComponentPublicInstance | null) => void;
+  readonly id: string;
+  readonly name: string | undefined;
+  readonly form: string | undefined;
+  readonly min: number;
+  readonly max: number;
+  readonly step: number | "any";
+  readonly "aria-valuemin"?: number;
+  readonly "aria-valuemax"?: number;
+}
+
+export interface RangeSliderComponentBinding extends RangeSliderBinding {
+  fieldsetProps: Readonly<Record<string, unknown>>;
+  lowerInputProps: RangeSliderInputProps;
+  upperInputProps: RangeSliderInputProps;
 }
 
 export interface RangeSliderRailProps {
@@ -46,10 +87,11 @@ function isEffectivelyDisabled(control: HTMLInputElement): boolean {
 
 /**
  * Keeps a two-input native range control aligned with its tuple model.
- * Range sanitization, reset ordering, and DOM/model synchronization stay here;
- * labels and the visible lower/upper constraints remain in the Blueprint.
+ * Range sanitization, reset ordering, and DOM/model synchronization stay here.
+ * The component overload also returns complete native-input bindings while the
+ * Blueprint retains the two visible range elements and their labels.
  */
-export function useRangeSlider(
+function createRangeSlider(
   lowerInput: ReadonlyInputRef,
   upperInput: ReadonlyInputRef,
   model: WritableRangeSliderModel,
@@ -80,10 +122,7 @@ export function useRangeSlider(
       upperControl.value = String(next[1]);
     }
 
-    return commit(
-      nativeValue(lowerControl, next[0]),
-      nativeValue(upperControl, next[1]),
-    );
+    return commit(nativeValue(lowerControl, next[0]), nativeValue(upperControl, next[1]));
   };
 
   const lowerValue = computed<number>({
@@ -168,10 +207,7 @@ export function useRangeSlider(
     const sanitized = nativeValue(control, thumb === "lower" ? model.value[0] : model.value[1]);
     if (thumb === "lower") lowerValue.value = sanitized;
     else upperValue.value = sanitized;
-    const committed = nativeValue(
-      control,
-      thumb === "lower" ? model.value[0] : model.value[1],
-    );
+    const committed = nativeValue(control, thumb === "lower" ? model.value[0] : model.value[1]);
     if (previous === committed) return false;
     control.dispatchEvent(new Event("input", { bubbles: true }));
     return true;
@@ -248,4 +284,106 @@ export function useRangeSlider(
   }
 
   return { lowerValue, upperValue, railProps };
+}
+
+export function useRangeSlider(
+  lowerInput: ReadonlyInputRef,
+  upperInput: ReadonlyInputRef,
+  model: WritableRangeSliderModel,
+): RangeSliderBinding;
+export function useRangeSlider(
+  props: RangeSliderComponentProps,
+  model: WritableRangeSliderModel,
+): RangeSliderComponentBinding;
+export function useRangeSlider(
+  propsOrLowerInput: RangeSliderComponentProps | ReadonlyInputRef,
+  modelOrUpperInput: WritableRangeSliderModel | ReadonlyInputRef,
+  directModel?: WritableRangeSliderModel,
+): RangeSliderBinding | RangeSliderComponentBinding {
+  if (directModel !== undefined) {
+    return createRangeSlider(
+      propsOrLowerInput as ReadonlyInputRef,
+      modelOrUpperInput as ReadonlyInputRef,
+      directModel,
+    );
+  }
+
+  const props = propsOrLowerInput as RangeSliderComponentProps;
+  const model = modelOrUpperInput as WritableRangeSliderModel;
+  const lowerInput = ref<HTMLInputElement | null>(null);
+  const upperInput = ref<HTMLInputElement | null>(null);
+  const generatedLowerId = useId();
+  const generatedUpperId = useId();
+  const binding = createRangeSlider(lowerInput, upperInput, model);
+
+  const lowerInputProps: RangeSliderInputProps = {
+    ref: (element) => {
+      lowerInput.value = element as HTMLInputElement | null;
+    },
+    get id() {
+      return props.lowerId ?? generatedLowerId;
+    },
+    get name() {
+      return props.lowerName;
+    },
+    get form() {
+      return props.form;
+    },
+    get min() {
+      return props.min ?? 0;
+    },
+    get max() {
+      return props.max ?? 100;
+    },
+    get step() {
+      return props.step ?? 1;
+    },
+    get "aria-valuemax"() {
+      return binding.upperValue.value;
+    },
+  };
+  const upperInputProps: RangeSliderInputProps = {
+    ref: (element) => {
+      upperInput.value = element as HTMLInputElement | null;
+    },
+    get id() {
+      return props.upperId ?? generatedUpperId;
+    },
+    get name() {
+      return props.upperName;
+    },
+    get form() {
+      return props.form;
+    },
+    get min() {
+      return props.min ?? 0;
+    },
+    get max() {
+      return props.max ?? 100;
+    },
+    get step() {
+      return props.step ?? 1;
+    },
+    get "aria-valuemin"() {
+      return binding.lowerValue.value;
+    },
+  };
+
+  return {
+    ...binding,
+    get fieldsetProps() {
+      return {
+        class: props.class,
+        style: props.style,
+        id: props.id,
+        title: props.title,
+        "aria-label": props.ariaLabel,
+        "aria-labelledby": props.ariaLabelledby,
+        "aria-describedby": props.ariaDescribedby,
+        disabled: props.disabled,
+      };
+    },
+    lowerInputProps,
+    upperInputProps,
+  };
 }

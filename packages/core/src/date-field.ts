@@ -19,7 +19,11 @@ import {
   type Ref,
 } from "vue";
 
-import { useNativeCustomValidity, useNativeFormReset } from "./native-form.ts";
+import {
+  nativeFormControlRef,
+  useNativeCustomValidity,
+  useNativeFormReset,
+} from "./native-form.ts";
 import { createElementRegistry } from "./element-registry.ts";
 import { createSegmentDigitBuffer, localeDigit } from "./segmented-field.ts";
 
@@ -73,6 +77,7 @@ export interface DateFieldSegmentProps {
 }
 
 export interface DateFieldFormValueProps {
+  ref?: (element: Element | ComponentPublicInstance | null) => void;
   type: "date";
   tabindex: -1;
   "aria-hidden": "true";
@@ -109,6 +114,7 @@ export interface UseDateFieldOptions {
   required?: MaybeRefOrGetter<boolean | undefined>;
   invalid?: MaybeRefOrGetter<boolean | undefined>;
   validationMessage?: MaybeRefOrGetter<string | undefined>;
+  describedBy?: MaybeRefOrGetter<string | undefined>;
   name?: MaybeRefOrGetter<string | undefined>;
   form?: MaybeRefOrGetter<string | undefined>;
   segmentLabels?: Partial<DateFieldSegmentLabels>;
@@ -122,6 +128,10 @@ export interface DateFieldBinding {
   fieldProps: DateFieldProps;
   segmentProps: (segment: DateFieldSegment) => DateFieldSegmentProps;
   formValueProps: DateFieldFormValueProps;
+  error: {
+    id: string;
+    describedBy: ComputedRef<string | undefined>;
+  };
   isInvalid: ComputedRef<boolean>;
   validationMessage: ComputedRef<string>;
   focusFirst: () => void;
@@ -142,6 +152,7 @@ export interface DateFieldComponentProps {
   readonly required: boolean;
   readonly invalid: boolean;
   readonly validationMessage: string;
+  readonly ariaDescribedby?: string | undefined;
   readonly yearLabel: string;
   readonly monthLabel: string;
   readonly dayLabel: string;
@@ -212,8 +223,7 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     const localeInfo = new Intl.Locale(locale()) as Intl.Locale & {
       textInfo?: { direction?: "ltr" | "rtl" };
     };
-    return toValue(options.dir)
-      ?? (localeInfo.textInfo?.direction === "rtl" ? "rtl" : "ltr");
+    return toValue(options.dir) ?? (localeInfo.textInfo?.direction === "rtl" ? "rtl" : "ltr");
   }
 
   function readOnly(): boolean {
@@ -257,17 +267,18 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
   function outOfRange(value: CalendarDate): boolean {
     const minimum = parseIsoDate(toValue(options.minValue));
     const maximum = parseIsoDate(toValue(options.maxValue));
-    return (minimum !== null && value.compare(minimum) < 0)
-      || (maximum !== null && value.compare(maximum) > 0);
+    return (
+      (minimum !== null && value.compare(minimum) < 0) ||
+      (maximum !== null && value.compare(maximum) > 0)
+    );
   }
 
   function commitParts() {
     incompleteInvalid.value = false;
     const next = candidate();
     if (next === null) {
-      incompleteInvalid.value = parts.year !== undefined
-        && parts.month !== undefined
-        && parts.day !== undefined;
+      incompleteInvalid.value =
+        parts.year !== undefined && parts.month !== undefined && parts.day !== undefined;
       writeModel(null);
       return;
     }
@@ -320,8 +331,10 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
 
   function editableSegments(): readonly EditableDateFieldSegmentType[] {
     return segments.value
-      .filter((segment): segment is DateFieldSegment & { type: EditableDateFieldSegmentType } =>
-        segment.type !== "literal")
+      .filter(
+        (segment): segment is DateFieldSegment & { type: EditableDateFieldSegmentType } =>
+          segment.type !== "literal",
+      )
       .map((segment) => segment.type);
   }
 
@@ -375,13 +388,14 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     const minimum = minimumFor(type);
     const maximum = maximumFor(type);
     const initial = type === "year" ? 2000 : minimum;
-    const next = currentPart === undefined
-      ? initial
-      : currentPart + amount > maximum
-        ? minimum
-        : currentPart + amount < minimum
-          ? maximum
-          : currentPart + amount;
+    const next =
+      currentPart === undefined
+        ? initial
+        : currentPart + amount > maximum
+          ? minimum
+          : currentPart + amount < minimum
+            ? maximum
+            : currentPart + amount;
     setSegment(type, next);
   }
 
@@ -450,13 +464,15 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
         return [{ key: `literal-${count}`, type: "literal", text: part.value }];
       }
       const value = parts[part.type];
-      return [{
-        key: part.type,
-        type: part.type,
-        text: value === undefined ? placeholder(part.type) : formatNumber(part.type, value),
-        placeholder: placeholder(part.type),
-        ...(value === undefined ? {} : { value }),
-      }];
+      return [
+        {
+          key: part.type,
+          type: part.type,
+          text: value === undefined ? placeholder(part.type) : formatNumber(part.type, value),
+          placeholder: placeholder(part.type),
+          ...(value === undefined ? {} : { value }),
+        },
+      ];
     });
   });
 
@@ -464,16 +480,26 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     if (toValue(options.invalid) ?? false) return true;
     const current = candidate();
     if (incompleteInvalid.value) return true;
-    if (forcedInvalid.value
-      && current === null
-      && (toValue(options.required) ?? false)
-      && !disabled()
-      && !readOnly()) return true;
+    if (
+      forcedInvalid.value &&
+      current === null &&
+      (toValue(options.required) ?? false) &&
+      !disabled() &&
+      !readOnly()
+    )
+      return true;
     return current !== null && outOfRange(current);
   });
-  const validationMessage = computed(() => isInvalid.value
-    ? toValue(options.validationMessage) ?? "Enter a valid date."
-    : "");
+  const validationMessage = computed(() =>
+    isInvalid.value ? (toValue(options.validationMessage) ?? "Enter a valid date.") : "",
+  );
+  const errorId = `${id}-error`;
+  const errorDescribedBy = computed(
+    () =>
+      [toValue(options.describedBy), isInvalid.value ? errorId : undefined]
+        .filter(Boolean)
+        .join(" ") || undefined,
+  );
 
   const fieldProps: DateFieldProps = {
     id,
@@ -499,7 +525,8 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     onFocusout(event) {
       const next = event.relatedTarget as Node | null;
       if (next && (event.currentTarget as HTMLElement).contains(next)) return;
-      const hasAny = parts.year !== undefined || parts.month !== undefined || parts.day !== undefined;
+      const hasAny =
+        parts.year !== undefined || parts.month !== undefined || parts.day !== undefined;
       incompleteInvalid.value = hasAny && candidate() === null;
       digitBuffer.clear();
     },
@@ -630,6 +657,10 @@ function createDateField(options: UseDateFieldOptions): DateFieldBinding {
     fieldProps,
     segmentProps,
     formValueProps,
+    error: {
+      id: errorId,
+      describedBy: errorDescribedBy,
+    },
     isInvalid,
     validationMessage,
     focusFirst,
@@ -649,7 +680,8 @@ export function useDateField(
 ): DateFieldBinding {
   if (value === undefined) return createDateField(optionsOrProps as UseDateFieldOptions);
   const props = optionsOrProps as DateFieldComponentProps;
-  return createDateField({
+  const formControl = ref<HTMLInputElement | null>(null);
+  const binding = createDateField({
     value,
     label: () => props.label,
     locale: () => props.locale,
@@ -662,26 +694,25 @@ export function useDateField(
     required: () => props.required,
     invalid: () => props.invalid,
     validationMessage: () => props.validationMessage,
+    describedBy: () => props.ariaDescribedby,
     name: () => props.name,
     form: () => props.form,
+    formControl,
     segmentLabels: {
-      get year() { return props.yearLabel; },
-      get month() { return props.monthLabel; },
-      get day() { return props.dayLabel; },
-      get empty() { return props.emptyLabel; },
+      get year() {
+        return props.yearLabel;
+      },
+      get month() {
+        return props.monthLabel;
+      },
+      get day() {
+        return props.dayLabel;
+      },
+      get empty() {
+        return props.emptyLabel;
+      },
     },
   });
-}
-
-/** Keeps package DateField reset and native constraint validation synchronized. */
-export function useDateFieldNativeForm(
-  control: Readonly<Ref<HTMLInputElement | null>>,
-  binding: DateFieldBinding,
-): void {
-  const initialValue = binding.value.value;
-  useNativeFormReset(control, (input) => {
-    binding.reset(initialValue);
-    input.value = initialValue ?? "";
-  });
-  useNativeCustomValidity(control, binding.validationMessage);
+  binding.formValueProps.ref = nativeFormControlRef(formControl);
+  return binding;
 }

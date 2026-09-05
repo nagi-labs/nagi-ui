@@ -37,6 +37,8 @@ export interface UseTreeOptions<Item, Key extends string = string> {
   selected: WritableRef<Key | null>;
   expanded: WritableRef<readonly Key[]>;
   label: MaybeRefOrGetter<string>;
+  expandLabel?: MaybeRefOrGetter<string | undefined>;
+  collapseLabel?: MaybeRefOrGetter<string | undefined>;
   onSelect?: (item: Item) => void;
   onExpandedChange?: (keys: readonly Key[]) => void;
   typeaheadTimeout?: number;
@@ -73,6 +75,13 @@ export interface TreeItemProps {
 
 export interface TreeGroupProps { role: "group" }
 
+export interface TreeToggleControlProps {
+  tabindex: -1;
+  "aria-label": string;
+  disabled: boolean;
+  onClick: (event: MouseEvent) => void;
+}
+
 export interface TreeBinding<Item, Key extends string = string> {
   activeKey: Ref<Key | null>;
   selected: Ref<Key | null>;
@@ -82,6 +91,8 @@ export interface TreeBinding<Item, Key extends string = string> {
   groupProps: TreeGroupProps;
   entryFor: (item: Item) => TreeEntry<Item, Key>;
   treeItemProps: (item: Item) => TreeItemProps;
+  isExpanded: (item: Item) => boolean;
+  toggleControlProps: (item: Item) => TreeToggleControlProps;
   focusOwner: (event: Event) => void;
   activate: (item: Item) => void;
   toggle: (item: Item) => void;
@@ -105,6 +116,8 @@ export interface TreeComponentProps<Item extends TreeComponentItem> {
   readonly items: readonly Item[];
   readonly label: string;
   readonly id?: string | undefined;
+  readonly expandLabel?: string | undefined;
+  readonly collapseLabel?: string | undefined;
 }
 export interface TreeComponentModel {
   selected: Ref<string | null>;
@@ -178,6 +191,10 @@ function createTree<Item, Key extends string>(
   function writeExpanded(next: readonly Key[]) {
     options.expanded.value = next;
     options.onExpandedChange?.(next);
+  }
+
+  function isExpanded(item: Item) {
+    return options.expanded.value.includes(keyOf(item));
   }
 
   function toggle(item: Item) {
@@ -354,6 +371,21 @@ function createTree<Item, Key extends string>(
         },
       };
     },
+    isExpanded,
+    toggleControlProps(item) {
+      const entry = entryFor(item);
+      return {
+        tabindex: -1,
+        "aria-label": `${isExpanded(item)
+          ? toValue(options.collapseLabel) ?? "Collapse"
+          : toValue(options.expandLabel) ?? "Expand"} ${options.getTextValue(item)}`,
+        disabled: entry.disabled || entry.loading,
+        onClick(event) {
+          event.stopPropagation();
+          toggleFromControl(item, event);
+        },
+      };
+    },
     focusOwner,
     activate,
     toggle,
@@ -385,6 +417,8 @@ export function useTree<Item, Key extends string = string>(
     selected: model.selected as Ref<Key | null>,
     expanded: model.expanded as Ref<readonly Key[]>,
     label: () => props.label,
+    expandLabel: () => props.expandLabel,
+    collapseLabel: () => props.collapseLabel,
     ...(props.id ? { id: props.id } : {}),
   }) as unknown as TreeBinding<Item, Key>;
 }

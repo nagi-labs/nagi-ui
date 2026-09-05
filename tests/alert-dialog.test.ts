@@ -67,7 +67,10 @@ test("[ALD-DIALOG-SEM-01][ALD-DIALOG-SEM-02][ALD-DIALOG-SEM-03][ALD-FOCUS-01] Al
     assert.match(dialog, /closedby="closerequest"/);
 
     assert.match(html, /<h2[^>]*>Delete this account\?<\/h2>/);
-    assert.match(html, /<p[^>]*>This action cannot be undone\.<\/p>/);
+    assert.match(
+      html,
+      /<div[^>]*data-part="description"[^>]*><span class="text">This action cannot be undone\.<\/span><\/div>/,
+    );
     assert.match(html, /<footer class="footer">/);
     const cancelButton = html.match(/<button[^>]*>Keep account<\/button>/)?.[0] ?? "";
     assert.match(cancelButton, /autofocus/);
@@ -104,7 +107,10 @@ test("AlertDialog rich title and description keep the owned a11y wrappers", asyn
     ));
 
     assert.match(html, /<h2[^>]*><strong>Reset settings\?<\/strong><\/h2>/);
-    assert.match(html, /<p[^>]*><em>Restores defaults\.<\/em><\/p>/);
+    assert.match(
+      html,
+      /<div[^>]*data-part="description"[^>]*><em>Restores defaults\.<\/em><\/div>/,
+    );
     assert.match(html, /class="[^"]*-action[^"]*" data-tone="danger"/);
   });
 });

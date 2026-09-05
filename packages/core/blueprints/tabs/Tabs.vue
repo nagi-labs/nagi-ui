@@ -76,12 +76,12 @@ const tabs = useTabs(props, selectedModel);
         name="panel"
         :item="item"
       >
-        <p
+        <span
           v-if="item.content"
-          class="p"
+          class="text"
         >
           {{ item.content }}
-        </p>
+        </span>
       </slot>
     </section>
   </div>
@@ -158,8 +158,8 @@ const tabs = useTabs(props, selectedModel);
       box-shadow: var(--nagi-shadow-focus);
     }
 
-    > .p {
-      margin: 0;
+    > .text {
+      display: block;
       padding: var(--n-space-6);
       color: var(--nagi-color-text-muted);
     }
