@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { useDatePicker, useMenu, useSubmenu } from "@nagi-labs/nagi-ui";
+import { useMenu, useSubmenu } from "@nagi-labs/nagi-ui";
 import { NDatePicker, NDropdownMenu, type DropdownMenuNode } from "@nagi-labs/nagi-ui/components";
 import { computed, ref } from "vue";
+
+import OwnedDatePickerContractFixture from "./OwnedDatePickerContractFixture.vue";
 
 const packageMenuAction = ref("none");
 const packageGrid = ref(true);
@@ -76,23 +78,43 @@ const ownedDateSubmission = ref("not submitted");
 const packageDateInvalid = ref(false);
 const ownedDateInvalid = ref(false);
 const ownedDateOpen = ref(false);
-const ownedDateFormControl = ref<HTMLInputElement | null>(null);
-const ownedDatePicker = useDatePicker({
-  value: ownedDate,
-  open: ownedDateOpen,
-  label: "Owned delivery date",
-  calendarLabel: "Owned delivery date calendar",
-  locale: "en-US",
-  timeZone: "UTC",
-  defaultVisibleMonth: "2026-07-24",
-  name: "ownedDeliveryDate",
-  minValue: "2026-07-24",
-  maxValue: "2026-07-27",
-  unavailableDates: ["2026-07-26"],
-  required: true,
-  invalid: ownedDateInvalid,
-  validationMessage: "Owned delivery date is invalid.",
-  formControl: ownedDateFormControl,
+const packageNavigationDate = ref<string | null>("2026-07-24");
+const ownedNavigationDate = ref<string | null>("2026-07-24");
+const packageDisabledDate = ref<string | null>("2026-07-24");
+const ownedDisabledDate = ref<string | null>("2026-07-24");
+const packageReadOnlyDate = ref<string | null>("2026-07-24");
+const ownedReadOnlyDate = ref<string | null>("2026-07-24");
+const packageControlledDateSource = ref<string | null>("2026-07-24");
+const packageControlledOpenSource = ref(false);
+const packageControlledDateRequests = ref(0);
+const packageControlledOpenRequests = ref(0);
+const packageControlledDate = computed({
+  get: () => packageControlledDateSource.value,
+  set: () => {
+    packageControlledDateRequests.value += 1;
+  },
+});
+const packageControlledOpen = computed({
+  get: () => packageControlledOpenSource.value,
+  set: () => {
+    packageControlledOpenRequests.value += 1;
+  },
+});
+const ownedControlledDateSource = ref<string | null>("2026-07-24");
+const ownedControlledOpenSource = ref(false);
+const ownedControlledDateRequests = ref(0);
+const ownedControlledOpenRequests = ref(0);
+const ownedControlledDate = computed({
+  get: () => ownedControlledDateSource.value,
+  set: () => {
+    ownedControlledDateRequests.value += 1;
+  },
+});
+const ownedControlledOpen = computed({
+  get: () => ownedControlledOpenSource.value,
+  set: () => {
+    ownedControlledOpenRequests.value += 1;
+  },
 });
 
 function submitPackageDate(event: SubmitEvent) {
@@ -237,26 +259,28 @@ function submitOwnedDate(event: SubmitEvent) {
     </section>
 
     <section aria-label="Package DatePicker Definition fixture">
+      <n-date-picker
+        v-model="packageDate"
+        label="Package delivery date"
+        calendar-label="Package delivery date calendar"
+        trigger-label="Choose package delivery date"
+        name="packageDeliveryDate"
+        form="package-date-form"
+        locale="en-US"
+        time-zone="UTC"
+        default-visible-month="2026-07-24"
+        min="2026-07-24"
+        max="2026-07-27"
+        :unavailable-dates="['2026-07-26']"
+        required
+        :invalid="packageDateInvalid"
+        validation-message="Package delivery date is invalid."
+      />
       <form
+        id="package-date-form"
         aria-label="Package date form"
         @submit.prevent="submitPackageDate"
       >
-        <n-date-picker
-          v-model="packageDate"
-          label="Package delivery date"
-          calendar-label="Package delivery date calendar"
-          trigger-label="Choose package delivery date"
-          name="packageDeliveryDate"
-          locale="en-US"
-          time-zone="UTC"
-          default-visible-month="2026-07-24"
-          min="2026-07-24"
-          max="2026-07-27"
-          :unavailable-dates="['2026-07-26']"
-          required
-          :invalid="packageDateInvalid"
-          validation-message="Package delivery date is invalid."
-        />
         <button type="submit">Submit package date</button>
       </form>
       <output
@@ -285,101 +309,29 @@ function submitOwnedDate(event: SubmitEvent) {
     </section>
 
     <section aria-label="Owned DatePicker Definition fixture">
+      <OwnedDatePickerContractFixture
+        v-model="ownedDate"
+        v-model:open="ownedDateOpen"
+        label="Owned delivery date"
+        calendar-label="Owned delivery date calendar"
+        trigger-label="Choose owned delivery date"
+        name="ownedDeliveryDate"
+        form="owned-date-form"
+        locale="en-US"
+        time-zone="UTC"
+        default-visible-month="2026-07-24"
+        min="2026-07-24"
+        max="2026-07-27"
+        :unavailable-dates="['2026-07-26']"
+        required
+        :invalid="ownedDateInvalid"
+        validation-message="Owned delivery date is invalid."
+      />
       <form
+        id="owned-date-form"
         aria-label="Owned date form"
         @submit.prevent="submitOwnedDate"
       >
-        <div
-          data-scope="date-picker"
-          data-part="root"
-        >
-          <div class="owned-field-layout">
-            <div
-              v-bind="ownedDatePicker.field.fieldProps"
-              data-scope="date-picker"
-              data-part="field"
-            >
-              <span
-                v-for="segment in ownedDatePicker.field.segments.value"
-                :key="segment.key"
-                v-bind="ownedDatePicker.field.segmentProps(segment)"
-                data-scope="date-picker"
-                data-part="segment"
-                >{{ segment.text }}</span
-              >
-              <span class="owned-trigger-wrapper">
-                <button
-                  v-bind="ownedDatePicker.popover.triggerProps"
-                  data-scope="date-picker"
-                  data-part="trigger"
-                  type="button"
-                  aria-label="Choose owned delivery date"
-                >
-                  ▦
-                </button>
-              </span>
-              <input
-                ref="ownedDateFormControl"
-                v-bind="ownedDatePicker.field.formValueProps"
-                data-scope="date-picker"
-                data-part="form-control"
-              />
-            </div>
-          </div>
-          <div class="owned-popup-wrapper">
-            <div
-              v-bind="ownedDatePicker.popover.popoverProps"
-              data-scope="date-picker"
-              data-part="popup"
-              role="dialog"
-              aria-label="Owned delivery date calendar"
-              popover
-            >
-              <header>
-                <button v-bind="ownedDatePicker.calendar.previousButtonProps">‹</button>
-                <h2 aria-live="polite">{{ ownedDatePicker.calendar.monthLabel.value }}</h2>
-                <button v-bind="ownedDatePicker.calendar.nextButtonProps">›</button>
-              </header>
-              <table
-                v-bind="ownedDatePicker.calendar.gridProps"
-                data-scope="date-picker"
-                data-part="grid"
-              >
-                <thead>
-                  <tr>
-                    <th
-                      v-for="weekday in ownedDatePicker.calendar.weekdayLabels.value"
-                      :key="weekday"
-                      scope="col"
-                    >
-                      {{ weekday }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="(week, index) in ownedDatePicker.calendar.weeks.value"
-                    :key="index"
-                  >
-                    <td
-                      v-for="cell in week"
-                      :key="cell.key"
-                      v-bind="ownedDatePicker.calendar.gridCellProps(cell)"
-                    >
-                      <button
-                        v-bind="ownedDatePicker.calendar.cellButtonProps(cell)"
-                        data-scope="date-picker"
-                        data-part="day"
-                      >
-                        {{ cell.day }}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
         <button type="submit">Submit owned date</button>
       </form>
       <output
@@ -405,6 +357,190 @@ function submitOwnedDate(event: SubmitEvent) {
         Invalidate owned date
       </button>
       <button type="button">Outside owned DatePicker</button>
+    </section>
+
+    <section aria-label="Package DatePicker keyboard fixture">
+      <n-date-picker
+        v-model="packageNavigationDate"
+        label="Package keyboard date"
+        calendar-label="Package keyboard date calendar"
+        trigger-label="Choose package keyboard date"
+        locale="en-US"
+        time-zone="UTC"
+        default-visible-month="2026-07-24"
+      />
+    </section>
+
+    <section aria-label="Owned DatePicker keyboard fixture">
+      <OwnedDatePickerContractFixture
+        v-model="ownedNavigationDate"
+        label="Owned keyboard date"
+        calendar-label="Owned keyboard date calendar"
+        trigger-label="Choose owned keyboard date"
+        locale="en-US"
+        time-zone="UTC"
+        default-visible-month="2026-07-24"
+      />
+    </section>
+
+    <section aria-label="Package DatePicker state fixtures">
+      <n-date-picker
+        v-model="packageDisabledDate"
+        label="Package disabled date"
+        calendar-label="Package disabled date calendar"
+        trigger-label="Choose package disabled date"
+        locale="en-US"
+        time-zone="UTC"
+        disabled
+      />
+      <output
+        role="status"
+        aria-label="Package disabled date model"
+        >{{ packageDisabledDate }}</output
+      >
+      <button
+        type="button"
+        @click="packageDisabledDate = '2026-07-25'"
+      >
+        Set package disabled date to July 25
+      </button>
+
+      <n-date-picker
+        v-model="packageReadOnlyDate"
+        label="Package readonly date"
+        calendar-label="Package readonly date calendar"
+        trigger-label="Choose package readonly date"
+        locale="en-US"
+        time-zone="UTC"
+        read-only
+      />
+      <output
+        role="status"
+        aria-label="Package readonly date model"
+        >{{ packageReadOnlyDate }}</output
+      >
+
+      <n-date-picker
+        v-model="packageControlledDate"
+        v-model:open="packageControlledOpen"
+        label="Package controlled date"
+        calendar-label="Package controlled date calendar"
+        trigger-label="Choose package controlled date"
+        locale="en-US"
+        time-zone="UTC"
+      />
+      <output
+        role="status"
+        aria-label="Package controlled date model"
+        >{{ packageControlledDateSource }}</output
+      >
+      <output
+        role="status"
+        aria-label="Package controlled date open"
+        >{{ packageControlledOpenSource }}</output
+      >
+      <output
+        role="status"
+        aria-label="Package controlled date requests"
+        >{{ packageControlledDateRequests }}</output
+      >
+      <output
+        role="status"
+        aria-label="Package controlled open requests"
+        >{{ packageControlledOpenRequests }}</output
+      >
+      <button
+        type="button"
+        @click="packageControlledOpenSource = true"
+      >
+        Accept package controlled date open
+      </button>
+      <button
+        type="button"
+        @click="packageControlledOpenSource = false"
+      >
+        Accept package controlled date close
+      </button>
+    </section>
+
+    <section aria-label="Owned DatePicker state fixtures">
+      <OwnedDatePickerContractFixture
+        v-model="ownedDisabledDate"
+        label="Owned disabled date"
+        calendar-label="Owned disabled date calendar"
+        trigger-label="Choose owned disabled date"
+        locale="en-US"
+        time-zone="UTC"
+        disabled
+      />
+      <output
+        role="status"
+        aria-label="Owned disabled date model"
+        >{{ ownedDisabledDate }}</output
+      >
+      <button
+        type="button"
+        @click="ownedDisabledDate = '2026-07-25'"
+      >
+        Set owned disabled date to July 25
+      </button>
+
+      <OwnedDatePickerContractFixture
+        v-model="ownedReadOnlyDate"
+        label="Owned readonly date"
+        calendar-label="Owned readonly date calendar"
+        trigger-label="Choose owned readonly date"
+        locale="en-US"
+        time-zone="UTC"
+        read-only
+      />
+      <output
+        role="status"
+        aria-label="Owned readonly date model"
+        >{{ ownedReadOnlyDate }}</output
+      >
+
+      <OwnedDatePickerContractFixture
+        v-model="ownedControlledDate"
+        v-model:open="ownedControlledOpen"
+        label="Owned controlled date"
+        calendar-label="Owned controlled date calendar"
+        trigger-label="Choose owned controlled date"
+        locale="en-US"
+        time-zone="UTC"
+      />
+      <output
+        role="status"
+        aria-label="Owned controlled date model"
+        >{{ ownedControlledDateSource }}</output
+      >
+      <output
+        role="status"
+        aria-label="Owned controlled date open"
+        >{{ ownedControlledOpenSource }}</output
+      >
+      <output
+        role="status"
+        aria-label="Owned controlled date requests"
+        >{{ ownedControlledDateRequests }}</output
+      >
+      <output
+        role="status"
+        aria-label="Owned controlled open requests"
+        >{{ ownedControlledOpenRequests }}</output
+      >
+      <button
+        type="button"
+        @click="ownedControlledOpenSource = true"
+      >
+        Accept owned controlled date open
+      </button>
+      <button
+        type="button"
+        @click="ownedControlledOpenSource = false"
+      >
+        Accept owned controlled date close
+      </button>
     </section>
   </main>
 </template>

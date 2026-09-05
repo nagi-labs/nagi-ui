@@ -878,7 +878,7 @@
       "status": "passing",
       "componentContract": {
         "id": "nagi/date-picker",
-        "revision": "1"
+        "revision": "2"
       },
       "implementations": [
         {
@@ -957,9 +957,10 @@
           "layer": "component-contract",
           "sections": [
             "state",
-            "interaction"
+            "interaction",
+            "focus"
           ],
-          "title": "Activating an available day commits the date and closes the controlled popup",
+          "title": "Activating an available day commits, closes, and restores the invoking trigger",
           "runner": "playwright",
           "evidence": [
             {
@@ -980,10 +981,11 @@
           "key": "DTP_CONTRACT_04",
           "layer": "component-contract",
           "sections": [
+            "state",
             "interaction",
             "focus"
           ],
-          "title": "ArrowRight moves roving focus to the next date",
+          "title": "Calendar keyboard navigation stays provisional and leaves the DatePicker open",
           "runner": "playwright",
           "evidence": [
             {
@@ -1057,7 +1059,7 @@
             "state",
             "interaction"
           ],
-          "title": "Submits the accepted ISO date under the authored field name",
+          "title": "Submits the accepted ISO date to its externally associated form",
           "runner": "playwright",
           "evidence": [
             {
@@ -1130,6 +1132,131 @@
             "state"
           ],
           "title": "Exposes forced invalidity with the authored validation message",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_11",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Editing a segment updates the accepted date without moving focus out of the field",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_12",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Light dismissal preserves the accepted date and focus on the outside target",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_13",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Disabled blocks interaction while external accepted-date updates still render",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_14",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Read-only permits calendar inspection without editing or committing a date",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned delivery date calendar",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package delivery date calendar",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DTP_CONTRACT_15",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Rejected date and visibility requests repair to externally accepted state",
           "runner": "playwright",
           "evidence": [
             {

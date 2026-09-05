@@ -31,11 +31,92 @@ import {
 } from "../../packages/core/src/test/dialog-contract.ts";
 import {
   assertDatePickerCalendarSemantics,
+  assertDatePickerControlledRejection,
+  assertDatePickerDisabledState,
   assertDatePickerEscapeCancellation,
+  assertDatePickerFormSubmission,
+  assertDatePickerInteraction,
+  assertDatePickerLightDismissal,
+  assertDatePickerReadOnlyState,
+  assertDatePickerSegmentedEditing,
   assertDatePickerSelectionConstraints,
   assertNativePopoverDatePickerSemantics,
   type DatePickerContractOptions,
 } from "../../packages/core/src/test/date-picker-contract.ts";
+
+const datePickerUnexercisedFlows = {
+  outsideButtonName: "Outside package DatePicker",
+  navigation: {
+    triggerName: "Choose package keyboard date",
+    calendarName: "Package keyboard date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    arrowRightDateName: "Saturday, July 25, 2026",
+    arrowDownDateName: "Saturday, August 1, 2026",
+    homeDateName: "Sunday, July 26, 2026",
+    endDateName: "Saturday, August 1, 2026",
+    pageUpDateName: "Wednesday, July 1, 2026",
+    pageDownDateName: "Saturday, August 1, 2026",
+    shiftPageDownDateName: "Sunday, August 1, 2027",
+  },
+  disabled: {
+    fieldName: "Package disabled date",
+    triggerName: "Choose package disabled date",
+    modelStatusName: "Package disabled date model",
+    externalUpdateName: "Set package disabled date to July 25",
+  },
+  readOnly: {
+    fieldName: "Package readonly date",
+    triggerName: "Choose package readonly date",
+    calendarName: "Package readonly date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    nextDateName: "Saturday, July 25, 2026",
+    modelStatusName: "Package readonly date model",
+  },
+  controlled: {
+    fieldName: "Package controlled date",
+    triggerName: "Choose package controlled date",
+    calendarName: "Package controlled date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    nextDateName: "Saturday, July 25, 2026",
+    modelStatusName: "Package controlled date model",
+    openStatusName: "Package controlled date open",
+    dateRequestsStatusName: "Package controlled date requests",
+    openRequestsStatusName: "Package controlled open requests",
+    acceptOpenName: "Accept package controlled date open",
+    acceptCloseName: "Accept package controlled date close",
+  },
+} as const;
+
+function packageDatePickerOptions(): DatePickerContractOptions {
+  return {
+    ...datePickerUnexercisedFlows,
+    definition: datePickerDefinition,
+    url: "/definition-stress.html",
+    triggerName: "Choose package delivery date",
+    fieldName: "Package delivery date",
+    calendarName: "Package delivery date calendar",
+    selectedDateName: "Friday, July 24, 2026",
+    nextDateName: "Saturday, July 25, 2026",
+    initialValue: "2026-07-24",
+    committedValue: "2026-07-25",
+    modelStatusName: "Package date model",
+    submission: {
+      buttonName: "Submit package date",
+      statusName: "Package date submission",
+      expected: '{"packageDeliveryDate":"2026-07-24"}',
+    },
+    constraints: {
+      beforeMinimumDateName: "Thursday, July 23, 2026",
+      unavailableDateName: "Sunday, July 26, 2026",
+      afterMaximumDateName: "Tuesday, July 28, 2026",
+      clearButtonName: "Clear package date",
+      forceInvalidButtonName: "Invalidate package date",
+      formName: "Package date form",
+      validationMessage: "Package delivery date is invalid.",
+      initialSubmissionStatus: "not submitted",
+    },
+  };
+}
 
 const buttonBase: ButtonContractOptions = {
   definition: buttonDefinition,
@@ -278,6 +359,7 @@ test("[DTP_IMPLEMENTATION_01] rejects a modal claim added to the native-popover 
 }) => {
   await page.goto("/date-time.html");
   const options: DatePickerContractOptions = {
+    ...datePickerUnexercisedFlows,
     definition: datePickerDefinition,
     url: "/date-time.html",
     triggerName: "Choose picked date",
@@ -303,33 +385,7 @@ test("[DTP_IMPLEMENTATION_01] rejects a modal claim added to the native-popover 
 
 test("[DTP_CONTRACT_08] rejects a selectable date below the declared minimum", async ({ page }) => {
   await page.goto("/definition-stress.html");
-  const options: DatePickerContractOptions = {
-    definition: datePickerDefinition,
-    url: "/definition-stress.html",
-    triggerName: "Choose package delivery date",
-    fieldName: "Package delivery date",
-    calendarName: "Package delivery date calendar",
-    selectedDateName: "Friday, July 24, 2026",
-    nextDateName: "Saturday, July 25, 2026",
-    initialValue: "2026-07-24",
-    committedValue: "2026-07-25",
-    modelStatusName: "Package date model",
-    submission: {
-      buttonName: "Submit package date",
-      statusName: "Package date submission",
-      expected: '{"packageDeliveryDate":"2026-07-24"}',
-    },
-    constraints: {
-      beforeMinimumDateName: "Thursday, July 23, 2026",
-      unavailableDateName: "Sunday, July 26, 2026",
-      afterMaximumDateName: "Tuesday, July 28, 2026",
-      clearButtonName: "Clear package date",
-      forceInvalidButtonName: "Invalidate package date",
-      formName: "Package date form",
-      validationMessage: "Package delivery date is invalid.",
-      initialSubmissionStatus: "not submitted",
-    },
-  };
+  const options = packageDatePickerOptions();
   await page.getByRole("button", { name: options.triggerName, exact: true }).click();
   const dialog = page.getByRole("dialog", { name: options.calendarName, exact: true });
   await dialog
@@ -348,6 +404,7 @@ test("[DTP_CONTRACT_08] rejects a selectable date below the declared minimum", a
 test("[DTP_CONTRACT_06] rejects committing provisional navigation on Escape", async ({ page }) => {
   await page.goto("/date-time.html");
   const options: DatePickerContractOptions = {
+    ...datePickerUnexercisedFlows,
     definition: datePickerDefinition,
     url: "/date-time.html",
     triggerName: "Choose picked date",
@@ -379,9 +436,141 @@ test("[DTP_CONTRACT_06] rejects committing provisional navigation on Escape", as
   );
 });
 
+test("[DTP_CONTRACT_04] rejects a calendar that drops page navigation", async ({ page }) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  await page.evaluate(() => {
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key !== "PageUp") return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      },
+      { capture: true },
+    );
+  });
+
+  await rejectsAt(() => assertDatePickerInteraction(page, options), [/toBeFocused/u]);
+});
+
+test("[DTP_CONTRACT_07] rejects a date detached from its selected form", async ({ page }) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  await page
+    .locator('[data-scope="date-picker"][data-part="root"]')
+    .filter({ has: page.getByRole("button", { name: options.triggerName, exact: true }) })
+    .locator('[data-part="form-control"]')
+    .evaluate((control) => control.removeAttribute("form"));
+
+  await rejectsAt(
+    () => assertDatePickerFormSubmission(page, options),
+    [/toHaveText/u, /packageDeliveryDate/u],
+  );
+});
+
+test("[DTP_CONTRACT_11] rejects a segmented field that ignores increment keys", async ({
+  page,
+}) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  await page
+    .getByRole("group", { name: options.fieldName, exact: true })
+    .getByRole("spinbutton", { name: "Day", exact: true })
+    .evaluate((day) => {
+      day.addEventListener(
+        "keydown",
+        (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        },
+        { capture: true },
+      );
+    });
+
+  await rejectsAt(
+    () => assertDatePickerSegmentedEditing(page, options),
+    [/toHaveAttribute/u, /aria-valuenow/u],
+  );
+});
+
+test("[DTP_CONTRACT_12] rejects light dismissal that steals focus from its target", async ({
+  page,
+}) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  const outside = page.getByRole("button", { name: options.outsideButtonName, exact: true });
+  await outside.evaluate((button, triggerName) => {
+    button.addEventListener("click", () => {
+      queueMicrotask(() => {
+        const trigger = Array.from(document.querySelectorAll("button")).find(
+          (candidate) => candidate.getAttribute("aria-label") === triggerName,
+        );
+        if (trigger instanceof HTMLButtonElement) trigger.focus();
+      });
+    });
+  }, options.triggerName);
+
+  await rejectsAt(() => assertDatePickerLightDismissal(page, options), [/toBeFocused/u]);
+});
+
+test("[DTP_CONTRACT_13] rejects a disabled DatePicker that drops external updates", async ({
+  page,
+}) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  await page
+    .getByRole("button", { name: options.disabled.externalUpdateName, exact: true })
+    .evaluate((button) => {
+      button.addEventListener(
+        "click",
+        (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        },
+        { capture: true },
+      );
+    });
+
+  await rejectsAt(
+    () => assertDatePickerDisabledState(page, options),
+    [/toHaveText/u, /Received:/u],
+  );
+});
+
+test("[DTP_CONTRACT_14] rejects a read-only field without read-only segment semantics", async ({
+  page,
+}) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  await page
+    .getByRole("group", { name: options.readOnly.fieldName, exact: true })
+    .getByRole("spinbutton")
+    .first()
+    .evaluate((segment) => segment.removeAttribute("aria-readonly"));
+
+  await rejectsAt(() => assertDatePickerReadOnlyState(page, options), [/toBe/u]);
+});
+
+test("[DTP_CONTRACT_15] rejects a controlled trigger that drops its visibility request", async ({
+  page,
+}) => {
+  await page.goto("/definition-stress.html");
+  const options = packageDatePickerOptions();
+  await page
+    .getByRole("button", { name: options.controlled.triggerName, exact: true })
+    .evaluate((trigger) => trigger.removeAttribute("popovertarget"));
+
+  await rejectsAt(
+    () => assertDatePickerControlledRejection(page, options),
+    [/toHaveText/u, /Expected.*1/su, /Received.*0/su],
+  );
+});
+
 test("[DTP_CONTRACT_02] rejects a calendar without its selected date state", async ({ page }) => {
   await page.goto("/date-time.html");
   const options: DatePickerContractOptions = {
+    ...datePickerUnexercisedFlows,
     definition: datePickerDefinition,
     url: "/date-time.html",
     triggerName: "Choose picked date",

@@ -57,7 +57,7 @@ rows were fixed before the first implementation audit.
 | CMB-STATE-01     | intentional-extension     | Editable text, provisional active option, and committed selection are distinct states. Filtering or navigation does not commit.                        | shared browser + Node                     |
 | CMB-STATE-02     | conformant                | When a dynamic collection removes the active option, the active reference clears; filtering does not remove a committed selection.                     | shared browser + Node + mutation          |
 | CMB-STATE-03     | conformant                | Native disabled blocks interaction; read-only remains inspectable but cannot edit, clear, or commit.                                                   | shared browser + Node                     |
-| CMB-STATE-04     | intentional-extension     | Rejected controlled input or selection writes repair rendered state to the externally accepted values.                                                | shared browser                            |
+| CMB-STATE-04     | intentional-extension     | Rejected controlled input or selection writes repair rendered state to the externally accepted values.                                                 | shared browser                            |
 | CMB-INT-01       | conformant                | Typing filters and opens suggestions without intercepting standard single-line editing or IME keys.                                                    | shared browser + Node                     |
 | CMB-INT-02       | conformant                | Arrow keys move provisional activity through enabled options, with boundary and optional loop policy.                                                  | shared browser + Node                     |
 | CMB-INT-03       | conformant                | Enter and pointer commit; Escape dismisses without committing provisional navigation.                                                                  | shared browser + Node                     |
@@ -113,17 +113,17 @@ the final result matrix are appended only after the probes run.
 | Rejected controlled Dialog open and native close      | keeps the accepted model authoritative and repairs the surface/focus           | `nagi/dialog@3` verifies both directions of the controlled visibility boundary against package and owned DOM.    |
 | Package Dialog receives an explicit `id`              | one occurrence on the public root; native surface keeps a separate internal ID | The suspected duplicate-ID defect was disproved; changing the existing destination would have been a regression. |
 | Combobox, Dialog, and Popover global rediscovery      | removed from their behavior paths                                              | Complete binding bundles register local input/listbox, trigger/surface, and native popup elements.               |
-| Disabled package and owned Comboboxes                  | block user interaction but accept external state                               | Disabled is an interaction policy, not a prohibition on owner-controlled state updates.                          |
-| Read-only package and owned Comboboxes                 | allow option inspection without editing or commit                              | Read-only differs observably from disabled while preserving the accepted value and selection.                    |
-| IME composition in package and owned Comboboxes        | defers filtering and navigation until composition ends                         | Browser-owned composition is preserved by both Blueprint and owned wiring.                                       |
-| Pointer activation of disabled and enabled options     | ignores disabled options, commits enabled options, and retains input focus      | Pointer handling preserves the active-descendant focus model.                                                     |
+| Disabled package and owned Comboboxes                 | block user interaction but accept external state                               | Disabled is an interaction policy, not a prohibition on owner-controlled state updates.                          |
+| Read-only package and owned Comboboxes                | allow option inspection without editing or commit                              | Read-only differs observably from disabled while preserving the accepted value and selection.                    |
+| IME composition in package and owned Comboboxes       | defers filtering and navigation until composition ends                         | Browser-owned composition is preserved by both Blueprint and owned wiring.                                       |
+| Pointer activation of disabled and enabled options    | ignores disabled options, commits enabled options, and retains input focus     | Pointer handling preserves the active-descendant focus model.                                                    |
 | Rejected controlled input and selection writes        | repairs both rendered implementations to their accepted owner state            | Controlled rejection is now part of `nagi/combobox@3`, rather than an inferred Vue implementation detail.        |
 
 The original focused browser run contained 52 passing contracts and mutations,
 including package and owned instances. The revision 3 Combobox runner now adds
 six flows to both fixtures: its focused run passes 21 Component Contract and
-Implementation tests. Repository verification on 2026-09-05 passed 481 Node
-tests and 271 Chromium browser tests, plus lint, typecheck, Blueprint
+Implementation tests. Repository verification on 2026-09-05 passed 482 Node
+tests and 290 Chromium browser tests, plus lint, typecheck, Blueprint
 integration lint, Definition generation, and source audits.
 
 ## Evaluation

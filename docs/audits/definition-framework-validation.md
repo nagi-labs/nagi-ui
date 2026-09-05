@@ -4,7 +4,7 @@ Validation baseline: 2026-08-31. This audit evaluates whether Component
 Definition is a useful maintenance method. Passing the repository test suite is
 not the goal by itself.
 
-The repository and package are currently `0.1.0`. Pilot Contract revisions are
+The repository and package are currently `0.1.2`. Pilot Contract revisions are
 working revisions while their Definitions remain `draft`; automated immutable
 revision snapshots are intentionally deferred until the first Definition is
 promoted to `verified` or a stable Contract policy is published. This is an
@@ -104,6 +104,9 @@ represent the component. Passing only one direction is not sufficient.
 | `aria-modal="true"` is added to the native-popover DatePicker            | rejected at `DTP_IMPLEMENTATION_01`                                                            | The standard Implementation stays explicitly non-modal without making non-modal presence part of the Component Contract. |
 | DatePicker runs inside ShadowRoot                                        | accepted                                                                                       | Selected-day lookup and invoker restoration do not require document-global discovery.                                    |
 | DatePicker minimum, maximum, unavailable, required, and invalid policies | accepted only when package and owned fixtures reject the same dates and form states            | Native input is an Implementation mechanism; public constraint and validation results remain Contract guarantees.        |
+| DatePicker is rendered outside its selected form                         | accepted by package and owned Contract fixtures                                                | Form association is a consumer-visible guarantee; descendant placement is not required.                                  |
+| DatePicker keyboard, segment, and dismissal behavior is removed          | rejected by dedicated mutation probes                                                          | The runner observes provisional calendar paging, segmented edits reaching the shared value, and focus after dismissal.   |
+| DatePicker disabled/read-only/controlled policy diverges                 | rejected by shared state flows and mutation probes                                             | Package and owned wiring preserve owner state without treating disabled and read-only as equivalent.                     |
 
 The first full browser run also exposed two defects in the supposedly valid
 implementation:
@@ -233,13 +236,19 @@ identity-first gaps are closed:
   package and owned fixtures. Deep Sea still executes revision 2 until the next
   package update, so its Motion implementation has not yet proved this added
   controlled-visibility guarantee.
-- DatePicker still needs disabled/read-only, segmented editing, broader calendar
-  keyboard navigation, external form association, controlled-open, and
-  post-selection/light-dismiss focus evidence.
+- DatePicker revision 2 now executes disabled/read-only, segmented editing,
+  Arrow/Home/End/month/year calendar navigation, external form association,
+  controlled date/open rejection, and post-selection/Escape/light-dismiss
+  focus guarantees against package and owned fixtures. Its newly added flows
+  also have targeted mutation probes.
 
-These are Contract-sufficiency failures, not reasons to weaken the boundary or
-to add more components. The next audit remains STOP until package and owned
-fixtures execute those identity guarantees.
+The package/owned pilot gap is now closed for DatePicker. For the current pilot
+go/no-go, rollout remains STOP at the replacement-evidence gate: Deep Sea still
+imports the older Combobox and Dialog Contract revisions, and DatePicker has
+not yet been exercised by a materially different presence/renderer
+Implementation. Other behavior families listed below remain separate rollout
+risks. These gaps are not reasons to weaken the Contract or to add more
+components prematurely.
 
 ## What is and is not guaranteed
 

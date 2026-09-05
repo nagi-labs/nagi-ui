@@ -32,9 +32,9 @@ test("nagi/calendar contains only the source-backed grid boundary", () => {
 test("DatePicker compatibility manifest composes calendar and native-popup foundations", () => {
   assert.deepEqual(validateDefinition(datePickerDefinition), []);
   assert.equal(datePickerDefinition.status, "draft");
-  assert.equal(datePickerDefinition.version, "3.0");
+  assert.equal(datePickerDefinition.version, "4.0");
   assert.equal(datePickerDefinition.contract?.id, "nagi/date-picker");
-  assert.equal(datePickerDefinition.contract?.revision, "1");
+  assert.equal(datePickerDefinition.contract?.revision, "2");
   assert.equal(
     datePickerDefinition.implementation?.id,
     "nagi/blueprint/date-picker-native-popover",

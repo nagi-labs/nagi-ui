@@ -36,7 +36,7 @@ const popup = adoptRequirementSet(nagiPopupRequirementsV1, {
 
 export const datePickerComponentContract = defineComponentContract({
   id: "nagi/date-picker",
-  revision: "1",
+  revision: "2",
   description:
     "Segmented date entry, calendar selection, accepted-value state, keyboard navigation, dismissal, and focus restoration shared by interchangeable DatePicker implementations.",
   api: [
@@ -52,6 +52,16 @@ export const datePickerComponentContract = defineComponentContract({
       name: "unavailableDates",
       kind: "prop",
       description: "Excludes otherwise in-range dates from selection.",
+    },
+    {
+      name: "disabled",
+      kind: "prop",
+      description: "Blocks user interaction without blocking external state updates.",
+    },
+    {
+      name: "readOnly",
+      kind: "prop",
+      description: "Allows calendar inspection without editing or committing a date.",
     },
     { name: "required", kind: "prop", description: "Requires an accepted date for submission." },
     { name: "invalid", kind: "prop", description: "Forces the public invalid state." },
@@ -94,13 +104,21 @@ export const datePickerComponentContract = defineComponentContract({
       evidence: ["packages/core/src/test/date-picker-contract.ts"],
       origin: { kind: "reference", referenceIds: ["apg-spinbutton"] },
     },
+    {
+      id: "DTP-SEM-03",
+      classification: "intentional-extension",
+      source: "Nagi form-association policy",
+      text: "The accepted ISO date is submitted under the authored name to the selected form, including when the DatePicker is outside that form.",
+      evidence: ["packages/core/src/test/date-picker-contract.ts"],
+      origin: { kind: "nagi", policy: "external-form-association", policyVersion: "1" },
+    },
   ],
   state: [
     {
       id: "DTP-STATE-01",
       classification: "intentional-extension",
       source: "Nagi controlled-model acceptance policy",
-      text: "Controlled date and open models remain authoritative; accepted calendar selection updates the ISO value and closes the calendar surface.",
+      text: "Controlled date and open models remain authoritative; accepted selection updates the ISO value and closes the calendar, while rejected requests repair to the external state.",
       evidence: [
         "packages/core/src/test/date-picker-contract.ts",
         "tests/date-picker-candidate.test.ts",
@@ -114,6 +132,14 @@ export const datePickerComponentContract = defineComponentContract({
       text: "Minimum, maximum, unavailable, required, and explicit invalid states remain consistent across the field and calendar.",
       evidence: ["tests/date-picker-candidate.test.ts", "tests/browser/date-time.spec.ts"],
       origin: { kind: "nagi", policy: "date-constraint-consistency", policyVersion: "1" },
+    },
+    {
+      id: "DTP-STATE-03",
+      classification: "intentional-extension",
+      source: "Nagi disabled and read-only policy",
+      text: "Disabled blocks field and calendar invocation while accepting external date updates; read-only permits inspection without date editing or selection.",
+      evidence: ["packages/core/src/test/date-picker-contract.ts"],
+      origin: { kind: "nagi", policy: "date-picker-interaction-state", policyVersion: "1" },
     },
   ],
   interaction: [
@@ -296,7 +322,7 @@ export const nativePopoverDatePickerImplementation = defineComponentImplementati
 /** Observable guarantees owned with the composed native-Popover DatePicker. */
 export const datePickerDefinition = defineComponentDefinition({
   name: "DatePicker",
-  version: "3.0",
+  version: "4.0",
   status: "draft",
   contract: datePickerComponentContract,
   implementation: nativePopoverDatePickerImplementation,

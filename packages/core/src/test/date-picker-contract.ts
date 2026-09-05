@@ -20,6 +20,11 @@ const datePickerContractRequirementIds = [
   "DTP_CONTRACT_08",
   "DTP_CONTRACT_09",
   "DTP_CONTRACT_10",
+  "DTP_CONTRACT_11",
+  "DTP_CONTRACT_12",
+  "DTP_CONTRACT_13",
+  "DTP_CONTRACT_14",
+  "DTP_CONTRACT_15",
 ] as const;
 
 const nativePopoverDatePickerImplementationRequirementIds = [
@@ -44,6 +49,47 @@ export interface DatePickerContractOptions {
   committedValue: string;
   modelStatusName: string;
   openStatusName?: string;
+  outsideButtonName: string;
+  /** An unconstrained calendar fixture used to exercise cross-month and cross-year focus. */
+  navigation: {
+    triggerName: string;
+    calendarName: string;
+    selectedDateName: string;
+    arrowRightDateName: string;
+    arrowDownDateName: string;
+    homeDateName: string;
+    endDateName: string;
+    pageUpDateName: string;
+    pageDownDateName: string;
+    shiftPageDownDateName: string;
+  };
+  disabled: {
+    fieldName: string;
+    triggerName: string;
+    modelStatusName: string;
+    externalUpdateName: string;
+  };
+  readOnly: {
+    fieldName: string;
+    triggerName: string;
+    calendarName: string;
+    selectedDateName: string;
+    nextDateName: string;
+    modelStatusName: string;
+  };
+  controlled: {
+    fieldName: string;
+    triggerName: string;
+    calendarName: string;
+    selectedDateName: string;
+    nextDateName: string;
+    modelStatusName: string;
+    openStatusName: string;
+    dateRequestsStatusName: string;
+    openRequestsStatusName: string;
+    acceptOpenName: string;
+    acceptCloseName: string;
+  };
   /** Observable form result promised by the Component Contract. */
   submission: {
     buttonName: string;
@@ -165,11 +211,45 @@ export async function assertDatePickerSemantics(page: Page, options: DatePickerC
 
 /** Selection and navigation use the grid's declared roving focus and model. */
 export async function assertDatePickerInteraction(page: Page, options: DatePickerContractOptions) {
-  const { dialog } = await openPicker(page, options);
-  const grid = dialog.getByRole("grid", { name: options.calendarName, exact: true });
-  const selected = grid.getByRole("button", { name: options.selectedDateName, exact: true });
+  const navigation = options.navigation;
+  await page.getByRole("button", { name: navigation.triggerName, exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: navigation.calendarName, exact: true });
+  await expect(dialog).toBeVisible();
+  const grid = dialog.getByRole("grid", { name: navigation.calendarName, exact: true });
+  const selected = grid.getByRole("button", { name: navigation.selectedDateName, exact: true });
+  await expect(selected).toBeFocused();
   await selected.press("ArrowRight");
-  await expect(grid.getByRole("button", { name: options.nextDateName, exact: true })).toBeFocused();
+  await expect(
+    grid.getByRole("button", { name: navigation.arrowRightDateName, exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    grid.getByRole("button", { name: navigation.arrowDownDateName, exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(
+    grid.getByRole("button", { name: navigation.homeDateName, exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(
+    grid.getByRole("button", { name: navigation.endDateName, exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("PageUp");
+  await expect(
+    grid.getByRole("button", { name: navigation.pageUpDateName, exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("PageDown");
+  await expect(
+    grid.getByRole("button", { name: navigation.pageDownDateName, exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Shift+PageDown");
+  await expect(
+    grid.getByRole("button", { name: navigation.shiftPageDownDateName, exact: true }),
+  ).toBeFocused();
+  await expect(dialog).toBeVisible();
+  await expect(page.getByRole("status", { name: options.modelStatusName })).toHaveText(
+    options.initialValue,
+  );
 }
 
 export async function assertDatePickerFocusEntry(page: Page, options: DatePickerContractOptions) {
@@ -202,7 +282,7 @@ export async function assertDatePickerControlledState(
 ) {
   const model = page.getByRole("status", { name: options.modelStatusName });
   await expect(model).toHaveText(options.initialValue);
-  const { dialog } = await openPicker(page, options);
+  const { dialog, opener } = await openPicker(page, options);
   if (options.openStatusName) {
     await expect(page.getByRole("status", { name: options.openStatusName })).toHaveText("true");
   }
@@ -212,12 +292,158 @@ export async function assertDatePickerControlledState(
     await expect(page.getByRole("status", { name: options.openStatusName })).toHaveText("false");
   }
   await expect(model).toHaveText(options.committedValue);
+  await expect(opener).toBeFocused();
+}
+
+export async function assertDatePickerSegmentedEditing(
+  page: Page,
+  options: DatePickerContractOptions,
+) {
+  const field = page.getByRole("group", { name: options.fieldName, exact: true });
+  const day = field.getByRole("spinbutton", { name: "Day", exact: true });
+  await day.focus();
+  await day.press("ArrowUp");
+  await expect(day).toHaveAttribute("aria-valuenow", "25");
+  await expect(page.getByRole("status", { name: options.modelStatusName })).toHaveText(
+    options.committedValue,
+  );
+  await expect(day).toBeFocused();
+}
+
+export async function assertDatePickerLightDismissal(
+  page: Page,
+  options: DatePickerContractOptions,
+) {
+  const model = page.getByRole("status", { name: options.modelStatusName });
+  await expect(model).toHaveText(options.initialValue);
+  const { dialog } = await openPicker(page, options);
+  const outside = page.getByRole("button", { name: options.outsideButtonName, exact: true });
+  await outside.click();
+  await expect(dialog).toBeHidden();
+  await expect(model).toHaveText(options.initialValue);
+  await expect(outside).toBeFocused();
+}
+
+export async function assertDatePickerDisabledState(
+  page: Page,
+  options: DatePickerContractOptions,
+) {
+  const fixture = options.disabled;
+  const field = page.getByRole("group", { name: fixture.fieldName, exact: true });
+  await expect(field).toHaveAttribute("aria-disabled", "true");
+  const segments = field.getByRole("spinbutton");
+  await expect(segments).toHaveCount(3);
+  expect(
+    await segments.evaluateAll((elements) =>
+      elements.every(
+        (element) => element.getAttribute("aria-disabled") === "true" && element.tabIndex === -1,
+      ),
+    ),
+  ).toBe(true);
+  await expect(page.getByRole("button", { name: fixture.triggerName, exact: true })).toBeDisabled();
+  const model = page.getByRole("status", { name: fixture.modelStatusName, exact: true });
+  await expect(model).toHaveText(options.initialValue);
+  await page.getByRole("button", { name: fixture.externalUpdateName, exact: true }).click();
+  await expect(model).toHaveText(options.committedValue);
+  await expect(field.getByRole("spinbutton", { name: "Day", exact: true })).toHaveAttribute(
+    "aria-valuenow",
+    "25",
+  );
+}
+
+export async function assertDatePickerReadOnlyState(
+  page: Page,
+  options: DatePickerContractOptions,
+) {
+  const fixture = options.readOnly;
+  const field = page.getByRole("group", { name: fixture.fieldName, exact: true });
+  await expect(field).toHaveAttribute("aria-readonly", "true");
+  const segments = field.getByRole("spinbutton");
+  expect(
+    await segments.evaluateAll((elements) =>
+      elements.every(
+        (element) =>
+          element.getAttribute("aria-readonly") === "true" &&
+          element.getAttribute("contenteditable") === "false",
+      ),
+    ),
+  ).toBe(true);
+  const opener = page.getByRole("button", { name: fixture.triggerName, exact: true });
+  await expect(opener).toBeEnabled();
+  await opener.click();
+  const dialog = page.getByRole("dialog", { name: fixture.calendarName, exact: true });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: fixture.nextDateName, exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(page.getByRole("status", { name: fixture.modelStatusName })).toHaveText(
+    options.initialValue,
+  );
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+}
+
+export async function assertDatePickerControlledRejection(
+  page: Page,
+  options: DatePickerContractOptions,
+) {
+  const fixture = options.controlled;
+  const model = page.getByRole("status", { name: fixture.modelStatusName, exact: true });
+  const open = page.getByRole("status", { name: fixture.openStatusName, exact: true });
+  const dateRequests = page.getByRole("status", {
+    name: fixture.dateRequestsStatusName,
+    exact: true,
+  });
+  const openRequests = page.getByRole("status", {
+    name: fixture.openRequestsStatusName,
+    exact: true,
+  });
+  const field = page.getByRole("group", { name: fixture.fieldName, exact: true });
+  const day = field.getByRole("spinbutton", { name: "Day", exact: true });
+  await day.focus();
+  await day.press("ArrowUp");
+  await expect(model).toHaveText(options.initialValue);
+  await expect(day).toHaveAttribute("aria-valuenow", "24");
+  await expect(dateRequests).toHaveText("1");
+
+  const opener = page.getByRole("button", { name: fixture.triggerName, exact: true });
+  const dialog = page.getByRole("dialog", { name: fixture.calendarName, exact: true });
+  await opener.click();
+  await expect(dialog).toBeHidden();
+  await expect(open).toHaveText("false");
+  await expect(openRequests).toHaveText("1");
+
+  await page.getByRole("button", { name: fixture.acceptOpenName, exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(open).toHaveText("true");
+  await expect(
+    dialog.getByRole("button", { name: fixture.selectedDateName, exact: true }),
+  ).toBeFocused();
+  await dialog.getByRole("button", { name: fixture.nextDateName, exact: true }).click();
+  await expect(model).toHaveText(options.initialValue);
+  await expect(open).toHaveText("true");
+  await expect(dialog).toBeVisible();
+  await expect(dateRequests).toHaveText("2");
+  await expect(openRequests).toHaveText("2");
+
+  await page.getByRole("button", { name: fixture.acceptCloseName, exact: true }).click();
+  await expect(open).toHaveText("false");
+  await expect(dialog).toBeHidden();
 }
 
 export async function assertDatePickerFormSubmission(
   page: Page,
   options: DatePickerContractOptions,
 ) {
+  const root = await rootFor(page, options);
+  const form = page.getByRole("form", { name: options.constraints.formName, exact: true });
+  await expect(
+    form.locator('[data-scope="date-picker"][data-part="root"]').filter({
+      has: trigger(page, options),
+    }),
+    "The fixture must exercise an externally associated DatePicker.",
+  ).toHaveCount(0);
+  await expect(root).toHaveCount(1);
   await page.getByRole("button", { name: options.submission.buttonName, exact: true }).click();
   await expect(
     page.getByRole("status", { name: options.submission.statusName, exact: true }),
@@ -264,9 +490,11 @@ export async function assertDatePickerForcedInvalid(
   expect(await form.evaluate((element: HTMLFormElement) => element.checkValidity())).toBe(false);
   expect(
     await form.evaluate((element: HTMLFormElement) => {
-      const invalid = element.querySelector(":invalid");
-      if (invalid === null || !("validationMessage" in invalid)) return "";
-      return String(invalid.validationMessage);
+      const invalid = Array.from(element.elements).find(
+        (control): control is HTMLInputElement =>
+          control instanceof HTMLInputElement && control.matches(":invalid"),
+      );
+      return invalid?.validationMessage ?? "";
     }),
   ).toBe(options.constraints.validationMessage);
 }
@@ -360,6 +588,26 @@ export function datePickerContract(options: DatePickerContractOptions): void {
         await assertDatePickerEscapeCancellation(page, options);
       }
 
+      async function DTP_CONTRACT_11({ page }: { page: Page }) {
+        await assertDatePickerSegmentedEditing(page, options);
+      }
+
+      async function DTP_CONTRACT_12({ page }: { page: Page }) {
+        await assertDatePickerLightDismissal(page, options);
+      }
+
+      async function DTP_CONTRACT_13({ page }: { page: Page }) {
+        await assertDatePickerDisabledState(page, options);
+      }
+
+      async function DTP_CONTRACT_14({ page }: { page: Page }) {
+        await assertDatePickerReadOnlyState(page, options);
+      }
+
+      async function DTP_CONTRACT_15({ page }: { page: Page }) {
+        await assertDatePickerControlledRejection(page, options);
+      }
+
       test(
         "Exposes one named segmented date field with three spinbuttons",
         { tag: ["@semantics", `@${DTP_CONTRACT_01.name}`] },
@@ -373,14 +621,14 @@ export function datePickerContract(options: DatePickerContractOptions): void {
       );
 
       test(
-        "Activating an available day commits the date and closes the controlled popup",
-        { tag: ["@state", "@interaction", `@${DTP_CONTRACT_03.name}`] },
+        "Activating an available day commits, closes, and restores the invoking trigger",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_03.name}`] },
         DTP_CONTRACT_03,
       );
 
       test(
-        "ArrowRight moves roving focus to the next date",
-        { tag: ["@interaction", "@focus", `@${DTP_CONTRACT_04.name}`] },
+        "Calendar keyboard navigation stays provisional and leaves the DatePicker open",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_04.name}`] },
         DTP_CONTRACT_04,
       );
 
@@ -398,12 +646,42 @@ export function datePickerContract(options: DatePickerContractOptions): void {
         DTP_CONTRACT_06,
       );
 
+      test(
+        "Editing a segment updates the accepted date without moving focus out of the field",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_11.name}`] },
+        DTP_CONTRACT_11,
+      );
+
+      test(
+        "Light dismissal preserves the accepted date and focus on the outside target",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_12.name}`] },
+        DTP_CONTRACT_12,
+      );
+
+      test(
+        "Disabled blocks interaction while external accepted-date updates still render",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_13.name}`] },
+        DTP_CONTRACT_13,
+      );
+
+      test(
+        "Read-only permits calendar inspection without editing or committing a date",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_14.name}`] },
+        DTP_CONTRACT_14,
+      );
+
+      test(
+        "Rejected date and visibility requests repair to externally accepted state",
+        { tag: ["@state", "@interaction", "@focus", `@${DTP_CONTRACT_15.name}`] },
+        DTP_CONTRACT_15,
+      );
+
       async function DTP_CONTRACT_07({ page }: { page: Page }) {
         await assertDatePickerFormSubmission(page, options);
       }
 
       test(
-        "Submits the accepted ISO date under the authored field name",
+        "Submits the accepted ISO date to its externally associated form",
         {
           tag: ["@semantics", "@state", "@interaction", `@${DTP_CONTRACT_07.name}`],
         },
