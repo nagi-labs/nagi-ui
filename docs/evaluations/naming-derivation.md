@@ -21,12 +21,13 @@ This evaluation measures how often an explicit class identity in Nagi UI's
 site can be obtained from the Nagi CSS contract without inventing a new word.
 It keeps three exclusive decisions separate:
 
-1. **Fully derived identity**: the class follows from the route or file
-   surface, component boundary or slot, ARIA role, STN position, or native
-   element mapping.
+1. **Contract-determined identity**: once the structure is known, the class
+   follows from the route or file surface, component boundary or slot, ARIA
+   role, STN position, or native element mapping. The machine-readable result
+   retains `fullyDerived` in its field names for compatibility.
 2. **Bounded anatomy choice**: the class is selected from the finite anatomy
    vocabulary supplied by the Nagi UI preset. It requires a choice and is not
-   counted as fully derived.
+   counted as contract-determined.
 3. **Open-ended variant**: a `-variant` stem is named by the author.
 
 The `no new vocabulary` measure combines the first two categories but always
@@ -78,42 +79,36 @@ cognitive load or the time required to maintain the code.
 
 | Category | Occurrences | Classification |
 | --- | ---: | --- |
-| Surface root | 26 | fully derived |
-| Component boundary | 31 | fully derived |
-| Component slot | 19 | fully derived |
-| ARIA role | 1 | fully derived |
-| STN position | 74 | fully derived after structural position is known |
-| Native element map | 115 | fully derived |
-| Native self-map | 160 | fully derived |
+| Surface root | 26 | contract-determined |
+| Component boundary | 31 | contract-determined |
+| Component slot | 19 | contract-determined |
+| ARIA role | 1 | contract-determined |
+| STN position | 74 | contract-determined after structural position is known |
+| Native element map | 115 | contract-determined |
+| Native self-map | 160 | contract-determined |
 | Bounded anatomy | 129 | selected from four preset words |
 | Open-ended variant | 147 | author-named |
 | Unclassified | 0 | neither derived nor declared vocabulary |
 | Total | 702 | |
 
-The fully derived categories contain 426 explicit class tokens:
-
-```text
-Fully derived explicit tokens: 426 / 702 = 60.7%
-```
-
 For base identities, where variants are excluded from the denominator:
 
 ```text
-Fully derived base identities:              426 / 555 = 76.8%
+Contract-determined base identities:        426 / 555 = 76.8%
 Bounded anatomy base identities:            129 / 555 = 23.2%
 Base identities requiring no new vocabulary: 555 / 555 = 100.0%
 ```
 
 The bounded anatomy occurrences select from `actions`, `icon`, `text`, and
-`value`. They are not counted as fully derived. Open-ended author vocabulary
+`value`. They are not counted as contract-determined. Open-ended author vocabulary
 is concentrated in the 147 variant occurrences across 81 stems.
 
 Nagi UI component elements contribute 176 implicit component identities.
 Keeping those identities in a separate, expanded denominator gives:
 
 ```text
-Fully derived identities including implicit components: 602 / 731 = 82.4%
-No-new-word identities including implicit components:    731 / 731 = 100.0%
+Contract-determined identities including implicit components: 602 / 731 = 82.4%
+No-new-word identities including implicit components:          731 / 731 = 100.0%
 ```
 
 ## `div` and `span`

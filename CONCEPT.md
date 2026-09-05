@@ -600,12 +600,13 @@ How should they be tested and maintained?
 
 Nagi UI is both a reference implementation and a stress test for Nagi CSS. At
 measurement commit `23f409238fed4656ed1ffbf390971c46afc0e21c`, the documentation site contains 555
-explicit base identities. Of these, 426 / 555 (76.8%) are fully derived from
+explicit base identities. Of these, 426 / 555 (76.8%) are determined by the
+contract after the authored structure is known: their identities follow from
 the route or file surface, component boundary or slot, role, STN position, or
 native element mapping. Another 129 / 555 (23.2%) select from four bounded
 anatomy words, giving 555 / 555 (100.0%) base identities that require no new
 vocabulary. Including 176 implicit component identities, 602 / 731 (82.4%)
-are fully derived and 731 / 731 (100.0%) require no new vocabulary. Open-ended
+are contract-determined and 731 / 731 (100.0%) require no new vocabulary. Open-ended
 author vocabulary is concentrated in 147 variant occurrences across 81 stems.
 
 This is a self-hosted evaluation of Nagi UI, which is designed around Nagi CSS.
