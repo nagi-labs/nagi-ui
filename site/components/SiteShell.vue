@@ -254,8 +254,8 @@ function toggleTheme() {
 
       > .nav {
         grid-column: 1 / -1;
+        flex-wrap: wrap;
         justify-content: start;
-        overflow-x: auto;
 
         > .link {
           flex: 0 0 auto;
@@ -265,6 +265,10 @@ function toggleTheme() {
       }
 
       > .actions {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+
         > .link.-github {
           display: none;
         }
