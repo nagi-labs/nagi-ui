@@ -100,7 +100,7 @@ if (import.meta.server && !highlightedUsage.value) {
       />
     </template>
     <template #basic-description>
-      <p class="text -guidance">{{ basicGuidance }}</p>
+      <span class="text -guidance">{{ basicGuidance }}</span>
     </template>
     <template #basic>
       <component-preview
@@ -186,21 +186,21 @@ if (import.meta.server && !highlightedUsage.value) {
           </template>
         </n-table>
       </template>
-      <p
+      <span
         v-if="nativeAttributeTarget"
         class="text"
       >
         Attribute destination: {{ nativeAttributeTarget }}.
-      </p>
+      </span>
     </template>
 
     <template #source>
-      <p class="text">
+      <span class="text">
         <inline-code>vp exec nagi-ui own {{ slug }}</inline-code> copies an editable bundle. Its
         connected implementation files are shown below; the Definition is documented separately.
         Only files marked <strong>Public component</strong> are package component exports; internal
         components and helpers are owned implementation details.
-      </p>
+      </span>
       <span
         v-if="componentDependencies.length"
         class="text"
@@ -228,7 +228,7 @@ if (import.meta.server && !highlightedUsage.value) {
 
     <section
       v-if="behaviorApis.length"
-      class="section -behavior"
+      class="section"
       :aria-labelledby="`${slug}-behavior-heading`"
     >
       <header class="header">
@@ -239,10 +239,10 @@ if (import.meta.server && !highlightedUsage.value) {
           Behavior API
         </h2>
       </header>
-      <p class="text">
+      <span class="text">
         The owned source uses these public composables. Their exported input, return types, and
         implementation below are loaded from the package source.
-      </p>
+      </span>
       <code-disclosure
         v-for="api in behaviorApis"
         :key="api.names.join('-')"

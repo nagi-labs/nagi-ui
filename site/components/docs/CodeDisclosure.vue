@@ -31,23 +31,25 @@ defineProps<{ summary: string; html?: TrustedShikiHtml | "" }>();
 </template>
 
 <style scoped>
-.site-code-disclosure > .n-disclosure {
-  max-inline-size: none;
+.site-code-disclosure {
+  > .n-disclosure {
+    max-inline-size: none;
 
-  .n-disclosure-content {
-    > .unit {
-      max-block-size: 48rem;
-      padding: var(--n-space-8);
-      overflow: auto;
-      background: var(--site-color-code);
+    .n-disclosure-content {
+      > .unit {
+        max-block-size: 48rem;
+        padding: var(--n-space-8);
+        overflow: auto;
+        background: var(--site-color-code);
 
-      & :deep(pre) {
-        min-inline-size: max-content;
-        margin: 0;
-        padding: 0;
-        font-family: var(--site-font-code);
-        font-size: var(--n-font-size-4);
-        line-height: 1.7;
+        & :deep(pre) {
+          min-inline-size: max-content;
+          margin: 0;
+          padding: 0;
+          font-family: var(--site-font-code);
+          font-size: var(--n-font-size-4);
+          line-height: 1.7;
+        }
       }
     }
   }

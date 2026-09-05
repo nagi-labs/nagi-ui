@@ -1,0 +1,206 @@
+{
+  "methodology": {
+    "parser": "vue-eslint-parser",
+    "scope": "site/**/*.vue",
+    "excludedDirectories": [
+      ".nuxt",
+      ".output",
+      "node_modules"
+    ],
+    "safeBlockTags": [
+      "article",
+      "aside",
+      "footer",
+      "header",
+      "main",
+      "nav",
+      "section",
+      "figcaption"
+    ],
+    "safeInlineTags": [
+      "time"
+    ],
+    "trialsPerPartialLevel": 200,
+    "collisionDefinition": "same file-local final structural selector and existing variant set, but distinct former semantic base identities"
+  },
+  "population": {
+    "renderedOrTemplateOwnedElements": 890,
+    "visuallySafeSemanticElements": 83,
+    "safeSurfaceRootsWithNoNamingChange": 5,
+    "eligibleStyledSemanticElements": 78,
+    "eligibleByTag": {
+      "article": 8,
+      "figcaption": 1,
+      "footer": 1,
+      "header": 27,
+      "main": 1,
+      "nav": 2,
+      "section": 37,
+      "time": 1
+    },
+    "excludedStyledSemanticElements": 228,
+    "excludedByTag": {
+      "a": 23,
+      "button": 1,
+      "code": 18,
+      "dd": 4,
+      "details": 2,
+      "dl": 1,
+      "dt": 4,
+      "form": 1,
+      "h1": 3,
+      "h2": 22,
+      "h3": 18,
+      "h4": 3,
+      "h5": 2,
+      "img": 1,
+      "li": 8,
+      "n-alert": 2,
+      "n-button": 2,
+      "n-card": 4,
+      "n-carousel": 1,
+      "n-disclosure": 1,
+      "n-dropdown-menu": 1,
+      "n-empty-state": 1,
+      "n-resizable": 1,
+      "n-separator": 2,
+      "n-sidebar": 1,
+      "n-skeleton": 3,
+      "n-table": 9,
+      "n-tabs": 1,
+      "n-textarea": 1,
+      "n-toast": 1,
+      "ol": 1,
+      "output": 29,
+      "pre": 5,
+      "small": 21,
+      "strong": 23,
+      "summary": 2,
+      "svg": 1,
+      "ul": 4
+    }
+  },
+  "simulations": [
+    {
+      "percentage": 0,
+      "samples": 1,
+      "replacements": 0,
+      "addedVariantOccurrences": 0,
+      "addedUniqueStems": 0,
+      "collidedOccurrences": 0,
+      "collisionGroups": 0,
+      "collisions": []
+    },
+    {
+      "percentage": 25,
+      "samples": 200,
+      "replacements": 19.5,
+      "addedVariantOccurrences": 0.2,
+      "addedUniqueStems": 0.2,
+      "collidedOccurrences": 0.3,
+      "collisionGroups": 0.2
+    },
+    {
+      "percentage": 50,
+      "samples": 200,
+      "replacements": 39.3,
+      "addedVariantOccurrences": 0.7,
+      "addedUniqueStems": 0.7,
+      "collidedOccurrences": 1.5,
+      "collisionGroups": 0.7
+    },
+    {
+      "percentage": 75,
+      "samples": 200,
+      "replacements": 59.6,
+      "addedVariantOccurrences": 1.2,
+      "addedUniqueStems": 1.2,
+      "collidedOccurrences": 2.8,
+      "collisionGroups": 1.2
+    },
+    {
+      "percentage": 100,
+      "samples": 1,
+      "replacements": 78,
+      "addedVariantOccurrences": 2,
+      "addedUniqueStems": 2,
+      "collidedOccurrences": 5,
+      "collisionGroups": 2,
+      "collisions": [
+        {
+          "selector": "site/components/CustomerDirectory.vue|site/components/CustomerDirectory.vue|root>section.site-customer-directory>div.unit",
+          "formerIdentities": {
+            "footer.footer": 1,
+            "header.header": 1
+          },
+          "occurrences": [
+            "site/components/CustomerDirectory.vue:66",
+            "site/components/CustomerDirectory.vue:159"
+          ]
+        },
+        {
+          "selector": "site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|root>div.site-component-definition-section>div.unit-foundations>div.unit-foundations>div.seg>div.fr",
+          "formerIdentities": {
+            "header.header": 1,
+            "section.section": 2
+          },
+          "occurrences": [
+            "site/components/docs/ComponentDefinitionSection.vue:500",
+            "site/components/docs/ComponentDefinitionSection.vue:505",
+            "site/components/docs/ComponentDefinitionSection.vue:516"
+          ]
+        }
+      ]
+    }
+  ],
+  "fullReplacement": {
+    "replacements": 78,
+    "addedVariantOccurrences": 2,
+    "addedUniqueStems": 2,
+    "collidedOccurrences": 5,
+    "collisionGroups": 2,
+    "collisions": [
+      {
+        "selector": "site/components/CustomerDirectory.vue|site/components/CustomerDirectory.vue|root>section.site-customer-directory>div.unit",
+        "formerIdentities": {
+          "footer.footer": 1,
+          "header.header": 1
+        },
+        "occurrences": [
+          "site/components/CustomerDirectory.vue:66",
+          "site/components/CustomerDirectory.vue:159"
+        ]
+      },
+      {
+        "selector": "site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|site/components/docs/ComponentDefinitionSection.vue|root>div.site-component-definition-section>div.unit-foundations>div.unit-foundations>div.seg>div.fr",
+        "formerIdentities": {
+          "header.header": 1,
+          "section.section": 2
+        },
+        "occurrences": [
+          "site/components/docs/ComponentDefinitionSection.vue:500",
+          "site/components/docs/ComponentDefinitionSection.vue:505",
+          "site/components/docs/ComponentDefinitionSection.vue:516"
+        ]
+      }
+    ],
+    "addedOccurrencesPerReplacement": 0.026,
+    "addedUniqueStemsPerReplacement": 0.026
+  },
+  "bounds": {
+    "baselineVariantOccurrences": 147,
+    "baselineUniqueVariantStems": 81,
+    "minimumStylePreserving": {
+      "addedOccurrences": 2,
+      "addedUniqueStems": 2,
+      "occurrenceIncreasePercentage": 1.4,
+      "uniqueStemIncreasePercentage": 2.5
+    },
+    "explicitRolePreservingUpperBound": {
+      "addedOccurrences": 78,
+      "addedUniqueStems": 8,
+      "occurrenceIncreasePercentage": 53.1,
+      "uniqueStemIncreasePercentage": 9.9
+    }
+  }
+}

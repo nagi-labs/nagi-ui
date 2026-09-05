@@ -34,7 +34,7 @@ export const displayOverlayExamples: Readonly<Record<string, string>> = {
   Kbd: sfc(
     "NKbd",
     "",
-    `  <p>Open the command palette with <n-kbd label="Command" /> + <n-kbd label="K" />.</p>`,
+    `  <span>Open the command palette with <n-kbd label="Command" /> + <n-kbd label="K" />.</span>`,
   ),
   Meter: sfc(
     "NMeter",
@@ -49,7 +49,7 @@ export const displayOverlayExamples: Readonly<Record<string, string>> = {
   Separator: sfc(
     "NButton, NSeparator",
     "",
-    `  <article>\n    <section><h2>Account</h2><p>Acme Systems · Enterprise</p></section>\n    <n-separator aria-label="Billing details" />\n    <section><h2>Billing</h2><p>Renews October 18</p></section>\n    <footer>\n      <n-button>Archive</n-button>\n      <n-separator orientation="vertical" aria-label="Danger actions" />\n      <n-button>Delete</n-button>\n    </footer>\n  </article>`,
+    `  <article>\n    <section><h2>Account</h2><span>Acme Systems · Enterprise</span></section>\n    <n-separator aria-label="Billing details" />\n    <section><h2>Billing</h2><time datetime="2026-10-18">Renews October 18</time></section>\n    <footer>\n      <n-button>Archive</n-button>\n      <n-separator orientation="vertical" aria-label="Danger actions" />\n      <n-button>Delete</n-button>\n    </footer>\n  </article>`,
   ),
   Skeleton: sfc(
     "NSkeleton",

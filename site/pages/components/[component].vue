@@ -132,7 +132,7 @@ useHead({ title: () => entry.value?.name ?? "Component" });
     />
 
     <nav
-      class="nav -adjacent"
+      class="nav"
       aria-label="Adjacent components"
     >
       <a
@@ -165,7 +165,7 @@ useHead({ title: () => entry.value?.name ?? "Component" });
   inline-size: 100%;
   padding: calc(3 * var(--n-space-8)) max(var(--n-space-8), 4vw);
 
-  > .nav.-adjacent {
+  > .nav {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--n-space-5);

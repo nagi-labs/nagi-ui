@@ -6,7 +6,7 @@ const value = ref<string | null>("2026-08-18")
 </script>
 <template>
   <n-calendar v-model="value" label="Billing date" min="2026-08-01" max="2026-09-30" :unavailable-dates="['2026-08-21']" />
-  <p>Selected: {{ value }}</p>
+  <output>Selected: {{ value }}</output>
 </template>`,
 
   DateField: `<script setup lang="ts">
@@ -17,7 +17,7 @@ const value = ref<string | null>("2026-08-18")
 <template>
   <n-date-field v-model="value" label="Start date" min="2026-08-01" max="2026-09-30" />
   <n-date-field label="Invalid date" invalid validation-message="Enter a date in the reporting period." />
-  <p>Value: {{ value }}</p>
+  <output>Value: {{ value }}</output>
 </template>`,
 
   DatePicker: `<script setup lang="ts">
@@ -28,7 +28,7 @@ const open = ref(false)
 </script>
 <template>
   <n-date-picker v-model="value" v-model:open="open" label="Start date" min="2026-08-01" max="2026-09-30" />
-  <p>Selected: {{ value }} · {{ open ? "Open" : "Closed" }}</p>
+  <output>Selected: {{ value }} · {{ open ? "Open" : "Closed" }}</output>
 </template>`,
 
   DateRangePicker: `<script setup lang="ts">
@@ -40,7 +40,7 @@ const open = ref(false)
 </script>
 <template>
   <n-date-range-picker v-model="value" v-model:open="open" label="Reporting period" min="2026-08-01" max="2026-09-30" />
-  <p>Range: {{ value?.start }} – {{ value?.end }} · {{ open ? "Open" : "Closed" }}</p>
+  <output>Range: {{ value?.start }} – {{ value?.end }} · {{ open ? "Open" : "Closed" }}</output>
 </template>`,
 
   RangeCalendar: `<script setup lang="ts">
@@ -51,7 +51,7 @@ const value = ref<RangeCalendarValue | null>({ start: "2026-08-11", end: "2026-0
 </script>
 <template>
   <n-range-calendar v-model="value" label="Reporting period" min="2026-08-01" max="2026-09-30" :unavailable-dates="['2026-08-21']" />
-  <p>Range: {{ value?.start }} – {{ value?.end }}</p>
+  <output>Range: {{ value?.start }} – {{ value?.end }}</output>
 </template>`,
 
   TimeField: `<script setup lang="ts">
@@ -62,7 +62,7 @@ const value = ref<string | null>("14:30:15")
 <template>
   <n-time-field v-model="value" label="Meeting time" granularity="second" :hour-cycle="24" />
   <n-time-field label="Read-only time" model-value="09:00" read-only />
-  <p>Value: {{ value }}</p>
+  <output>Value: {{ value }}</output>
 </template>`,
 
   Accordion: `<script setup lang="ts">
@@ -81,7 +81,7 @@ const openKeys = ref<readonly string[]>(["semantics"])
       <strong>{{ item.summary }}</strong>
     </template>
     <template #panel="{ item }">
-      <p>{{ item.content }}</p>
+      <span>{{ item.content }}</span>
     </template>
   </n-accordion>
 </template>`,
@@ -106,7 +106,7 @@ const open = ref(true)
     <template #summary="{ summary }">
       <strong>{{ summary }}</strong>
     </template>
-    <p>The content remains ordinary HTML inside native details.</p>
+    <span>The content remains ordinary HTML inside native details.</span>
   </n-disclosure>
 </template>`,
 
@@ -127,7 +127,7 @@ function onSelect(item: MenubarAction) { selectedCommand.value = item.label }
 </script>
 <template>
   <n-menubar v-model:open="open" :items="menus" @select="onSelect" />
-  <p>{{ selectedCommand }}</p>
+  <output>{{ selectedCommand }}</output>
 </template>`,
 
   NavigationMenu: `<script setup lang="ts">
@@ -159,7 +159,7 @@ function onSelect(item: PaginationItem) { lastAction.value = \`Selected page \${
 </script>
 <template>
   <n-pagination v-model:current-key="currentPage" label="Results pages" :items="pages" @select="onSelect" />
-  <p>{{ lastAction }} · current: {{ currentPage }}</p>
+  <output>{{ lastAction }} · current: {{ currentPage }}</output>
 </template>`,
 
   Sidebar: `<script setup lang="ts">
@@ -207,7 +207,7 @@ const currentStep = ref("team")
 </script>
 <template>
   <n-stepper v-model:current-key="currentStep" label="Workspace setup" :items="steps" />
-  <p>Current step: {{ currentStep }}</p>
+  <output>Current step: {{ currentStep }}</output>
 </template>`,
 
   Tabs: `<script setup lang="ts">
@@ -223,7 +223,7 @@ const selected = ref<string | null>("overview")
 <template>
   <n-tabs v-model:selected="selected" label="Account sections" :items="tabs" activation-mode="manual">
     <template #panel="{ item }">
-      <p>Custom panel for {{ item.label }}.</p>
+      <span>Custom panel for {{ item.label }}.</span>
     </template>
   </n-tabs>
 </template>`,
@@ -244,6 +244,6 @@ const expanded = ref<readonly string[]>(["src", "components"])
 </script>
 <template>
   <n-tree v-model="selected" v-model:expanded="expanded" label="Project files" :items="nodes" />
-  <p>Selected: {{ selected }}</p>
+  <output>Selected: {{ selected }}</output>
 </template>`,
 };

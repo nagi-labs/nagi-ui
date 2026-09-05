@@ -8,9 +8,9 @@ defineProps<{ label: string; value: string; change: string; tone?: "positive" | 
     :data-tone="tone"
   >
     <header class="header">
-      <p class="text">
+      <span class="text">
         {{ label }}
-      </p>
+      </span>
       <span
         class="icon"
         aria-hidden="true"
@@ -18,9 +18,9 @@ defineProps<{ label: string; value: string; change: string; tone?: "positive" | 
       >
     </header>
     <strong class="strong">{{ value }}</strong>
-    <p class="text -change">
+    <span class="text -change">
       {{ change }}
-    </p>
+    </span>
   </article>
 </template>
 

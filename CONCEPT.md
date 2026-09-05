@@ -598,22 +598,23 @@ How should components be owned?
 How should they be tested and maintained?
 ```
 
-Nagi UI is both a reference implementation and a stress test for Nagi CSS.
+Nagi UI is both a reference implementation and a stress test for Nagi CSS. At
+measurement commit `23f409238fed4656ed1ffbf390971c46afc0e21c`, the documentation site contains 555
+explicit base identities. Of these, 426 / 555 (76.8%) are determined by the
+contract after the authored structure is known: their identities follow from
+the route or file surface, component boundary or slot, role, STN position, or
+native element mapping. Another 129 / 555 (23.2%) select from four bounded
+anatomy words, giving 555 / 555 (100.0%) base identities that require no new
+vocabulary. Including 176 implicit component identities, 602 / 731 (82.4%)
+are contract-determined and 731 / 731 (100.0%) require no new vocabulary. Open-ended
+author vocabulary is concentrated in 147 variant occurrences across 81 stems.
 
-An internal audit of the current Nagi UI documentation site covered:
-
-- 29 Vue SFCs
-- 737 rendered/template-owned elements
-- 489 explicit class tokens
-- 64 distinct Nagi UI component tags
-- 92.7% of explicit base identities fully derived
-- 94.9% fully derived when implicit Nagi UI component identities are included
-- 99.8% of base-identity events requiring no new vocabulary when bounded anatomy is included
-
-These numbers should be presented as **strong internal validation**, not proof that the same ratios generalize to unrelated third-party codebases.
-
-The full audit and its reproduction scripts live in
-[`docs/audits/css-cognitive-load.md`](docs/audits/css-cognitive-load.md).
+This is a self-hosted evaluation of Nagi UI, which is designed around Nagi CSS.
+It does not show that the same rates generalize to third-party codebases or
+that naming derivation reduces maintenance time or human cognitive load. See
+the definitions, denominators, machine-readable results, semantic-erasure
+experiment, and reproduction command in
+[`docs/evaluations/naming-derivation.md`](docs/evaluations/naming-derivation.md).
 
 ---
 

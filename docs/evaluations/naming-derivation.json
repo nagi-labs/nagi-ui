@@ -1,0 +1,129 @@
+{
+  "methodology": {
+    "parser": "vue-eslint-parser",
+    "nagiCssVersion": "0.4.0",
+    "scope": "site/**/*.vue",
+    "excludedDirectories": [
+      ".nuxt",
+      ".output",
+      "node_modules"
+    ],
+    "explicitTokenDefinition": "tokens in literal class attributes on template-owned elements",
+    "fullyDerivedCategories": [
+      "surface",
+      "component-boundary",
+      "component-slot",
+      "role",
+      "stn",
+      "element-map",
+      "self-map"
+    ],
+    "boundedCategory": "anatomy",
+    "openEndedCategory": "variant"
+  },
+  "scope": {
+    "vueSfcFiles": 31,
+    "templateAstElements": 921,
+    "renderedOrTemplateOwnedElements": 890,
+    "explicitClassElements": 555,
+    "explicitClassTokens": 702,
+    "uniqueExplicitClassTokens": 159,
+    "baseIdentityTokens": 555,
+    "variantOccurrences": 147,
+    "uniqueVariantStems": 81,
+    "nagiComponentUsages": 176,
+    "distinctNagiComponentTags": 64,
+    "elementsWithDynamicClassBindings": 0
+  },
+  "classification": {
+    "categoryOccurrences": {
+      "surface": 26,
+      "component-boundary": 31,
+      "component-slot": 19,
+      "role": 1,
+      "stn": 74,
+      "element-map": 115,
+      "self-map": 160,
+      "anatomy": 129,
+      "variant": 147,
+      "unclassified": 0
+    },
+    "categoryUniqueCounts": {
+      "surface": 25,
+      "component-boundary": 15,
+      "component-slot": 5,
+      "role": 1,
+      "stn": 3,
+      "element-map": 8,
+      "self-map": 17,
+      "anatomy": 4,
+      "variant": 81,
+      "unclassified": 0
+    },
+    "fullyDerivedExplicitTokens": {
+      "count": 426,
+      "total": 702,
+      "percentage": 60.7
+    },
+    "fullyDerivedBaseIdentities": {
+      "count": 426,
+      "total": 555,
+      "percentage": 76.8
+    },
+    "boundedAnatomy": {
+      "count": 129,
+      "total": 555,
+      "percentage": 23.2,
+      "uniqueWords": 4,
+      "vocabulary": [
+        "actions",
+        "icon",
+        "text",
+        "value"
+      ]
+    },
+    "openEndedVariants": {
+      "count": 147,
+      "total": 702,
+      "percentage": 20.9,
+      "uniqueStems": 81
+    },
+    "baseIdentitiesRequiringNoNewVocabulary": {
+      "count": 555,
+      "total": 555,
+      "percentage": 100
+    },
+    "withImplicitComponentIdentities": {
+      "fullyDerived": {
+        "count": 602,
+        "total": 731,
+        "percentage": 82.4
+      },
+      "requiringNoNewVocabulary": {
+        "count": 731,
+        "total": 731,
+        "percentage": 100
+      }
+    }
+  },
+  "divAndSpan": {
+    "total": 241,
+    "byTag": {
+      "div": 115,
+      "span": 126
+    },
+    "withExplicitClass": 241,
+    "baseCategoryOccurrences": {
+      "surface": 18,
+      "component-slot": 19,
+      "role": 1,
+      "stn": 74,
+      "anatomy": 129
+    },
+    "variantOccurrences": 87
+  },
+  "unclassified": {
+    "count": 0,
+    "occurrences": []
+  }
+}

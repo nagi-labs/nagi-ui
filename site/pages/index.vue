@@ -17,14 +17,14 @@ const previewColumns = [
 <template>
   <div class="site-index-page">
     <section class="section -hero">
-      <div class="unit">
-        <p class="text -eyebrow">Own-first Vue UI</p>
+      <header class="header">
+        <span class="text -eyebrow">Own-first Vue UI</span>
         <h1 class="title">Readable components, with the tests that keep them maintainable.</h1>
-        <p class="text">
+        <span class="text">
           Nagi UI ships concrete Vue Blueprints and the executable knowledge needed to change them.
-          Use the package for light work, or own the same source and tests without adopting a
-          hidden renderer or another component composition language.
-        </p>
+          Use the package for light work, or own the same source and tests without adopting a hidden
+          renderer or another component composition language.
+        </span>
         <div class="actions">
           <a
             class="link -primary"
@@ -36,11 +36,11 @@ const previewColumns = [
             >Application showcase →</a
           >
         </div>
-        <p class="text -proof">
-          Component pages show the shipped Vue source and the Component Contract/Implementation tests that define
-          its maintenance boundary.
-        </p>
-      </div>
+        <span class="text -proof">
+          Component pages show the shipped Vue source and the Component Contract/Implementation
+          tests that define its maintenance boundary.
+        </span>
+      </header>
       <div
         class="unit -preview"
         aria-label="Live product interface preview"
@@ -91,7 +91,7 @@ const previewColumns = [
 
     <section class="section -proof">
       <header class="header">
-        <p class="text">What Nagi makes visible</p>
+        <span class="text">What Nagi makes visible</span>
         <h2 class="title">The implementation and its safe change boundary.</h2>
       </header>
       <div class="unit -principles">
@@ -102,10 +102,10 @@ const previewColumns = [
             >01</span
           >
           <h3 class="title">Read the concrete source</h3>
-          <p class="text">
+          <span class="text">
             Structure and styling stay in ordinary Vue SFCs. Narrow Behavior APIs coordinate the
             hard parts without becoming a hidden renderer.
-          </p>
+          </span>
         </article>
         <article class="article">
           <span
@@ -114,10 +114,11 @@ const previewColumns = [
             >02</span
           >
           <h3 class="title">Tests explain the contract</h3>
-          <p class="text">
-            Component Contract tests state what every compatible implementation must preserve. Implementation tests expose how
-            this Blueprint provides it. Their assertions are the evidence.
-          </p>
+          <span class="text">
+            Component Contract tests state what every compatible implementation must preserve.
+            Implementation tests expose how this Blueprint provides it. Their assertions are the
+            evidence.
+          </span>
         </article>
         <article class="article">
           <span
@@ -126,22 +127,23 @@ const previewColumns = [
             >03</span
           >
           <h3 class="title">Own flexibility</h3>
-          <p class="text">
-            Structural customization happens in source instead of growing a runtime API. Re-run
-            the published tests to distinguish deliberate change from regression.
-          </p>
+          <span class="text">
+            Structural customization happens in source instead of growing a runtime API. Re-run the
+            published tests to distinguish deliberate change from regression.
+          </span>
         </article>
       </div>
     </section>
 
     <section class="section -ownership">
       <div class="unit">
-        <p class="text -eyebrow">Source ownership</p>
+        <span class="text -eyebrow">Source ownership</span>
         <h2 class="title">Move flexibility into the repository.</h2>
-        <p class="text">
+        <span class="text">
           Package mode is the light-use tier. Full adoption means owning the canonical Vue source,
-          its Component Contract and Implementation tests, and the generated maintenance view as one local system.
-        </p>
+          its Component Contract and Implementation tests, and the generated maintenance view as one
+          local system.
+        </span>
       </div>
       <div class="actions">
         <pre class="pre"><code>vp exec nagi-ui own dialog</code></pre>
@@ -172,7 +174,7 @@ const previewColumns = [
     align-items: start;
     padding-block-start: calc(5 * var(--n-space-8));
 
-    > .unit {
+    > .header {
       display: grid;
       justify-items: start;
 
@@ -226,29 +228,31 @@ const previewColumns = [
         }
       }
 
-      &.-preview {
-        gap: var(--n-space-7);
-        justify-items: stretch;
-        padding: var(--n-space-8);
-        border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
-        border-radius: var(--n-radius-3);
-        background: var(--nagi-color-surface);
+    }
 
-        > .header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+    > .unit.-preview {
+      display: grid;
+      gap: var(--n-space-7);
+      justify-items: stretch;
+      padding: var(--n-space-8);
+      border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+      border-radius: var(--n-radius-3);
+      background: var(--nagi-color-surface);
 
-          > .value {
-            font-weight: 600;
-          }
+      > .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        > .value {
+          font-weight: 600;
         }
+      }
 
-        > .seg.-metrics {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--n-space-5);
-        }
+      > .seg.-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--n-space-5);
       }
     }
   }

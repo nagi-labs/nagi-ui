@@ -9,9 +9,9 @@ defineProps<{ title: string; description: string; code?: string }>();
         <h2 class="title">
           {{ title }}
         </h2>
-        <p class="text">
+        <span class="text">
           {{ description }}
-        </p>
+        </span>
       </div>
       <slot name="meta" />
     </header>

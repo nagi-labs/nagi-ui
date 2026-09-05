@@ -93,12 +93,12 @@ const activated = ref("None");
         >
           Unavailable action
         </n-button>
-        <p
+        <span
           id="button-disabled-note"
           class="text"
         >
           The last button remains discoverable by keyboard.
-        </p>
+        </span>
       </section>
     </div>
     <div

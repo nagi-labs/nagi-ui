@@ -14,17 +14,15 @@ defineProps<{ name: string }>();
       >
         Definition
       </h2>
-      <small class="note -status">
-        {{ name }} · Contract audit WIP · Browser evidence not collected
-      </small>
+      <small class="note"> {{ name }} · Contract audit WIP · Browser evidence not collected </small>
     </header>
 
     <div class="unit -notice">
       <strong class="strong">Component Definition in progress</strong>
-      <p class="text">
+      <span class="text">
         The component is available, but its Component Contract and Implementation audit has not yet
         been assembled. No runner-native browser evidence has been collected for this Definition.
-      </p>
+      </span>
     </div>
   </section>
 </template>
@@ -49,7 +47,7 @@ defineProps<{ name: string }>();
       font-size: var(--n-font-size-6);
     }
 
-    > .note.-status {
+    > .note {
       padding: var(--n-space-1) var(--n-space-3);
       border: var(--n-border-width-1) solid var(--nagi-color-warning);
       border-radius: var(--local-status-radius);

@@ -20,7 +20,7 @@ const columns: TableColumn<Customer>[] = [
       description="A working customer operations dashboard composed from Nagi UI and ordinary semantic HTML."
     >
       <n-button>Export report</n-button
-      ><span class="actions -primary">
+      ><span class="actions">
         <n-button> Add customer </n-button>
       </span>
     </page-heading>
@@ -71,7 +71,7 @@ const columns: TableColumn<Customer>[] = [
       <header class="header">
         <div class="unit">
           <h2 class="title">Priority accounts</h2>
-          <p class="text">Accounts with recent growth or risk signals.</p>
+          <span class="text">Accounts with recent growth or risk signals.</span>
         </div>
         <a
           class="link"

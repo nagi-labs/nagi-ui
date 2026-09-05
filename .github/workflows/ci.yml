@@ -30,6 +30,17 @@ jobs:
       - run: vp run audit:templates
       - run: vp run audit:slot-format
       - run: vp run typecheck:vue
+      - run: vp run site:lint
+      - run: vp run evaluate:naming
+      - run: vp run site:typecheck
+      - run: vp run site:generate
+      - name: Upload generated site
+        uses: actions/upload-artifact@v4
+        with:
+          name: nagi-ui-site-${{ github.sha }}
+          path: site/.output/public
+          if-no-files-found: error
+          retention-days: 7
       - run: vp exec playwright install --with-deps chromium
       - run: vp run test:browser
       - run: vp run definitions:check

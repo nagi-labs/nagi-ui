@@ -5,18 +5,18 @@ defineProps<{ eyebrow?: string; title: string; description: string }>();
 <template>
   <header class="site-page-heading">
     <div class="unit">
-      <p
+      <span
         v-if="eyebrow"
         class="text -eyebrow"
       >
         {{ eyebrow }}
-      </p>
+      </span>
       <h1 class="title">
         {{ title }}
       </h1>
-      <p class="text">
+      <span class="text">
         {{ description }}
-      </p>
+      </span>
     </div>
     <div
       v-if="$slots.default"

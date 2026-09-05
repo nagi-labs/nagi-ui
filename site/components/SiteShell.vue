@@ -8,6 +8,7 @@ const componentDocs = computed(() => route.path.startsWith("/components"));
 const hasSidebar = computed(() => Boolean(showcase || componentDocs.value));
 const navigation = [
   { label: "Overview", path: "/" },
+  { label: "Concept", path: "/concept/" },
   { label: "Showcase", path: "/showcase/" },
   { label: "Components", path: "/components/" },
   { label: "Nagi CSS", href: "https://nagi-labs.github.io/nagi-css/" },
@@ -253,8 +254,8 @@ function toggleTheme() {
 
       > .nav {
         grid-column: 1 / -1;
+        flex-wrap: wrap;
         justify-content: start;
-        overflow-x: auto;
 
         > .link {
           flex: 0 0 auto;
@@ -264,6 +265,10 @@ function toggleTheme() {
       }
 
       > .actions {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+
         > .link.-github {
           display: none;
         }

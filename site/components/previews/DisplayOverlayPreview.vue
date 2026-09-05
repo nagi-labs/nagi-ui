@@ -141,7 +141,7 @@ toastManager.add({
       </div>
     </template>
     <template v-else-if="componentName === 'Badge'">
-      <ul class="list -accounts">
+      <ul class="list">
         <li class="item">
           <span class="text">Acme Systems</span>
           <n-badge
@@ -198,12 +198,12 @@ toastManager.add({
         ><span class="actions -primary"><n-button>Create report</n-button></span></n-empty-state
       >
     </template>
-    <p
+    <span
       v-else-if="componentName === 'Kbd'"
       class="text -shortcut"
     >
       Open the command palette with <n-kbd label="Command" /> + <n-kbd label="K" />.
-    </p>
+    </span>
     <template v-else-if="componentName === 'Meter'">
       <div class="unit -metric">
         <span class="seg -metric-heading">
@@ -238,7 +238,7 @@ toastManager.add({
       <article class="article -account-summary">
         <section class="section">
           <h3 class="title">Account</h3>
-          <p class="text">Acme Systems · Enterprise</p>
+          <span class="text">Acme Systems · Enterprise</span>
         </section>
         <n-separator
           class="n-separator"
@@ -246,7 +246,7 @@ toastManager.add({
         />
         <section class="section">
           <h3 class="title">Billing</h3>
-          <p class="text">Renews October 18</p>
+          <span class="text">Renews October 18</span>
         </section>
         <div class="actions -record">
           <n-button>Archive</n-button>
@@ -467,7 +467,7 @@ toastManager.add({
     }
   }
 
-  > .list.-accounts {
+  > .list {
     display: grid;
     gap: var(--n-space-4);
     min-inline-size: min(100%, 24rem);
