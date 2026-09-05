@@ -11,6 +11,7 @@ import {
 import { computed, ref } from "vue";
 
 import OwnedComboboxContractFixture from "./OwnedComboboxContractFixture.vue";
+import OwnedDialogContractFixture from "./OwnedDialogContractFixture.vue";
 
 const comboboxSeed: ReadonlyArray<{ key: string; label: string; disabled?: boolean }> = [
   { key: "vue", label: "Vue" },
@@ -57,6 +58,22 @@ const ownedDialog = useDialog({ modal: true, closedby: "any" });
 const titleId = `${ownedDialog.id}-title`;
 const descriptionId = `${ownedDialog.id}-description`;
 const packageDialogOpen = ref(false);
+const packageControlledDialogSource = ref(false);
+const packageControlledDialogRequests = ref(0);
+const packageControlledDialogOpen = computed({
+  get: () => packageControlledDialogSource.value,
+  set: () => {
+    packageControlledDialogRequests.value += 1;
+  },
+});
+const ownedControlledDialogSource = ref(false);
+const ownedControlledDialogRequests = ref(0);
+const ownedControlledDialogOpen = computed({
+  get: () => ownedControlledDialogSource.value,
+  set: () => {
+    ownedControlledDialogRequests.value += 1;
+  },
+});
 const packageAlertDialogOpen = ref(false);
 const ownedAlertDialogOpen = ref(false);
 const ownedAlertDialog = useAlertDialog(ownedAlertDialogOpen);
@@ -401,6 +418,38 @@ const packageOutOfRangeCarouselIndex = ref(99);
         aria-label="Package dialog model"
         >{{ packageDialogOpen }}</output
       >
+
+      <button
+        type="button"
+        @click="packageControlledDialogSource = true"
+      >
+        Accept package controlled open
+      </button>
+      <n-dialog
+        v-model:open="packageControlledDialogOpen"
+        trigger-label="Request package controlled open"
+        title="Package controlled dialog"
+        description="A package dialog whose owner may reject visibility requests."
+      >
+        Controlled package content.
+        <template #actions>
+          <n-button @click="packageControlledDialogSource = false">
+            Accept package controlled close
+          </n-button>
+        </template>
+      </n-dialog>
+      <output
+        role="status"
+        aria-label="Package controlled dialog model"
+      >
+        {{ packageControlledDialogSource }}
+      </output>
+      <output
+        role="status"
+        aria-label="Package controlled dialog requests"
+      >
+        {{ packageControlledDialogRequests }}
+      </output>
 
       <n-alert-dialog
         v-model:open="packageAlertDialogOpen"
@@ -961,6 +1010,33 @@ const packageOutOfRangeCarouselIndex = ref(99);
       aria-label="Owned dialog model"
     >
       {{ ownedDialog.open }}
+    </output>
+
+    <button
+      type="button"
+      @click="ownedControlledDialogSource = true"
+    >
+      Accept owned controlled open
+    </button>
+    <owned-dialog-contract-fixture
+      v-model:open="ownedControlledDialogOpen"
+      trigger-label="Request owned controlled open"
+      title="Owned controlled dialog"
+      description="An owned dialog whose owner may reject visibility requests."
+      accepted-close-label="Accept owned controlled close"
+      @accept-close="ownedControlledDialogSource = false"
+    />
+    <output
+      role="status"
+      aria-label="Owned controlled dialog model"
+    >
+      {{ ownedControlledDialogSource }}
+    </output>
+    <output
+      role="status"
+      aria-label="Owned controlled dialog requests"
+    >
+      {{ ownedControlledDialogRequests }}
     </output>
 
     <div

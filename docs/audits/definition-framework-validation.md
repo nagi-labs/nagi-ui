@@ -228,7 +228,11 @@ identity-first gaps are closed:
   fixtures. Its materially different Deep Sea implementation remains on
   revision 2 until the next package update, so replacement evidence for the six
   added guarantees is not yet claimed.
-- Dialog still needs an external controlled-open/rejected-write scenario.
+- Dialog revision 3 now exercises rejected trigger-open, accepted external
+  open/close, rejected native close, surface repair, and repaired focus against
+  package and owned fixtures. Deep Sea still executes revision 2 until the next
+  package update, so its Motion implementation has not yet proved this added
+  controlled-visibility guarantee.
 - DatePicker still needs disabled/read-only, segmented editing, broader calendar
   keyboard navigation, external form association, controlled-open, and
   post-selection/light-dismiss focus evidence.

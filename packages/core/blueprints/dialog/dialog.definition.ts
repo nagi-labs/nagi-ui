@@ -41,7 +41,7 @@ const nativeDialog = adoptRequirementSet(nagiDialogRequirementsV2, {
 
 export const dialogComponentContract = defineComponentContract({
   id: "nagi/dialog",
-  revision: "2",
+  revision: "3",
   description:
     "Named modal-surface, dismissal, controlled visibility, focus containment, and invoker-restoration guarantees shared by interchangeable Dialog implementations.",
   api: [
@@ -158,7 +158,7 @@ export const nativeDialogImplementation = defineComponentImplementation({
 
 export const dialogDefinition = defineComponentDefinition({
   name: "Dialog",
-  version: "3.0",
+  version: "4.0",
   status: "draft",
   contract: dialogComponentContract,
   implementation: nativeDialogImplementation,

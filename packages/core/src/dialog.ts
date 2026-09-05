@@ -1,5 +1,6 @@
 import {
   getCurrentInstance,
+  nextTick,
   onMounted,
   ref,
   useId,
@@ -139,7 +140,13 @@ export function useDialog(
 
   function mirror(event: Event, isOpen: boolean) {
     element = event.target as DialogElement;
-    if (open.value !== isOpen) open.value = isOpen;
+    if (open.value === isOpen) return;
+    open.value = isOpen;
+    // A controlled owner may reject the native transition. Wait until a Vue
+    // model proxy has had a chance to publish its accepted value, then repair
+    // the registered surface to that value. Uncontrolled and accepted writes
+    // are already idempotent at this point.
+    void nextTick(() => apply(open.value));
   }
 
   watch(open, (next) => apply(next), { flush: "sync" });

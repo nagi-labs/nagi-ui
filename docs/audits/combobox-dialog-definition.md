@@ -13,6 +13,12 @@ provenance split and additional `:modal`/dismissal probes are recorded in
 below remains the pre-implementation baseline against which that migration was
 reviewed.
 
+Dialog Component Contract revision 3 was audited on 2026-09-05. A controlled
+fixture now rejects trigger-open and native-close requests, accepts external
+open/close state, and verifies that the visible surface and focus repair to the
+accepted state in both package and owned implementations. Deep Sea remains on
+revision 2 pending the next package update.
+
 Combobox revision 3 was audited on 2026-09-05. Its package and owned fixtures
 now execute the same additional disabled, read-only, popup-boundary, IME,
 pointer, and controlled-rejection flows. Deep Sea remains on revision 2 until
@@ -104,6 +110,7 @@ the final result matrix are appended only after the probes run.
 | Package and reordered owned native Dialog             | accepted by one Definition and shared contract                                 | Content order is not frozen; native surface, naming, focus, and restoration are.                                 |
 | Native Dialog replaced by `div role="dialog"`         | rejected at `instanceof HTMLDialogElement`                                     | ARIA cannot substitute for the adopted native platform mechanism.                                                |
 | Close action deliberately restores a different target | rejected at the invoker-focus assertion                                        | The contract includes the close transition and its aftermath.                                                    |
+| Rejected controlled Dialog open and native close      | keeps the accepted model authoritative and repairs the surface/focus           | `nagi/dialog@3` verifies both directions of the controlled visibility boundary against package and owned DOM.    |
 | Package Dialog receives an explicit `id`              | one occurrence on the public root; native surface keeps a separate internal ID | The suspected duplicate-ID defect was disproved; changing the existing destination would have been a regression. |
 | Combobox, Dialog, and Popover global rediscovery      | removed from their behavior paths                                              | Complete binding bundles register local input/listbox, trigger/surface, and native popup elements.               |
 | Disabled package and owned Comboboxes                  | block user interaction but accept external state                               | Disabled is an interaction policy, not a prohibition on owner-controlled state updates.                          |

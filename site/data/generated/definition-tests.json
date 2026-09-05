@@ -1216,7 +1216,7 @@
       "status": "passing",
       "componentContract": {
         "id": "nagi/dialog",
-        "revision": "2"
+        "revision": "3"
       },
       "implementations": [
         {
@@ -1387,6 +1387,31 @@
             "focus"
           ],
           "title": "Closes through its primary action and restores the trigger",
+          "runner": "playwright",
+          "evidence": [
+            {
+              "fixture": "Owned profile editor",
+              "fixtureKind": "owned",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            },
+            {
+              "fixture": "Package definition dialog",
+              "fixtureKind": "package",
+              "source": "../../packages/core/dist/test/index.js",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "key": "DLG_CONTRACT_08",
+          "layer": "component-contract",
+          "sections": [
+            "state",
+            "interaction",
+            "focus"
+          ],
+          "title": "Keeps controlled visibility authoritative across rejected open and close requests",
           "runner": "playwright",
           "evidence": [
             {

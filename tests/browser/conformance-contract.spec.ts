@@ -315,6 +315,14 @@ dialogContract({
   closeName: "Close",
   actionName: "Save package dialog",
   modelStatusName: "Package dialog model",
+  controlled: {
+    triggerName: "Request package controlled open",
+    dialogName: "Package controlled dialog",
+    modelStatusName: "Package controlled dialog model",
+    requestStatusName: "Package controlled dialog requests",
+    acceptOpenName: "Accept package controlled open",
+    acceptCloseName: "Accept package controlled close",
+  },
   verifyPackageStyle: true,
 });
 
@@ -329,6 +337,14 @@ dialogContract({
   closeName: "Dismiss owned dialog",
   actionName: "Save owned dialog",
   modelStatusName: "Owned dialog model",
+  controlled: {
+    triggerName: "Request owned controlled open",
+    dialogName: "Owned controlled dialog",
+    modelStatusName: "Owned controlled dialog model",
+    requestStatusName: "Owned controlled dialog requests",
+    acceptOpenName: "Accept owned controlled open",
+    acceptCloseName: "Accept owned controlled close",
+  },
 });
 
 alertDialogContract({

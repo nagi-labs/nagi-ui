@@ -3,8 +3,10 @@
 Audit baseline: 2026-09-01; modal-profile review: 2026-09-02. This audit records
 why Dialog and AlertDialog adopt different fixed choices from the native
 `nagi/dialog` Requirement set revision 2. Revision 1 remains the historical
-configurable snapshot. The Requirement set belongs to their native Implementations; it is not the
-   portable `nagi/dialog@2` Component Contract identity.
+configurable snapshot. The Requirement set belongs to their native
+Implementations; it is not the portable `nagi/dialog@3` Component Contract
+identity. Component Contract revision 3 adds controlled visibility repair; it
+does not alter this native Requirement-set revision.
 
 ## Adopted sources
 
@@ -69,6 +71,7 @@ structurally reordered owned implementation. It verifies:
 - a named native `HTMLDialogElement` and executable anatomy;
 - actual `:modal` state rather than only the `open` attribute;
 - model synchronization after native transitions;
+- externally accepted visibility and repair after rejected open/close requests;
 - modal focus entry and sequential focus containment;
 - Escape, visible close action, and `closedby="any"` light dismissal;
 - invoker restoration after every declared close path;
@@ -78,8 +81,9 @@ structurally reordered owned implementation. It verifies:
 
 Node tests separately verify the low-level Behavior API's non-modal `show()`
 capability, Invoker Command fallback, same-root close lookup, and idempotent
-model application. Those tests do not add non-modal behavior to the shipped
-Blueprint Contract.
+model application. They also verify that a rejected native close is repaired
+after Vue has published the accepted controlled value. Those tests do not add
+non-modal behavior to the shipped Blueprint Contract.
 
 The AlertDialog adoption runs the same native Requirement set against package and owned DOM.
 It additionally verifies its required description, cancel-first focus,

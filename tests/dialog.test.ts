@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import { useDialog, vDialogClose } from "@nagi-labs/nagi-ui";
 
@@ -124,6 +124,36 @@ test("controlled: writes apply imperatively", async () => {
   await nextTick();
   assert.deepEqual(element.calls, ["close"]);
   assert.equal(element.open, false);
+});
+
+test("[DLG-STATE-01] controlled: rejected native close repairs the accepted surface", async () => {
+  const element = fakeDialog();
+  const acceptedOpen = ref(true);
+  let closeRequests = 0;
+  const controlledOpen = computed({
+    get: () => acceptedOpen.value,
+    set: () => {
+      closeRequests += 1;
+    },
+  });
+  const { dialogProps } = useDialog({ id: "dlg-controlled-rejection", open: controlledOpen });
+  dialogProps.ref(element as unknown as Element);
+  assert.equal(element.open, true);
+  element.calls.length = 0;
+
+  element.open = false;
+  dialogProps.onClose(plainEvent(element));
+  await nextTick();
+
+  assert.equal(closeRequests, 1);
+  assert.equal(acceptedOpen.value, true);
+  assert.equal(element.open, true);
+  assert.deepEqual(element.calls, ["showModal"]);
+
+  acceptedOpen.value = false;
+  await nextTick();
+  assert.equal(element.open, false);
+  assert.deepEqual(element.calls, ["showModal", "close"]);
 });
 
 test("[DLG-INT-01] show/close helpers drive the model and reach the element", async () => {

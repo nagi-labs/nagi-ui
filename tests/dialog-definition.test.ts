@@ -32,9 +32,9 @@ test("nagi/dialog separates platform behavior from Nagi integration policy", () 
 test("Dialog separates its Component Contract from native implementation choices", () => {
   assert.deepEqual(validateDefinition(dialogDefinition), []);
   assert.equal(dialogDefinition.status, "draft");
-  assert.equal(dialogDefinition.version, "3.0");
+  assert.equal(dialogDefinition.version, "4.0");
   assert.equal(dialogDefinition.contract?.id, "nagi/dialog");
-  assert.equal(dialogDefinition.contract?.revision, "2");
+  assert.equal(dialogDefinition.contract?.revision, "3");
   assert.equal(dialogDefinition.implementation?.id, "nagi/blueprint/dialog-native");
   assert.deepEqual(
     dialogDefinition.adoptions?.find(({ requirementSet }) => requirementSet === "nagi/dialog")

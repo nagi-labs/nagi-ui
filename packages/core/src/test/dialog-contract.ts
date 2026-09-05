@@ -17,6 +17,7 @@ const dialogContractRequirementIds = [
   "DLG_CONTRACT_05",
   "DLG_CONTRACT_06",
   "DLG_CONTRACT_07",
+  "DLG_CONTRACT_08",
 ] as const;
 
 const nativeDialogImplementationRequirementIds = [
@@ -59,6 +60,17 @@ export interface DialogContractOptions {
   modelStatusName?: string;
   /** The package Blueprint's functional styling is not imposed on owned markup. */
   verifyPackageStyle?: boolean;
+}
+
+export interface DialogComponentContractOptions extends DialogContractOptions {
+  controlled: {
+    triggerName: string;
+    dialogName: string;
+    modelStatusName: string;
+    requestStatusName: string;
+    acceptOpenName: string;
+    acceptCloseName: string;
+  };
 }
 
 function trigger(page: Page, options: DialogContractOptions): Locator {
@@ -176,6 +188,51 @@ export async function assertDialogPrimaryAction(page: Page, options: DialogContr
   await dialog.getByRole("button", { name: options.actionName, exact: true }).click();
   await expect(dialog).toBeHidden();
   await expect(opener).toBeFocused();
+}
+
+/** Controlled visibility repairs rejected user intent and follows accepted owner updates. */
+export async function assertDialogControlledVisibility(
+  page: Page,
+  options: DialogComponentContractOptions,
+) {
+  const controlled = options.controlled;
+  const opener = page.getByRole("button", { name: controlled.triggerName, exact: true });
+  const dialog = page.getByRole("dialog", {
+    name: controlled.dialogName,
+    exact: true,
+    includeHidden: true,
+  });
+  const model = page.getByRole("status", { name: controlled.modelStatusName, exact: true });
+  const requests = page.getByRole("status", { name: controlled.requestStatusName, exact: true });
+
+  await expect(dialog).toBeHidden();
+  await expect(model).toHaveText("false");
+  await expect(requests).toHaveText("0");
+
+  await opener.click();
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+  await expect(model).toHaveText("false");
+  await expect(requests).toHaveText("1");
+
+  await page.getByRole("button", { name: controlled.acceptOpenName, exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(model).toHaveText("true");
+  await expect
+    .poll(() => dialog.evaluate((node) => node.contains(document.activeElement)))
+    .toBe(true);
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await expect(model).toHaveText("true");
+  await expect(requests).toHaveText("2");
+  await expect
+    .poll(() => dialog.evaluate((node) => node.contains(document.activeElement)))
+    .toBe(true);
+
+  await dialog.getByRole("button", { name: controlled.acceptCloseName, exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect(model).toHaveText("false");
 }
 
 export async function assertDialogRejectsLightDismissal(
@@ -334,10 +391,14 @@ function registerAlertDialogCompatibilityContract(options: DialogContractOptions
   });
 }
 
-function registerDialogContract(options: DialogContractOptions): void {
-  if (options.escapeCloses === false || options.lightDismisses === false || options.modal === false) {
+function registerDialogContract(options: DialogComponentContractOptions): void {
+  if (
+    options.escapeCloses === false ||
+    options.lightDismisses === false ||
+    options.modal === false
+  ) {
     throw new Error(
-      "nagi/dialog@2 fixes modal containment, Escape dismissal, and light dismissal; a different policy needs another Component Contract.",
+      "nagi/dialog@3 fixes modal containment, Escape dismissal, light dismissal, and controlled visibility repair; a different policy needs another Component Contract.",
     );
   }
 
@@ -432,65 +493,76 @@ function registerDialogContract(options: DialogContractOptions): void {
         { tag: ["@interaction", "@focus", `@${DLG_CONTRACT_07.name}`] },
         DLG_CONTRACT_07,
       );
+
+      async function DLG_CONTRACT_08({ page }: { page: Page }) {
+        await assertDialogControlledVisibility(page, options);
+      }
+
+      test(
+        "Keeps controlled visibility authoritative across rejected open and close requests",
+        { tag: ["@state", "@interaction", "@focus", `@${DLG_CONTRACT_08.name}`] },
+        DLG_CONTRACT_08,
+      );
     },
   );
 
-  if (options.includeStandardImplementation !== false) test.describe(
-    `Dialog / Implementation / ${options.dialogName}`,
-    {
-      tag: [
-        "@definition",
-        "@dialog",
-        "@implementation",
-        ...(options.fixture ? [`@fixture-${options.fixture}`] : []),
-      ],
-      annotation: [
-        ...nativeDialogImplementationReferences,
-        componentImplementationAnnotation(options.definition),
-        componentImplementationRequirementsAnnotation(nativeDialogImplementationRequirementIds),
-      ],
-    },
-    () => {
-      test.beforeEach(async ({ page }) => {
-        await page.goto(options.url);
-      });
+  if (options.includeStandardImplementation !== false)
+    test.describe(
+      `Dialog / Implementation / ${options.dialogName}`,
+      {
+        tag: [
+          "@definition",
+          "@dialog",
+          "@implementation",
+          ...(options.fixture ? [`@fixture-${options.fixture}`] : []),
+        ],
+        annotation: [
+          ...nativeDialogImplementationReferences,
+          componentImplementationAnnotation(options.definition),
+          componentImplementationRequirementsAnnotation(nativeDialogImplementationRequirementIds),
+        ],
+      },
+      () => {
+        test.beforeEach(async ({ page }) => {
+          await page.goto(options.url);
+        });
 
-      async function DLG_IMPLEMENTATION_01({ page }: { page: Page }) {
-        await assertNativeDialogSemantics(page, options);
-      }
+        async function DLG_IMPLEMENTATION_01({ page }: { page: Page }) {
+          await assertNativeDialogSemantics(page, options);
+        }
 
-      async function DLG_IMPLEMENTATION_02({ page }: { page: Page }) {
-        await assertDialogAnatomy(page, options);
-      }
-
-      test(
-        "Uses one native dialog opened with the declared modality",
-        { tag: ["@semantics", "@state", `@${DLG_IMPLEMENTATION_01.name}`] },
-        DLG_IMPLEMENTATION_01,
-      );
-
-      test(
-        "Binds the invoker and native surface inside one owned scope",
-        { tag: ["@anatomy", `@${DLG_IMPLEMENTATION_02.name}`] },
-        DLG_IMPLEMENTATION_02,
-      );
-
-      if (options.verifyPackageStyle) {
-        async function DLG_IMPLEMENTATION_03({ page }: { page: Page }) {
-          await assertDialogStyle(page, options);
+        async function DLG_IMPLEMENTATION_02({ page }: { page: Page }) {
+          await assertDialogAnatomy(page, options);
         }
 
         test(
-          "Preserves backdrop, viewport bounds, and forced-colors focus",
-          { tag: ["@style", "@focus", `@${DLG_IMPLEMENTATION_03.name}`] },
-          DLG_IMPLEMENTATION_03,
+          "Uses one native dialog opened with the declared modality",
+          { tag: ["@semantics", "@state", `@${DLG_IMPLEMENTATION_01.name}`] },
+          DLG_IMPLEMENTATION_01,
         );
-      }
-    },
-  );
+
+        test(
+          "Binds the invoker and native surface inside one owned scope",
+          { tag: ["@anatomy", `@${DLG_IMPLEMENTATION_02.name}`] },
+          DLG_IMPLEMENTATION_02,
+        );
+
+        if (options.verifyPackageStyle) {
+          async function DLG_IMPLEMENTATION_03({ page }: { page: Page }) {
+            await assertDialogStyle(page, options);
+          }
+
+          test(
+            "Preserves backdrop, viewport bounds, and forced-colors focus",
+            { tag: ["@style", "@focus", `@${DLG_IMPLEMENTATION_03.name}`] },
+            DLG_IMPLEMENTATION_03,
+          );
+        }
+      },
+    );
 }
 
-export function dialogContract(options: DialogContractOptions): void {
+export function dialogContract(options: DialogComponentContractOptions): void {
   registerDialogContract(options);
 }
 

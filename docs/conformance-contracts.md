@@ -17,6 +17,15 @@ dialogContract({
   triggerName: "Edit profile",
   dialogName: "Profile",
   closeName: "Cancel",
+  actionName: "Save profile",
+  controlled: {
+    triggerName: "Request controlled profile open",
+    dialogName: "Controlled profile",
+    modelStatusName: "Controlled profile model",
+    requestStatusName: "Controlled profile requests",
+    acceptOpenName: "Accept controlled profile open",
+    acceptCloseName: "Accept controlled profile close",
+  },
 });
 
 alertDialogContract({
@@ -108,8 +117,10 @@ consumer-owned component without importing its DOM hierarchy into the contract.
 `dialogContract` discovers a trigger and surface by accessible role and name.
 Its Component Contract checks naming and description, opening focus, declared
 dismissal outcomes, sequential focus containment, close actions, accepted open
-state, and focus restoration. The standard Implementation additionally checks
-the native dialog element and actual `:modal` state. Neither layer requires a
+state, rejected open/close repair, and focus restoration. The controlled
+fixture names identify consumer-owned controls and status outputs; they do not
+prescribe a DOM hierarchy. The standard Implementation additionally checks the
+native dialog element and actual `:modal` state. Neither layer requires a
 header/body/footer order or any Nagi class.
 
 `alertDialogContract` runs the same native modal boundary with the stricter

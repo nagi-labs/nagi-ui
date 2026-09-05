@@ -33,6 +33,7 @@ export {
   alertDialogContract,
   assertDialogAnatomy,
   assertDialogCloseAction,
+  assertDialogControlledVisibility,
   assertDialogEscapeAndRestoration,
   assertDialogFocusContainment,
   assertDialogFocusEntry,
@@ -42,6 +43,7 @@ export {
   assertDialogStyle,
   assertNativeDialogSemantics,
   dialogContract,
+  type DialogComponentContractOptions,
   type DialogContractOptions,
 } from "./dialog-contract.ts";
 export { inspectAnatomy } from "../definition.ts";
