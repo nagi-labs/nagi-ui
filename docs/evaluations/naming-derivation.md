@@ -1,7 +1,7 @@
 # Naming derivation evaluation on Nagi UI
 
 Measurement date: 2026-09-06 UTC  
-Measurement commit: `12769048fd49f4942336188b965d357f2f68b1f2`
+Measurement commit: `23f409238fed4656ed1ffbf390971c46afc0e21c`
 
 Run the committed evaluation and verify its machine-readable snapshots with:
 
@@ -51,23 +51,25 @@ cognitive load or the time required to maintain the code.
 - Surface identity: the file-derived surface or a routed `site-*` surface.
 - Component identities and slots: values loaded from
   `packages/core/nagi-css-preset.mjs`.
-- Native element mapping is evaluated before anatomy. A token such as
-  `p.text` is therefore fully derived from the native-element map even when
-  `text` is also present in the anatomy vocabulary.
+- Nagi CSS contract: element mappings, anatomy, STN tiers, component
+  boundaries, component slots, and valid file-derived surface roots are loaded
+  from `@nagi-labs/nagi-css-core` 0.4.0 using the site's current preset.
+- Native element mapping is evaluated before anatomy. A mapped token is fully
+  derived even when the same word also appears in the anatomy vocabulary.
 
 ## Population
 
 | Metric | Result |
 | --- | ---: |
 | Vue SFCs | 31 |
-| Template AST elements, including outer SFC wrappers | 925 |
-| Rendered/template-owned elements, excluding outer wrappers | 894 |
-| Elements with an explicit class | 559 |
-| Explicit class tokens | 717 |
-| Unique explicit class tokens | 162 |
-| Base identity tokens | 559 |
-| Variant occurrences | 158 |
-| Unique variant stems | 84 |
+| Template AST elements, including outer SFC wrappers | 921 |
+| Rendered/template-owned elements, excluding outer wrappers | 890 |
+| Elements with an explicit class | 555 |
+| Explicit class tokens | 702 |
+| Unique explicit class tokens | 159 |
+| Base identity tokens | 555 |
+| Variant occurrences | 147 |
+| Unique variant stems | 81 |
 | Nagi UI component usages | 176 |
 | Distinct Nagi UI component tags | 64 |
 | Elements with dynamic class bindings | 0 |
@@ -80,52 +82,52 @@ cognitive load or the time required to maintain the code.
 | Component boundary | 31 | fully derived |
 | Component slot | 19 | fully derived |
 | ARIA role | 1 | fully derived |
-| STN position | 81 | fully derived after structural position is known |
-| Native element map | 176 | fully derived |
-| Native self-map | 157 | fully derived |
-| Bounded anatomy | 68 | selected from four preset words |
-| Open-ended variant | 158 | author-named |
+| STN position | 74 | fully derived after structural position is known |
+| Native element map | 115 | fully derived |
+| Native self-map | 160 | fully derived |
+| Bounded anatomy | 129 | selected from four preset words |
+| Open-ended variant | 147 | author-named |
 | Unclassified | 0 | neither derived nor declared vocabulary |
-| Total | 717 | |
+| Total | 702 | |
 
-The fully derived categories contain 491 explicit class tokens:
+The fully derived categories contain 426 explicit class tokens:
 
 ```text
-Fully derived explicit tokens: 491 / 717 = 68.5%
+Fully derived explicit tokens: 426 / 702 = 60.7%
 ```
 
 For base identities, where variants are excluded from the denominator:
 
 ```text
-Fully derived base identities:              491 / 559 = 87.8%
-Bounded anatomy base identities:              68 / 559 = 12.2%
-Base identities requiring no new vocabulary: 559 / 559 = 100.0%
+Fully derived base identities:              426 / 555 = 76.8%
+Bounded anatomy base identities:            129 / 555 = 23.2%
+Base identities requiring no new vocabulary: 555 / 555 = 100.0%
 ```
 
 The bounded anatomy occurrences select from `actions`, `icon`, `text`, and
 `value`. They are not counted as fully derived. Open-ended author vocabulary
-is concentrated in the 158 variant occurrences across 84 stems.
+is concentrated in the 147 variant occurrences across 81 stems.
 
 Nagi UI component elements contribute 176 implicit component identities.
 Keeping those identities in a separate, expanded denominator gives:
 
 ```text
-Fully derived identities including implicit components: 667 / 735 = 90.7%
-No-new-word identities including implicit components:    735 / 735 = 100.0%
+Fully derived identities including implicit components: 602 / 731 = 82.4%
+No-new-word identities including implicit components:    731 / 731 = 100.0%
 ```
 
 ## `div` and `span`
 
 | Metric | Result |
 | --- | ---: |
-| `div` elements | 122 |
-| `span` elements | 65 |
-| Total `div` / `span` elements | 187 |
-| With an explicit class | 187 |
-| Variant occurrences on `div` / `span` | 83 |
+| `div` elements | 115 |
+| `span` elements | 126 |
+| Total `div` / `span` elements | 241 |
+| With an explicit class | 241 |
+| Variant occurrences on `div` / `span` | 87 |
 
 Their base identities comprise 18 surface roots, 19 component slots, one role,
-81 STN identities, and 68 bounded anatomy choices. This table describes the
+74 STN identities, and 129 bounded anatomy choices. This table describes the
 current classification; it does not determine whether the chosen HTML element
 is semantically correct.
 
@@ -145,40 +147,42 @@ does not change.
 
 | Population metric | Result |
 | --- | ---: |
-| Rendered/template-owned elements | 894 |
-| Visually comparable semantic elements | 80 |
+| Rendered/template-owned elements | 890 |
+| Visually comparable semantic elements | 83 |
 | Surface roots with no naming change | 5 |
-| Eligible styled semantic elements | 75 |
-| Excluded styled semantic elements | 289 |
+| Eligible styled semantic elements | 78 |
+| Excluded styled semantic elements | 228 |
 
-The 75 targets comprise 8 `article`, 1 `figcaption`, 1 `footer`, 26 `header`,
-1 `main`, 2 `nav`, 35 `section`, and 1 `time` element. Partial levels use 200
+The 78 targets comprise 8 `article`, 1 `figcaption`, 1 `footer`, 27 `header`,
+1 `main`, 2 `nav`, 37 `section`, and 1 `time` element. Partial levels use 200
 deterministically seeded samples.
 
 | Semantic erasure | Mean replacements | Added variant occurrences | Added unique stems | Collision groups |
 | ---: | ---: | ---: | ---: | ---: |
 | 0% | 0 | 0 | 0 | 0 |
-| 25% | 18.8 | 0.1 | 0.1 | 0.1 |
-| 50% | 37.8 | 0.3 | 0.3 | 0.3 |
-| 75% | 57.3 | 0.6 | 0.6 | 0.6 |
-| 100% | 75 | 1 | 1 | 1 |
+| 25% | 19.5 | 0.2 | 0.2 | 0.2 |
+| 50% | 39.3 | 0.7 | 0.7 | 0.7 |
+| 75% | 59.6 | 1.2 | 1.2 | 1.2 |
+| 100% | 78 | 2 | 2 | 2 |
 
-At full replacement, `header.header` and `footer.footer` in
-`site/components/CustomerDirectory.vue` converge on the same file-local
-`div.unit` selector. That one collision group contains two occurrences and
-requires at least one added variant occurrence and one added stem under this
-model.
+At full replacement, two file-local selector groups collide. The first is
+`header.header` and `footer.footer` in
+`site/components/CustomerDirectory.vue`. The second is `header.header` and two
+`section.section` elements in
+`site/components/docs/ComponentDefinitionSection.vue`. Together they contain
+five occurrences and require at least two added variant occurrences and two
+added stems under this model.
 
-Against 158 baseline variant occurrences and 84 unique stems, the minimum
+Against 147 baseline variant occurrences and 81 unique stems, the minimum
 style-preserving result is:
 
 ```text
-Added variant occurrences: 1 / 158 = 0.6%
-Added unique stems:         1 / 84  = 1.2%
+Added variant occurrences: 2 / 147 = 1.4%
+Added unique stems:         2 / 81  = 2.5%
 ```
 
 If every erased semantic role instead receives an explicit class distinction,
-the upper bound is 75 added occurrences (47.5%) and eight added stems (9.5%).
+the upper bound is 78 added occurrences (53.1%) and eight added stems (9.9%).
 This is an explicit-role bound, not the minimum needed to preserve the current
 style distinctions.
 
