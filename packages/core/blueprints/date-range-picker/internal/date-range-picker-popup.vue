@@ -90,13 +90,16 @@ const picker = useDateRangePickerContext();
 
 <style scoped>
 .n-date-range-picker-popup {
-  margin: 0;
   padding: var(--nagi-space-control);
   border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
   border-radius: var(--nagi-radius-overlay);
   background: var(--nagi-color-surface);
   color: var(--nagi-color-text);
   box-shadow: var(--nagi-shadow-overlay);
+
+  &:popover-open {
+    margin: 0;
+  }
 
   > .status {
     position: absolute;
