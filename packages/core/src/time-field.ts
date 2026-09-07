@@ -405,7 +405,10 @@ function createTimeField(options: UseTimeFieldOptions): TimeFieldBinding {
       if (part.type === "literal") {
         const count = counts.get("literal") ?? 0;
         counts.set("literal", count + 1);
-        return [{ key: `literal-${count}`, type: "literal", text: part.value }];
+        // ICU may emit narrow no-break spaces in SSR while Chromium emits a
+        // regular space for the same locale. Keep the rendered separator
+        // stable across both environments so hydration can reuse the DOM.
+        return [{ key: `literal-${count}`, type: "literal", text: part.value.replace(/\s/gu, " ") }];
       }
       if (part.type === "dayPeriod") {
         const value = parts.dayPeriod;

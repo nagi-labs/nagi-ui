@@ -40,6 +40,13 @@ test("TimeField derives 12/24-hour segment order from Intl while preserving ISO"
     assert.equal(editable(us.segments.value, "hour").text, "01");
     assert.equal(editable(us.segments.value, "dayPeriod").value, 1);
     assert.equal(us.formValueProps.value, "13:45");
+    assert.deepEqual(
+      us.segments.value
+        .filter((segment) => segment.type === "literal")
+        .map((segment) => segment.text),
+      [":", " "],
+      "normalizes ICU literal whitespace so SSR and browser hydration agree",
+    );
 
     const french = useTimeField({ value, label: "Début", locale: "fr-FR" });
     assert.deepEqual(french.segments.value.map((segment) => segment.type), [
