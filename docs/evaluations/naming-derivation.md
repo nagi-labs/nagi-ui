@@ -1,7 +1,7 @@
 # Naming derivation evaluation on Nagi UI
 
-Measurement date: 2026-09-06 UTC
-Measurement source: `ee31ac2dcef2e5a8a6893e979c71ac0c7d6caf74`
+Measurement date: 2026-09-07 UTC
+Measurement source: `c9690cd429bca91c2fb4c233acb5886e2b01b827`
 
 Run the committed evaluation and verify its machine-readable snapshots with:
 

@@ -616,7 +616,7 @@ implicit component identities, 602 / 731 (82.4%) are contract-determined and 731
 731 (100.0%) require no new vocabulary.
 
 The measured source revision is
-`ee31ac2dcef2e5a8a6893e979c71ac0c7d6caf74`.
+`c9690cd429bca91c2fb4c233acb5886e2b01b827`.
 
 This is a self-hosted evaluation of Nagi UI, which is designed around Nagi CSS.
 Definition and documentation components, preview fixtures, and application-style
