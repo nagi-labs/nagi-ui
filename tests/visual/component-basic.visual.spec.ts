@@ -5,6 +5,7 @@ import { componentDocuments } from "../../site/data/components.ts";
 const hydrationErrors = new WeakMap<Page, string[]>();
 
 test.beforeEach(async ({ page }, testInfo) => {
+  testInfo.snapshotSuffix = `${process.platform}-${process.arch}`;
   const errors: string[] = [];
   hydrationErrors.set(page, errors);
   page.on("console", (message) => {

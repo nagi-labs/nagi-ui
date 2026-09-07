@@ -10,7 +10,7 @@ import { createSSRApp, h, type Component } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(repo, "packages/core/blueprints/number-field/NumberField.vue");
+const sourcePath = path.join(repo, "packages/core/blueprints/number-field/number-field.vue");
 
 function normalizeSsrHtml(html: string) {
   return html.replace(/\sdata-v-[\da-f]+/gu, "").replace(/<!--\[-->|<!--\]-->/gu, "");

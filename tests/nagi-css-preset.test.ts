@@ -38,7 +38,7 @@ function vueFiles(directory: string): string[] {
   });
 }
 
-function verifyConsumer(source: string, filename = "ButtonExample.vue") {
+function verifyConsumer(source: string, filename = "button-example.vue") {
   const linter = new Linter();
   return linter.verify(
     source,
@@ -151,11 +151,11 @@ test("kebab-case Nagi component tags use their fixed package boundary class", ()
 
 test("styled Button documentation examples conform to the Nagi CSS preset", () => {
   const examples = [
-    ["ButtonExample.vue", actionsFormsExamples.Button],
-    ["ButtonGroupExample.vue", actionsFormsExamples.ButtonGroup],
-    ["InputGroupExample.vue", actionsFormsExamples.InputGroup],
-    ["EmptyStateExample.vue", displayOverlayExamples.EmptyState],
-    ["DialogExample.vue", displayOverlayExamples.Dialog],
+    ["button-example.vue", actionsFormsExamples.Button],
+    ["button-group-example.vue", actionsFormsExamples.ButtonGroup],
+    ["input-group-example.vue", actionsFormsExamples.InputGroup],
+    ["empty-state-example.vue", displayOverlayExamples.EmptyState],
+    ["dialog-example.vue", displayOverlayExamples.Dialog],
   ] as const;
 
   for (const [filename, source] of examples) {

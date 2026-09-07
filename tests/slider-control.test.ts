@@ -8,7 +8,7 @@ import { effectScope, nextTick, ref } from "vue";
 import { useSlider } from "@nagi-labs/nagi-ui/component-controls";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(repo, "packages/core/blueprints/slider/Slider.vue");
+const sourcePath = path.join(repo, "packages/core/blueprints/slider/slider.vue");
 
 test("Slider reset adopts the browser-sanitized range value", async () => {
   const form = new EventTarget();

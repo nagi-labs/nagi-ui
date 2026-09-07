@@ -12,7 +12,7 @@ import { renderToString } from "vue/server-renderer";
 import { useRangeSlider } from "../packages/core/src/range-slider.ts";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(repo, "packages/core/blueprints/range-slider/RangeSlider.vue");
+const sourcePath = path.join(repo, "packages/core/blueprints/range-slider/range-slider.vue");
 const corePath = path.join(repo, "packages/core/src/range-slider.ts");
 
 interface FakeRangeControl {

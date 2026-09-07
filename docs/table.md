@@ -143,6 +143,6 @@ scope. Nagi Grid is a separate product and is not a Nagi UI dependency.
 
 ## Ownership
 
-`vp exec nagi-ui own table` copies the same `Table.vue` source used by the
+`vp exec nagi-ui own table` copies the same `table.vue` source used by the
 package export. The owned file remains ordinary Vue, HTML, and CSS and does
 not introduce a table DSL.

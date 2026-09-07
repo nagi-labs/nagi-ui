@@ -12,7 +12,7 @@ import { renderToString } from "vue/server-renderer";
 const repo = path.join(import.meta.dirname, "..");
 const sourcePath = path.join(
   repo,
-  "packages/core/blueprints/textarea/Textarea.vue",
+  "packages/core/blueprints/textarea/textarea.vue",
 );
 
 function normalizeSsrHtml(html: string) {

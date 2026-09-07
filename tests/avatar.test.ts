@@ -31,7 +31,7 @@ test("Avatar SSR keeps image and fallback semantics deterministic", async () => 
   try {
     const avatar = (
       await server.ssrLoadModule(
-        `/@fs${path.join(repo, "packages/core/blueprints/avatar/Avatar.vue")}`,
+        `/@fs${path.join(repo, "packages/core/blueprints/avatar/avatar.vue")}`,
       )
     ).default as Component;
 

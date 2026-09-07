@@ -9,6 +9,6 @@
     "packages/core/blueprints/**/*.vue",
     "playground/src/**/*.ts",
     "playground/src/**/*.vue",
-    "demos/NativePopoverDropdown.vue"
+    "demos/native-popover-dropdown.vue"
   ]
 }

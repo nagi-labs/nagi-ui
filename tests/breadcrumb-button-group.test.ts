@@ -40,7 +40,7 @@ async function load(file: string): Promise<{ component: Component; close: () => 
 }
 
 test("Breadcrumb emits a native named navigation trail", async () => {
-  const { component, close } = await load("breadcrumb/Breadcrumb.vue");
+  const { component, close } = await load("breadcrumb/breadcrumb.vue");
   try {
     const html = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(component, {
@@ -67,7 +67,7 @@ test("Breadcrumb emits a native named navigation trail", async () => {
 });
 
 test("Breadcrumb permits an explicitly current linked item", async () => {
-  const { component, close } = await load("breadcrumb/Breadcrumb.vue");
+  const { component, close } = await load("breadcrumb/breadcrumb.vue");
   try {
     const html = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(component, {
@@ -86,7 +86,7 @@ test("Breadcrumb permits an explicitly current linked item", async () => {
 });
 
 test("ButtonGroup owns only group semantics and layout orientation", async () => {
-  const { component, close } = await load("button-group/ButtonGroup.vue");
+  const { component, close } = await load("button-group/button-group.vue");
   try {
     const html = normalizeSsrHtml(await renderToString(createSSRApp({
       render: () => h(
@@ -109,7 +109,7 @@ test("ButtonGroup owns only group semantics and layout orientation", async () =>
 });
 
 test("thin navigation SFCs contain no lifecycle behavior or literal theme fallback", () => {
-  for (const file of ["breadcrumb/Breadcrumb.vue", "button-group/ButtonGroup.vue"]) {
+  for (const file of ["breadcrumb/breadcrumb.vue", "button-group/button-group.vue"]) {
     const source = fs.readFileSync(path.join(repo, "packages/core/blueprints", file), "utf8");
     assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|document|window)\b/);
     assert.doesNotMatch(source, /var\(--nagi-[^,)]+,|#[\da-f]{3,8}\b|\brgba?\(/iu);

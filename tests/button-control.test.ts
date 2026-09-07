@@ -82,7 +82,7 @@ test("Button control returns the complete native root binding", () => {
 
 test("[BTN-SEM-02][BTN-INT-03][BTN-ANAT-01] Button SFC merges consumer attrs with behavior-owned props in one binding", () => {
   const source = fs.readFileSync(
-    path.join(import.meta.dirname, "../packages/core/blueprints/button/Button.vue"),
+    path.join(import.meta.dirname, "../packages/core/blueprints/button/button.vue"),
     "utf8",
   );
 

@@ -33,9 +33,9 @@ test("Sidebar composes native complementary and navigation landmarks", async () 
     const load = async (file: string) =>
       (await server.ssrLoadModule(`/@fs${path.join(blueprintRoot, file)}`)).default as Component;
     const [Sidebar, SidebarSection, SidebarLink] = await Promise.all([
-      load("Sidebar.vue"),
-      load("SidebarSection.vue"),
-      load("SidebarLink.vue"),
+      load("sidebar.vue"),
+      load("sidebar-section.vue"),
+      load("sidebar-link.vue"),
     ]);
     const html = normalize(
       await renderToString(
@@ -94,7 +94,7 @@ test("Sidebar composes native complementary and navigation landmarks", async () 
 });
 
 test("Sidebar Blueprints stay thin, native, and token-only", () => {
-  for (const file of ["Sidebar.vue", "SidebarSection.vue", "SidebarLink.vue"]) {
+  for (const file of ["sidebar.vue", "sidebar-section.vue", "sidebar-link.vue"]) {
     const source = fs.readFileSync(path.join(blueprintRoot, file), "utf8");
     assert.match(source, /defineOptions\(\{ inheritAttrs: false \}\)/u, file);
     assert.doesNotMatch(source, /\b(?:watch|watchEffect|onMounted|document|window)\b/u, file);
@@ -102,7 +102,7 @@ test("Sidebar Blueprints stay thin, native, and token-only", () => {
     assert.doesNotMatch(source, /role="(?:menu|tree)"|aria-expanded|data-state/u, file);
   }
 
-  const linkSource = fs.readFileSync(path.join(blueprintRoot, "SidebarLink.vue"), "utf8");
+  const linkSource = fs.readFileSync(path.join(blueprintRoot, "sidebar-link.vue"), "utf8");
   assert.match(linkSource, /useSidebarLink\(props, useAttrs\(\)\)/u);
   assert.doesNotMatch(linkSource, /mergeElementProps|linkInteractionProps|function\s+/u);
 });

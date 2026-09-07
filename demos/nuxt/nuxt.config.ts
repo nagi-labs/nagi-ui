@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url"
 
 // CHARTER §10 Phase 0 Demo A. This demo renders the focused native-popover proof
-// (../NativePopoverDropdown.vue) inside a real Nuxt app under
+// (../native-popover-dropdown.vue) inside a real Nuxt app under
 // delayed hydration, to prove §4.5: because the wiring is native
 // (`popovertarget` + `popover`), the dropdown opens before the client hydrates
 // — and with JS fully disabled.

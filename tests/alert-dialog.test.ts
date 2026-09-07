@@ -12,7 +12,7 @@ import { renderToString } from "vue/server-renderer";
 const repo = path.join(import.meta.dirname, "..");
 const sourcePath = path.join(
   repo,
-  "packages/core/blueprints/alert-dialog/AlertDialog.vue",
+  "packages/core/blueprints/alert-dialog/alert-dialog.vue",
 );
 
 function normalizeSsrHtml(html: string) {

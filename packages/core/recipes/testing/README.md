@@ -20,7 +20,7 @@ Copy and rename:
 
 - `vitest.browser.config.example.ts` to the consumer's Vitest config (or merge
   its browser project into an existing config).
-- `ConsumerNagiHarness.example.vue` to a test fixture near the consumer view.
+- `consumer-nagi-harness.example.vue` to a test fixture near the consumer view.
 - `vitest-browser.example.test.ts` to
   `tests/nagi-browser/dropdown.browser.test.ts`.
 

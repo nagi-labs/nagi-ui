@@ -11,26 +11,26 @@ import { renderToString } from "vue/server-renderer";
 
 const repo = path.join(import.meta.dirname, "..");
 const blueprintPaths = {
-  Calendar: path.join(repo, "packages/core/blueprints/calendar/Calendar.vue"),
-  DatePicker: path.join(repo, "packages/core/blueprints/date-picker/DatePicker.vue"),
-  DateRangePicker: path.join(repo, "packages/core/blueprints/date-range-picker/DateRangePicker.vue"),
-  RangeCalendar: path.join(repo, "packages/core/blueprints/range-calendar/RangeCalendar.vue"),
-  Separator: path.join(repo, "packages/core/blueprints/separator/Separator.vue"),
-  Skeleton: path.join(repo, "packages/core/blueprints/skeleton/Skeleton.vue"),
-  Spinner: path.join(repo, "packages/core/blueprints/spinner/Spinner.vue"),
+  Calendar: path.join(repo, "packages/core/blueprints/calendar/calendar.vue"),
+  DatePicker: path.join(repo, "packages/core/blueprints/date-picker/date-picker.vue"),
+  DateRangePicker: path.join(repo, "packages/core/blueprints/date-range-picker/date-range-picker.vue"),
+  RangeCalendar: path.join(repo, "packages/core/blueprints/range-calendar/range-calendar.vue"),
+  Separator: path.join(repo, "packages/core/blueprints/separator/separator.vue"),
+  Skeleton: path.join(repo, "packages/core/blueprints/skeleton/skeleton.vue"),
+  Spinner: path.join(repo, "packages/core/blueprints/spinner/spinner.vue"),
 } as const;
 const additionalBlueprintPaths = [
-  path.join(repo, "packages/core/blueprints/carousel/Carousel.vue"),
-  path.join(repo, "packages/core/blueprints/disclosure/Disclosure.vue"),
-  path.join(repo, "packages/core/blueprints/pagination/Pagination.vue"),
-  path.join(repo, "packages/core/blueprints/range-slider/RangeSlider.vue"),
-  path.join(repo, "packages/core/blueprints/rating/Rating.vue"),
-  path.join(repo, "packages/core/blueprints/resizable/Resizable.vue"),
-  path.join(repo, "packages/core/blueprints/stepper/Stepper.vue"),
-  path.join(repo, "packages/core/blueprints/tabs/Tabs.vue"),
-  path.join(repo, "packages/core/blueprints/toast/Toast.vue"),
-  path.join(repo, "packages/core/blueprints/tree/Tree.vue"),
-  path.join(repo, "packages/core/blueprints/tree/TreeBranch.vue"),
+  path.join(repo, "packages/core/blueprints/carousel/carousel.vue"),
+  path.join(repo, "packages/core/blueprints/disclosure/disclosure.vue"),
+  path.join(repo, "packages/core/blueprints/pagination/pagination.vue"),
+  path.join(repo, "packages/core/blueprints/range-slider/range-slider.vue"),
+  path.join(repo, "packages/core/blueprints/rating/rating.vue"),
+  path.join(repo, "packages/core/blueprints/resizable/resizable.vue"),
+  path.join(repo, "packages/core/blueprints/stepper/stepper.vue"),
+  path.join(repo, "packages/core/blueprints/tabs/tabs.vue"),
+  path.join(repo, "packages/core/blueprints/toast/toast.vue"),
+  path.join(repo, "packages/core/blueprints/tree/tree.vue"),
+  path.join(repo, "packages/core/blueprints/tree/tree-branch.vue"),
 ];
 
 function normalizeSsrHtml(html: string) {

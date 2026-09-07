@@ -24,11 +24,11 @@ function tempDir(): string {
 }
 
 test("markers round-trip for vue and ts files", () => {
-  const vue = markerLine("DropdownMenu.vue", "dropdown-menu", "0.0.0");
-  assert.equal(vue, "<!-- @nagi-source dropdown-menu/DropdownMenu.vue@0.0.0 -->\n");
+  const vue = markerLine("dropdown-menu.vue", "dropdown-menu", "0.0.0");
+  assert.equal(vue, "<!-- @nagi-source dropdown-menu/dropdown-menu.vue@0.0.0 -->\n");
   assert.deepEqual(parseMarker(vue.trim()), {
     component: "dropdown-menu",
-    file: "DropdownMenu.vue",
+    file: "dropdown-menu.vue",
     version: "0.0.0",
   });
 
@@ -91,10 +91,10 @@ test("Accordion ownership recursively owns its Disclosure dependency", () => {
       { component: "accordion", status: "owned" },
     ],
   );
-  assert.ok(fs.existsSync(path.join(targetRoot, "disclosure/Disclosure.vue")));
+  assert.ok(fs.existsSync(path.join(targetRoot, "disclosure/disclosure.vue")));
   assert.match(
-    fs.readFileSync(path.join(targetRoot, "accordion/Accordion.vue"), "utf8"),
-    /from "\.\.\/disclosure\/Disclosure\.vue"/u,
+    fs.readFileSync(path.join(targetRoot, "accordion/accordion.vue"), "utf8"),
+    /from "\.\.\/disclosure\/disclosure\.vue"/u,
   );
   assert.deepEqual(
     diffOwned(targetRoot, { packageRoot }).map(({ status }) => status),
@@ -265,7 +265,7 @@ test("status reports package, default theme, and locally modified ownership inde
   );
   const targetRoot = path.join(cwd, "src/components/nagi");
   ownComponent("listbox", { packageRoot, targetRoot });
-  fs.appendFileSync(path.join(targetRoot, "listbox/Listbox.vue"), "\n<!-- local edit -->\n");
+  fs.appendFileSync(path.join(targetRoot, "listbox/listbox.vue"), "\n<!-- local edit -->\n");
 
   const status = inspectProjectStatus({ cwd, packageRoot });
   assert.deepEqual(status.package.declaration, {
@@ -327,12 +327,12 @@ test("Tabs ownership stamps the package source and starts clean", () => {
   const [marker, ...body] = fs.readFileSync(owned, "utf8").split("\n");
   assert.deepEqual(parseMarker(marker as string), {
     component: "tabs",
-    file: "Tabs.vue",
+    file: "tabs.vue",
     version: result.version,
   });
   assert.equal(
     body.join("\n"),
-    fs.readFileSync(path.join(packageRoot, "blueprints/tabs/Tabs.vue"), "utf8"),
+    fs.readFileSync(path.join(packageRoot, "blueprints/tabs/tabs.vue"), "utf8"),
   );
   assert.equal(diffOwned(targetRoot, { packageRoot })[0]?.status, "clean");
 });
@@ -360,7 +360,7 @@ test("diff reports clean, modified, and drifted owned sources", () => {
   assert.equal(entries.length, components.listbox.files.length + components.combobox.files.length);
   assert.ok(entries.every((entry) => entry.status === "clean"));
 
-  const owned = path.join(targetRoot, "listbox/Listbox.vue");
+  const owned = path.join(targetRoot, "listbox/listbox.vue");
   fs.appendFileSync(owned, "\n<!-- local edit -->\n");
   entries = diffOwned(targetRoot, { packageRoot });
   assert.equal(entries.find((entry) => entry.file === owned)?.status, "modified");
@@ -392,7 +392,7 @@ test("diff gates only on drifted and unknown-source, not on local modification",
 
   assert.equal(await main(["diff", "--dir", targetRoot], repo), 0);
 
-  const owned = path.join(targetRoot, "listbox/Listbox.vue");
+  const owned = path.join(targetRoot, "listbox/listbox.vue");
   fs.appendFileSync(owned, "\n<!-- local edit -->\n");
   assert.equal(await main(["diff", "--dir", targetRoot], repo), 0, "modified stays green");
 
@@ -424,7 +424,7 @@ test("status command summarizes owned components and reuses diff gating", async 
   assert.match(logs.join("\n"), /own\s+clean/);
   assert.match(logs.join("\n"), /listbox/);
 
-  const owned = path.join(targetRoot, "listbox/Listbox.vue");
+  const owned = path.join(targetRoot, "listbox/listbox.vue");
   const stampedVersion = parseMarker(
     fs.readFileSync(owned, "utf8").split("\n", 1)[0] as string,
   )?.version;
@@ -442,8 +442,8 @@ test("diff flags markers that no longer match a shipped source", () => {
   const dir = path.join(targetRoot, "mystery");
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(
-    path.join(dir, "Mystery.vue"),
-    "<!-- @nagi-source mystery/Mystery.vue@0.0.0 -->\n<template><div /></template>\n",
+    path.join(dir, "mystery.vue"),
+    "<!-- @nagi-source mystery/mystery.vue@0.0.0 -->\n<template><div /></template>\n",
   );
   const entries = diffOwned(targetRoot, { packageRoot });
   assert.equal(entries.length, 1);
@@ -452,7 +452,7 @@ test("diff flags markers that no longer match a shipped source", () => {
 
 test("diff ignores files without markers and missing roots", () => {
   const targetRoot = tempDir();
-  fs.writeFileSync(path.join(targetRoot, "App.vue"), "<template><div /></template>\n");
+  fs.writeFileSync(path.join(targetRoot, "app.vue"), "<template><div /></template>\n");
   assert.deepEqual(diffOwned(targetRoot, { packageRoot }), []);
   assert.deepEqual(diffOwned(path.join(targetRoot, "nope"), { packageRoot }), []);
 });
@@ -543,8 +543,8 @@ test("citty command routing preserves multi-component ownership and enum validat
     warn() {},
   };
   assert.equal(await main(["own", "listbox", "combobox", "--dir", targetRoot], repo, io), 0);
-  assert.ok(fs.existsSync(path.join(targetRoot, "listbox/Listbox.vue")));
-  assert.ok(fs.existsSync(path.join(targetRoot, "combobox/Combobox.vue")));
+  assert.ok(fs.existsSync(path.join(targetRoot, "listbox/listbox.vue")));
+  assert.ok(fs.existsSync(path.join(targetRoot, "combobox/combobox.vue")));
   const output = logs.join("\n");
   assert.match(output, /Commit the untouched owned files now/);
   assert.match(output, /recipes\/control-expansion\.md/);
@@ -574,13 +574,13 @@ test("CLI list and own recursively include component dependencies", async () => 
   logs.length = 0;
   assert.equal(await main(["own", "accordion", "--dir", targetRoot], repo, io), 0);
   assert.match(logs.join("\n"), /owned dependency disclosure@/);
-  assert.ok(fs.existsSync(path.join(targetRoot, "disclosure/Disclosure.vue")));
+  assert.ok(fs.existsSync(path.join(targetRoot, "disclosure/disclosure.vue")));
 });
 
 test("recursive ownership reuses an existing modified owned dependency", () => {
   const targetRoot = tempDir();
   ownComponent("disclosure", { packageRoot, targetRoot });
-  const disclosure = path.join(targetRoot, "disclosure/Disclosure.vue");
+  const disclosure = path.join(targetRoot, "disclosure/disclosure.vue");
   fs.appendFileSync(disclosure, "\n<!-- consumer change -->\n");
 
   const result = ownComponent("accordion", { packageRoot, targetRoot });
@@ -594,7 +594,7 @@ test("recursive ownership reuses an existing modified owned dependency", () => {
 test("recursive ownership rejects an unowned dependency directory without partial copies", () => {
   const targetRoot = tempDir();
   fs.mkdirSync(path.join(targetRoot, "disclosure"), { recursive: true });
-  fs.writeFileSync(path.join(targetRoot, "disclosure/Disclosure.vue"), "<template />\n");
+  fs.writeFileSync(path.join(targetRoot, "disclosure/disclosure.vue"), "<template />\n");
 
   assert.throws(
     () => ownComponent("accordion", { packageRoot, targetRoot }),

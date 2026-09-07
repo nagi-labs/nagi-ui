@@ -36,7 +36,7 @@ replacing a previous config or a non-generated integration file.
 ## Link boundary
 
 The Dropdown `link` node always renders a real `<a href>`. Setup does not place
-`<RouterLink>` or `<NuxtLink>` inside the Blueprint and does not add their
+`<router-link>` or `<nuxt-link>` inside the Blueprint and does not add their
 framework-specific props to `DropdownMenuNode`.
 
 The generated helper translates a router location into three platform-shaped
@@ -90,10 +90,10 @@ const nagiImage = useNagiImage()
 </template>
 ```
 
-This keeps owned DOM readable and avoids making `<NuxtImg>` a dependency of
+This keeps owned DOM readable and avoids making `<nuxt-img>` a dependency of
 every package Blueprint. Features that require the actual component — picture
 art direction, its placeholder lifecycle, or advanced responsive rendering —
-use `<NuxtImg>`/`<NuxtPicture>` directly in caller markup or after ownership.
+use `<nuxt-img>`/`<nuxt-picture>` directly in caller markup or after ownership.
 The currently unstable `useImage().getSizes()` API is deliberately not part of
 the generated adapter.
 

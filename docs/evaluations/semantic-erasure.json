@@ -1,0 +1,287 @@
+{
+  "methodology": {
+    "parser": "vue-eslint-parser",
+    "scope": "site/**/*.vue",
+    "excludedDirectories": [
+      ".nuxt",
+      ".output",
+      "node_modules"
+    ],
+    "safeBlockTags": [
+      "article",
+      "aside",
+      "footer",
+      "header",
+      "main",
+      "nav",
+      "section",
+      "figcaption"
+    ],
+    "safeInlineTags": [
+      "time"
+    ],
+    "excludedComponentTags": [
+      "n-accordion",
+      "n-alert",
+      "n-alert-dialog",
+      "n-autocomplete",
+      "n-avatar",
+      "n-badge",
+      "n-breadcrumb",
+      "n-button",
+      "n-button-group",
+      "n-calendar",
+      "n-card",
+      "n-carousel",
+      "n-checkbox",
+      "n-combobox",
+      "n-context-menu",
+      "n-date-field",
+      "n-date-picker",
+      "n-date-range-picker",
+      "n-dialog",
+      "n-disclosure",
+      "n-dropdown-menu",
+      "n-empty-state",
+      "n-fieldset",
+      "n-file-input",
+      "n-input",
+      "n-input-group",
+      "n-kbd",
+      "n-listbox",
+      "n-menubar",
+      "n-meter",
+      "n-multi-select",
+      "n-navigation-menu",
+      "n-number-field",
+      "n-otp-field",
+      "n-pagination",
+      "n-popover",
+      "n-preview-card",
+      "n-progress",
+      "n-radio",
+      "n-range-calendar",
+      "n-range-slider",
+      "n-rating",
+      "n-resizable",
+      "n-select",
+      "n-separator",
+      "n-sidebar",
+      "n-sidebar-link",
+      "n-sidebar-section",
+      "n-skeleton",
+      "n-slider",
+      "n-spinner",
+      "n-stepper",
+      "n-switch",
+      "n-table",
+      "n-tabs",
+      "n-tags-input",
+      "n-textarea",
+      "n-time-field",
+      "n-toast",
+      "n-toggle",
+      "n-toggle-group",
+      "n-toolbar",
+      "n-tooltip",
+      "n-tree"
+    ],
+    "trialsPerPartialLevel": 200,
+    "collisionDefinition": "same file-local final structural selector and existing variant set, but distinct former semantic base identities"
+  },
+  "population": {
+    "renderedOrTemplateOwnedElements": 890,
+    "visuallySafeSemanticElements": 83,
+    "safeSurfaceRootsWithNoNamingChange": 5,
+    "eligibleStyledSemanticElements": 78,
+    "eligibleByTag": {
+      "article": 8,
+      "figcaption": 1,
+      "footer": 1,
+      "header": 27,
+      "main": 1,
+      "nav": 2,
+      "section": 37,
+      "time": 1
+    },
+    "excludedStyledSemanticElements": 197,
+    "excludedByTag": {
+      "a": 23,
+      "button": 1,
+      "code": 18,
+      "dd": 4,
+      "details": 2,
+      "dl": 1,
+      "dt": 4,
+      "form": 1,
+      "h1": 3,
+      "h2": 22,
+      "h3": 18,
+      "h4": 3,
+      "h5": 2,
+      "img": 1,
+      "li": 8,
+      "ol": 1,
+      "output": 29,
+      "pre": 5,
+      "small": 21,
+      "strong": 23,
+      "summary": 2,
+      "svg": 1,
+      "ul": 4
+    }
+  },
+  "simulations": [
+    {
+      "percentage": 0,
+      "samples": 1,
+      "replacements": 0,
+      "addedVariantOccurrences": 0,
+      "addedUniqueStems": 0,
+      "collidedOccurrences": 0,
+      "collisionGroups": 0,
+      "collisions": []
+    },
+    {
+      "percentage": 25,
+      "samples": 200,
+      "replacements": 19.5,
+      "addedVariantOccurrences": 0.4,
+      "addedUniqueStems": 0.4,
+      "collidedOccurrences": 0.9,
+      "collisionGroups": 0.4
+    },
+    {
+      "percentage": 50,
+      "samples": 200,
+      "replacements": 39.3,
+      "addedVariantOccurrences": 1.1,
+      "addedUniqueStems": 1.1,
+      "collidedOccurrences": 3.1,
+      "collisionGroups": 1.1
+    },
+    {
+      "percentage": 75,
+      "samples": 200,
+      "replacements": 59.6,
+      "addedVariantOccurrences": 2,
+      "addedUniqueStems": 2,
+      "collidedOccurrences": 6.5,
+      "collisionGroups": 2
+    },
+    {
+      "percentage": 100,
+      "samples": 1,
+      "replacements": 78,
+      "addedVariantOccurrences": 3,
+      "addedUniqueStems": 3,
+      "collidedOccurrences": 11,
+      "collisionGroups": 3,
+      "collisions": [
+        {
+          "selector": "site/components/customer-directory.vue|site/components/customer-directory.vue|root>section.site-customer-directory>div.unit",
+          "formerIdentities": {
+            "footer.footer": 1,
+            "header.header": 1
+          },
+          "occurrences": [
+            "site/components/customer-directory.vue:66",
+            "site/components/customer-directory.vue:159"
+          ]
+        },
+        {
+          "selector": "site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|root>div.site-component-definition-section>div.unit-foundations>div.unit-foundations>div.seg>div.fr",
+          "formerIdentities": {
+            "header.header": 1,
+            "section.section": 2
+          },
+          "occurrences": [
+            "site/components/docs/component-definition-section.vue:500",
+            "site/components/docs/component-definition-section.vue:505",
+            "site/components/docs/component-definition-section.vue:516"
+          ]
+        },
+        {
+          "selector": "site/pages/concept.vue|site/pages/concept.vue|root>div.site-concept-page>div.unit",
+          "formerIdentities": {
+            "header.header": 1,
+            "section.section": 5
+          },
+          "occurrences": [
+            "site/pages/concept.vue:10",
+            "site/pages/concept.vue:20",
+            "site/pages/concept.vue:55",
+            "site/pages/concept.vue:83",
+            "site/pages/concept.vue:109",
+            "site/pages/concept.vue:124"
+          ]
+        }
+      ]
+    }
+  ],
+  "fullReplacement": {
+    "replacements": 78,
+    "addedVariantOccurrences": 3,
+    "addedUniqueStems": 3,
+    "collidedOccurrences": 11,
+    "collisionGroups": 3,
+    "collisions": [
+      {
+        "selector": "site/components/customer-directory.vue|site/components/customer-directory.vue|root>section.site-customer-directory>div.unit",
+        "formerIdentities": {
+          "footer.footer": 1,
+          "header.header": 1
+        },
+        "occurrences": [
+          "site/components/customer-directory.vue:66",
+          "site/components/customer-directory.vue:159"
+        ]
+      },
+      {
+        "selector": "site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|site/components/docs/component-definition-section.vue|root>div.site-component-definition-section>div.unit-foundations>div.unit-foundations>div.seg>div.fr",
+        "formerIdentities": {
+          "header.header": 1,
+          "section.section": 2
+        },
+        "occurrences": [
+          "site/components/docs/component-definition-section.vue:500",
+          "site/components/docs/component-definition-section.vue:505",
+          "site/components/docs/component-definition-section.vue:516"
+        ]
+      },
+      {
+        "selector": "site/pages/concept.vue|site/pages/concept.vue|root>div.site-concept-page>div.unit",
+        "formerIdentities": {
+          "header.header": 1,
+          "section.section": 5
+        },
+        "occurrences": [
+          "site/pages/concept.vue:10",
+          "site/pages/concept.vue:20",
+          "site/pages/concept.vue:55",
+          "site/pages/concept.vue:83",
+          "site/pages/concept.vue:109",
+          "site/pages/concept.vue:124"
+        ]
+      }
+    ],
+    "addedOccurrencesPerReplacement": 0.038,
+    "addedUniqueStemsPerReplacement": 0.038
+  },
+  "bounds": {
+    "baselineVariantOccurrences": 115,
+    "baselineUniqueVariantStems": 64,
+    "minimumStylePreserving": {
+      "addedOccurrences": 3,
+      "addedUniqueStems": 3,
+      "occurrenceIncreasePercentage": 2.6,
+      "uniqueStemIncreasePercentage": 4.7
+    },
+    "explicitRolePreservingUpperBound": {
+      "addedOccurrences": 78,
+      "addedUniqueStems": 8,
+      "occurrenceIncreasePercentage": 67.8,
+      "uniqueStemIncreasePercentage": 12.5
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "@nagi-labs/nagi-ui",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Accessible Vue component contracts with ownable, platform-first source Blueprints.",
   "keywords": [
     "accessibility",

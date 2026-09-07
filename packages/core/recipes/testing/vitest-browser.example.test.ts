@@ -6,7 +6,7 @@ import { render } from "vitest-browser-vue";
 
 // Replace this import with the consumer view that uses the package component,
 // or with the owned Blueprint after `nagi-ui own`.
-import ConsumerNagiHarness from "./ConsumerNagiHarness.example.vue";
+import ConsumerNagiHarness from "./consumer-nagi-harness.example.vue";
 
 const wcagTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 

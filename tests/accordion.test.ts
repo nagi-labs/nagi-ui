@@ -33,7 +33,7 @@ async function loadAccordion(): Promise<{
   });
   const component = (
     await server.ssrLoadModule(
-      `/@fs${path.join(repo, "packages/core/blueprints/accordion/Accordion.vue")}`,
+      `/@fs${path.join(repo, "packages/core/blueprints/accordion/accordion.vue")}`,
     )
   ).default as Component;
   return { server, component, cacheDir };
@@ -135,13 +135,13 @@ test("content-only slots keep the owned summary and panel wrappers", async () =>
 
 test("Accordion source composes Disclosure and keeps group coordination in one behavior", () => {
   const source = fs.readFileSync(
-    path.join(repo, "packages/core/blueprints/accordion/Accordion.vue"),
+    path.join(repo, "packages/core/blueprints/accordion/accordion.vue"),
     "utf8",
   );
   const behaviorSource = fs.readFileSync(path.join(repo, "packages/core/src/accordion.ts"), "utf8");
 
-  assert.match(source, /<NDisclosure/);
-  assert.match(source, /from "\.\.\/disclosure\/Disclosure\.vue"/u);
+  assert.match(source, /<n-disclosure/);
+  assert.match(source, /from "\.\.\/disclosure\/disclosure\.vue"/u);
   assert.match(source, /useAccordion\(props, openKeys\)/);
   assert.doesNotMatch(source, /<details|<summary/);
   assert.match(behaviorSource, /groupName[\s\S]*isOpen[\s\S]*setOpen/);

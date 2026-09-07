@@ -12,7 +12,7 @@ import { renderToString } from "vue/server-renderer";
 import { nagiThemeTokens } from "../packages/core/theme/tokens.mjs";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(repo, "packages/core/blueprints/stepper/Stepper.vue");
+const sourcePath = path.join(repo, "packages/core/blueprints/stepper/stepper.vue");
 
 function normalizeSsrHtml(html: string) {
   return html.replace(/\sdata-v-[\da-f]+/gu, "").replace(/<!--\[-->|<!--\]-->/gu, "");

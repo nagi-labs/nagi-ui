@@ -30,6 +30,17 @@ jobs:
       - run: vp run audit:templates
       - run: vp run audit:slot-format
       - run: vp run typecheck:vue
+      - run: vp run site:lint
+      - run: vp run evaluate:naming
+      - run: vp run site:typecheck
+      - run: vp run site:generate
+      - name: Upload generated site
+        uses: actions/upload-artifact@v4
+        with:
+          name: nagi-ui-site-${{ github.sha }}
+          path: site/.output/public
+          if-no-files-found: error
+          retention-days: 7
       - run: vp exec playwright install --with-deps chromium
       - run: vp run test:browser
       - run: vp run definitions:check
@@ -39,3 +50,27 @@ jobs:
         working-directory: demos/nuxt
       - run: vp run build
         working-directory: demos/nuxt
+
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+      - run: vp install --frozen-lockfile
+      - name: Generate root-base site
+        run: vp run site:generate
+        env:
+          NUXT_APP_BASE_URL: /
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run test:visual
+      - name: Upload visual test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nagi-ui-visual-test-results-${{ github.sha }}
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 7

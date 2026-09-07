@@ -67,7 +67,7 @@ behavior repeated across products.
 | Coordinate complex overlays with custom priorities | Check whether native top-layer open order satisfies the requirement. | It is outside Nagi's scope if a global overlay manager or portal root is required. |
 | Add advanced animation to only part of a component | Express it through `:popover-open`, `[open]`, `@starting-style`, and discrete transitions. | Delegate to Motion when JavaScript becomes the source of truth for visibility and mount lifecycle. |
 | Deeply restyle native Select | Determine what is acceptable with native `<select>` plus progressive enhancement. | Use a custom Select when rich DOM and cross-engine pixel identity are mandatory. |
-| Put a framework-specific renderer inside a Blueprint | First check whether the standard `<a href>` / `<img>` adapter from `nagi-ui setup` is sufficient. | Use ownership or caller markup when an actual component is required, such as a `<RouterLink>` custom slot or `<NuxtPicture>` art direction. |
+| Put a framework-specific renderer inside a Blueprint | First check whether the standard `<a href>` / `<img>` adapter from `nagi-ui setup` is sufficient. | Use ownership or caller markup when an actual component is required, such as a `<router-link>` custom slot or `<nuxt-picture>` art direction. |
 
 Do not generalize high-cost requirements into package props, slots, or a
 pass-through API. Consider elevating one to public API only after it has been
@@ -82,8 +82,8 @@ implementation—not a cosmetic edit to the verified native Blueprint.
 
 - Add an avatar, description, or permission indicator to a Dropdown item.
 - Locally add an app-specific node to an items schema.
-- Use a `<RouterLink>` / `<NuxtLink>` custom slot or active-class rendering.
-- Use `<NuxtImg>` / `<NuxtPicture>` placeholders or art direction.
+- Use a `<router-link>` / `<nuxt-link>` custom slot or active-class rendering.
+- Use `<nuxt-img>` / `<nuxt-picture>` placeholders or art direction.
 - Adapt Card/Dialog anatomy, markup, or declared slots to a specific product.
 - Change component-specific CSS beyond the semantic theme-token layer.
 

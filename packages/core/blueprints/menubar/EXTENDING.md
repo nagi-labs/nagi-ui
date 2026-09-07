@@ -1,7 +1,7 @@
 # Extending Menubar items
 
 Own this blueprint before adding application-specific popup item kinds. Keep
-the extension in the owned `Menubar.vue`; the horizontal coordinator and every
+the extension in the owned `menubar.vue`; the horizontal coordinator and every
 popup must continue to delegate vertical navigation to `useMenu`.
 
 1. Add a discriminated member to the exported action union.

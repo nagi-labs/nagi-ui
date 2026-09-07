@@ -5,7 +5,7 @@ Status: Shipped recipe (2026-07-22).
 ## Decision
 
 **Unovis** is the recommended library when a Nagi UI application needs charts.
-This does not mean shipping `Chart.vue` as a Nagi component.
+This does not mean shipping `chart.vue` as a Nagi component.
 
 - `@unovis/ts` and `@unovis/vue` are consumer-app dependencies, not Nagi core dependencies or peer dependencies.
 - Data, accessors, scales, axes, legends, animation, and datum tooltips remain Unovis/app vocabulary.

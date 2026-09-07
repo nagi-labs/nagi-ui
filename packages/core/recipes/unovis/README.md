@@ -16,27 +16,27 @@ import "@nagi-labs/nagi-ui/recipes/unovis/theme.css"
 ```vue
 <n-card title="Weekly activity" description="Current and previous period">
   <figure class="n-card-content" data-nagi-unovis>
-    <VisXYContainer
+    <vis-xy-container
       class="unovis-xy-container"
       :data="data"
       aria-label="Weekly active users for the current and previous period"
     >
-      <VisLine
+      <vis-line
         class="unovis-line"
         :x="x"
         :y="[current, previous]"
         :color="['var(--vis-color0)', 'var(--vis-color1)']"
       />
-      <VisAxis class="unovis-axis" type="x" />
-      <VisAxis class="unovis-axis" type="y" />
-    </VisXYContainer>
+      <vis-axis class="unovis-axis" type="x" />
+      <vis-axis class="unovis-axis" type="y" />
+    </vis-xy-container>
     <figcaption class="figcaption">Current period finishes at 184 users.</figcaption>
   </figure>
 </n-card>
 ```
 
 The chart data, accessors, scales, axes, animation, legend and datum tooltip
-remain Unovis or application vocabulary. Do not proxy them through `Chart.vue`
+remain Unovis or application vocabulary. Do not proxy them through `chart.vue`
 props and do not re-export Unovis types from Nagi UI. Use Nagi `Tooltip` only
 for a separate explanatory control; a datum tooltip belongs to Unovis.
 

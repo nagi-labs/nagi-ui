@@ -10,8 +10,8 @@ import { createSSRApp, h, type Component } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 const repo = path.join(import.meta.dirname, "..");
-const dateSource = path.join(repo, "packages/core/blueprints/date-field/DateField.vue");
-const timeSource = path.join(repo, "packages/core/blueprints/time-field/TimeField.vue");
+const dateSource = path.join(repo, "packages/core/blueprints/date-field/date-field.vue");
+const timeSource = path.join(repo, "packages/core/blueprints/time-field/time-field.vue");
 
 function normalize(html: string) {
   return html.replace(/\sdata-v-[\da-f]+/gu, "").replace(/<!--\[-->|<!--\]-->/gu, "");
