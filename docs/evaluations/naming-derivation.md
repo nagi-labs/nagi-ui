@@ -1,7 +1,7 @@
 # Naming derivation evaluation on Nagi UI
 
 Measurement date: 2026-09-06 UTC
-Measurement source: the repository revision containing this document
+Measurement source: `ee31ac2dcef2e5a8a6893e979c71ac0c7d6caf74`
 
 Run the committed evaluation and verify its machine-readable snapshots with:
 
@@ -200,8 +200,9 @@ Eligible block elements are `article`, `aside`, `footer`, `header`, `main`,
 `nav`, `section`, and `figcaption`; `time` is the eligible inline element.
 Elements whose replacement changes default typography, markers, table layout,
 form behavior, links, disclosure behavior, or replaced-element behavior are
-excluded. Surface roots are counted separately because their surface identity
-does not change.
+excluded. Configured Nagi UI component tags are also excluded because their
+rendered HTML is outside this template-level counterfactual. Surface roots are
+counted separately because their surface identity does not change.
 
 | Population metric | Result |
 | --- | ---: |

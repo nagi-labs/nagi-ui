@@ -615,6 +615,9 @@ mapping. Another 129 / 555 (23.2%) select from four bounded anatomy words, givin
 implicit component identities, 602 / 731 (82.4%) are contract-determined and 731 /
 731 (100.0%) require no new vocabulary.
 
+The measured source revision is
+`ee31ac2dcef2e5a8a6893e979c71ac0c7d6caf74`.
+
 This is a self-hosted evaluation of Nagi UI, which is designed around Nagi CSS.
 Definition and documentation components, preview fixtures, and application-style
 pages are all included; package Blueprints are not. It does not show that the same
