@@ -5,11 +5,13 @@ explain how to change them safely. Instead of hiding structural flexibility
 behind a large runtime API, compound-component language, or opaque renderer,
 Nagi moves that flexibility into source ownership.
 
-The package ships complete Vue Blueprints for evaluation and light use. For
-full adoption, own the same source together with its executable maintenance
-knowledge: Component Contract tests describe what every compatible implementation
-must preserve, Implementation tests describe how this source provides it, and the generated Definition
-makes those guarantees browsable.
+The package ships Vue Blueprints for evaluation and light use. For full
+adoption, own the source and keep its executable maintenance knowledge in the
+workflow: Component Contract tests describe what every compatible implementation
+must preserve, Implementation tests describe how one source provides it, and the
+generated Definition makes those guarantees browsable. The CLI copies the SFC,
+its Definition, and local source dependencies; shared Contract runners and
+runtime helpers remain package dependencies unless an owner replaces them.
 
 ## Principles
 
@@ -26,7 +28,8 @@ makes those guarantees browsable.
 - Use semantic design tokens and the [Nagi CSS contract](https://github.com/nagi-labs/nagi-css).
 - Keep package APIs small; use source ownership for structural customization.
 
-See [CONCEPT.md](CONCEPT.md) for the product concept, [CHARTER.md](CHARTER.md)
+See the site's [Dialog ownership walkthrough](site/pages/concept.vue),
+[CONCEPT.md](CONCEPT.md) for the full product concept, [CHARTER.md](CHARTER.md)
 for the architecture contract, and
 [when not to use Nagi UI](docs/when-not-to-use-nagi-ui.md) for deliberate
 product boundaries.
@@ -199,6 +202,9 @@ vp run typecheck:vue
 vp run test:browser
 vp run definitions:check
 ```
+
+`vp run test` first builds the package because its productization checks verify
+the executable `@nagi-labs/nagi-ui/test` output, including `dist/test/index.js`.
 
 `agents:setup` installs the repository-pinned APM 0.28.0 when necessary, then
 restores ignored Claude Code, Codex, and Copilot files from `apm.lock.yaml`.

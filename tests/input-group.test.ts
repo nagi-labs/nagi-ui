@@ -12,7 +12,7 @@ import { renderToString } from "vue/server-renderer";
 import { nagiThemeTokens } from "../packages/core/theme/tokens.mjs";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourceFile = path.join(repo, "packages/core/blueprints/input-group/InputGroup.vue");
+const sourceFile = path.join(repo, "packages/core/blueprints/input-group/input-group.vue");
 
 function normalizeSsrHtml(html: string): string {
   return html.replace(/\sdata-v-[\da-f]+(?:-s)?/gu, "").replace(/<!--(?:\[-->|\]-->|-->)?/gu, "");

@@ -65,10 +65,10 @@ test("public component overloads preserve the model and map named props", () => 
 
 test("thin behavior SFCs use only the public component overload", () => {
   const controls = {
-    "popover/Popover.vue": ["popover", "usePopover", "open"],
-    "tooltip/Tooltip.vue": ["tooltip", "useTooltip", "open"],
-    "disclosure/Disclosure.vue": ["disclosure", "useDisclosure", "open"],
-    "toggle/Toggle.vue": ["toggle", "useToggle", "pressed"],
+    "popover/popover.vue": ["popover", "usePopover", "open"],
+    "tooltip/tooltip.vue": ["tooltip", "useTooltip", "open"],
+    "disclosure/disclosure.vue": ["disclosure", "useDisclosure", "open"],
+    "toggle/toggle.vue": ["toggle", "useToggle", "pressed"],
   } as const;
 
   for (const [file, [variable, composable, model]] of Object.entries(controls)) {
@@ -85,7 +85,7 @@ test("thin behavior SFCs use only the public component overload", () => {
   }
 
   const toggleSource = fs.readFileSync(
-    path.join(repo, "packages/core/blueprints/toggle/Toggle.vue"),
+    path.join(repo, "packages/core/blueprints/toggle/toggle.vue"),
     "utf8",
   );
   assert.match(toggleSource, /useAttrs\(\)/u);
@@ -93,7 +93,7 @@ test("thin behavior SFCs use only the public component overload", () => {
   assert.doesNotMatch(toggleSource, /mergeElementProps|const buttonProps = computed/u);
 
   const dialogSource = fs.readFileSync(
-    path.join(repo, "packages/core/blueprints/dialog/Dialog.vue"),
+    path.join(repo, "packages/core/blueprints/dialog/dialog.vue"),
     "utf8",
   );
   assert.match(

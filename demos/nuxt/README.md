@@ -1,6 +1,6 @@
 # Nuxt lazy-hydration demo (Phase 0 Demo A)
 
-Renders the focused `demos/NativePopoverDropdown.vue` proof inside a Nuxt app under
+Renders the focused `demos/native-popover-dropdown.vue` proof inside a Nuxt app under
 delayed hydration to prove CHARTER §4.5: because the wiring is native
 (`popovertarget` + `popover`), the dropdown opens **before the component
 hydrates** — and with JavaScript fully disabled.
@@ -47,5 +47,5 @@ What to look for:
 - Disable JavaScript entirely (DevTools → "Disable JavaScript") and reload: the
   dropdown still opens, closes on Esc, and re-opens. The marker stays `false`.
 
-The demo SFCs (`../NativePopoverDropdown.vue`, `app.vue`, and
-`components/DropdownDemo.vue`) pass `nagi-css check`.
+The demo SFCs (`../native-popover-dropdown.vue`, `app.vue`, and
+`components/dropdown-demo.vue`) pass `nagi-css check`.

@@ -5,15 +5,15 @@ const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 const blueprintsRoot = path.join(repositoryRoot, "packages/core/blueprints");
 const scriptLocalPropertyExceptions = new Map([
   [
-    "packages/core/blueprints/range-slider/RangeSlider.vue",
+    "packages/core/blueprints/range-slider/range-slider.vue",
     new Set(["--local-range-start", "--local-range-end"]),
   ],
-  ["packages/core/blueprints/resizable/Resizable.vue", new Set(["--local-first-basis"])],
+  ["packages/core/blueprints/resizable/resizable.vue", new Set(["--local-first-basis"])],
 ]);
 const seenScriptLocalPropertyExceptions = new Set();
 const blueprintFunctionExceptions = new Map([
   [
-    "packages/core/blueprints/table/Table.vue",
+    "packages/core/blueprints/table/table.vue",
     new Set(["rowIdentity", "headerSlotName", "cellSlotName"]),
   ],
 ]);

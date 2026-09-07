@@ -100,28 +100,20 @@ useHead({ title: () => customer.value.company });
               /><n-button>Save profile</n-button>
             </div>
             <dl class="list">
-              <div class="unit">
-                <dt class="term">Company</dt>
-                <dd class="definition">
-                  {{ customer.company }}
-                </dd>
-              </div>
-              <div class="unit">
-                <dt class="term">Primary contact</dt>
-                <dd class="definition">
-                  {{ customer.name }}
-                </dd>
-              </div>
-              <div class="unit">
-                <dt class="term">Last active</dt>
-                <dd class="definition">
-                  {{ customer.lastActive }}
-                </dd>
-              </div>
-              <div class="unit">
-                <dt class="term">Region</dt>
-                <dd class="definition">North America</dd>
-              </div>
+              <dt class="term">Company</dt>
+              <dd class="definition">
+                {{ customer.company }}
+              </dd>
+              <dt class="term">Primary contact</dt>
+              <dd class="definition">
+                {{ customer.name }}
+              </dd>
+              <dt class="term">Last active</dt>
+              <dd class="definition">
+                {{ customer.lastActive }}
+              </dd>
+              <dt class="term">Region</dt>
+              <dd class="definition">North America</dd>
             </dl>
           </section>
           <ol
@@ -142,11 +134,11 @@ useHead({ title: () => customer.value.company });
             class="section -billing"
           >
             <h2 class="title">Billing profile</h2>
-            <p class="text">
+            <span class="text">
               Annual contract · Net 30 · Next invoice ${{
                 (customer.revenue * 12).toLocaleString()
               }}
-            </p>
+            </span>
             <n-button>View invoices</n-button>
           </section>
         </div>
@@ -188,25 +180,24 @@ useHead({ title: () => customer.value.company });
 
         > .list {
           display: grid;
+          grid-template-columns: 1fr 1.3fr;
           align-content: start;
-          gap: 0;
+          column-gap: var(--n-space-6);
           margin: 0;
 
-          > .unit {
-            display: grid;
-            grid-template-columns: 1fr 1.3fr;
-            gap: var(--n-space-6);
+          > .term,
+          > .definition {
             padding-block: var(--n-space-5);
             border-block-end: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+          }
 
-            > .term {
-              color: var(--nagi-color-text-muted);
-            }
+          > .term {
+            color: var(--nagi-color-text-muted);
+          }
 
-            > .definition {
-              margin: 0;
-              font-weight: 500;
-            }
+          > .definition {
+            margin: 0;
+            font-weight: 500;
           }
         }
       }

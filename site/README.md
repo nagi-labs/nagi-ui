@@ -50,7 +50,8 @@ real Vue files and decoded documentation example strings.
 Visual baselines cover every Basic example in desktop-light and mobile-dark,
 with additional interaction-state screenshots. After an intentional visual
 change, run `vp run test:visual:update` and inspect the changed images before
-accepting them.
+accepting them. Linux x64 and arm64 use separate baselines so text rendering
+differences between the two architectures do not mask product changes.
 
 Highlighted code HTML is a deliberate rendering boundary: only
 `highlightRepositorySource` may brand repository-local Shiki output for
@@ -58,7 +59,11 @@ Highlighted code HTML is a deliberate rendering boundary: only
 
 ## GitHub Pages
 
-The Pages workflow generates and deploys the site on pushes to `main` and by manual dispatch.
+Pull-request CI generates the site and uploads `site/.output/public` as a seven-day
+Actions artifact for review. The Pages workflow generates and deploys the site on
+pushes to `main` and by manual dispatch, but repository Pages must first be enabled
+with GitHub Actions as its source by a repository administrator. The workflow token
+cannot perform that one-time enablement.
 In GitHub Actions, Nuxt derives the project-page base path from `GITHUB_REPOSITORY`, so assets
 and navigation work at `https://<owner>.github.io/<repository>/`.
 

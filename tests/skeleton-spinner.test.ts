@@ -14,11 +14,11 @@ import { nagiThemeTokens } from "../packages/core/theme/tokens.mjs";
 const repo = path.join(import.meta.dirname, "..");
 const skeletonPath = path.join(
   repo,
-  "packages/core/blueprints/skeleton/Skeleton.vue",
+  "packages/core/blueprints/skeleton/skeleton.vue",
 );
 const spinnerPath = path.join(
   repo,
-  "packages/core/blueprints/spinner/Spinner.vue",
+  "packages/core/blueprints/spinner/spinner.vue",
 );
 
 function normalizeSsrHtml(html: string) {

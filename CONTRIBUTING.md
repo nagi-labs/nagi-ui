@@ -46,6 +46,13 @@ static site can render tested guarantees; update it with
 `vp run definitions:generate`. Other generated files and local dependency
 stores must not be committed.
 
+Name ordinary source files in `kebab-case` (`profile-card.vue`,
+`dialog-contract.ts`). Keep component tags in templates in `kebab-case`
+(`<user-avatar>`), while JavaScript and TypeScript class declarations use
+`UpperCamelCase` (`class DialogController`). Standard HTML and SVG element
+spellings, and conventional repository files such as `README.md`, keep their
+established names.
+
 Before changing public behavior or component structure, read
 [CONCEPT.md](CONCEPT.md), [CHARTER.md](CHARTER.md), and the
 [implementation guidelines](docs/implementation-guidelines.md). The

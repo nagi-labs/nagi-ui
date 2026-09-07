@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { NButton } from "@nagi-labs/nagi-ui/components";
-import ButtonDocumentation from "~/components/docs/ButtonDocumentation.vue";
-import ComponentDefinitionSection from "~/components/docs/ComponentDefinitionSection.vue";
-import ComponentDefinitionWipSection from "~/components/docs/ComponentDefinitionWipSection.vue";
-import DatePickerDocumentation from "~/components/docs/DatePickerDocumentation.vue";
-import DefaultComponentDocumentation from "~/components/docs/DefaultComponentDocumentation.vue";
+import ButtonDocumentation from "~/components/docs/button-documentation.vue";
+import ComponentDefinitionSection from "~/components/docs/component-definition-section.vue";
+import ComponentDefinitionWipSection from "~/components/docs/component-definition-wip-section.vue";
+import DatePickerDocumentation from "~/components/docs/date-picker-documentation.vue";
+import DefaultComponentDocumentation from "~/components/docs/default-component-documentation.vue";
 import { componentDefinition, componentDefinitionTests } from "~/data/component-definitions";
 import { componentExampleSource } from "~/data/component-examples";
 import { componentNativeTarget } from "~/data/component-native-targets";
@@ -132,7 +132,7 @@ useHead({ title: () => entry.value?.name ?? "Component" });
     />
 
     <nav
-      class="nav -adjacent"
+      class="nav"
       aria-label="Adjacent components"
     >
       <a
@@ -165,7 +165,7 @@ useHead({ title: () => entry.value?.name ?? "Component" });
   inline-size: 100%;
   padding: calc(3 * var(--n-space-8)) max(var(--n-space-8), 4vw);
 
-  > .nav.-adjacent {
+  > .nav {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--n-space-5);

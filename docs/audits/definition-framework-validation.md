@@ -4,7 +4,7 @@ Validation baseline: 2026-08-31. This audit evaluates whether Component
 Definition is a useful maintenance method. Passing the repository test suite is
 not the goal by itself.
 
-The repository and package are currently `0.1.2`. Pilot Contract revisions are
+The repository and package are currently `0.2.0`. Pilot Contract revisions are
 working revisions while their Definitions remain `draft`; automated immutable
 revision snapshots are intentionally deferred until the first Definition is
 promoted to `verified` or a stable Contract policy is published. This is an

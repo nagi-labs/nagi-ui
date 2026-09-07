@@ -1,8 +1,8 @@
 import "@nagi-labs/nagi-ui/default-theme.css";
 
 import { createApp } from "vue";
-import DefinitionStressLab from "./DefinitionStressLab.vue";
-import ShadowDefinitionLab from "./ShadowDefinitionLab.vue";
+import DefinitionStressLab from "./definition-stress-lab.vue";
+import ShadowDefinitionLab from "./shadow-definition-lab.vue";
 
 createApp(DefinitionStressLab).mount("#app");
 

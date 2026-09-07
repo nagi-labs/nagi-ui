@@ -8,7 +8,7 @@ import { effectScope, nextTick, ref } from "vue";
 import { useSelect } from "@nagi-labs/nagi-ui";
 
 const repo = path.join(import.meta.dirname, "..");
-const sourcePath = path.join(repo, "packages/core/blueprints/select/Select.vue");
+const sourcePath = path.join(repo, "packages/core/blueprints/select/select.vue");
 
 test("Select adopts the browser-selected option when its model starts undefined", () => {
   const select = ref({

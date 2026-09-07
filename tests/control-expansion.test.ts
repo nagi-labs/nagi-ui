@@ -12,9 +12,9 @@ const recipe = fs.readFileSync(
 
 test("expandable default controls ship one discoverable low-level recipe", () => {
   const controls = {
-    "listbox/Listbox.vue": ["useListbox(props, selected)", "useListbox<ListboxOption>"],
-    "tabs/Tabs.vue": ["useTabs(props, selectedModel)", "useTabs<TabsItem>"],
-    "combobox/Combobox.vue": [
+    "listbox/listbox.vue": ["useListbox(props, selected)", "useListbox<ListboxOption>"],
+    "tabs/tabs.vue": ["useTabs(props, selectedModel)", "useTabs<TabsItem>"],
+    "combobox/combobox.vue": [
       "useCombobox(props, inputValue, selected)",
       "useCombobox<ComboboxOption>",
     ],
@@ -27,7 +27,7 @@ test("expandable default controls ship one discoverable low-level recipe", () =>
   }
 
   assert.doesNotMatch(
-    fs.readFileSync(path.join(blueprintRoot, "listbox/Listbox.vue"), "utf8"),
+    fs.readFileSync(path.join(blueprintRoot, "listbox/listbox.vue"), "utf8"),
     /useListbox\(props, selected, \{/,
   );
   assert.match(recipe, /no third\s+override argument/);

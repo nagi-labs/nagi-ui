@@ -12,7 +12,7 @@ import { renderToString } from "vue/server-renderer";
 const repo = path.join(import.meta.dirname, "..");
 const sourcePath = path.join(
   repo,
-  "packages/core/blueprints/file-input/FileInput.vue",
+  "packages/core/blueprints/file-input/file-input.vue",
 );
 
 function normalizeSsrHtml(html: string) {

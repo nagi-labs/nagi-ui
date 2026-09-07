@@ -10,7 +10,7 @@ const unovisRecipeRoot = path.join(packageRoot, "recipes/unovis");
 
 const recipeFiles = [
   "README.md",
-  "ConsumerNagiHarness.example.vue",
+  "consumer-nagi-harness.example.vue",
   "playwright.config.example.ts",
   "playwright.example.spec.ts",
   "vitest.browser.config.example.ts",
@@ -87,7 +87,7 @@ test("consumer recipes use public package entrypoints, not repository internals"
     assert.doesNotMatch(source, /\/@fs|packages\/core|playground\//, `${file} is consumer-local`);
   }
 
-  const harness = fs.readFileSync(path.join(recipeRoot, "ConsumerNagiHarness.example.vue"), "utf8");
+  const harness = fs.readFileSync(path.join(recipeRoot, "consumer-nagi-harness.example.vue"), "utf8");
   const browserTest = fs.readFileSync(
     path.join(recipeRoot, "vitest-browser.example.test.ts"),
     "utf8",

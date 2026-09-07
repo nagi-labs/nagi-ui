@@ -412,9 +412,10 @@ silently.
 `vp run test:visual` compares every component page's Basic section in
 desktop-light and mobile-dark, plus representative focus, invalid, open
 collection, calendar, and dialog states. The suite also fails on Vue hydration
-errors. Use `vp run test:visual:update` only after an intentional visual change,
-then inspect the affected PNGs before accepting the new baseline; regenerating
-images is not itself a design review.
+errors. Linux x64 and arm64 use separate baselines. Use
+`vp run test:visual:update` only after an intentional visual change, then inspect
+the affected PNGs before accepting the new baseline; regenerating images is not
+itself a design review.
 
 ## Fixed component glue
 
@@ -472,7 +473,7 @@ platform capability:
 ## Practices to avoid
 
 - Do not replace the visible Blueprint with a compound graph
-  (`<DialogRoot><DialogTrigger as-child>…`).
+  (`<dialog-root><dialog-trigger as-child>…`).
 - Do not turn composables into a structural protocol
   (`const { root, trigger, header, …, renderParts } = useDialog(…)`).
 - Do not implement custom focus traps, overlay stacks, or state machines when a

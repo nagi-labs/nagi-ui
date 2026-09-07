@@ -24,7 +24,7 @@ rendered DOM, model, form, or accessibility state.
 Stable package customization uses named props:
 
 ```vue
-<Listbox
+<listbox
   v-model:selected="selected"
   :items="items"
   label="Release channel"

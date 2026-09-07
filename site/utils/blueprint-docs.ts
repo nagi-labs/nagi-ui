@@ -33,7 +33,11 @@ export interface BlueprintSourceFile {
 }
 
 function componentFileName(name: string) {
-  return `${name}.vue`;
+  const kebabName = name
+    .replace(/([A-Z]+)([A-Z][a-z])/gu, "$1-$2")
+    .replace(/([a-z0-9])([A-Z])/gu, "$1-$2")
+    .toLowerCase();
+  return `${kebabName}.vue`;
 }
 
 function resolveRelativeModule(from: string, specifier: string) {

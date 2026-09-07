@@ -14,7 +14,7 @@ import { nagiThemeTokens } from "../packages/core/theme/tokens.mjs";
 const repo = path.join(import.meta.dirname, "..");
 const sourcePath = path.join(
   repo,
-  "packages/core/blueprints/toggle-group/ToggleGroup.vue",
+  "packages/core/blueprints/toggle-group/toggle-group.vue",
 );
 
 function normalizeSsrHtml(html: string) {

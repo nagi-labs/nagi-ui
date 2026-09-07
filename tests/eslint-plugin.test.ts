@@ -11,7 +11,7 @@ import nagiUi from "../packages/eslint-plugin-nagi-ui/src/index.ts"
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
-function verify(source: string, filename = "Blueprint.vue") {
+function verify(source: string, filename = "blueprint.vue") {
   const linter = new Linter()
   return linter.verify(
     source,

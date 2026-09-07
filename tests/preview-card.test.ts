@@ -184,7 +184,7 @@ test("component overload maps named delay, disabled, and anchor props", () => {
 
 test("Blueprint keeps link semantics, interactive content, and behavior mechanism separated", () => {
   const source = fs.readFileSync(
-    path.join(import.meta.dirname, "../packages/core/blueprints/preview-card/PreviewCard.vue"),
+    path.join(import.meta.dirname, "../packages/core/blueprints/preview-card/preview-card.vue"),
     "utf8",
   );
 

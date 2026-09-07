@@ -53,7 +53,7 @@ for (const route of routes) {
 }
 
 const previewSources = await Promise.all(
-  ["ActionsFormsPreview.vue", "DateNavigationPreview.vue", "DisplayOverlayPreview.vue"].map(
+  ["actions-forms-preview.vue", "date-navigation-preview.vue", "display-overlay-preview.vue"].map(
     (file) => readFile(path.join(repositoryRoot, "site/components/previews", file), "utf8"),
   ),
 );

@@ -35,10 +35,10 @@ async function withBlueprints(
 
   try {
     const kbd = await server.ssrLoadModule(
-      `/@fs${path.join(blueprintRoot, "kbd/Kbd.vue")}`,
+      `/@fs${path.join(blueprintRoot, "kbd/kbd.vue")}`,
     );
     const emptyState = await server.ssrLoadModule(
-      `/@fs${path.join(blueprintRoot, "empty-state/EmptyState.vue")}`,
+      `/@fs${path.join(blueprintRoot, "empty-state/empty-state.vue")}`,
     );
     await run({ Kbd: kbd.default as Component, EmptyState: emptyState.default as Component });
   } finally {
@@ -104,9 +104,9 @@ test("EmptyState renders the optional description and only action markup from it
 
 test("Kbd and EmptyState remain presentation-only and use the existing theme contract", () => {
   const sources = {
-    Kbd: fs.readFileSync(path.join(blueprintRoot, "kbd/Kbd.vue"), "utf8"),
+    Kbd: fs.readFileSync(path.join(blueprintRoot, "kbd/kbd.vue"), "utf8"),
     EmptyState: fs.readFileSync(
-      path.join(blueprintRoot, "empty-state/EmptyState.vue"),
+      path.join(blueprintRoot, "empty-state/empty-state.vue"),
       "utf8",
     ),
   };

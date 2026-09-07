@@ -1,7 +1,7 @@
 # Extending ContextMenu items
 
 Own this blueprint before adding application-specific item kinds. Keep the
-extension in the owned `ContextMenu.vue`; do not add a hidden compound item
+extension in the owned `context-menu.vue`; do not add a hidden compound item
 component.
 
 1. Add a discriminated member to the exported `ContextMenuItem` union.

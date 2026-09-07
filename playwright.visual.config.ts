@@ -3,7 +3,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/visual",
   fullyParallel: true,
-  reporter: "line",
+  reporter: process.env.CI ? [["github"], ["line"]] : "line",
   expect: {
     toHaveScreenshot: {
       animations: "disabled",

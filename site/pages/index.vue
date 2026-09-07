@@ -17,30 +17,28 @@ const previewColumns = [
 <template>
   <div class="site-index-page">
     <section class="section -hero">
-      <div class="unit">
-        <p class="text -eyebrow">Own-first Vue UI</p>
-        <h1 class="title">Readable components, with the tests that keep them maintainable.</h1>
-        <p class="text">
-          Nagi UI ships concrete Vue Blueprints and the executable knowledge needed to change them.
-          Use the package for light work, or own the same source and tests without adopting a
-          hidden renderer or another component composition language.
-        </p>
+      <header class="header">
+        <span class="text -eyebrow">Nagi UI</span>
+        <h1 class="title">When the abstraction recedes, the source remains.</h1>
+        <span class="text">
+          Readable Vue components, with executable contracts for the behavior worth keeping. Own the
+          source, change its shape, and keep its boundaries in view.
+        </span>
         <div class="actions">
           <a
             class="link -primary"
             :href="useSitePath('/components/')"
-            >Component reference</a
+            >Explore the components</a
           ><a
             class="link"
-            :href="useSitePath('/showcase/')"
-            >Application showcase →</a
+            :href="useSitePath('/concept/')"
+            >Follow one owned change →</a
           >
         </div>
-        <p class="text -proof">
-          Component pages show the shipped Vue source and the Component Contract/Implementation tests that define
-          its maintenance boundary.
-        </p>
-      </div>
+        <span class="text -proof">
+          An ordinary component can be open to change without being left unguarded.
+        </span>
+      </header>
       <div
         class="unit -preview"
         aria-label="Live product interface preview"
@@ -91,8 +89,8 @@ const previewColumns = [
 
     <section class="section -proof">
       <header class="header">
-        <p class="text">What Nagi makes visible</p>
-        <h2 class="title">The implementation and its safe change boundary.</h2>
+        <span class="text">What remains</span>
+        <h2 class="title">Source, change, and behavior—kept in the same view.</h2>
       </header>
       <div class="unit -principles">
         <article class="article">
@@ -101,11 +99,11 @@ const previewColumns = [
             aria-hidden="true"
             >01</span
           >
-          <h3 class="title">Read the concrete source</h3>
-          <p class="text">
-            Structure and styling stay in ordinary Vue SFCs. Narrow Behavior APIs coordinate the
-            hard parts without becoming a hidden renderer.
-          </p>
+          <h3 class="title">The source</h3>
+          <span class="text">
+            The component you read is the component that runs. Structure and styling stay in an
+            ordinary Vue SFC; narrow Behavior APIs coordinate only what needs coordination.
+          </span>
         </article>
         <article class="article">
           <span
@@ -113,11 +111,11 @@ const previewColumns = [
             aria-hidden="true"
             >02</span
           >
-          <h3 class="title">Tests explain the contract</h3>
-          <p class="text">
-            Component Contract tests state what every compatible implementation must preserve. Implementation tests expose how
-            this Blueprint provides it. Their assertions are the evidence.
-          </p>
+          <h3 class="title">The change</h3>
+          <span class="text">
+            When the anatomy needs to move, edit the component itself. The change happens where it
+            can be seen, without translating it through another component language.
+          </span>
         </article>
         <article class="article">
           <span
@@ -125,23 +123,23 @@ const previewColumns = [
             aria-hidden="true"
             >03</span
           >
-          <h3 class="title">Own flexibility</h3>
-          <p class="text">
-            Structural customization happens in source instead of growing a runtime API. Re-run
-            the published tests to distinguish deliberate change from regression.
-          </p>
+          <h3 class="title">The behavior</h3>
+          <span class="text">
+            Shared Contracts describe what should travel. Implementation tests describe what stays
+            local. Together they keep the boundary of a change visible.
+          </span>
         </article>
       </div>
     </section>
 
     <section class="section -ownership">
       <div class="unit">
-        <p class="text -eyebrow">Source ownership</p>
-        <h2 class="title">Move flexibility into the repository.</h2>
-        <p class="text">
-          Package mode is the light-use tier. Full adoption means owning the canonical Vue source,
-          its Component Contract and Implementation tests, and the generated maintenance view as one local system.
-        </p>
+        <span class="text -eyebrow">Bring the component home</span>
+        <h2 class="title">Let it settle into your repository.</h2>
+        <span class="text">
+          Package mode is there for light use. When the interface needs a structural change, bring
+          the Vue source home together with the tests and maintenance view that explain its boundary.
+        </span>
       </div>
       <div class="actions">
         <pre class="pre"><code>vp exec nagi-ui own dialog</code></pre>
@@ -157,7 +155,7 @@ const previewColumns = [
   --local-display-max: 3rem;
   --local-section-min: 1.375rem;
   --local-section-max: 1.75rem;
-  --local-eyebrow-tracking: 0.08em;
+  --local-eyebrow-tracking: 0.04em;
   --local-display-tracking: -0.035em;
   --local-section-tracking: -0.02em;
   > .section {
@@ -172,16 +170,17 @@ const previewColumns = [
     align-items: start;
     padding-block-start: calc(5 * var(--n-space-8));
 
-    > .unit {
+    > .header {
       display: grid;
       justify-items: start;
 
       > .title {
-        max-inline-size: 38rem;
+        max-inline-size: 34rem;
         margin: var(--n-space-5) 0;
         color: var(--site-color-ink-strong);
         font-size: clamp(var(--local-display-min), 6vw, var(--local-display-max));
-        line-height: 1.08;
+        font-weight: 600;
+        line-height: 1.12;
         letter-spacing: var(--local-display-tracking);
       }
 
@@ -192,11 +191,10 @@ const previewColumns = [
         font-size: var(--n-font-size-5);
 
         &.-eyebrow {
-          color: var(--site-color-brand);
+          color: var(--nagi-color-text-muted);
           font-size: var(--n-font-size-2);
-          font-weight: 600;
+          font-weight: 500;
           letter-spacing: var(--local-eyebrow-tracking);
-          text-transform: uppercase;
         }
 
         &.-proof {
@@ -226,29 +224,33 @@ const previewColumns = [
         }
       }
 
-      &.-preview {
-        gap: var(--n-space-7);
-        justify-items: stretch;
-        padding: var(--n-space-8);
-        border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
-        border-radius: var(--n-radius-3);
-        background: var(--nagi-color-surface);
+    }
 
-        > .header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+    > .unit.-preview {
+      display: grid;
+      gap: var(--n-space-7);
+      justify-items: stretch;
+      padding: var(--n-space-8);
+      border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+      border-radius: var(--n-radius-3);
+      background: color-mix(in srgb, var(--nagi-color-surface) 86%, var(--site-color-canvas));
 
-          > .value {
-            font-weight: 600;
-          }
+      > .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-block-end: var(--n-space-5);
+        border-block-end: var(--n-border-width-1) solid var(--nagi-color-border-muted);
+
+        > .value {
+          font-weight: 600;
         }
+      }
 
-        > .seg.-metrics {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: var(--n-space-5);
-        }
+      > .seg.-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--n-space-5);
       }
     }
   }
@@ -260,11 +262,10 @@ const previewColumns = [
 
       > .text {
         margin: 0;
-        color: var(--site-color-brand);
+        color: var(--nagi-color-text-muted);
         font-size: var(--n-font-size-2);
-        font-weight: 600;
+        font-weight: 500;
         letter-spacing: var(--local-eyebrow-tracking);
-        text-transform: uppercase;
       }
 
       > .title {
@@ -315,11 +316,10 @@ const previewColumns = [
       max-inline-size: 44rem;
 
       > .text.-eyebrow {
-        color: var(--site-color-brand);
+        color: var(--nagi-color-text-muted);
         font-size: var(--n-font-size-2);
-        font-weight: 600;
+        font-weight: 500;
         letter-spacing: var(--local-eyebrow-tracking);
-        text-transform: uppercase;
       }
 
       > .title {
@@ -344,9 +344,10 @@ const previewColumns = [
         overflow-x: auto;
         margin: 0;
         padding: calc(2 * var(--n-space-8));
+        border: var(--n-border-width-1) solid var(--nagi-color-border-muted);
         border-radius: var(--n-radius-3);
-        background: var(--site-color-code);
-        color: var(--site-color-code-text);
+        background: var(--site-color-canvas-muted);
+        color: var(--nagi-color-text-muted);
         font-family: var(--site-font-code);
         line-height: 1.8;
       }

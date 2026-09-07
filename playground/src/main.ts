@@ -1,6 +1,6 @@
 import { createApp } from "vue"
 
-import PopoverLab from "./PopoverLab.vue"
+import PopoverLab from "./popover-lab.vue"
 
 createApp(PopoverLab).mount("#app")
 

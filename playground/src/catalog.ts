@@ -3,6 +3,6 @@ import "@nagi-labs/nagi-ui/style-axes.css";
 
 import { createApp } from "vue";
 
-import CatalogLab from "./CatalogLab.vue";
+import CatalogLab from "./catalog-lab.vue";
 
 createApp(CatalogLab).mount("#app");

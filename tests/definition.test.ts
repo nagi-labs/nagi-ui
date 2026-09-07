@@ -292,7 +292,7 @@ test("definitions travel with the source they describe", () => {
 
 test("[CAR-ANAT-01] the viewport binding owns element registration", () => {
   const blueprintSource = readFileSync(
-    path.join(import.meta.dirname, "../packages/core/blueprints/carousel/Carousel.vue"),
+    path.join(import.meta.dirname, "../packages/core/blueprints/carousel/carousel.vue"),
     "utf8",
   );
   const behaviorSource = readFileSync(
@@ -314,16 +314,16 @@ test("[CAR-ANAT-01] the viewport binding owns element registration", () => {
 test("[ALD-ANAT-01][CMB-ANAT-01][DLG-ANAT-01] complete binding bundles own local element registration", () => {
   for (const [file, binding, forbidden] of [
     [
-      "alert-dialog/AlertDialog.vue",
+      "alert-dialog/alert-dialog.vue",
       "dialog.dialogProps",
       /document\.getElementById|:ref=|setDialog/u,
     ],
     [
-      "combobox/Combobox.vue",
+      "combobox/combobox.vue",
       "combobox.listboxProps",
       /document\.getElementById|:ref=|setListbox/u,
     ],
-    ["dialog/Dialog.vue", "dialog.dialogProps", /document\.getElementById|:ref=|setDialog/u],
+    ["dialog/dialog.vue", "dialog.dialogProps", /document\.getElementById|:ref=|setDialog/u],
   ] as const) {
     const source = readFileSync(
       path.join(import.meta.dirname, `../packages/core/blueprints/${file}`),
